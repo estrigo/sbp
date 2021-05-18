@@ -23,7 +23,7 @@ public class TeamService {
 	
 	Team getTeam(Long id) {
 		if (id != null) {
-			return repository.findOne(id);
+			return repository.getOne(id);
 		} 
 		return null;
 	}
@@ -38,7 +38,7 @@ public class TeamService {
 	}
 	
 	void deleteTeam(Long id) {
-		repository.delete(id);
+		repository.deleteById(id);
 	}
 	
 	List<Team> getTeams(String name) {

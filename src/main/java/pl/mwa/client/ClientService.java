@@ -70,7 +70,7 @@ public class ClientService {
 	
 	
 	void remove(long id) {
-		Client client = repository.findOne(id);
+		Client client = repository.getOne(id);
 		client.setActive(false);
 		repository.save(client);
 	}
@@ -125,7 +125,7 @@ public class ClientService {
 	}
 
 	public void saveToDB(List<Client> clients) {
-		repository.save(clients);
+		repository.saveAll(clients);
 	}
 	
 	

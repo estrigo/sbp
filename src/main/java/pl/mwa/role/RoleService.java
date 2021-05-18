@@ -17,7 +17,7 @@ public class RoleService {
 	
 	
 	Role getRole(Long id) {
-		return repository.findOne(id);
+		return repository.getOne(id);
 		
 	}
 	

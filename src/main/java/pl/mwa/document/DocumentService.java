@@ -145,7 +145,7 @@ public class DocumentService {
 	
 	
 	void saveToDB(List<Document> documents) {
-		repository.save(documents);
+		repository.saveAll(documents);
 	}
 	
 	

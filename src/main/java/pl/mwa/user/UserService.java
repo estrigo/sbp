@@ -2,10 +2,7 @@ package pl.mwa.user;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -101,7 +98,9 @@ public class UserService {
 	}
 	
 	List<UserDto> getUserWithRole(Role role) {
-		return repository.findByRolesIn(role).stream()
+		List<Role> roles = new ArrayList<>();
+		roles.add(role);
+		return repository.findByRolesIn(roles).stream()
 				.map(UserMapper::toDto)
 				.collect(Collectors.toList());
 	}
@@ -226,7 +225,7 @@ public class UserService {
 	}
 	
 	void saveToDB(List<User> users) {
-		repository.save(users);
+		repository.saveAll(users);
 	}
 
 	void exportDataToCSV(String filename) {

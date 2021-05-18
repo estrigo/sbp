@@ -53,7 +53,7 @@ public class RepresentativeService {
 
 	
 	public void remove(long id) {
-		Representative rep = repository.findOne(id);
+		Representative rep = repository.getOne(id);
 		rep.setActive(false);
 		repository.save(rep);
 	}
@@ -111,7 +111,7 @@ public class RepresentativeService {
 	}
 	
 	public void saveToDB(List<Representative> list) {
-		repository.save(list);
+		repository.saveAll(list);
 	}
 	
 	
