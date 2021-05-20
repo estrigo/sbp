@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
-        <groupId>pl.mwa</groupId>
+        <groupId>kz.smartparking</groupId>
         <artifactId>FinalProjectCRM-plugins</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
@@ -15,7 +15,7 @@
 
     <properties>
         <plugin.id>welcome-plugin</plugin.id>
-        <plugin.class>org.pf4j.demo.welcome.WelcomePlugin</plugin.class>
+        <plugin.class>kz.smartparking.demo.welcome.WelcomePlugin</plugin.class>
         <plugin.version>0.0.1</plugin.version>
         <plugin.provider>Decebal Suiu</plugin.provider>
         <plugin.dependencies />
@@ -81,7 +81,7 @@
                         <id>make-assembly</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>attached</goal>
+                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>

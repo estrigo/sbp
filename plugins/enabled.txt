@@ -4,3 +4,4 @@
 # - put this file in plugins folder
 ########################################
 #welcome-plugin
+#hello-plugin
