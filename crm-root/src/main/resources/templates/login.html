@@ -1,13 +1,27 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8"/>
+    <title>Login page</title>
+
+    <link th:href="@{/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{/signin.css}" rel="stylesheet" />
+</head>
+
 <body>
 
-<h1>Custom login page</h1>
-<form th:action="@{/login}" method="post">
-    <div><label> User Name : <input type="text" name="username"/> </label></div>
-    <div><label> Password: <input type="password" name="password"/> </label></div>
-    <div><input type="submit" value="Sign In"/></div>
-</form>
-
+<div class="container">
+    <form class="form-signin" th:action="@{/login}" method="post">
+        <h2 class="form-signin-heading">Custom login page</h2>
+        <p>
+            <input type="text" name="username" class="form-control" />
+        </p>
+        <p>
+            <input type="password" name="password" class="form-control" />
+        </p>
+        <input type="submit" value="Sign In" class="btn btn-primary btn-lg btn-block"/>
+    </form>
+</div>
 </body>
 </html>

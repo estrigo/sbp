@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Home page</title>
+
+    <link th:href="@{/bootstrap.min.css}" rel="stylesheet" />
 </head>
 <body>
 
@@ -24,6 +26,8 @@
     <p><a th:href="@{|/customer/menu|}" th:text="'Customer menu'"></a></p>
 
     <p><a th:href="@{|/contract/menu|}" th:text="'Contract menu'"></a></p>
+
+    <!--p><a th:href="@{|/plugin/menu|}" th:text="'Plugin menu'"></a></--p-->
 
     <p><a th:href="@{|/pdf-generator|}" th:text="'Simple pdf generator'"></a></p>
 
