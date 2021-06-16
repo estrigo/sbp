@@ -3,25 +3,54 @@
 
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Login page</title>
+    <link rel="shortcut icon" th:href="@{/assets/images/favicon_1.ico}">
+    <title>Smartparking - Responsive Admin Dashboard Template</title>
 
-    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" />
-    <link th:href="@{/signin.css}" rel="stylesheet" />
+    <link th:href="@{/plugins/switchery/switchery.min.css}" rel="stylesheet" />
+
+    <link th:href="@{/assets/css/bootstrap.min.css}" rel="stylesheet" type="text/css">
+    <link th:href="@{/assets/css/icons.css}" rel="stylesheet" type="text/css">
+    <link th:href="@{/assets/css/style.css}" rel="stylesheet" type="text/css">
+
+    <script th:src="@{/assets/js/modernizr.min.js}"></script>
 </head>
 
 <body>
+    <div class="wrapper-page">
 
-<div class="container">
-    <form class="form-signin" th:action="@{/login}" method="post">
-        <h2 class="form-signin-heading">Custom login page</h2>
-        <p>
-            <input type="text" name="username" class="form-control" />
-        </p>
-        <p>
-            <input type="password" name="password" class="form-control" />
-        </p>
-        <input type="submit" value="Sign In" class="btn btn-primary btn-lg btn-block"/>
-    </form>
-</div>
+        <div class="text-center">
+            <a th:href="@{|/index|}" class="logo-lg"><i class="mdi mdi-radar"></i> <span>Smartparking</span> </a>
+        </div>
+
+        <form class="form-horizontal m-t-20" th:action="@{/login}" method="post">
+
+            <div class="form-group row">
+                <div class="col-12">
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="mdi mdi-account"></i></span>
+                        <input name="username" class="form-control" type="text" required="" placeholder="Username">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <div class="col-12">
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="mdi mdi-radar"></i></span>
+                        <input class="form-control" name="password" type="password" required="" placeholder="Password">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group text-right m-t-20">
+                <div class="col-xs-12">
+                    <button class="btn btn-primary btn-custom w-md waves-effect waves-light" type="submit">Log In
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
 </body>
 </html>
