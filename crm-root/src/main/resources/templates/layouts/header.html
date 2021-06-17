@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+
+<head th:fragment="header(title, links)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title th:replace="${title}">Smartparking application</title>
+    <link rel="shortcut icon" th:href="@{/assets/images/favicon_1.ico}">
+
+    <link th:href="@{/plugins/switchery/switchery.min.css}" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/plugins/morris/morris.css}">
+
+    <link th:href="@{/assets/css/bootstrap.min.css}" rel="stylesheet" type="text/css">
+    <link th:href="@{/assets/css/icons.css}" rel="stylesheet" type="text/css">
+    <link th:href="@{/assets/css/style.css}" rel="stylesheet" type="text/css">
+
+    <th:block th:replace="${links}" />
+
+    <script th:src="@{/assets/js/modernizr.min.js}"></script>
+</head>
+
+</html>

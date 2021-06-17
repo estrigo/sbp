@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html th:fragment="main(body_content,scripts)" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="layouts/header::header(~{::title},~{})">
+    <title>Smartparking - Responsive Admin Dashboard Template</title>
+</head>
+
+<body class="fixed-left">
+<!-- Begin page -->
+<div id="wrapper">
+    <!-- Top Bar Start -->
+    <div class="topbar">
+        <!-- LOGO -->
+        <div class="topbar-left">
+            <div class="text-center">
+                <a th:href="@{|/|}" class="logo"><i class="mdi mdi-radar"></i> <span>Smartparking</span></a>
+            </div>
+        </div>
+        <!-- Button mobile view to collapse sidebar menu -->
+        <nav th:replace="layouts/head::head_nav">
+
+        </nav>
+    </div>
+    <!-- ========== Left Sidebar Start ========== -->
+
+    <div class="left side-menu">
+        <div class="sidebar-inner slimscrollleft">
+            <!--- Divider -->
+            <div id="sidebar-menu">
+                <ul sec:authorize="isAuthenticated()">
+                    <li class="menu-title">Main</li>
+                    <li>
+                        <a th:href="@{|/user/list|}" class="waves-effect waves-primary"><i
+                                class="ti-user"></i><span> Users </span></a>
+                    </li>
+                    <li>
+                        <a th:href="@{|/customer/menu|}" class="waves-effect waves-primary"><i
+                                class="ti-home"></i><span> Customers </span></a>
+                    </li>
+                    <li>
+                        <a th:href="@{|/contract/menu|}" class="waves-effect waves-primary"><i
+                                class="ti-files"></i><span> Contracts </span></a>
+                    </li>
+                    <li>
+                        <a th:href="@{|/pdf-generator|}" class="waves-effect waves-primary"><i
+                                class="ti-download"></i><span> Pdf generator </span></a>
+                    </li>
+                </ul>
+                <ul sec:authorize="!isAuthenticated()">
+                    <li class="menu-title">Main</li>
+                    <li>
+                        <a th:href="@{|/login|}" class="waves-effect waves-primary"><i
+                                class="ti-user"></i><span> Login </span></a>
+                    </li>
+                    <li>
+                        <a th:href="@{|/register|}" class="waves-effect waves-primary"><i
+                                class="ti-settings"></i><span> Register </span></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- Start right Content here -->
+    <!-- ============================================================== -->
+    <div class="content-page">
+        <!-- Start content -->
+
+        <th:block th:replace="${body_content}" />
+    </div>
+</div>
+
+<!-- Plugins  -->
+<script th:src="@{/assets/js/jquery.min.js}"></script>
+<script th:src="@{/assets/js/tether.min.js}"></script>
+<script th:src="@{/assets/js/bootstrap.min.js}"></script>
+<script th:src="@{/assets/js/detect.js}"></script>
+<script th:src="@{/assets/js/fastclick.js}"></script>
+<script th:src="@{/assets/js/jquery.slimscroll.js}"></script>
+<script th:src="@{/assets/js/jquery.blockUI.js}"></script>
+<script th:src="@{/assets/js/waves.js}"></script>
+<script th:src="@{/assets/js/wow.min.js}"></script>
+<script th:src="@{/assets/js/jquery.nicescroll.js}"></script>
+<script th:src="@{/assets/js/jquery.scrollTo.min.js}"></script>
+<script th:src="@{/plugins/switchery/switchery.min.js}"></script>
+
+<th:block th:replace="${scripts}" />
+
+</body>
+</html>
