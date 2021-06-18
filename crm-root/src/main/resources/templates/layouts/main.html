@@ -1,8 +1,24 @@
 <!DOCTYPE html>
-<html th:fragment="main(body_content,scripts)" xmlns:th="http://www.thymeleaf.org">
+<html th:fragment="main(body_content, scripts, links)" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="layouts/header::header(~{::title},~{})">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
     <title>Smartparking - Responsive Admin Dashboard Template</title>
+
+    <link rel="shortcut icon" th:href="@{/assets/images/favicon_1.ico}">
+
+    <link th:href="@{/assets/css/bootstrap.min.css}" rel="stylesheet" type="text/css">
+    <link th:href="@{/assets/css/icons.css}" rel="stylesheet" type="text/css">
+    <link th:href="@{/assets/css/style.css}" rel="stylesheet" type="text/css">
+
+    <link th:href="@{/plugins/switchery/switchery.min.css}" rel="stylesheet" />
+    <link th:href="@{/plugins/morris/morris.css}" rel="stylesheet" />
+
+    <script th:src="@{/assets/js/modernizr.min.js}"></script>
+
+    <th:block th:replace="${links}" />
 </head>
 
 <body class="fixed-left">
