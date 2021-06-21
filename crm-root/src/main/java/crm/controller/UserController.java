@@ -1,6 +1,7 @@
 package crm.controller;
 
 import crm.entity.User;
+import crm.service.RoleService;
 import crm.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,8 +21,11 @@ public class UserController {
 
     private UserService userService;
 
-    public UserController(UserService userService) {
+    private RoleService roleService;
+
+    public UserController(UserService userService, RoleService roleService) {
         this.userService = userService;
+        this.roleService = roleService;
     }
 
     /**
@@ -51,6 +55,7 @@ public class UserController {
     @GetMapping("/edit/{id}")
     public String showFormEditUser(Model model, @PathVariable Long id) {
         model.addAttribute("user", userService.showUser(id));
+        model.addAttribute("allRoles", roleService.listAllRoles());
         return "user/edit";
     }
 

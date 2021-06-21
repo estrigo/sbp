@@ -48,7 +48,11 @@
                                     <div class="form-group row" sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
                                         <label class="col-2 col-form-label">Role</label>
                                         <div class="col-10">
-                                            <input type="text" class="form-control" th:field="*{role.id}" th:value="*{role.id}"/>
+                                            <select multiple class="form-control" th:field="*{roles}">
+                                                <option th:each="r : ${allRoles}"
+                                                        th:value="${r.id}" th:text="${r.name}">
+                                                </option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="form-group row">

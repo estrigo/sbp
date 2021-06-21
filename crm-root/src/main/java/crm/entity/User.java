@@ -8,6 +8,7 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Data
@@ -37,19 +38,14 @@ public class User {
 
     private int enabled;
 
-    @ManyToOne
-    private Role role;
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name = "user_role", schema = "crm",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private List<Role> roles;
 
     public int getColumnCount() {
         return getClass().getDeclaredFields().length;
-    }
-
-    public int getRole_id() {
-        return role.getId();
-    }
-
-    public String getRole_name() {
-        return role.getName();
     }
 
     public String getName() {

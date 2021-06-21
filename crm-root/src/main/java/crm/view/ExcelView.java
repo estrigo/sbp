@@ -68,8 +68,8 @@ public class ExcelView extends AbstractXlsView{
             userRow.createCell(3).setCellValue(user.getEmail());
             userRow.createCell(4).setCellValue(user.getPassword());
             userRow.createCell(5).setCellValue(user.getEnabled());
-            userRow.createCell(6).setCellValue(user.getRole().getId());
-            userRow.createCell(7).setCellValue(user.getRole().getName());
+            userRow.createCell(6).setCellValue(user.getRoles().get(0).getId());
+            userRow.createCell(7).setCellValue(user.getRoles().get(0).getName());
         }
 
     }

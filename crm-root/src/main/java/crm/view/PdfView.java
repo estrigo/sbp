@@ -68,8 +68,8 @@ public class PdfView extends AbstractPdfView {
             table.addCell(user.getEmail());
             table.addCell(user.getPassword());
             table.addCell(String.valueOf(user.getEnabled()));
-            table.addCell(String.valueOf(user.getRole().getId()));
-            table.addCell(user.getRole().getName());
+            table.addCell(String.valueOf(user.getRoles().get(0).getId()));
+            table.addCell(user.getRoles().get(0).getName());
         }
 
         document.add(table);

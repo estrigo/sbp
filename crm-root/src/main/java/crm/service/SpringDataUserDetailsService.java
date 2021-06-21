@@ -1,6 +1,7 @@
 package crm.service;
 
 import crm.entity.CurrentUser;
+import crm.entity.Role;
 import crm.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,9 +26,11 @@ public class SpringDataUserDetailsService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException(username);
         }
-        String role = user.getRole().getName();
+
         Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
-        grantedAuthorities.add(new SimpleGrantedAuthority(role));
+        for(Role role:user.getRoles()){
+            grantedAuthorities.add(new SimpleGrantedAuthority(role.getName()));
+        }
         CurrentUser currentUser = new CurrentUser();
         currentUser.setUser(user);
         currentUser.setAuthorities(grantedAuthorities);
