@@ -22,4 +22,6 @@ public class Role {
     @Column(name = "role", unique = true)
     private String name;
 
+    @Column(name = "plugin")
+    private String plugin;
 }

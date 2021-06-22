@@ -55,7 +55,7 @@ public class UserController {
     @GetMapping("/edit/{id}")
     public String showFormEditUser(Model model, @PathVariable Long id) {
         model.addAttribute("user", userService.showUser(id));
-        model.addAttribute("allRoles", roleService.listAllRoles());
+        model.addAttribute("allRoles", roleService.listRolesByPlugins());
         return "user/edit";
     }
 

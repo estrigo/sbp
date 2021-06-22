@@ -6,4 +6,5 @@ public interface RoleService {
 
     Iterable<Role> listAllRoles();
 
+    Iterable<Role> listRolesByPlugins();
 }
