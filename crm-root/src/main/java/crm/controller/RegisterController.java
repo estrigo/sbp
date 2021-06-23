@@ -40,7 +40,7 @@ public class RegisterController {
             return "redirect:/register";
         } else {
             userService.saveUser(user);
-            return "success";
+            return "redirect:user/list";
         }
     }
 

@@ -74,11 +74,6 @@ public class UserServiceImpl implements UserService {
         String password = user.getPassword();
         user.setPassword(passwordEncoder.encode(password));
         userRepository.save(user);
-        UserDetails userDetails = springDataUserDetailsService.loadUserByUsername(user.getUsername());
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
-        authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
     }
 
     @Override
