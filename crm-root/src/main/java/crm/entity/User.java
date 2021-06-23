@@ -34,6 +34,8 @@ public class User {
 
     private String lastName;
 
+    private String patronymic;
+
     private String password;
 
     private int enabled;

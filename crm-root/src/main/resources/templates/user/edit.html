@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html th:replace="layouts/main::main(~{::div}, ~{}, ~{})">
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{})">
 
 
 <div class="content">
@@ -45,10 +45,16 @@
                                             <input type="password" th:field="*{password}" th:value="*{password}" class="form-control" value="password">
                                         </div>
                                     </div>
+                                    <div id="patronymicDiv" class="form-group row" style="display: none">
+                                        <label class="col-2 col-form-label">Patronymic</label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{patronymic}" th:value="*{patronymic}">
+                                        </div>
+                                    </div>
                                     <div class="form-group row" sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
                                         <label class="col-2 col-form-label">Role</label>
                                         <div class="col-10">
-                                            <select multiple class="form-control" th:field="*{roles}">
+                                            <select id="roles" multiple class="form-control" th:field="*{roles}" onchange="checkSelectedRoles(value)">
                                                 <option th:each="r : ${allRoles}"
                                                         th:value="${r.id}" th:text="${r.name}">
                                                 </option>
@@ -70,5 +76,16 @@
         </div>
     </div>
 </div>
+
+<script type="text/javascript">
+    function checkSelectedRoles(values){
+        var values = $('#roles').val();
+        if(values && values.indexOf('5')!==-1){
+            $('#patronymicDiv').show();
+        } else {
+            $('#patronymicDiv').hide();
+        }
+    }
+</script>
 
 </html>
