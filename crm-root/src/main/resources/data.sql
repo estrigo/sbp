@@ -1,4 +1,8 @@
-insert into role (role_id, role, plugin) values (1, 'ROLE_ADMIN', null), (2, 'ROLE_USER', null), (3, 'ROLE_MANAGER', null), (4, 'ROLE_OWNER', null), (4, 'PLUGIN_ROLE_TEST', 'test-plugin');
+insert into role (role_id, role, plugin) values (1, 'ROLE_ADMIN', null),
+                                                (2, 'ROLE_USER', null),
+                                                (3, 'ROLE_MANAGER', null),
+                                                (4, 'ROLE_OWNER', null),
+                                                (4, 'PLUGIN_ROLE_TEST', 'test-plugin');
 
 INSERT INTO users (id, email, enabled, first_name, last_name, password, username)
 VALUES ('1', 'a@u', '1', 'AFN', 'ALN', '$2a$10$iPgnenFIoM67cYL9let/iOLBphbDaEkAz3BmiXOCmWq5A4M2TkXAG', 'admin'),
@@ -9,11 +13,11 @@ VALUES ('1', 'a@u', '1', 'AFN', 'ALN', '$2a$10$iPgnenFIoM67cYL9let/iOLBphbDaEkAz
 # user - pass = user
 # manager - pass = manager
 # owner - pass = owner
-INSERT INTO crm.user_role (user_id, role_id) VALUES (1, 1);
-INSERT INTO crm.user_role (user_id, role_id) VALUES (1, 2);
-INSERT INTO crm.user_role (user_id, role_id) VALUES (2, 2);
-INSERT INTO crm.user_role (user_id, role_id) VALUES (3, 3);
-INSERT INTO crm.user_role (user_id, role_id) VALUES (4, 4);
+INSERT INTO user_role (user_id, role_id) VALUES (1, 1);
+INSERT INTO user_role (user_id, role_id) VALUES (1, 2);
+INSERT INTO user_role (user_id, role_id) VALUES (2, 2);
+INSERT INTO user_role (user_id, role_id) VALUES (3, 3);
+INSERT INTO user_role (user_id, role_id) VALUES (4, 4);
 
 SET FOREIGN_KEY_CHECKS=0;
 INSERT INTO category (category_id, category)

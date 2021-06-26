@@ -27,6 +27,7 @@
     </properties>
 
     <modules>
+        <module>crm-api</module>
         <module>crm-root</module>
         <module>plugins</module>
     </modules>

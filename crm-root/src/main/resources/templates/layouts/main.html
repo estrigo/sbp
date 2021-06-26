@@ -50,16 +50,16 @@
                                 class="ti-user"></i><span> Users </span></a>
                     </li>
                     <li>
-                        <a th:href="@{|/customer/menu|}" class="waves-effect waves-primary"><i
+                        <a th:href="@{|/customer/list|}" class="waves-effect waves-primary"><i
                                 class="ti-home"></i><span> Customers </span></a>
                     </li>
                     <li>
-                        <a th:href="@{|/contract/menu|}" class="waves-effect waves-primary"><i
+                        <a th:href="@{|/contract/list|}" class="waves-effect waves-primary"><i
                                 class="ti-files"></i><span> Contracts </span></a>
                     </li>
                     <li>
-                        <a th:href="@{|/pdf-generator|}" class="waves-effect waves-primary"><i
-                                class="ti-download"></i><span> Pdf generator </span></a>
+                        <a th:href="@{|/whiteList|}" class="waves-effect waves-primary"><i
+                                class="ti-files"></i><span> White list </span></a>
                     </li>
                 </ul>
                 <ul sec:authorize="!isAuthenticated()">
@@ -67,10 +67,6 @@
                     <li>
                         <a th:href="@{|/login|}" class="waves-effect waves-primary"><i
                                 class="ti-user"></i><span> Login </span></a>
-                    </li>
-                    <li>
-                        <a th:href="@{|/register|}" class="waves-effect waves-primary"><i
-                                class="ti-settings"></i><span> Register </span></a>
                     </li>
                 </ul>
             </div>
