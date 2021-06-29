@@ -17,6 +17,7 @@
 
     <modules>
         <module>test-plugin</module>
+        <module>whitelist-plugin</module>
     </modules>
 
     <build>
