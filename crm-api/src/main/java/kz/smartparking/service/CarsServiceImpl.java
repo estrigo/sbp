@@ -9,7 +9,24 @@ public class CarsServiceImpl implements CarsService {
 
     private CarsRepository carsRepository;
 
+    public CarsServiceImpl(CarsRepository carsRepository){
+        this.carsRepository = carsRepository;
+    }
+
     public Cars findByNumberplate(String numberplate){
-        return carsRepository.getOne(numberplate);
+        return carsRepository.findCarsByNumberplate(numberplate);
+    }
+
+    public Cars findById(Long id){
+        return carsRepository.getOne(id);
+    }
+
+    public void saveCars(Cars cars){
+
+        if(cars.getNumberplate()!=null){
+            cars.setNumberplate(cars.getNumberplate().toUpperCase());
+            carsRepository.save(cars);
+        }
+
     }
 }
