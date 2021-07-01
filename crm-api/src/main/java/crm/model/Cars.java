@@ -1,9 +1,10 @@
-package kz.smartparking.model;
+package crm.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
@@ -13,18 +14,20 @@ import javax.validation.constraints.Size;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "pdf", schema = "crm")
-public class Pdf {
+@Table(name = "cars", schema = "crm")
+public class Cars {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(nullable = false)
-    @Size(min = 2)
-    private String name;
+    @Column(unique=true)
+    @Size(max = 16)
+    private String platenumber;
 
-    @Transient
-    private String content;
+    private String color;
 
+    private String brand;
+
+    private Boolean deleted = false;
 }
