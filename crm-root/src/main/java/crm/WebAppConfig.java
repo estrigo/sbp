@@ -1,8 +1,12 @@
 package crm;
 
+import crm.plugin.CustomPlugin;
 import crm.viewResolver.CsvViewResolver;
 import crm.viewResolver.ExcelViewResolver;
 import crm.viewResolver.PdfViewResolver;
+import org.pf4j.PluginManager;
+import org.pf4j.PluginWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Description;
@@ -14,14 +18,11 @@ import org.springframework.web.servlet.config.annotation.ContentNegotiationConfi
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
-import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.dialect.springdata.SpringDataDialect;
-import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import org.thymeleaf.templateresolver.ITemplateResolver;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -31,6 +32,9 @@ import java.util.Map;
 
 @Configuration
 public class WebAppConfig implements WebMvcConfigurer {
+
+    @Autowired
+    private PluginManager pluginManager;
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
@@ -44,6 +48,7 @@ public class WebAppConfig implements WebMvcConfigurer {
         registry.addViewController("/search").setViewName("search");
         registry.addViewController("/403").setViewName("403");
         registry.addViewController("/logout").setViewName("logout");
+        registry.addViewController("/whitelist").setViewName("whitelist");
         registry.setOrder(Ordered.HIGHEST_PRECEDENCE);
     }
 
@@ -94,8 +99,39 @@ public class WebAppConfig implements WebMvcConfigurer {
         templateResolver.setSuffix(".html");
         templateResolver.setTemplateMode("HTML");
         templateResolver.setCharacterEncoding("UTF-8");
+        templateResolver.setCheckExistence(true);
+        templateResolver.setOrder(1);
 
         return templateResolver;
+    }
+
+    public List<ClassLoaderTemplateResolver> pluginTemplateResolvers() {
+
+        List<ClassLoaderTemplateResolver> pluginTemplateResolvers = new ArrayList<>();
+
+        List<PluginWrapper> plugins = pluginManager.getPlugins();
+
+        int orderStart = 2;
+        for(PluginWrapper pluginWrapper: plugins){
+
+            if(pluginWrapper.getPlugin() instanceof CustomPlugin){
+                ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver(pluginWrapper.getPluginClassLoader());
+                CustomPlugin plugin =(CustomPlugin) pluginWrapper.getPlugin();
+
+                if(plugin.hasTemplates()){
+                    templateResolver.setPrefix(pluginWrapper.getPluginId() + "/");
+                    templateResolver.setCacheable(false);
+                    templateResolver.setSuffix(".html");
+                    templateResolver.setTemplateMode("HTML");
+                    templateResolver.setCharacterEncoding("UTF-8");
+                    templateResolver.setCheckExistence(true);
+                    templateResolver.setOrder(orderStart++);
+                    pluginTemplateResolvers.add(templateResolver);
+                }
+            }
+        }
+
+        return pluginTemplateResolvers;
     }
 
     @Bean
@@ -103,13 +139,17 @@ public class WebAppConfig implements WebMvcConfigurer {
     public SpringTemplateEngine templateEngine() {
 
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver());
+        templateEngine.addTemplateResolver(templateResolver());
+
+        for(ClassLoaderTemplateResolver pluginTemplateResolver: pluginTemplateResolvers()){
+            templateEngine.addTemplateResolver(pluginTemplateResolver);
+        }
 
         // add dialect spring security
         templateEngine.addDialect(new SpringSecurityDialect());
         return templateEngine;
     }
-
+/*
     @Bean
     public TemplateEngine templateEngine(ITemplateResolver templateResolver) {
         SpringTemplateEngine engine = new SpringTemplateEngine();
@@ -117,7 +157,7 @@ public class WebAppConfig implements WebMvcConfigurer {
         engine.setTemplateResolver(templateResolver);
         return engine;
     }
-
+*/
     @Bean
     @Description("Thymeleaf view resolver")
     public ViewResolver viewResolver() {
