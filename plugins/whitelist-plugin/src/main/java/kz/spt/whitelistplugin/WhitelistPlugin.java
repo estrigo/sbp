@@ -22,7 +22,17 @@ public class WhitelistPlugin  extends SpringBootPlugin implements CustomPlugin {
     }
 
     @Override
-    public String getMenuHtml() {
-        return "whitelist.html";
+    public String getMenuLabel() {
+        return "White list";
+    }
+
+    @Override
+    public String getMenuUrl() {
+        return "whitelist";
+    }
+
+    @Override
+    public String getMenuCssClass() {
+        return "ti-file";
     }
 }

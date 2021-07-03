@@ -8,6 +8,7 @@ import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,5 +30,4 @@ public class PluginController {
         objectMapper.registerModule(simpleModule);
         return objectMapper.convertValue(pluginManager.getPlugins(), ArrayNode.class);
     }
-
 }

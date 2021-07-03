@@ -22,7 +22,17 @@ public class TestPlugin extends SpringBootPlugin implements CustomPlugin {
     }
 
     @Override
-    public String getMenuHtml() {
-        return "test.html";
+    public String getMenuLabel() {
+        return "Test plugin";
+    }
+
+    @Override
+    public String getMenuUrl() {
+        return "test";
+    }
+
+    @Override
+    public String getMenuCssClass() {
+        return "ti-pin-alt";
     }
 }

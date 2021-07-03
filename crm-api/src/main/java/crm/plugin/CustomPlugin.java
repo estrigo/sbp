@@ -4,6 +4,9 @@ public interface CustomPlugin {
 
     Boolean hasTemplates();
 
-    String getMenuHtml();
+    String getMenuLabel();
 
+    String getMenuUrl();
+
+    String getMenuCssClass();
 }

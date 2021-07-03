@@ -61,9 +61,10 @@
                         <a th:href="@{|/cars/list|}" class="waves-effect waves-primary"><i
                                 class="ti-car"></i><span> Cars </span></a>
                     </li>
-                    <li>
-                        <a th:href="@{|/whitelist|}" class="waves-effect waves-primary"><i
-                                class="ti-file"></i><span> White list </span></a>
+                    <li th:each="template : ${@pluginServiceImpl.getTemplateMenus()}" th:if="${template.url != null and template.label != null}">
+                        <a th:href="@{|/${template.url}|}"
+                           class="waves-effect waves-primary"><i
+                                th:class="${template.cssClass}"></i><span th:text="${template.label}">  </span></a>
                     </li>
                 </ul>
                 <ul sec:authorize="!isAuthenticated()">
