@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CarsRepository extends JpaRepository<Cars, Long> {
 
-    Cars findCarsByPlatenumber(String platenumber);
+    Cars findCarsByPlatenumberIgnoreCase(String platenumber);
 
     Iterable<Cars> findCarsByDeletedFalse();
 }

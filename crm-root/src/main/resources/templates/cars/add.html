@@ -19,6 +19,7 @@
                                         <label class="col-2 col-form-label">Plate number</label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{platenumber}">
+                                            <span th:if="${alreadyRegisteredPlatenumber != null}" th:text="#{${alreadyRegisteredPlatenumber}}" class="badge badge-warning">test</span>
                                         </div>
                                     </div>
                                     <div class="form-group row">

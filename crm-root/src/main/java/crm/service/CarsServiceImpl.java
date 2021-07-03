@@ -14,7 +14,7 @@ public class CarsServiceImpl implements CarsService {
     }
 
     public Cars findByPlatenumber(String platenumber){
-        return carsRepository.findCarsByPlatenumber(platenumber);
+        return carsRepository.findCarsByPlatenumberIgnoreCase(platenumber);
     }
 
     public Cars findById(Long id){

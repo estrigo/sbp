@@ -44,12 +44,20 @@ public class CarsController {
     }
 
     @PostMapping("/add")
-    public String processRequestAddCar(@Valid Cars car, BindingResult bindingResult) {
+    public String processRequestAddCar(Model model, @Valid Cars car, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/cars/add";
+            return "cars/add";
         } else {
-            carsService.saveCars(car);
-            return "redirect:/cars/list";
+            if(carsService.findByPlatenumber(car.getPlatenumber()) != null){
+                model.addAttribute("alreadyRegisteredPlatenumber",
+                        "car.alreadyRegisteredPlateNumber");
+                model.addAttribute("car", new Cars());
+                return "cars/add";
+            } else {
+                carsService.saveCars(car);
+                return "redirect:/cars/list";
+            }
+
         }
     }
 
