@@ -13,4 +13,6 @@ public interface CarsService {
     void saveCars(Cars cars);
 
     Iterable<Cars> findAllByDeletedFalse();
+
+    void createCar(String platenumber);
 }

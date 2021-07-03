@@ -1,9 +1,11 @@
-package crm.service;
+package crm.service.impl;
 
 import crm.entity.Role;
 import crm.entity.User;
 import crm.repository.RoleRepository;
 import crm.repository.UserRepository;
+import crm.service.SpringDataUserDetailsService;
+import crm.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

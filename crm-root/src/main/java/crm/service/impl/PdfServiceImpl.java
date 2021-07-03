@@ -1,7 +1,8 @@
-package crm.service;
+package crm.service.impl;
 
 import crm.entity.Pdf;
 import crm.repository.PdfRepository;
+import crm.service.PdfService;
 import org.springframework.stereotype.Service;
 
 @Service

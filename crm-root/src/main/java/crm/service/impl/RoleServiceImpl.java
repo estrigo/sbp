@@ -1,7 +1,8 @@
-package crm.service;
+package crm.service.impl;
 
 import crm.entity.Role;
 import crm.repository.RoleRepository;
+import crm.service.RoleService;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;

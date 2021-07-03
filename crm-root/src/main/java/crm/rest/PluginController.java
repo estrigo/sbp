@@ -1,4 +1,4 @@
-package crm.controller;
+package crm.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -9,6 +9,7 @@ import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,7 +23,7 @@ public class PluginController {
     @Autowired
     private ApplicationContext applicationContext;
 
-    @RequestMapping(value = "/all")
+    @GetMapping(value = "/all")
     public ArrayNode allPlugins() {
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addSerializer(PluginWrapper.class, new PluginWrapperSerializer());

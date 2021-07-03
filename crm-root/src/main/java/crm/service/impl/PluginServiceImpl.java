@@ -1,6 +1,7 @@
-package crm.service;
+package crm.service.impl;
 
 import crm.plugin.CustomPlugin;
+import crm.service.PluginService;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;

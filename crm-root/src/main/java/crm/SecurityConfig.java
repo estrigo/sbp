@@ -44,6 +44,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logout().logoutSuccessUrl("/").permitAll()
                 .and()
                 .exceptionHandling().accessDeniedPage("/403");
+
+        http.csrf().disable();
     }
 
     @Override

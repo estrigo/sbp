@@ -1,4 +1,4 @@
-package crm.service;
+package crm.service.impl;
 
 import crm.entity.Contract;
 import crm.entity.Customer;
@@ -7,6 +7,7 @@ import crm.entity.User;
 import crm.repository.ContractRepository;
 import crm.repository.CustomerRepository;
 import crm.repository.UserRepository;
+import crm.service.ContractService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

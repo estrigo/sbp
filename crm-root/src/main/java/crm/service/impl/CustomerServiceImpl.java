@@ -1,8 +1,9 @@
-package crm.service;
+package crm.service.impl;
 
 import crm.entity.Category;
 import crm.entity.Customer;
 import crm.repository.CustomerRepository;
+import crm.service.CustomerService;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
