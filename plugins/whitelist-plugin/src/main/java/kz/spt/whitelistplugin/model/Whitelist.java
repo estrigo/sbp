@@ -16,10 +16,31 @@ import java.util.Date;
 @Table(name = "whitelist", schema = "crm")
 public class Whitelist {
 
+    public static enum Type {
+        ONCE,
+        PERIOD,
+        WEEKDAYS,
+        UNLIMITED
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
+
+    @Column(unique = true)
+    private String number;
+
+    @ManyToOne
+    @JoinColumn(name = "car_id")
+    private Cars car;
+
+    private Date access_start;
+
+    private Date access_end;
+
+    @Enumerated(EnumType.STRING)
+    private Type type;
 
     @CreationTimestamp
     private Date created;
@@ -27,14 +48,7 @@ public class Whitelist {
     @UpdateTimestamp
     private Date updated;
 
-    @Column(unique = true)
-    private String number;
+    private String createdUser;
 
-    @OneToOne
-    @JoinColumn(name = "car_id")
-    private Cars car;
-
-    private Date access_end;
-
-
+    private String updatedUser;
 }
