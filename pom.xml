@@ -13,8 +13,8 @@
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>crm</groupId>
-    <artifactId>crm-parent</artifactId>
+    <groupId>kz.spt</groupId>
+    <artifactId>spt-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -29,8 +29,8 @@
     </properties>
 
     <modules>
-        <module>crm-api</module>
-        <module>crm-root</module>
+        <module>spt-api</module>
+        <module>spt-root</module>
         <module>plugins</module>
     </modules>
 

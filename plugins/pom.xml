@@ -6,13 +6,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>crm</groupId>
-        <artifactId>crm-parent</artifactId>
+        <groupId>kz.spt</groupId>
+        <artifactId>spt-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>crm</groupId>
-    <artifactId>crm-plugins</artifactId>
+    <groupId>kz.spt</groupId>
+    <artifactId>spt-plugins</artifactId>
     <packaging>pom</packaging>
 
     <modules>

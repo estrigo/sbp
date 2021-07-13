@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>crm</groupId>
-        <artifactId>crm-plugins</artifactId>
+        <groupId>kz.spt</groupId>
+        <artifactId>spt-plugins</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
@@ -40,8 +40,8 @@
             <version>0.1.13</version>
         </dependency>
         <dependency>
-            <groupId>crm</groupId>
-            <artifactId>crm-api</artifactId>
+            <groupId>kz.spt</groupId>
+            <artifactId>spt-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>

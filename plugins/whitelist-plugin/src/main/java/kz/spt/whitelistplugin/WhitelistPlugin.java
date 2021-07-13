@@ -1,7 +1,8 @@
 package kz.spt.whitelistplugin;
 
-import crm.plugin.CustomPlugin;
+import kz.spt.api.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
+import org.laxture.sbp.spring.boot.SharedJtaSpringBootstrap;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 
@@ -34,5 +35,10 @@ public class WhitelistPlugin  extends SpringBootPlugin implements CustomPlugin {
     @Override
     public String getMenuCssClass() {
         return "ti-file";
+    }
+
+    @Override
+    public String getRole() {
+        return "MANAGER";
     }
 }

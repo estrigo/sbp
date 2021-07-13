@@ -1,11 +1,12 @@
 package kz.spt.whitelistplugin.model;
 
-import crm.model.Cars;
+import kz.spt.api.model.Cars;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.Date;
 
 @Entity
@@ -20,16 +21,18 @@ public class Whitelist {
         ONCE,
         PERIOD,
         WEEKDAYS,
-        UNLIMITED
+        UNLIMITED,
+        MONTHLY;
+
+        public static final Type[] ACTIVE = {UNLIMITED, PERIOD, MONTHLY, ONCE, WEEKDAYS};
     }
+
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-
-    @Column(unique = true)
-    private String number;
 
     @ManyToOne
     @JoinColumn(name = "car_id")
@@ -51,4 +54,14 @@ public class Whitelist {
     private String createdUser;
 
     private String updatedUser;
+
+    @Transient
+    @Size(min = 3, max = 16)
+    private String platenumber;
+
+    @Transient
+    private String accessStartString;
+
+    @Transient
+    private String accessEndString;
 }
