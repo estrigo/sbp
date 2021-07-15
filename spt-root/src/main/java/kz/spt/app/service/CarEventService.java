@@ -4,5 +4,5 @@ import kz.spt.app.entity.dto.CarEventDto;
 
 public interface CarEventService {
 
-    public void saveCarEvent(CarEventDto eventDto);
+    public void saveCarEvent(CarEventDto eventDto) throws Exception;
 }

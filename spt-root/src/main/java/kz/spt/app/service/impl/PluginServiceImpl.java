@@ -30,7 +30,7 @@ public class PluginServiceImpl implements PluginService {
                 if (plugin.hasTemplates()) {
                     Map<String, Object> attrs = new HashMap<>();
                     attrs.put("label", plugin.getMenuLabel());
-                    attrs.put("url", plugin.getMenuUrl()+"/list");
+                    attrs.put("url", plugin.getMenuUrl());
                     attrs.put("cssClass", plugin.getMenuCssClass());
                     menus.add(attrs);
                 }

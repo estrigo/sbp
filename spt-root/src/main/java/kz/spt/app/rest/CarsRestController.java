@@ -23,7 +23,7 @@ public class CarsRestController {
     @Transactional
     @ResponseBody
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void addCarEvent(@Valid @RequestBody CarEventDto carEventDto){
+    public void addCarEvent(@Valid @RequestBody CarEventDto carEventDto) throws Exception{
         carEventService.saveCarEvent(carEventDto);
     }
 

@@ -49,19 +49,6 @@ public class WebAppConfig implements WebMvcConfigurer {
         registry.addViewController("/search").setViewName("search");
         registry.addViewController("/403").setViewName("403");
         registry.addViewController("/logout").setViewName("logout");
-
-        List<PluginWrapper> plugins = pluginManager.getPlugins();
-
-        for(PluginWrapper pluginWrapper: plugins) {
-
-            if (pluginWrapper.getPlugin() instanceof CustomPlugin) {
-                CustomPlugin plugin = (CustomPlugin) pluginWrapper.getPlugin();
-
-                if (plugin.hasTemplates()) {
-                    registry.addViewController("/" + plugin.getMenuUrl()).setViewName(plugin.getMenuUrl()+"/list");
-                }
-            }
-        }
         registry.setOrder(Ordered.HIGHEST_PRECEDENCE);
     }
 
