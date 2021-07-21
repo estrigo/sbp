@@ -32,6 +32,11 @@ public class TestPlugin extends SpringBootPlugin implements CustomPlugin {
     }
 
     @Override
+    public String getTemplateUrl() {
+        return "test";
+    }
+
+    @Override
     public String getMenuCssClass() {
         return "ti-pin-alt";
     }

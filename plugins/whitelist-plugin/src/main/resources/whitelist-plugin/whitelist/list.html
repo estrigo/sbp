@@ -27,7 +27,8 @@
                             <td th:text="${iterStat.count}"></td>
                             <td th:text="${w.car.platenumber}"></td>
                             <td th:text="${w.type}"></td>
-                            <td th:text="${'access_start: ' + w.access_start + ' access_end: ' + w.access_end}"></td>
+                            <td th:if="${w.type == 'UNLIMITED'}" th:text="${'Авто с гос. номером ' + w.car.platenumber + ' может посещать объект в любое время.'}"></td>
+                            <td th:if="${w.type == 'PERIOD'}" th:text="${'Авто с гос. номером ' + w.car.platenumber + ' может посещать объект в любое время. Сроком до 01.07.2021 00:00:00'}"></td>
                             <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
                             <td><a th:href="@{|/whitelist/edit/${w.id}|}">Edit</a></td>
                             </p>

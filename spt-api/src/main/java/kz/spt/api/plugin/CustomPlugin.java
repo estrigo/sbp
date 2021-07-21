@@ -8,6 +8,8 @@ public interface CustomPlugin {
 
     String getMenuUrl();
 
+    String getTemplateUrl();
+
     String getMenuCssClass();
 
     String getRole();

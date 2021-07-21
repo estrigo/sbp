@@ -14,6 +14,6 @@ public interface WhitelistRepository extends JpaRepository<Whitelist, Long> {
 
     Iterable<Whitelist> findAllByCarIsNotNull();
 
-    @Query("from Whitelist w where w.car = ?1 and (w.type = 'UNLIMITED' or (w.type = 'PERIOD' and ?2 between w.access_start and w.access_end))")
+    @Query("from Whitelist w where w.car = ?1 and (w.type = 'UNLIMITED' or ((w.type = 'PERIOD' or w.type = 'MONTHLY' or w.type = 'ONCE') and ?2 between w.access_start and w.access_end))")
     List<Whitelist> findValidWhiteListByCar(Cars car, Date date);
 }

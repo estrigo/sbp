@@ -48,6 +48,11 @@ public class WhitelistPlugin extends SpringBootPlugin implements CustomPlugin {
     }
 
     @Override
+    public String getTemplateUrl() {
+        return "whitelist";
+    }
+
+    @Override
     public String getMenuCssClass() {
         return "ti-file";
     }

@@ -2,8 +2,8 @@ package kz.spt.whitelistplugin.controller;
 
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.service.WhitelistService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -37,15 +37,15 @@ public class WhitelistController {
     }
 
     @PostMapping("/add")
-    public String processRequestAddCar(Model model, @Valid Whitelist whitelist, BindingResult bindingResult) throws Exception {
+    public String processRequestAddCar(Model model, @Valid Whitelist whitelist, BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         if (bindingResult.hasErrors()) {
             for(ObjectError objectError : bindingResult.getAllErrors()){
                 System.out.println(objectError.getObjectName() + " " + objectError.getCode() + " " + objectError.getDefaultMessage());
             }
             return "whitelist/add";
         } else {
-            whitelistService.saveWhitelist(whitelist);
-            return "redirect:/whitelist";
+            whitelistService.saveWhitelist(whitelist, currentUser);
+            return "redirect:/whitelist/list";
         }
     }
 }
