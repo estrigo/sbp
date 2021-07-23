@@ -1,6 +1,8 @@
 package kz.spt.app.service.impl;
 
+import kz.spt.api.model.Camera;
 import kz.spt.api.model.Cars;
+import kz.spt.api.service.EventLogService;
 import kz.spt.app.repository.CarsRepository;
 import kz.spt.api.service.CarsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,9 @@ public class CarsServiceImpl implements CarsService {
 
     @Autowired
     private CarsRepository carsRepository;
+
+    @Autowired
+    private EventLogService eventLogService;
 
     public Cars findByPlatenumber(String platenumber){
         return carsRepository.findCarsByPlatenumberIgnoreCase(platenumber);
@@ -24,18 +29,17 @@ public class CarsServiceImpl implements CarsService {
         return carsRepository.findAll();
     }
 
-    public void saveCars(Cars cars){
-        if(cars.getPlatenumber()!=null){
-            cars.setPlatenumber(cars.getPlatenumber().toUpperCase());
-            carsRepository.save(cars);
-        }
+    public Cars saveCars(Cars cars){
+        cars.setPlatenumber(cars.getPlatenumber().toUpperCase());
+        return carsRepository.save(cars);
     }
 
     public void createCar(String platenumber){
         if(findByPlatenumber(platenumber) == null){
             Cars cars = new Cars();
             cars.setPlatenumber(platenumber);
-            saveCars(cars);
+            Cars savedCar = saveCars(cars);
+            eventLogService.createEventLog(String.valueOf(Cars.class), savedCar.getId(), null, "Новый номер авто " + cars.getPlatenumber() + " сохранен в системе ");
         }
     }
 

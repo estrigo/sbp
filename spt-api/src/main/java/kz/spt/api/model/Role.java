@@ -1,4 +1,4 @@
-package kz.spt.app.entity;
+package kz.spt.api.model;
 
 import lombok.Data;
 

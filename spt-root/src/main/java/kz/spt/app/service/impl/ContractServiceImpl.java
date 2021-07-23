@@ -3,7 +3,7 @@ package kz.spt.app.service.impl;
 import kz.spt.app.entity.Contract;
 import kz.spt.app.entity.Customer;
 import kz.spt.app.entity.Status;
-import kz.spt.app.entity.User;
+import kz.spt.api.model.User;
 import kz.spt.app.repository.ContractRepository;
 import kz.spt.app.repository.CustomerRepository;
 import kz.spt.app.repository.UserRepository;

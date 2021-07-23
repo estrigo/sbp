@@ -1,5 +1,6 @@
-package kz.spt.app.entity;
+package kz.spt.api.model;
 
+import kz.spt.api.model.User;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

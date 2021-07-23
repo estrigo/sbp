@@ -17,7 +17,7 @@ import java.util.Date;
 @Table(name = "whitelist", schema = "crm")
 public class Whitelist {
 
-    public static enum Type {
+    public enum Type {
         ONCE,
         PERIOD,
         WEEKDAYS,
@@ -26,8 +26,6 @@ public class Whitelist {
 
         public static final Type[] ACTIVE = {UNLIMITED, PERIOD, MONTHLY, ONCE, WEEKDAYS};
     }
-
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

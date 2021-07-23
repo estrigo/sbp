@@ -1,6 +1,6 @@
 package kz.spt.app.service;
 
-import kz.spt.app.entity.Role;
+import kz.spt.api.model.Role;
 
 public interface RoleService {
 

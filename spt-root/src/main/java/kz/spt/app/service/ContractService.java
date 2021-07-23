@@ -3,7 +3,7 @@ package kz.spt.app.service;
 import kz.spt.app.entity.Contract;
 import kz.spt.app.entity.Customer;
 import kz.spt.app.entity.Status;
-import kz.spt.app.entity.User;
+import kz.spt.api.model.User;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

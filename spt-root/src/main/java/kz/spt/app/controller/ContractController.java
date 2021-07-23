@@ -2,7 +2,7 @@ package kz.spt.app.controller;
 
 import kz.spt.app.entity.Contract;
 import kz.spt.app.entity.Customer;
-import kz.spt.app.entity.User;
+import kz.spt.api.model.User;
 import kz.spt.app.service.ContractService;
 import kz.spt.app.service.CustomerService;
 import kz.spt.app.service.UserService;

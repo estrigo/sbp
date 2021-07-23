@@ -1,5 +1,6 @@
 package kz.spt.app.entity;
 
+import kz.spt.api.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

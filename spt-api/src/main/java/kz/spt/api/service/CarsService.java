@@ -10,7 +10,7 @@ public interface CarsService {
 
     Iterable<Cars> listAllCars();
 
-    void saveCars(Cars cars);
+    Cars saveCars(Cars cars);
 
     Iterable<Cars> findAllByDeletedFalse();
 

@@ -1,6 +1,6 @@
 package kz.spt.app.controller;
 
-import kz.spt.app.entity.User;
+import kz.spt.api.model.User;
 import kz.spt.app.service.RoleService;
 import kz.spt.app.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

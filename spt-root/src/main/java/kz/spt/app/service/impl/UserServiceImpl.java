@@ -1,7 +1,7 @@
 package kz.spt.app.service.impl;
 
-import kz.spt.app.entity.Role;
-import kz.spt.app.entity.User;
+import kz.spt.api.model.Role;
+import kz.spt.api.model.User;
 import kz.spt.app.repository.RoleRepository;
 import kz.spt.app.repository.UserRepository;
 import kz.spt.app.service.SpringDataUserDetailsService;

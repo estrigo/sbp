@@ -1,6 +1,6 @@
 package kz.spt.app.service;
 
-import kz.spt.app.entity.User;
+import kz.spt.api.model.User;
 
 public interface UserService {
 

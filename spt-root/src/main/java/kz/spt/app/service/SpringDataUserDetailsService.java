@@ -1,8 +1,8 @@
 package kz.spt.app.service;
 
-import kz.spt.app.entity.CurrentUser;
-import kz.spt.app.entity.Role;
-import kz.spt.app.entity.User;
+import kz.spt.api.model.CurrentUser;
+import kz.spt.api.model.Role;
+import kz.spt.api.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
