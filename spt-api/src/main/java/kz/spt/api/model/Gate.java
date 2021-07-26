@@ -43,4 +43,7 @@ public class Gate {
 
     @OneToOne(mappedBy = "gate")
     private Barrier barrier;
+
+    @OneToOne(mappedBy = "controller")
+    private Controller controller;
 }

@@ -24,4 +24,8 @@ public class Controller {
     private String name;
 
     private String ip;
+
+    @OneToOne
+    @JoinColumn(name = "gate")
+    private Gate gate;
 }

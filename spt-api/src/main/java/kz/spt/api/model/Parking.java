@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @Entity
@@ -19,7 +20,9 @@ public class Parking {
     public enum ParkingType {
         WHITELIST,
         PAYMENT,
-        WHITELIST_PAYMENT
+        WHITELIST_PAYMENT;
+
+        public static final ParkingType[] ALL = {WHITELIST};
     }
 
     @Id
@@ -28,6 +31,7 @@ public class Parking {
 
     private String description;
 
+    @Size(min = 3)
     private String name;
 
     private Integer parkingSpaceNumber;

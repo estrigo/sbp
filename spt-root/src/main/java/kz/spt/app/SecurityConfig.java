@@ -47,7 +47,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers("/admin/**", "/user/delete/**").hasRole("ADMIN")
-                .antMatchers("/pdf-generator", "/search/**", "/customer/**", "/user/edit/**", "/user/list", "/contract/**", "/cars/**").hasAnyRole( "ADMIN", "USER", "MANAGER", "OWNER");
+                .antMatchers("/pdf-generator", "/search/**", "/customer/**", "/user/edit/**", "/user/list",
+                        "/contract/**", "/cars/**", "/parking/**").hasAnyRole( "ADMIN", "USER", "MANAGER", "OWNER");
 
         List<PluginWrapper> plugins = pluginManager.getPlugins();
 
@@ -67,7 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin().loginPage("/login").permitAll()
                 .and()
-                .logout().logoutSuccessUrl("/").permitAll()
+                .logout().logoutSuccessUrl("/login").permitAll()
                 .and()
                 .exceptionHandling().accessDeniedPage("/403");
 
