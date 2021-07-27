@@ -13,7 +13,6 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Audited
 @Table(name = "controller")
 public class Controller {
 
@@ -25,7 +24,7 @@ public class Controller {
 
     private String ip;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gate")
     private Gate gate;
 }

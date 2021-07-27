@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -22,7 +23,7 @@ public class EventLogServiceImpl implements EventLogService {
         eventLog.setObjectId(objectId);
         eventLog.setDescription(description);
         eventLog.setCreated(new Date());
-        eventLog.setProperties(properties);
+        eventLog.setProperties(properties != null ? properties : new HashMap<>());
         eventLogRepository.save(eventLog);
     }
 }

@@ -19,17 +19,5 @@ public class GateController {
     public GateController(ParkingService parkingService){
         this.parkingService = parkingService;
     }
-
-    @GetMapping("/list/parking/{parkingId}")
-    public String showAllParking(Model model, @PathVariable Long parkingId) {
-        Parking parking = parkingService.findById(parkingId);
-        if(parking != null){
-            model.addAttribute("parking", parking);
-            return "gate/list";
-        } else {
-            model.addAttribute("error", "global.notFound");
-            return "404";
-        }
-    }
 }
 

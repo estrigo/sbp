@@ -22,6 +22,7 @@
               <th><a th:text="#{parking.parkingSpaceNumber}"></a></th>
               <th><a th:text="#{parking.gateSize}"></a></th>
               <th></th>
+              <th></th>
             </tr>
             </thead>
             <tbody>
@@ -31,8 +32,9 @@
               <td th:text="${parking.description}"></td>
               <td th:text="${parking.parkingType}"></td>
               <td th:text="${parking.parkingSpaceNumber}"></td>
+              <td th:text="${parking.gateList.size()}"></td>
               <td>
-                <a th:href="@{|/gate/list/parking/${parking.id}|}" th:text="${parking.gateList.size()}"></a>
+                <a th:href="@{|/parking/details/${parking.id}|}" th:text="#{parking.detail}"></a>
               </td>
               <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
               <td><a th:href="@{|/parking/edit/${parking.id}|}">Edit</a></td>

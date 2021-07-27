@@ -57,4 +57,16 @@ public class ParkingController {
             return "redirect:/parking/list";
         }
     }
+
+    @GetMapping("/details/{parkingId}")
+    public String showAllParking(Model model, @PathVariable Long parkingId) {
+        Parking parking = parkingService.findById(parkingId);
+        if(parking != null){
+            model.addAttribute("parking", parking);
+            return "parking/details";
+        } else {
+            model.addAttribute("error", "global.notFound");
+            return "404";
+        }
+    }
 }

@@ -26,7 +26,7 @@ public class Barrier {
     @Column(unique=true)
     private String ip;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gate")
     private Gate gate;
 }

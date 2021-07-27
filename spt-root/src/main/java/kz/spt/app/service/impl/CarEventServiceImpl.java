@@ -57,7 +57,7 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("lp_rect", eventDto.lp_rect);
             properties.put("ip", eventDto.ip_address);
 
-            eventLogService.createEventLog(String.valueOf(Camera.class), camera.getId(), properties, "Зафиксирован новый номер авто " + eventDto.car_number + " от камеры с ip " + eventDto.ip_address);
+            eventLogService.createEventLog(Camera.class.getSimpleName(), camera.getId(), properties, "Зафиксирован новый номер авто " + eventDto.car_number + " от камеры с ip " + eventDto.ip_address);
             carsService.createCar(eventDto.car_number);
 
             if(Gate.GateType.IN.equals(camera.getGate().getGateType())){
@@ -75,13 +75,13 @@ public class CarEventServiceImpl implements CarEventService {
 
                             boolean whitelistCheckResult = result.get("whitelistCheckResult").booleanValue();
                             if(whitelistCheckResult){
-                                eventLogService.createEventLog(String.valueOf(Gate.class), camera.getGate().getId(), null,  "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
+                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), null,  "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
 
                                 Barrier barrier = camera.getGate().getBarrier();
                                 String ip = barrier.getIp();
                                 //TODO: open barrier
                             } else {
-                                eventLogService.createEventLog(String.valueOf(Gate.class), camera.getGate().getId(), null,  "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number);
+                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), null,  "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number);
                             }
                         }
                     } else {
@@ -91,14 +91,14 @@ public class CarEventServiceImpl implements CarEventService {
                     Barrier barrier = camera.getGate().getBarrier();
                     String ip = barrier.getIp();
 
-                    eventLogService.createEventLog(String.valueOf(Gate.class), camera.getGate().getId(), null, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), null, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number);
                 }
             } else if(Gate.GateType.OUT.equals(camera.getGate().getGateType())){
                 if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())){
                     Barrier barrier = camera.getGate().getBarrier();
                     String ip = barrier.getIp();
 
-                    eventLogService.createEventLog(String.valueOf(Gate.class), camera.getGate().getId(), null, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), null, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number);
                 } else {
                     //TODO: check payment plugin or open gate to leave
                 }

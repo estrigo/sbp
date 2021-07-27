@@ -35,7 +35,7 @@ public class Camera {
     @Column(name = "camera_type")
     private CameraType cameraType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gate")
     private Gate gate;
 }

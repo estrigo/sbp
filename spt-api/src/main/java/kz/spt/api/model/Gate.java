@@ -34,7 +34,7 @@ public class Gate {
     @Column(name = "gate_type")
     private GateType gateType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parking")
     private Parking parking;
 
@@ -44,6 +44,6 @@ public class Gate {
     @OneToOne(mappedBy = "gate")
     private Barrier barrier;
 
-    @OneToOne(mappedBy = "controller")
+    @OneToOne(mappedBy = "gate")
     private Controller controller;
 }
