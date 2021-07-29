@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{})">
+
+<div class="content">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4 col-lg-3 col-xs-12" th:each="camera, iterStat : ${cameras}">
+                <div class="card m-b-10">
+                    <div class="card-block">
+                        <span class="badge" th:class="${'IN'.equals(camera.gate.gateType.toString()) ? 'badge badge-primary' : 'badge badge-success'}" th:text="${camera.gate.gateType}"></span>
+                        <h5 class="mt-0 card-title" th:text="${camera.name}"></h5>
+                        <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
+                    </div>
+                    <img th:id="${'image' + camera.id}" class="img-fluid m-b-10" th:src="@{/assets/images/no_photo.jpeg}" alt="Card image cap">
+                    <div class="card-block">
+                    </div>
+                </div>
+                <textarea class="m-b-10" style="width: 100%" rows="3" th:id="${'logs' + camera.id}"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/assets/js/sockjs-client-1.5.1/dist/sockjs.min.js}"></script>
+<script th:src="@{/assets/js/stomp.js}"></script>
+<script type="text/javascript">
+    function connect() {
+        var socket = new WebSocket('ws://localhost:8080/greeting');
+        ws = Stomp.over(socket);
+
+        ws.connect({}, function(frame) {
+            ws.subscribe("/topic", function(message) {
+                console.log(message);
+                const messageBody = JSON.parse(message.body);
+                showGreeting(messageBody);
+            });
+        }, function(error) {
+            console.log("STOMP error " + error);
+        });
+    }
+
+    function showGreeting(messageBody) {
+        if(messageBody.eventType == 'Photo'){
+            $("#image" + messageBody.id).attr("src", messageBody.message);
+        } else if(messageBody.eventType == 'CarEvent') {
+            $("#logs" + messageBody.id).append('[' + messageBody.plateNumber + ']' + messageBody.message + "\n");
+        } else {
+            console.log('Unknown event type ' + messageBody);
+        }
+    }
+
+    $(function() {
+        $("form").on('submit', function(e) {
+            e.preventDefault();
+        });
+        connect();
+    });
+</script>
+</html>

@@ -11,9 +11,11 @@ public class SptRevisionListener implements RevisionListener {
     public void newRevision(Object revisionEntity) {
         SptRevEntity sptRevEntity = (SptRevEntity) revisionEntity;
         if(SecurityContextHolder.getContext().getAuthentication()!=null && SecurityContextHolder.getContext().getAuthentication().getPrincipal()!=null){
-            CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            if(currentUser!=null){
-                sptRevEntity.setUsername(currentUser.getUsername());
+            if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+                CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                if(currentUser!=null){
+                    sptRevEntity.setUsername(currentUser.getUsername());
+                }
             }
         }
     }

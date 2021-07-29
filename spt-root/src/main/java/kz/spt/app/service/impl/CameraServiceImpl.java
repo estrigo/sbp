@@ -6,14 +6,24 @@ import kz.spt.app.service.CameraService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CameraServiceImpl implements CameraService {
 
-    @Autowired
     private CameraRepository cameraRepository;
+
+    public CameraServiceImpl(CameraRepository cameraRepository){
+        this.cameraRepository = cameraRepository;
+    }
 
     @Override
     public Camera findCameraByIp(String ip) {
         return cameraRepository.findCameraByIp(ip);
+    }
+
+    @Override
+    public List<Camera> cameraList() {
+        return cameraRepository.findAll();
     }
 }
