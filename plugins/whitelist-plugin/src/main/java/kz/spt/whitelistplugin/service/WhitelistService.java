@@ -11,5 +11,7 @@ public interface WhitelistService {
 
     Iterable<Whitelist> listAllWhitelist();
 
-    public Boolean hasAccess(String platenumber, Date enterDate);
+    Boolean hasAccess(String platenumber, Date enterDate);
+
+    Whitelist findById(Long id);
 }

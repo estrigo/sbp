@@ -18,6 +18,7 @@ import java.util.List;
 @Service
 public class WhitelistServiceImpl implements WhitelistService {
 
+    private final String dateformat = "yyyy-MM-dd'T'HH:mm";
     private CarsService carsService;
 
     @Autowired
@@ -29,7 +30,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         Cars car = getCarsService().findByPlatenumber(whitelist.getPlatenumber());
         whitelist.setCar(car);
 
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+        SimpleDateFormat format = new SimpleDateFormat(dateformat);
 
         if(Whitelist.Type.PERIOD.equals(whitelist.getType()) || Whitelist.Type.ONCE.equals(whitelist.getType()) || Whitelist.Type.MONTHLY.equals(whitelist.getType())){
             if(StringUtils.isNotNullOrEmpty(whitelist.getAccessStartString())){
@@ -65,6 +66,20 @@ public class WhitelistServiceImpl implements WhitelistService {
         }
 
         return false;
+    }
+
+    @Override
+    public Whitelist findById(Long id) {
+        SimpleDateFormat format = new SimpleDateFormat(dateformat);
+        Whitelist whitelist = whitelistRepository.getWithCar(id);
+        whitelist.setPlatenumber(whitelist.getCar().getPlatenumber());
+        if(Whitelist.Type.PERIOD.equals(whitelist.getType())){
+            if(whitelist.getAccess_start()!=null){
+                whitelist.setAccessStartString(format.format(whitelist.getAccess_start()));
+            }
+            whitelist.setAccessEndString(format.format(whitelist.getAccess_end()));
+        }
+        return whitelist;
     }
 
     private CarsService getCarsService(){

@@ -57,8 +57,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 CustomPlugin plugin = (CustomPlugin) pluginWrapper.getPlugin();
 
                 if (plugin.hasTemplates()) {
-                    http.authorizeRequests().antMatchers("/" + plugin.getMenuUrl()).hasRole(plugin.getRole());
-                    http.authorizeRequests().antMatchers("/" + plugin.getMenuUrl() + "/**").hasRole(plugin.getRole());
+                    http.authorizeRequests().antMatchers("/" + plugin.getTemplateUrl()).hasRole(plugin.getRole());
+                    http.authorizeRequests().antMatchers("/" + plugin.getTemplateUrl() + "/**").hasRole(plugin.getRole());
                 }
             }
         }

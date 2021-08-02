@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -43,6 +44,23 @@ public class WhitelistController {
                 System.out.println(objectError.getObjectName() + " " + objectError.getCode() + " " + objectError.getDefaultMessage());
             }
             return "whitelist/add";
+        } else {
+            whitelistService.saveWhitelist(whitelist, currentUser);
+            return "redirect:/whitelist/list";
+        }
+    }
+
+    @GetMapping("/edit/{id}")
+    public String showFormEditWhiteList(Model model, @PathVariable Long id) {
+        model.addAttribute("whitelist", whitelistService.findById(id));
+        return "whitelist/edit";
+    }
+
+    @PostMapping("/edit/{id}")
+    public String processRequestEditWhitelist(@PathVariable Long id, @Valid Whitelist whitelist,
+                                        BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        if (bindingResult.hasErrors()) {
+            return "redirect:/whitelist/edit/" + id;
         } else {
             whitelistService.saveWhitelist(whitelist, currentUser);
             return "redirect:/whitelist/list";

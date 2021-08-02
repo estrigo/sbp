@@ -22,5 +22,4 @@ public class SptRevEntity extends DefaultRevisionEntity {
 
     private String username;
 
-
 }

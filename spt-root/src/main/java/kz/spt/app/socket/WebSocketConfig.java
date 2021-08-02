@@ -13,8 +13,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/greeting")
-                .addInterceptors(new HttpHandshakeInterceptor())
-                .setAllowedOrigins("localhost:8080");
+                .addInterceptors(new HttpHandshakeInterceptor());
     }
 
     @Override
