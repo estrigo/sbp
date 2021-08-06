@@ -1,4 +1,4 @@
-FROM anapsix/alpine-java:8_jdk
+FROM openjdk:11
 LABEL maintainer="kairzhan79@gmail.com"
 
 WORKDIR /usr/local/
