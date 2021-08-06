@@ -48,7 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/admin/**", "/user/delete/**").hasRole("ADMIN")
                 .antMatchers("/pdf-generator", "/search/**", "/customer/**", "/user/edit/**", "/user/list",
-                        "/contract/**", "/cars/**", "/parking/**", "/arm/**").hasAnyRole( "ADMIN", "USER", "MANAGER", "OWNER");
+                        "/contract/**", "/cars/**", "/parking/**", "/arm/**", "/events/**").hasAnyRole( "ADMIN", "USER", "MANAGER", "OWNER");
 
         List<PluginWrapper> plugins = pluginManager.getPlugins();
 

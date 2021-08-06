@@ -52,16 +52,17 @@ public class CarEventServiceImpl implements CarEventService {
         SimpleDateFormat format = new SimpleDateFormat(dateFotmat);
         Camera camera = cameraService.findCameraByIp(eventDto.ip_address);
 
+        Map<String, Object> eventProperties = new HashMap<>();
+        eventProperties.put("carNumber", eventDto.car_number);
+        eventProperties.put("eventTime", format.format(eventDto.event_time));
+        eventProperties.put("lp_rect", eventDto.lp_rect);
+        eventProperties.put("ip", eventDto.ip_address);
+
         if(camera!=null){
             eventDto.car_number = eventDto.car_number.toUpperCase();
 
-            Map<String, Object> eventProperties = new HashMap<>();
-            eventProperties.put("carNumber", eventDto.car_number);
-            eventProperties.put("eventTime", format.format(eventDto.event_time));
-            eventProperties.put("lp_rect", eventDto.lp_rect);
-            eventProperties.put("ip", eventDto.ip_address);
-
             Map<String, Object> gateProperties = new HashMap<>();
+            gateProperties.put("carNumber", eventDto.car_number);
             gateProperties.put("name", camera.getGate().getName());
             gateProperties.put("description", camera.getGate().getDescription());
             gateProperties.put("gate_type", camera.getGate().getGateType().toString());
@@ -72,7 +73,7 @@ public class CarEventServiceImpl implements CarEventService {
                 handleCarOutEvent(eventDto, camera, gateProperties);
             }
         } else {
-            eventLogService.createEventLog(null, null, null, "Зафиксирован новый номер авто " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address);
+            eventLogService.createEventLog(null, null, eventProperties, "Зафиксирован новый номер авто " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address);
         }
     }
 
@@ -123,7 +124,7 @@ public class CarEventServiceImpl implements CarEventService {
                 }
             }
         } else {
-            eventLogService.createEventLog("Whitelist", null, null, "Плагин белого листа не найден или не запущен");
+            eventLogService.createEventLog("Whitelist", null, gateProperties, "Плагин белого листа не найден или не запущен");
         }
     }
 

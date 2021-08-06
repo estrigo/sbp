@@ -18,8 +18,11 @@ import javax.validation.Valid;
 @RequestMapping("/cars")
 public class CarsController {
 
-    @Autowired
     private CarsService carsService;
+
+    public CarsController(CarsService carsService){
+        this.carsService = carsService;
+    }
 
     /**
      * /cars/list
