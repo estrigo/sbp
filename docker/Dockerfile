@@ -6,4 +6,4 @@ COPY spt-root-0.0.1-SNAPSHOT-standalone.jar /usr/local/
 COPY test.properties /usr/local/
 CMD java -jar -Dspring.config.location=/usr/local/test.properties spt-root-0.0.1-SNAPSHOT-standalone.jar
 
-EXPOSE 8888
+EXPOSE 8080
