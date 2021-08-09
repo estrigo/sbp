@@ -15,10 +15,10 @@
     <packaging>jar</packaging>
 
     <properties>
-        <plugin.id>crm.plugins.test-plugin</plugin.id>
-        <plugin.class>crm.testPlugin</plugin.class>
+        <plugin.id>test-plugin</plugin.id>
+        <plugin.class>kz.spt.testplugin.TestPlugin</plugin.class>
         <plugin.version>0.0.1-SNAPSHOT</plugin.version>
-        <plugin.provider>crm-sbp-test</plugin.provider>
+        <plugin.provider>spt-sbp-test</plugin.provider>
         <plugin.dependencies />
     </properties>
 

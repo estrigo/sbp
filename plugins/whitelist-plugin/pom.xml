@@ -16,10 +16,10 @@
     <description>Demo project for Spring Boot</description>
     <properties>
         <java.version>11</java.version>
-        <plugin.id>crm.plugins.whitelist-plugin</plugin.id>
+        <plugin.id>whitelist-plugin</plugin.id>
         <plugin.class>kz.spt.whitelistplugin.WhitelistPlugin</plugin.class>
         <plugin.version>0.0.1-SNAPSHOT</plugin.version>
-        <plugin.provider>crm-sbp-test</plugin.provider>
+        <plugin.provider>spt-sbp-whitelist</plugin.provider>
         <plugin.dependencies />
     </properties>
 
