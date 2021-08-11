@@ -1,0 +1,38 @@
+spring:
+  mvc:
+    static-path-pattern: /**
+  resources:
+    add-mappings: true
+    cache:
+      period: 3600
+  sbp:
+    #    runtime-mode: development
+    runtime-mode: deployment
+    plugins-root: plugins
+    enabled: true
+    auto-start-plugin: true
+    #   classes-directories:
+    #     - "target/classes"
+    controller:
+      base-path: "/sbp/admin"
+  datasource:
+    url: jdbc:mysql://10.66.5.6:3307/parking?allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL55Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL55Dialect
+  thymeleaf:
+    mode: HTML
+    cache: false
+  flyway:
+    enabled: false
+org:
+  hibernate:
+    envers:
+      audit_table_suffix=_audit
+      default_schema=crm
