@@ -54,4 +54,9 @@ public class EventLogServiceImpl implements EventLogService {
     public Iterable<EventLog> listAllLogs() {
         return eventLogRepository.listAllEvents();
     }
+
+    @Override
+    public EventLog getById(Long id) {
+        return eventLogRepository.getOne(id);
+    }
 }

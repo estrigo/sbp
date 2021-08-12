@@ -986,6 +986,10 @@ code, pre {
   height: 88px;
   width: 88px; }
 
+.thumb-custom {
+  height: 64px;
+  width: 100px; }
+
 /* ===========
    Waves Effect
  =============*/

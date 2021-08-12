@@ -16,4 +16,6 @@ public interface EventLogService {
     void sendSocketMessage(ArmEventType eventType, Long gateId, String plateNumber, String message);
 
     Iterable<EventLog> listAllLogs();
+
+    EventLog getById(Long id);
 }

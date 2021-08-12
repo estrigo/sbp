@@ -26,12 +26,4 @@ public class CarsRestController {
     public void addCarEvent(@Valid @RequestBody CarEventDto carEventDto) throws Exception{
         carEventService.saveCarEvent(carEventDto);
     }
-
-    @GetMapping(value = "/test", produces = "application/json;charset=UTF-8")
-    @ResponseBody
-    public String test() throws ParseException {
-
-        SimpleDateFormat f = new SimpleDateFormat("dd:MM:yyyy hh:mm:ssZ");
-        return f.format(new Date());
-    }
 }

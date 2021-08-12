@@ -12,6 +12,10 @@
                 <div class="card-box table-responsive">
                     <h4 class="m-t-0 header-title"><b>Events</b></h4>
 
+                    <div class="row">
+
+                    </div>
+
                     <table id="datatable-buttons" class="table table-bordered">
                         <thead>
                         <tr>
@@ -28,7 +32,13 @@
                             <td><span th:if="${event.properties != null}" th:text="${event.properties['carNumber']}"></span></td>
                             <td th:text="${event.created}"></td>
                             <td th:text="${event.description}"></td>
-                            <td></td>
+                            <td>
+                                <div class="thumb-custom" th:if="${event.properties != null && event.properties['carImageUrl'] != null}">
+                                    <a href="#">
+                                        <img class="thumb-img" alt th:src="@{${'/rest/image/value/' + event.id}}">
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
                         </tbody>
                     </table>

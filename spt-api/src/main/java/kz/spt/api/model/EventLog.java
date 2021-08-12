@@ -34,6 +34,7 @@ public class EventLog {
 
     private String description;
 
+    @Column(name = "properties", columnDefinition = "text")
     @Convert(converter = HashMapConverter.class)
     private Map<String, Object> properties;
 
