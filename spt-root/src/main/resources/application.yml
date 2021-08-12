@@ -6,13 +6,13 @@ spring:
     cache:
       period: 3600
   sbp:
-#    runtime-mode: development
-    runtime-mode: deployment
+    runtime-mode: development
+#    runtime-mode: deployment
     plugins-root: plugins
     enabled: true
     auto-start-plugin: true
- #   classes-directories:
- #     - "target/classes"
+    classes-directories:
+      - "target/classes"
     controller:
       base-path: "/sbp/admin"
   datasource:
@@ -32,13 +32,12 @@ spring:
   flyway:
     enabled: false
 
-#management:
-#  server:
-#    servlet:
-#      context-path: /appinfo
-
 org:
   hibernate:
     envers:
       audit_table_suffix=_audit
       default_schema=crm
+
+images:
+  file:
+    path: "/Users/zhmaksat/Documents/Zoom"
