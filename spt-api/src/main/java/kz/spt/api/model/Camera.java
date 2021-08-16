@@ -20,7 +20,9 @@ public class Camera {
 
     public enum CameraType {
         FRONT,
-        BACK
+        BACK;
+
+        public static final Camera.CameraType[] ALL = {FRONT};
     }
 
     @Id

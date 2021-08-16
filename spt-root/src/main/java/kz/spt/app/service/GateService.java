@@ -5,4 +5,6 @@ import kz.spt.api.model.Gate;
 public interface GateService {
 
     Iterable<Gate> listAllGates();
+
+    Gate getById(Long id);
 }

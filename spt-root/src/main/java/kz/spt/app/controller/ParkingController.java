@@ -1,8 +1,11 @@
 package kz.spt.app.controller;
 
+import kz.spt.api.model.Camera;
+import kz.spt.api.model.Gate;
 import kz.spt.api.model.Parking;
+import kz.spt.app.service.CameraService;
+import kz.spt.app.service.GateService;
 import kz.spt.app.service.ParkingService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,8 +20,15 @@ import javax.validation.Valid;
 @RequestMapping("/parking")
 public class ParkingController {
 
-    @Autowired
     private ParkingService parkingService;
+    private CameraService cameraService;
+    private GateService gateService;
+
+    public ParkingController(ParkingService parkingService, CameraService cameraService, GateService gateService){
+        this.parkingService = parkingService;
+        this.cameraService = cameraService;
+        this.gateService = gateService;
+    }
 
     @GetMapping("/list")
     public String showAllParking(Model model) {
@@ -68,5 +78,30 @@ public class ParkingController {
             model.addAttribute("error", "global.notFound");
             return "404";
         }
+    }
+
+    @GetMapping("/camera/{cameraId}")
+    public String getEditingCameraId(Model model, @PathVariable Long cameraId) {
+        model.addAttribute("camera", cameraService.getCameraById(cameraId));
+        return "parking/camera/edit";
+    }
+
+    @PostMapping("/camera/{gateId}")
+    public String categoryEdit(@PathVariable Long gateId, @Valid Camera camera, BindingResult bindingResult){
+
+        if (!bindingResult.hasErrors()) {
+            Gate gate = gateService.getById(gateId);
+            camera.setGate(gate);
+            cameraService.saveCamera(camera);
+        }
+        return "redirect:/parking/details/" + camera.getGate().getParking().getId();
+    }
+
+    @GetMapping("/{gateId}/new/camera")
+    public String getEditingCameraId(@PathVariable Long gateId, Model model) {
+        Camera camera = new Camera();
+        camera.setGate(gateService.getById(gateId));
+        model.addAttribute("camera", camera);
+        return "parking/camera/edit";
     }
 }

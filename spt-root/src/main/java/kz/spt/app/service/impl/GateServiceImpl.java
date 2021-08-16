@@ -18,4 +18,9 @@ public class GateServiceImpl implements GateService {
     public Iterable<Gate> listAllGates() {
         return gateRepository.findAll();
     }
+
+    @Override
+    public Gate getById(Long id) {
+        return gateRepository.getOne(id);
+    }
 }

@@ -8,7 +8,6 @@
 <div class="content">
     <div class="container">
         <div class="row">
-
             <div class="col-12 m-b-20">
                 <div class="card-box">
                     <h4 class="text-dark  header-title m-t-0" th:text="${parking.name}"></h4>
@@ -25,10 +24,10 @@
 
                     <ul class="nav nav-tabs">
                         <li class="nav-item">
-                            <a th:href="@{'#cameras'+ ${iterStat.count}}" data-toggle="tab" aria-expanded="false" class="nav-link" th:text="#{parking.cameras}"></a>
+                            <a th:href="@{'#cameras'+ ${iterStat.count}}" data-toggle="tab" aria-expanded="true" class="nav-link" th:text="#{parking.cameras}"></a>
                         </li>
                         <li class="nav-item">
-                            <a th:href="@{'#barrier'+ ${iterStat.count}}" data-toggle="tab" aria-expanded="true" class="nav-link active" th:text="#{parking.barriers}"></a>
+                            <a th:href="@{'#barrier'+ ${iterStat.count}}" data-toggle="tab" aria-expanded="false" class="nav-link active" th:text="#{parking.barriers}"></a>
                         </li>
                         <li class="nav-item">
                             <a th:href="@{'#controller'+ ${iterStat.count}}" data-toggle="tab" aria-expanded="false" class="nav-link" th:text="#{parking.controller}"></a>
@@ -37,10 +36,20 @@
                     <div class="tab-content">
                         <div class="tab-pane fade" th:id="${'cameras' + iterStat.count}">
                             <div class="col-4" th:each="camera : ${gate.cameraList}">
-                                <h4 class="header-title m-t-0 m-b-0" th:text="${camera.name}"></h4>
+                                <a href="#" data-toggle="modal" data-target="#camera-close-modal" th:cameraId="${camera.id}" th:onclick="editModalContent(this.getAttribute('cameraId'), null)">
+                                    <h4 class="header-title m-t-0 m-b-0"><span th:text="${camera.name}"></span> <i class="ion-edit"></i></h4>
+                                </a>
                                 <p class="text-muted m-b-0" th:text="${camera.cameraType + ' ' + camera.ip}"></p>
                                 <p class="text-muted m-b-0" th:text="${gate.description}"></p>
                             </div>
+                            <p sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')">
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <button data-toggle="modal" data-target="#camera-close-modal"  th:gateId="${gate.id}" class="btn btn-danger waves-effect waves-light"
+                                            th:text="#{camera.addNew}" th:onclick="editModalContent(null, this.getAttribute('gateId'))"></button>
+                                </div>
+                            </div>
+                            </p>
                         </div>
                         <div class="tab-pane fade show active" th:id="${'barrier' + iterStat.count}">
                             <div class="col-12" >
@@ -60,8 +69,34 @@
             </div>
         </div>
     </div>
+    <div id="camera-close-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body" id="cameraModalBody">
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+<script type="text/javascript">
+    function editModalContent(cameraId, gateId){
+        console.log(cameraId);
+        if(cameraId){
+            $.get("/parking/camera/" + cameraId, function (data) {
+                console.log(data);
+                $('#camera-close-modal').find('#cameraModalBody').html(data);
+            });
+        } else if(gateId) {
+            $.get("/parking/" + gateId + "/new/camera/", function (data) {
+                $('#camera-close-modal').find('.modal-body').html(data);
+            });
+        }
+    }
+</script>
 
 </html>

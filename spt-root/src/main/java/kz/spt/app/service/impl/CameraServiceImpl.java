@@ -26,4 +26,14 @@ public class CameraServiceImpl implements CameraService {
     public List<Camera> cameraList() {
         return cameraRepository.findAll();
     }
+
+    @Override
+    public Camera getCameraById(Long id) {
+        return cameraRepository.getOne(id);
+    }
+
+    @Override
+    public void saveCamera(Camera camera) {
+        cameraRepository.save(camera);
+    }
 }

@@ -1,0 +1,41 @@
+<form th:action="@{|/parking/camera/${camera.gate.id}|}" th:object="${camera}" method="post">
+    <input type="hidden" th:field="*{id}" th:value="*{id}">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="ipAddress" class="control-label" th:text="#{camera.ipAddress}"></label>
+                <input type="text" class="form-control" th:field="*{ip}" th:value="*{ip}" id="ipAddress" placeholder="1.1.1.1">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="name" class="control-label" th:text="#{camera.name}"></label>
+                <input type="text" class="form-control" id="name" th:field="*{name}" th:value="*{name}" placeholder="Camera IN from Tole bi">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="description" class="control-label" th:text="#{camera.description}"></label>
+                <input type="text" class="form-control" id="description" th:field="*{description}" th:value="*{description}" placeholder="Description">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="type" class="control-label" th:text="#{camera.type}"></label>
+                <select th:field="*{cameraType}" th:value="*{cameraType}" class="form-control" id="type">
+                    <option th:each="cameraType : ${T(kz.spt.api.model.Camera.CameraType).ALL}"
+                            th:value="${cameraType}" th:text="${cameraType}">
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary waves-effect" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-info waves-effect waves-light">Save changes</button>
+    </div>
+</form>
