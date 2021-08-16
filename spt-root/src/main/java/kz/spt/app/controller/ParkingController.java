@@ -1,8 +1,10 @@
 package kz.spt.app.controller;
 
+import kz.spt.api.model.Barrier;
 import kz.spt.api.model.Camera;
 import kz.spt.api.model.Gate;
 import kz.spt.api.model.Parking;
+import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
 import kz.spt.app.service.GateService;
 import kz.spt.app.service.ParkingService;
@@ -23,11 +25,13 @@ public class ParkingController {
     private ParkingService parkingService;
     private CameraService cameraService;
     private GateService gateService;
+    private BarrierService barrierService;
 
-    public ParkingController(ParkingService parkingService, CameraService cameraService, GateService gateService){
+    public ParkingController(ParkingService parkingService, CameraService cameraService, GateService gateService, BarrierService barrierService){
         this.parkingService = parkingService;
         this.cameraService = cameraService;
         this.gateService = gateService;
+        this.barrierService = barrierService;
     }
 
     @GetMapping("/list")
@@ -87,7 +91,7 @@ public class ParkingController {
     }
 
     @PostMapping("/camera/{gateId}")
-    public String categoryEdit(@PathVariable Long gateId, @Valid Camera camera, BindingResult bindingResult){
+    public String cameraEdit(@PathVariable Long gateId, @Valid Camera camera, BindingResult bindingResult){
 
         if (!bindingResult.hasErrors()) {
             Gate gate = gateService.getById(gateId);
@@ -103,5 +107,30 @@ public class ParkingController {
         camera.setGate(gateService.getById(gateId));
         model.addAttribute("camera", camera);
         return "parking/camera/edit";
+    }
+
+    @GetMapping("/barrier/{barrierId}")
+    public String getEditingBarrierId(Model model, @PathVariable Long barrierId) {
+        model.addAttribute("barrier", barrierService.getBarrierById(barrierId));
+        return "parking/barrier/edit";
+    }
+
+    @PostMapping("/barrier/{gateId}")
+    public String barrierEdit(@PathVariable Long gateId, @Valid Barrier barrier, BindingResult bindingResult){
+
+        if (!bindingResult.hasErrors()) {
+            Gate gate = gateService.getById(gateId);
+            barrier.setGate(gate);
+            barrierService.saveBarrier(barrier);
+        }
+        return "redirect:/parking/details/" + barrier.getGate().getParking().getId();
+    }
+
+    @GetMapping("/{gateId}/new/barrier")
+    public String getEditingBarrierId(@PathVariable Long gateId, Model model) {
+        Barrier barrier = new Barrier();
+        barrier.setGate(gateService.getById(gateId));
+        model.addAttribute("barrier", barrier);
+        return "parking/barrier/edit";
     }
 }

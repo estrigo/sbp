@@ -1,0 +1,29 @@
+<form th:action="@{|/parking/barrier/${barrier.gate.id}|}" th:object="${barrier}" method="post">
+    <input type="hidden" th:field="*{id}" th:value="*{id}">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="ipAddress" class="control-label" th:text="#{barrier.ipAddress}"></label>
+                <input type="text" class="form-control" th:field="*{ip}" th:value="*{ip}" id="ipAddress" placeholder="1.1.1.1">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="name" class="control-label" th:text="#{barrier.name}"></label>
+                <input type="text" class="form-control" id="name" th:field="*{name}" th:value="*{name}" placeholder="barrier IN from Tole bi">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="description" class="control-label" th:text="#{barrier.description}"></label>
+                <input type="text" class="form-control" id="description" th:field="*{description}" th:value="*{description}" placeholder="Description">
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary waves-effect" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-info waves-effect waves-light">Save changes</button>
+    </div>
+</form>
