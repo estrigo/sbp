@@ -36,6 +36,14 @@ public class Barrier {
     @Column(unique=true)
     private String ip;
 
+    private String password;
+
+    @Column(name = "open_oid")
+    private String openOid;
+
+    @Column(name = "close_oid")
+    private String closeOid;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "barrier_type")
     private Barrier.BarrierType barrierType;

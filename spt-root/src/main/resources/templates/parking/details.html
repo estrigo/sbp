@@ -59,6 +59,7 @@
                                 </a>
                                 <p class="text-muted m-b-0" th:text="${gate.barrier?.ip}"></p>
                                 <p class="text-muted m-b-0" th:text="${gate.barrier?.description}"></p>
+
                             </div>
                             <p sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')">
                             <div class="form-group row" th:if="${gate.barrier == null}">

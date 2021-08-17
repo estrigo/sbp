@@ -23,7 +23,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="form-group">
                 <label for="type" class="control-label" th:text="#{barrier.type}"></label>
                 <select th:field="*{barrierType}" th:value="*{barrierType}" class="form-control" id="type">
@@ -31,6 +31,26 @@
                             th:value="${barrierType}" th:text="${barrierType}">
                     </option>
                 </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="password" class="control-label" th:text="#{barrier.password}"></label>
+                <input type="text" class="form-control" id="password" th:field="*{password}" th:value="*{password}">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="openOid" class="control-label" th:text="#{barrier.openOid}"></label>
+                <input type="text" class="form-control" id="openOid" th:field="*{openOid}" th:value="*{openOid}">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="closeOid" class="control-label" th:text="#{barrier.closeOid}"></label>
+                <input type="text" class="form-control" id="closeOid" th:field="*{closeOid}" th:value="*{closeOid}">
             </div>
         </div>
     </div>
