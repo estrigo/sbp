@@ -7,4 +7,6 @@ public interface GateService {
     Iterable<Gate> listAllGates();
 
     Gate getById(Long id);
+
+    void saveGate(Gate gate);
 }

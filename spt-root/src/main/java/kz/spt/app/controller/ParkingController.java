@@ -133,4 +133,29 @@ public class ParkingController {
         model.addAttribute("barrier", barrier);
         return "parking/barrier/edit";
     }
+    
+    @GetMapping("/gate/{gateId}")
+    public String getEditingGateId(Model model, @PathVariable Long gateId) {
+        model.addAttribute("gate", gateService.getById(gateId));
+        return "parking/gate/edit";
+    }
+
+    @PostMapping("/gate/{parkingId}")
+    public String gateEdit(@PathVariable Long parkingId, @Valid Gate gate, BindingResult bindingResult){
+
+        if (!bindingResult.hasErrors()) {
+            Parking parking = parkingService.findById(parkingId);
+            gate.setParking(parking);
+            gateService.saveGate(gate);
+        }
+        return "redirect:/parking/details/" + gate.getParking().getId();
+    }
+
+    @GetMapping("/{parkingId}/new/gate")
+    public String getEditinggateId(@PathVariable Long parkingId, Model model) {
+        Gate gate = new Gate();
+        gate.setParking(parkingService.findById(parkingId));
+        model.addAttribute("gate", gate);
+        return "parking/gate/edit";
+    }
 }

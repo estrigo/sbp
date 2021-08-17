@@ -23,4 +23,9 @@ public class GateServiceImpl implements GateService {
     public Gate getById(Long id) {
         return gateRepository.getOne(id);
     }
+
+    @Override
+    public void saveGate(Gate gate) {
+        gateRepository.save(gate);
+    }
 }

@@ -18,6 +18,13 @@ import java.util.Date;
 @Table(name = "barrier")
 public class Barrier {
 
+    public enum BarrierType {
+        MODBUS,
+        SNMP;
+
+        public static final Barrier.BarrierType[] ALL = {MODBUS, SNMP};
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,6 +35,10 @@ public class Barrier {
 
     @Column(unique=true)
     private String ip;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "barrier_type")
+    private Barrier.BarrierType barrierType;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gate")

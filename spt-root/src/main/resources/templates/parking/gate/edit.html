@@ -1,0 +1,33 @@
+<form th:action="@{|/parking/gate/${gate.parking.id}|}" th:object="${gate}" method="post">
+    <input type="hidden" th:field="*{id}" th:value="*{id}">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="name" class="control-label" th:text="#{gate.name}"></label>
+                <input type="text" class="form-control" id="name" th:field="*{name}" th:value="*{name}" placeholder="Gate IN">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="type" class="control-label" th:text="#{gate.type}"></label>
+                <select th:field="*{gateType}" th:value="*{gateType}" class="form-control" id="type">
+                    <option th:each="gateType : ${T(kz.spt.api.model.Gate.GateType).ALL}"
+                            th:value="${gateType}" th:text="${gateType}">
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="description" class="control-label" th:text="#{gate.description}"></label>
+                <input type="text" class="form-control" id="description" th:field="*{description}" th:value="*{description}" placeholder="Description">
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary waves-effect" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-info waves-effect waves-light">Save changes</button>
+    </div>
+</form>
