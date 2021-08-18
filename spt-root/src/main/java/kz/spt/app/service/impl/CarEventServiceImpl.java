@@ -12,6 +12,7 @@ import kz.spt.api.service.CarStateService;
 import kz.spt.api.service.EventLogService;
 import kz.spt.api.service.EventLogService.ArmEventType;
 import kz.spt.app.entity.dto.CarEventDto;
+import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
 import kz.spt.app.service.CarEventService;
 import kz.spt.api.service.CarsService;
@@ -36,16 +37,19 @@ public class CarEventServiceImpl implements CarEventService {
     private PluginManager pluginManager;
     private CarStateService carStateService;
     private CarImageService carImageService;
+    private BarrierService barrierService;
     private final String dateFotmat = "yyyy-MM-dd'T'HH:mm";
 
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
-                               PluginManager pluginManager, CarStateService carStateService, CarImageService carImageService){
+                               PluginManager pluginManager, CarStateService carStateService, CarImageService carImageService,
+                               BarrierService barrierService){
         this.carsService = carsService;
         this.cameraService = cameraService;
         this.eventLogService = eventLogService;
         this.pluginManager = pluginManager;
         this.carStateService = carStateService;
         this.carImageService = carImageService;
+        this.barrierService = barrierService;
     }
 
     @Override
@@ -118,8 +122,7 @@ public class CarEventServiceImpl implements CarEventService {
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
 
                     Barrier barrier = camera.getGate().getBarrier();
-                    String ip = barrier.getIp();
-                    //TODO: open barrier
+                    barrierService.openBarrier(barrier);
                     carStateService.createINState(eventDto.car_number, eventDto.event_time, camera);
                 } else {
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number);
