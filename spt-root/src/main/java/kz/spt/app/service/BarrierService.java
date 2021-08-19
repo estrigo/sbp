@@ -5,6 +5,7 @@ import kz.spt.api.model.Barrier;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Map;
 
 public interface BarrierService {
 
@@ -12,5 +13,5 @@ public interface BarrierService {
 
     void saveBarrier(Barrier barrier);
 
-    void openBarrier(Barrier barrier) throws IOException, ParseException;
+    Boolean openBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException;
 }

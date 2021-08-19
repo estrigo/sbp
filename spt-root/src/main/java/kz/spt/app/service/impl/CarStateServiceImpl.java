@@ -57,5 +57,4 @@ public class CarStateServiceImpl implements CarStateService {
     public CarState getLastNotLeft(String carNumber) {
         return carStateRepository.getCarStateNotLeft(carNumber);
     }
-
 }

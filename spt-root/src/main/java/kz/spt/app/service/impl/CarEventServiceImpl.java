@@ -23,6 +23,7 @@ import org.pf4j.PluginWrapper;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -31,14 +32,13 @@ import java.util.Map;
 @Service
 public class CarEventServiceImpl implements CarEventService {
 
-    private CarsService carsService;
-    private CameraService cameraService;
-    private EventLogService eventLogService;
-    private PluginManager pluginManager;
-    private CarStateService carStateService;
-    private CarImageService carImageService;
-    private BarrierService barrierService;
-    private final String dateFotmat = "yyyy-MM-dd'T'HH:mm";
+    private final CarsService carsService;
+    private final CameraService cameraService;
+    private final EventLogService eventLogService;
+    private final PluginManager pluginManager;
+    private final CarStateService carStateService;
+    private final CarImageService carImageService;
+    private final BarrierService barrierService;
 
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                PluginManager pluginManager, CarStateService carStateService, CarImageService carImageService,
@@ -55,7 +55,8 @@ public class CarEventServiceImpl implements CarEventService {
     @Override
     public void saveCarEvent(CarEventDto eventDto) throws Exception {
 
-        SimpleDateFormat format = new SimpleDateFormat(dateFotmat);
+        String dateFormat = "yyyy-MM-dd'T'HH:mm";
+        SimpleDateFormat format = new SimpleDateFormat(dateFormat);
         Camera camera = cameraService.findCameraByIp(eventDto.ip_address);
 
         Map<String, Object> properties = new HashMap<>();
@@ -89,7 +90,6 @@ public class CarEventServiceImpl implements CarEventService {
             eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
         } else {
             properties.put("carImageUrl", carImageUrl);
-
             eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
             eventLogService.createEventLog(Camera.class.getSimpleName(), camera.getId(), properties, "Зафиксирован новый номер авто " + eventDto.car_number);
 
@@ -98,7 +98,12 @@ public class CarEventServiceImpl implements CarEventService {
             if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())){
                 checkWhiteList(whitelistPlugin, eventDto, camera, properties, format);
             } else {
-                openGateBarrier(eventDto, camera, properties);
+                Boolean barrierResult = openGateBarrier(eventDto, camera, properties);
+                if(barrierResult){
+                    carStateService.createINState(eventDto.car_number, eventDto.event_time, camera);
+                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number);
+                }
             }
         }
     }
@@ -118,12 +123,12 @@ public class CarEventServiceImpl implements CarEventService {
                 boolean whitelistCheckResult = result.get("whitelistCheckResult").booleanValue();
 
                 if(whitelistCheckResult){
-                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
-
-                    Barrier barrier = camera.getGate().getBarrier();
-                    barrierService.openBarrier(barrier);
-                    carStateService.createINState(eventDto.car_number, eventDto.event_time, camera);
+                    Boolean barrierResult = openGateBarrier(eventDto, camera, properties);
+                    if(barrierResult){
+                        carStateService.createINState(eventDto.car_number, eventDto.event_time, camera);
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
+                    }
                 } else {
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number);
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number);
@@ -134,27 +139,23 @@ public class CarEventServiceImpl implements CarEventService {
         }
     }
 
-    private void openGateBarrier(CarEventDto eventDto, Camera camera, Map<String, Object> properties){
+    private Boolean openGateBarrier(CarEventDto eventDto, Camera camera, Map<String, Object> properties) throws IOException, ParseException, InterruptedException {
         Barrier barrier = camera.getGate().getBarrier();
-        String ip = barrier.getIp();
-
-        carStateService.createINState(eventDto.car_number, eventDto.event_time, camera);
-        eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number);
-        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number);
+        return barrierService.openBarrier(barrier, properties);
     }
 
-    private void handleCarOutEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, String carImageUrl) throws IOException {
+    private void handleCarOutEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, String carImageUrl) throws IOException, ParseException, InterruptedException {
 
         properties.put("carImageUrl", carImageUrl);
 
         if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())){
-            Barrier barrier = camera.getGate().getBarrier();
-            String ip = barrier.getIp();
-
             eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
-            carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, null, null, null);
-            eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number);
+            Boolean barrierResult = openGateBarrier(eventDto, camera, properties);
+            if(barrierResult){
+                carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, null, null, null);
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number);
+            }
         } else {
             //TODO: check payment plugin or open gate to leave
             //carStateService.createOUTState();

@@ -33,10 +33,11 @@ public class Barrier {
 
     private String description;
 
-    @Column(unique=true)
     private String ip;
 
     private String password;
+
+    private Integer snmpVersion;
 
     @Column(name = "open_oid")
     private String openOid;

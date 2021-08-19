@@ -41,16 +41,30 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div class="form-group">
                 <label for="openOid" class="control-label" th:text="#{barrier.openOid}"></label>
                 <input type="text" class="form-control" id="openOid" th:field="*{openOid}" th:value="*{openOid}">
             </div>
         </div>
-        <div class="col-md-6">
+    </div>
+    <div class="row">
+        <div class="col-md-12">
             <div class="form-group">
                 <label for="closeOid" class="control-label" th:text="#{barrier.closeOid}"></label>
                 <input type="text" class="form-control" id="closeOid" th:field="*{closeOid}" th:value="*{closeOid}">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="snmpVersion" class="control-label" th:text="#{barrier.snmpVersion}"></label>
+                <select th:field="*{snmpVersion}" th:value="*{snmpVersion}" class="form-control" id="snmpVersion">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="3">3</option>
+                </select>
             </div>
         </div>
     </div>
