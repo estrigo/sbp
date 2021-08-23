@@ -153,9 +153,9 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number);
             }
         } else if(Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType())){
-            PluginWrapper tariffPlugin = pluginManager.getPlugin("tariff-plugin");
-            if(tariffPlugin!=null && tariffPlugin.getPluginState().equals(PluginState.STARTED)){
-                List<PluginRegister> pluginRegisters =  pluginManager.getExtensions(PluginRegister.class, tariffPlugin.getPluginId());
+            PluginWrapper ratePlugin = pluginManager.getPlugin("rate-plugin");
+            if(ratePlugin!=null && ratePlugin.getPluginState().equals(PluginState.STARTED)){
+                List<PluginRegister> pluginRegisters =  pluginManager.getExtensions(PluginRegister.class, ratePlugin.getPluginId());
                 if(pluginRegisters.size() > 0){
                     CarState carState = carStateService.getLastNotLeft(eventDto.car_number);
                     if(carState != null){
@@ -167,11 +167,11 @@ public class CarEventServiceImpl implements CarEventService {
                         PluginRegister pluginRegister = pluginRegisters.get(0);
                         JsonNode result = pluginRegister.execute(node);
 
-                        int tariffResult = result.get("tariffResult").intValue();
+                        int rateResult = result.get("rateResult").intValue();
 
                         //TODO: check payment plugin or open gate to leave
-                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + tariffResult + " тенге. Долг: 0 тенге. Проезд разрешен.");
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + tariffResult + " тенге. Долг: 0 тенге. Проезд разрешен.");
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + rateResult + " тенге. Долг: 0 тенге. Проезд разрешен.");
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + rateResult + " тенге. Долг: 0 тенге. Проезд разрешен.");
                         Boolean barrierResult = openGateBarrier(eventDto, camera, properties);
                         if(barrierResult){
                             carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, null, null, null);
@@ -183,7 +183,7 @@ public class CarEventServiceImpl implements CarEventService {
                     }
                 }
             } else {
-                eventLogService.createEventLog("Tariff", null, properties, "Плагин вычисления стоимости парковки не найден или не запущен. Авто с гос. номером" + eventDto.car_number);
+                eventLogService.createEventLog("Rate", null, properties, "Плагин вычисления стоимости парковки не найден или не запущен. Авто с гос. номером" + eventDto.car_number);
             }
         } else {
             throw new RuntimeException("Unknown parking type");

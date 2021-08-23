@@ -18,7 +18,7 @@
     <modules>
         <module>test-plugin</module>
         <module>whitelist-plugin</module>
-        <module>tariff-plugin</module>
+        <module>rate-plugin</module>
     </modules>
 
     <build>

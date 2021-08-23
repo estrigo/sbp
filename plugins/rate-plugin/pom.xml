@@ -10,17 +10,17 @@
     </parent>
 
     <groupId>kz.spt</groupId>
-    <artifactId>tariff-plugin</artifactId>
+    <artifactId>rate-plugin</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>whitelist-plugin</name>
+    <name>rate-plugin</name>
 
     <properties>
         <java.version>11</java.version>
-        <plugin.id>tariff-plugin</plugin.id>
-        <plugin.class>kz.spt.tariffplugin.TariffPlugin</plugin.class>
+        <plugin.id>rate-plugin</plugin.id>
+        <plugin.class>kz.spt.rateplugin.RatePlugin</plugin.class>
         <plugin.version>0.0.1-SNAPSHOT</plugin.version>
-        <plugin.provider>spt-sbp-tariff</plugin.provider>
+        <plugin.provider>spt-sbp-rate</plugin.provider>
         <plugin.dependencies />
     </properties>
 

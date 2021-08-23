@@ -1,22 +1,22 @@
-package kz.spt.tariffplugin;
+package kz.spt.rateplugin;
 
 import kz.spt.api.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 
-public class TariffPlugin extends SpringBootPlugin implements CustomPlugin {
+public class RatePlugin extends SpringBootPlugin implements CustomPlugin {
 
-    public static TariffPlugin INSTANCE;
+    public static RatePlugin INSTANCE;
 
-    public TariffPlugin(PluginWrapper wrapper) {
+    public RatePlugin(PluginWrapper wrapper) {
         super(wrapper);
         INSTANCE = this;
     }
 
     @Override
     protected SpringBootstrap createSpringBootstrap() {
-        return new SpringBootstrap(this, TariffPluginApplication.class);
+        return new SpringBootstrap(this, RatePluginApplication.class);
     }
 
     @Override
@@ -26,17 +26,17 @@ public class TariffPlugin extends SpringBootPlugin implements CustomPlugin {
 
     @Override
     public String getMenuLabel() {
-        return "Tariff list";
+        return "Rate list";
     }
 
     @Override
     public String getMenuUrl() {
-        return "tariff/list";
+        return "rate/list";
     }
 
     @Override
     public String getTemplateUrl() {
-        return "tariff";
+        return "rate";
     }
 
     @Override

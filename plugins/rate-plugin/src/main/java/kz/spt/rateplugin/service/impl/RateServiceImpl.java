@@ -1,6 +1,6 @@
-package kz.spt.tariffplugin.service.impl;
+package kz.spt.rateplugin.service.impl;
 
-import kz.spt.tariffplugin.service.TariffService;
+import kz.spt.rateplugin.service.RateService;
 import org.springframework.stereotype.Service;
 
 import java.time.Period;
@@ -8,7 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 @Service
-public class TariffServiceImpl implements TariffService {
+public class RateServiceImpl implements RateService {
 
     @Override
     public int calculatePayment(Long parkingId, Date inDate, Date outDate) {

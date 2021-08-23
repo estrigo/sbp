@@ -1,8 +1,8 @@
-package kz.spt.tariffplugin.service;
+package kz.spt.rateplugin.service;
 
 import java.util.Date;
 
-public interface TariffService {
+public interface RateService {
 
     int calculatePayment(Long parkingId, Date inDate, Date outDate);
 }
