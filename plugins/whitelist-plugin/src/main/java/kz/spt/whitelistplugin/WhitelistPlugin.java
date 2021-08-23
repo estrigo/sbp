@@ -1,19 +1,9 @@
 package kz.spt.whitelistplugin;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.api.plugin.CustomPlugin;
-import kz.spt.whitelistplugin.service.WhitelistService;
 import org.laxture.sbp.SpringBootPlugin;
-import org.laxture.sbp.spring.boot.SharedJtaSpringBootstrap;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 public class WhitelistPlugin extends SpringBootPlugin implements CustomPlugin {
 
@@ -23,9 +13,6 @@ public class WhitelistPlugin extends SpringBootPlugin implements CustomPlugin {
         super(wrapper);
         INSTANCE = this;
     }
-
-    @Autowired
-    private ApplicationContext applicationContext;
 
     @Override
     protected SpringBootstrap createSpringBootstrap() {

@@ -7,6 +7,7 @@ import kz.spt.app.repository.BarrierRepository;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.snmp.SNMPManager;
 import lombok.extern.java.Log;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -17,10 +18,12 @@ import java.util.Map;
 @Log
 public class BarrierServiceImpl implements BarrierService {
 
+    private Boolean disableOpen;
     private final BarrierRepository barrierRepository;
     private final EventLogService eventLogService;
 
-    public BarrierServiceImpl(BarrierRepository barrierRepository, EventLogService eventLogService){
+    public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, BarrierRepository barrierRepository, EventLogService eventLogService){
+        this.disableOpen = disableOpen;
         this.barrierRepository = barrierRepository;
         this.eventLogService = eventLogService;
     }
@@ -48,35 +51,37 @@ public class BarrierServiceImpl implements BarrierService {
     }
 
     private Boolean openSnmp(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException {
-        SNMPManager client = new SNMPManager("udp:" + barrier.getIp() + "/161", barrier.getPassword(), barrier.getSnmpVersion());
-        client.start();
         Boolean result = true;
-        if(!"1".equals(client.getCurrentValue(barrier.getOpenOid()))){
-            Boolean isOpenValueChanged =client.changeValue(barrier.getOpenOid(), 1);
-            if(!isOpenValueChanged){
-                for(int i=0; i<3; i++){
-                    isOpenValueChanged =client.changeValue(barrier.getOpenOid(), 1);
-                }
+        if(!disableOpen){
+            SNMPManager client = new SNMPManager("udp:" + barrier.getIp() + "/161", barrier.getPassword(), barrier.getSnmpVersion());
+            client.start();
+            if(!"1".equals(client.getCurrentValue(barrier.getOpenOid()))){
+                Boolean isOpenValueChanged =client.changeValue(barrier.getOpenOid(), 1);
                 if(!isOpenValueChanged){
-                    result = false;
-                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда":"въезда/выезда")) +" не получилась перенести на значение 1 чтобы открыть для номер авто " + properties.get("carNumber"));
-                }
-            } else {
-                Thread.sleep(1000);
-                if(!"0".equals(client.getCurrentValue(barrier.getOpenOid()))){
-                    Boolean isReturnValueChanged =client.changeValue(barrier.getOpenOid(), 0);
-                    if(!isReturnValueChanged) {
-                        for (int i = 0; i < 3; i++) {
-                            isReturnValueChanged = client.changeValue(barrier.getOpenOid(), 0);
-                        }
-                        if (!isReturnValueChanged) {
-                            eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 для номер авто " + properties.get("carNumber"));
+                    for(int i=0; i<3; i++){
+                        isOpenValueChanged =client.changeValue(barrier.getOpenOid(), 1);
+                    }
+                    if(!isOpenValueChanged){
+                        result = false;
+                        eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда":"въезда/выезда")) +" не получилась перенести на значение 1 чтобы открыть для номер авто " + properties.get("carNumber"));
+                    }
+                } else {
+                    Thread.sleep(1000);
+                    if(!"0".equals(client.getCurrentValue(barrier.getOpenOid()))){
+                        Boolean isReturnValueChanged =client.changeValue(barrier.getOpenOid(), 0);
+                        if(!isReturnValueChanged) {
+                            for (int i = 0; i < 3; i++) {
+                                isReturnValueChanged = client.changeValue(barrier.getOpenOid(), 0);
+                            }
+                            if (!isReturnValueChanged) {
+                                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 для номер авто " + properties.get("carNumber"));
+                            }
                         }
                     }
                 }
             }
+            client.close();
         }
-        client.close();
         return result;
     }
 }

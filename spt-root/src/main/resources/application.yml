@@ -41,3 +41,6 @@ org:
 images:
   file:
     path: "/Users/zhmaksat/Documents/Zoom"
+barrier:
+  open:
+    disabled: true

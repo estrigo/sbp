@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.api.extension.PluginRegister;
-import kz.spt.api.model.Barrier;
-import kz.spt.api.model.Camera;
-import kz.spt.api.model.Gate;
-import kz.spt.api.model.Parking;
+import kz.spt.api.model.*;
 import kz.spt.api.service.CarStateService;
 import kz.spt.api.service.EventLogService;
 import kz.spt.api.service.EventLogService.ArmEventType;
@@ -39,6 +36,7 @@ public class CarEventServiceImpl implements CarEventService {
     private final CarStateService carStateService;
     private final CarImageService carImageService;
     private final BarrierService barrierService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                PluginManager pluginManager, CarStateService carStateService, CarImageService carImageService,
@@ -74,18 +72,16 @@ public class CarEventServiceImpl implements CarEventService {
             String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
 
             if(Gate.GateType.IN.equals(camera.getGate().getGateType())){
-                handleCarInEvent(eventDto, camera, properties, format,carImageUrl);
+                handleCarInEvent(eventDto, camera, properties, format, carImageUrl);
             } else if(Gate.GateType.OUT.equals(camera.getGate().getGateType())){
-                handleCarOutEvent(eventDto, camera, properties, carImageUrl);
+                handleCarOutEvent(eventDto, camera, properties, format, carImageUrl);
             }
         } else {
             eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address);
         }
     }
 
-    private void handleCarInEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties,  SimpleDateFormat format, String carImageUrl) throws Exception{
-        PluginWrapper whitelistPlugin = pluginManager.getPlugin("whitelist-plugin");
-
+    private void handleCarInEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format, String carImageUrl) throws Exception{
         if(carStateService.checkIsLastEnteredNotLeft(eventDto.car_number)){
             eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
         } else {
@@ -96,7 +92,7 @@ public class CarEventServiceImpl implements CarEventService {
             carsService.createCar(eventDto.car_number);
 
             if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())){
-                checkWhiteList(whitelistPlugin, eventDto, camera, properties, format);
+                checkWhiteList(eventDto, camera, properties, format);
             } else {
                 Boolean barrierResult = openGateBarrier(eventDto, camera, properties);
                 if(barrierResult){
@@ -108,15 +104,15 @@ public class CarEventServiceImpl implements CarEventService {
         }
     }
 
-    private void checkWhiteList(PluginWrapper whitelistPlugin, CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format) throws Exception{
+    private void checkWhiteList(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format) throws Exception{
+        PluginWrapper whitelistPlugin = pluginManager.getPlugin("whitelist-plugin");
         if(whitelistPlugin!=null && whitelistPlugin.getPluginState().equals(PluginState.STARTED)){
-            ObjectMapper objectMapper = new ObjectMapper();
-            ObjectNode node = objectMapper.createObjectNode();
-            node.put("car_number", eventDto.car_number);
-            node.put("event_time", format.format(eventDto.event_time));
-
             List<PluginRegister> pluginRegisters =  pluginManager.getExtensions(PluginRegister.class, whitelistPlugin.getPluginId());
             if(pluginRegisters.size() > 0){
+                ObjectNode node = this.objectMapper.createObjectNode();
+                node.put("car_number", eventDto.car_number);
+                node.put("event_time", format.format(eventDto.event_time));
+
                 PluginRegister pluginRegister = pluginRegisters.get(0);
                 JsonNode result = pluginRegister.execute(node);
 
@@ -135,7 +131,7 @@ public class CarEventServiceImpl implements CarEventService {
                 }
             }
         } else {
-            eventLogService.createEventLog("Whitelist", null, properties, "Плагин белого листа не найден или не запущен");
+            eventLogService.createEventLog("Whitelist", null, properties, "Плагин белого листа не найден или не запущен. Авто с гос. номером" + eventDto.car_number);
         }
     }
 
@@ -144,7 +140,7 @@ public class CarEventServiceImpl implements CarEventService {
         return barrierService.openBarrier(barrier, properties);
     }
 
-    private void handleCarOutEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, String carImageUrl) throws IOException, ParseException, InterruptedException {
+    private void handleCarOutEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format, String carImageUrl) throws Exception {
 
         properties.put("carImageUrl", carImageUrl);
 
@@ -156,9 +152,41 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number);
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number);
             }
+        } else if(Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType())){
+            PluginWrapper tariffPlugin = pluginManager.getPlugin("tariff-plugin");
+            if(tariffPlugin!=null && tariffPlugin.getPluginState().equals(PluginState.STARTED)){
+                List<PluginRegister> pluginRegisters =  pluginManager.getExtensions(PluginRegister.class, tariffPlugin.getPluginId());
+                if(pluginRegisters.size() > 0){
+                    CarState carState = carStateService.getLastNotLeft(eventDto.car_number);
+                    if(carState != null){
+                        ObjectNode node = this.objectMapper.createObjectNode();
+                        node.put("parkingId", camera.getGate().getParking().getId());
+                        node.put("inDate", format.format(carState.getInTimestamp()));
+                        node.put("outDate", format.format(eventDto.event_time));
+
+                        PluginRegister pluginRegister = pluginRegisters.get(0);
+                        JsonNode result = pluginRegister.execute(node);
+
+                        int tariffResult = result.get("tariffResult").intValue();
+
+                        //TODO: check payment plugin or open gate to leave
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + tariffResult + " тенге. Долг: 0 тенге. Проезд разрешен.");
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + tariffResult + " тенге. Долг: 0 тенге. Проезд разрешен.");
+                        Boolean barrierResult = openGateBarrier(eventDto, camera, properties);
+                        if(barrierResult){
+                            carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, null, null, null);
+                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number);
+                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number);
+                        }
+                    } else {
+                        eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о вьезде. Авто с гос. номером" + eventDto.car_number);
+                    }
+                }
+            } else {
+                eventLogService.createEventLog("Tariff", null, properties, "Плагин вычисления стоимости парковки не найден или не запущен. Авто с гос. номером" + eventDto.car_number);
+            }
         } else {
-            //TODO: check payment plugin or open gate to leave
-            //carStateService.createOUTState();
+            throw new RuntimeException("Unknown parking type");
         }
     }
 }

@@ -25,7 +25,7 @@ public class Parking {
         PAYMENT,
         WHITELIST_PAYMENT;
 
-        public static final ParkingType[] ALL = {WHITELIST};
+        public static final ParkingType[] ALL = {WHITELIST, PAYMENT};
     }
 
     @Id
