@@ -14,31 +14,20 @@
             <div class="dropdown-menu dropdown-menu-right profile-dropdown " aria-labelledby="Preview">
                 <!-- item-->
                 <div class="dropdown-item noti-title">
-                    <h5 class="text-overflow"><small>Welcome ! <span sec:authentication="name"></span></small> </h5>
+                    <h5 class="text-overflow"><small><span th:text="#{crm.welcome}"></span>! <span sec:authentication="name"></span></small> </h5>
                 </div>
 
                 <!-- item-->
                 <a href="javascript:void(0);" class="dropdown-item notify-item">
-                    <i class="mdi mdi-account-star-variant"></i> <span>Profile</span>
+                    <i class="mdi mdi-account-star-variant"></i> <span th:text="#{crm.profile}"></span>
                 </a>
-
-                <!-- item-->
-                <a href="javascript:void(0);" class="dropdown-item notify-item">
-                    <i class="mdi mdi-settings"></i> <span>Settings</span>
-                </a>
-
-                <!-- item-->
-                <a href="javascript:void(0);" class="dropdown-item notify-item">
-                    <i class="mdi mdi-lock-open"></i> <span>Lock Screen</span>
-                </a>
-
                 <!-- item-->
                 <a href="/logout" th:href="@{#}" onclick="$('#logout_form').submit();" class="dropdown-item notify-item">
-                    <i class="mdi mdi-logout"></i> <span>Logout</span>
+                    <i class="mdi mdi-logout"></i> <span th:text="#{crm.logout}"></span>
                 </a>
 
                 <form th:action="@{/logout}" id="logout_form" style="display: none" method="post">
-                    <input type="submit" value="Log Out"/>
+                    <input type="submit"/>
                 </form>
             </div>
         </li>

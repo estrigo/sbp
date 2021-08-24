@@ -5,7 +5,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1">
 
-    <title>Smartparking - Responsive Admin Dashboard Template</title>
+    <title th:text="#{crm.smartparking}"></title>
 
     <link rel="shortcut icon" th:href="@{/assets/images/favicon_1.ico}">
 
@@ -29,7 +29,7 @@
         <!-- LOGO -->
         <div class="topbar-left">
             <div class="text-center">
-                <a th:href="@{|/|}" class="logo"><i class="mdi mdi-radar"></i> <span>Smartparking</span></a>
+                <a th:href="@{|/|}" class="logo"><i class="mdi mdi-radar"></i> <span th:text="#{crm.smartparking}"></span></a>
             </div>
         </div>
         <!-- Button mobile view to collapse sidebar menu -->
@@ -44,14 +44,14 @@
             <!--- Divider -->
             <div id="sidebar-menu">
                 <ul sec:authorize="isAuthenticated()">
-                    <li class="menu-title">Main</li>
+                    <li class="menu-title" th:text="#{crm.main}"></li>
                     <li>
                         <a th:href="@{|/user/list|}" class="waves-effect waves-primary"><i
-                                class="ti-user"></i><span> Users </span></a>
+                                class="ti-user"></i><span th:text=" #{user.users} "></span></a>
                     </li>
                     <li>
                         <a th:href="@{|/parking/list|}" class="waves-effect waves-primary"><i
-                                class="ti-map-alt"></i><span> Parkings </span></a>
+                                class="ti-map-alt"></i><span th:text=" #{parking.parkings} "></span></a>
                     </li>
                     <!--li>
                         <a th:href="@{|/customer/list|}" class="waves-effect waves-primary"><i
@@ -59,23 +59,23 @@
                     </li-->
                     <li>
                         <a th:href="@{|/arm/realtime|}" class="waves-effect waves-primary"><i
-                                class="ti-files"></i><span> ARM </span></a>
+                                class="ti-files"></i><span th:text=" #{crm.arm} "></span></a>
                     </li>
                     <li>
                         <a th:href="@{|/cars/list|}" class="waves-effect waves-primary"><i
-                                class="ti-car"></i><span> Cars </span></a>
+                                class="ti-car"></i><span th:text=" #{car.cars} "></span></a>
                     </li>
                     <li th:each="template : ${@pluginServiceImpl.getTemplateMenus()}" th:if="${template.url != null and template.label != null}">
                         <a th:href="@{|/${template.url}|}"
                            class="waves-effect waves-primary"><i
-                                th:class="${template.cssClass}"></i><span th:text="${template.label}">  </span></a>
+                                th:class="${template.cssClass}"></i><span th:text=" ${template.label} "></span></a>
                     </li>
                 </ul>
                 <ul sec:authorize="!isAuthenticated()">
                     <li class="menu-title">Main</li>
                     <li>
                         <a th:href="@{|/login|}" class="waves-effect waves-primary"><i
-                                class="ti-user"></i><span> Login </span></a>
+                                class="ti-user"></i><span th:text=" #{crm.login} "></span></a>
                     </li>
                 </ul>
             </div>

@@ -10,7 +10,7 @@
         <div class="col-md-6">
             <div class="form-group">
                 <label for="name" class="control-label" th:text="#{barrier.name}"></label>
-                <input type="text" class="form-control" id="name" th:field="*{name}" th:value="*{name}" placeholder="barrier IN from Tole bi">
+                <input type="text" class="form-control" id="name" th:field="*{name}" th:value="*{name}">
             </div>
         </div>
     </div>
@@ -18,7 +18,7 @@
         <div class="col-md-12">
             <div class="form-group">
                 <label for="description" class="control-label" th:text="#{barrier.description}"></label>
-                <input type="text" class="form-control" id="description" th:field="*{description}" th:value="*{description}" placeholder="Description">
+                <input type="text" class="form-control" id="description" th:field="*{description}" th:value="*{description}">
             </div>
         </div>
     </div>
@@ -28,7 +28,7 @@
                 <label for="type" class="control-label" th:text="#{barrier.type}"></label>
                 <select th:field="*{barrierType}" th:value="*{barrierType}" class="form-control" id="type">
                     <option th:each="barrierType : ${T(kz.spt.api.model.Barrier.BarrierType).ALL}"
-                            th:value="${barrierType}" th:text="${barrierType}">
+                            th:value="${barrierType}" th:text="#{'barrier.barrierType.' + ${barrierType}}" th:text="${barrierType}">
                     </option>
                 </select>
             </div>
@@ -69,7 +69,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary waves-effect" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-info waves-effect waves-light">Save changes</button>
+        <button type="button" class="btn btn-secondary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>
+        <button type="submit" class="btn btn-info waves-effect waves-light" th:text="#{crm.saveChanges}"></button>
     </div>
 </form>

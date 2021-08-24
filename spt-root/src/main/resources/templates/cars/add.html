@@ -8,7 +8,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card-box">
-                    <h4 class="m-t-0 header-title"><b>Add car form</b></h4>
+                    <h4 class="m-t-0 header-title"><b th:text="#{car.addForm}"></b></h4>
                     <p class="text-muted m-b-30 font-14"></p>
 
                     <div class="row">
@@ -16,21 +16,21 @@
                             <div class="p-20">
                                 <form th:action="@{|/cars/add|}" th:object="${car}" method="post">
                                     <div class="form-group row">
-                                        <label class="col-2 col-form-label">Plate number</label>
+                                        <label class="col-2 col-form-label" th:text="#{car.platenumber}"></label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{platenumber}">
                                             <span th:if="${alreadyRegisteredPlatenumber != null}" th:text="#{${alreadyRegisteredPlatenumber}}" class="badge badge-warning"></span>
-                                            <span th:text="${#fields.hasErrors('platenumber')}" class="badge badge-warning">Invalid plate number</span>
+                                            <span th:text="${#fields.hasErrors('platenumber')}" class="badge badge-warning"></span>
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label class="col-2 col-form-label">Brand</label>
+                                        <label class="col-2 col-form-label" th:text="#{car.brand}"></label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{brand}">
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label class="col-2 col-form-label">Color</label>
+                                        <label class="col-2 col-form-label" th:text="#{car.color}"></label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{color}">
                                         </div>
@@ -38,7 +38,7 @@
                                     <div class="form-group row">
                                         <label class="col-2 col-form-label"></label>
                                         <div class="col-10">
-                                            <button type="submit" class="btn btn-danger waves-effect waves-light">Add Car</button>
+                                            <button type="submit" class="btn btn-danger waves-effect waves-light" th:text="#{car.add}"></button>
                                         </div>
                                     </div>
                                 </form>
