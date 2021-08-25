@@ -16,43 +16,38 @@
                             <div class="p-20">
                                 <form th:action="@{|/user/edit/${user.id}|}" th:object="${user}" method="post">
                                     <div class="form-group row">
-                                        <label class="col-2 col-form-label">Username</label>
+                                        <label class="col-2 col-form-label" th:text="#{username}></label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{username}" th:value="*{username}">
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label class="col-2 col-form-label" for="example-email">Email</label>
+                                        <label class="col-2 col-form-label" for="example-email" th:text="#{user.email}"></label>
                                         <div class="col-10">
                                             <input type="email" th:field="*{email}" th:value="*{email}" id="example-email" name="example-email" class="form-control" placeholder="Email">
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label class="col-2 col-form-label">First Name</label>
+                                        <label class="col-2 col-form-label" th:text="#{user.first.name}></label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{firstName}" th:value="*{firstName}">
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label class="col-2 col-form-label">Last Name</label>
+                                        <label class="col-2 col-form-label"  th:text="#{user.last.name}"></label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{lastName}" th:value="*{lastName}">
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label class="col-2 col-form-label">Password</label>
+                                        <label class="col-2 col-form-label"  th:text="#{user.password}"></label>
                                         <div class="col-10">
                                             <input type="password" th:field="*{password}" th:value="*{password}" class="form-control" value="password">
                                         </div>
                                     </div>
-                                    <div id="patronymicDiv" class="form-group row" style="display: none">
-                                        <label class="col-2 col-form-label">Patronymic</label>
-                                        <div class="col-10">
-                                            <input type="text" class="form-control" th:field="*{patronymic}" th:value="*{patronymic}">
-                                        </div>
-                                    </div>
+
                                     <div class="form-group row" sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
-                                        <label class="col-2 col-form-label">Role</label>
+                                        <label class="col-2 col-form-label"  th:text="#{role.name}"></label>
                                         <div class="col-10">
                                             <select id="roles" multiple class="form-control" th:field="*{roles}" onchange="checkSelectedRoles(value)">
                                                 <option th:each="r : ${allRoles}"
@@ -64,7 +59,7 @@
                                     <div class="form-group row">
                                         <label class="col-2 col-form-label"></label>
                                         <div class="col-10">
-                                            <button type="submit" class="btn btn-danger waves-effect waves-light">Submit</button>
+                                            <button type="submit" class="btn btn-danger waves-effect waves-light" th:text="#{user.addUser}"></button>
                                         </div>
                                     </div>
                                 </form>
