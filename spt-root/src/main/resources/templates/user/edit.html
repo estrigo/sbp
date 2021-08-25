@@ -16,7 +16,7 @@
                             <div class="p-20">
                                 <form th:action="@{|/user/edit/${user.id}|}" th:object="${user}" method="post">
                                     <div class="form-group row">
-                                        <label class="col-2 col-form-label" th:text="#{username}></label>
+                                        <label class="col-2 col-form-label" th:text="#{user.username}"></label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{username}" th:value="*{username}">
                                         </div>
