@@ -65,6 +65,10 @@
                         <a th:href="@{|/cars/list|}" class="waves-effect waves-primary"><i
                                 class="ti-car"></i><span th:text=" #{car.cars} "></span></a>
                     </li>
+                    <li>
+                        <a th:href="@{|/events/list|}" class="waves-effect waves-primary"><i
+                                class="ti-car"></i><span th:text=" События "></span></a>
+                    </li>
                     <li th:each="template : ${@pluginServiceImpl.getTemplateMenus()}" th:if="${template.url != null and template.label != null}">
                         <a th:href="@{|/${template.url}|}"
                            class="waves-effect waves-primary"><i
