@@ -15,6 +15,10 @@
                 </div>
 
             </div>
+            <div class="col-12">
+                <table class="table table-borderd" id="payments"></table>
+
+            </div>
         </div>
     </div>
 </div>
@@ -37,7 +41,22 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
-        $('#datatable').DataTable();
+        $('#payments').DataTable( {
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "",
+                "type": "POST"
+            },
+            "columns": [
+                { "data": "first_name" },
+                { "data": "last_name" },
+                { "data": "position" },
+                { "data": "office" },
+                { "data": "start_date" },
+                { "data": "salary" }
+            ]
+        } );
     });
 
     //Buttons examples

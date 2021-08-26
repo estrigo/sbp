@@ -29,7 +29,7 @@ public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
 
     @Override
     public String getMenuUrl() {
-        return "billing/payments";
+        return "payments/list";
     }
 
     @Override
@@ -39,7 +39,7 @@ public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
 
     @Override
     public String getMenuCssClass() {
-        return "ti-pin-alt";
+        return "fa fa-money";
     }
 
     @Override

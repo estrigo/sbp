@@ -5,6 +5,8 @@ spring:
     add-mappings: true
     cache:
       period: 3600
+      cachecontrol:
+        max-age: 1d
   sbp:
     runtime-mode: development
 #    runtime-mode: deployment
