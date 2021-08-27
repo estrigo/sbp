@@ -27,12 +27,10 @@ public class PluginServiceImpl implements PluginService {
             if (pluginWrapper.getPlugin() instanceof CustomPlugin) {
                 CustomPlugin plugin = (CustomPlugin) pluginWrapper.getPlugin();
 
-                if (plugin.hasTemplates()) {
-                    Map<String, Object> attrs = new HashMap<>();
-                    attrs.put("label", plugin.getMenuLabel());
-                    attrs.put("url", plugin.getMenuUrl());
-                    attrs.put("cssClass", plugin.getMenuCssClass());
-                    menus.add(attrs);
+                if (plugin.getLinks() != null) {
+                    for(Map<String,Object> link: plugin.getLinks()){
+                        menus.add(link);
+                    }
                 }
             }
         }

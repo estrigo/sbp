@@ -5,6 +5,11 @@ import org.laxture.sbp.SpringBootPlugin;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class WhitelistPlugin extends SpringBootPlugin implements CustomPlugin {
 
     public static WhitelistPlugin INSTANCE;
@@ -20,32 +25,18 @@ public class WhitelistPlugin extends SpringBootPlugin implements CustomPlugin {
     }
 
     @Override
-    public Boolean hasTemplates() {
-        return true;
-    }
-
-    @Override
-    public String getMenuLabel() {
-        return "White list";
-    }
-
-    @Override
-    public String getMenuUrl() {
-        return "whitelist/list";
-    }
-
-    @Override
     public String getTemplateUrl() {
         return "whitelist";
     }
 
-    @Override
-    public String getMenuCssClass() {
-        return "ti-file";
-    }
-
-    @Override
-    public String getRole() {
-        return "MANAGER";
+    public List<Map<String, Object>> getLinks(){
+        List<Map<String, Object>> list = new ArrayList<>();
+        Map<String, Object> link = new HashMap<>();
+        link.put("label", "White list");
+        link.put("url", "whitelist/list");
+        link.put("cssClass", "ti-file");
+        link.put("role", "MANAGER");
+        list.add(link);
+        return list;
     }
 }

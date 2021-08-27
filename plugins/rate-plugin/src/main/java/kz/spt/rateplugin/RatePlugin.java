@@ -5,6 +5,11 @@ import org.laxture.sbp.SpringBootPlugin;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class RatePlugin extends SpringBootPlugin implements CustomPlugin {
 
     public static RatePlugin INSTANCE;
@@ -20,32 +25,18 @@ public class RatePlugin extends SpringBootPlugin implements CustomPlugin {
     }
 
     @Override
-    public Boolean hasTemplates() {
-        return true;
-    }
-
-    @Override
-    public String getMenuLabel() {
-        return "Rate list";
-    }
-
-    @Override
-    public String getMenuUrl() {
-        return "rate/list";
-    }
-
-    @Override
     public String getTemplateUrl() {
         return "rate";
     }
 
-    @Override
-    public String getMenuCssClass() {
-        return "ti-money";
-    }
-
-    @Override
-    public String getRole() {
-        return "MANAGER";
+    public List<Map<String, Object>> getLinks(){
+        List<Map<String, Object>> list = new ArrayList<>();
+        Map<String, Object> link = new HashMap<>();
+        link.put("label", "Rate list");
+        link.put("url", "rate/list");
+        link.put("cssClass", "ti-money");
+        link.put("role", "MANAGER");
+        list.add(link);
+        return list;
     }
 }

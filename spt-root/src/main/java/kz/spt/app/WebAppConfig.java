@@ -113,7 +113,7 @@ public class WebAppConfig implements WebMvcConfigurer {
                 ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver(pluginWrapper.getPluginClassLoader());
                 CustomPlugin plugin =(CustomPlugin) pluginWrapper.getPlugin();
 
-                if(plugin.hasTemplates()){
+                if(plugin.getLinks() != null){
                     templateResolver.setPrefix(pluginWrapper.getPluginId() + "/");
                     templateResolver.setCacheable(false);
                     templateResolver.setSuffix(".html");
@@ -144,15 +144,7 @@ public class WebAppConfig implements WebMvcConfigurer {
         templateEngine.addDialect(new SpringSecurityDialect());
         return templateEngine;
     }
-/*
-    @Bean
-    public TemplateEngine templateEngine(ITemplateResolver templateResolver) {
-        SpringTemplateEngine engine = new SpringTemplateEngine();
-        engine.addDialect(new Java8TimeDialect());
-        engine.setTemplateResolver(templateResolver);
-        return engine;
-    }
-*/
+
     @Bean
     @Description("Thymeleaf view resolver")
     public ViewResolver viewResolver() {

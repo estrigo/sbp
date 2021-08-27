@@ -1,16 +1,11 @@
 package kz.spt.api.plugin;
 
+import java.util.List;
+import java.util.Map;
+
 public interface CustomPlugin {
-
-    Boolean hasTemplates();
-
-    String getMenuLabel();
-
-    String getMenuUrl();
 
     String getTemplateUrl();
 
-    String getMenuCssClass();
-
-    String getRole();
+    List<Map<String, Object>> getLinks();
 }

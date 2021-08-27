@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 @Controller
-@RequestMapping("/payments")
+@RequestMapping("/billing/payments")
 public class PaymentController {
 
     PaymentService paymentService;
@@ -22,11 +22,9 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
-
     @GetMapping("/list")
     public String showAllWhitelist(Model model) {
-
-        return "billing/payments/list";
+        return "/billing/payments/list";
     }
 
     @PostMapping("/list")

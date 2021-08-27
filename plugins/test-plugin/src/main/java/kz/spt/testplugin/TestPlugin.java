@@ -5,6 +5,11 @@ import org.laxture.sbp.SpringBootPlugin;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class TestPlugin extends SpringBootPlugin implements CustomPlugin {
 
     public TestPlugin(PluginWrapper wrapper) {
@@ -16,33 +21,38 @@ public class TestPlugin extends SpringBootPlugin implements CustomPlugin {
         return new SpringBootstrap(this, TestPluginStarter.class);
     }
 
-    @Override
-    public Boolean hasTemplates() {
-        return false;
-    }
-
-    @Override
-    public String getMenuLabel() {
-        return "Test plugin";
-    }
-
-    @Override
-    public String getMenuUrl() {
-        return "test/list";
-    }
 
     @Override
     public String getTemplateUrl() {
         return "test";
     }
 
-    @Override
-    public String getMenuCssClass() {
-        return "ti-pin-alt";
-    }
+    public List<Map<String, Object>> getLinks(){
+        List<Map<String, Object>> list = new ArrayList<>();
 
-    @Override
-    public String getRole() {
-        return "MANAGER";
+        Map<String, Object> mainMenu = new HashMap<>();
+        mainMenu.put("label", "Test menu");
+        mainMenu.put("cssClass", "ti-file");
+        mainMenu.put("role", "MANAGER");
+
+        List<Map<String, Object>> subMenus = new ArrayList<>();
+
+        Map<String, Object> subMenu1 = new HashMap<>();
+        subMenu1.put("label", "Test sub menu 1");
+        subMenu1.put("url", "test/list");
+        subMenu1.put("role", "MANAGER");
+        subMenus.add(subMenu1);
+
+        Map<String, Object> subMenu2 = new HashMap<>();
+        subMenu2.put("label", "Test sub menu 2");
+        subMenu2.put("url", "test/list2");
+        subMenu2.put("role", "MANAGER");
+        subMenus.add(subMenu2);
+
+        mainMenu.put("subMenus", subMenus);
+
+        list.add(mainMenu);
+
+        return list;
     }
 }

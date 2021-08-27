@@ -15,7 +15,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
@@ -56,9 +58,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             if (pluginWrapper.getPlugin() instanceof CustomPlugin) {
                 CustomPlugin plugin = (CustomPlugin) pluginWrapper.getPlugin();
 
-                if (plugin.hasTemplates()) {
-                    http.authorizeRequests().antMatchers("/" + plugin.getTemplateUrl()).hasRole(plugin.getRole());
-                    http.authorizeRequests().antMatchers("/" + plugin.getTemplateUrl() + "/**").hasRole(plugin.getRole());
+                if (plugin.getLinks() != null) {
+                    for(Map<String,Object> link: plugin.getLinks()){
+                        if(link.containsKey("url") && link.containsKey("role")){
+                            http.authorizeRequests().antMatchers("/" + link.get("url")).hasRole((String) link.get("role"));
+                        }
+                        if(link.containsKey("subMenus")){
+                            List<Map<String, Object>> subMenus = (List<Map<String, Object>>) link.get("subMenus");
+                            for(Map<String,Object> subLink: subMenus){
+                                if(subLink.containsKey("url") && subLink.containsKey("role")){
+                                    http.authorizeRequests().antMatchers("/" + subLink.get("url")).hasRole((String) subLink.get("role"));
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

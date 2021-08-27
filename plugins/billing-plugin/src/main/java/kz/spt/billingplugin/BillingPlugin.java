@@ -5,6 +5,11 @@ import org.laxture.sbp.SpringBootPlugin;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
     public static BillingPlugin INSTANCE;
     public BillingPlugin(PluginWrapper wrapper) {
@@ -18,32 +23,18 @@ public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
     }
 
     @Override
-    public Boolean hasTemplates() {
-        return true;
-    }
-
-    @Override
-    public String getMenuLabel() {
-        return "Billing";
-    }
-
-    @Override
-    public String getMenuUrl() {
-        return "payments/list";
-    }
-
-    @Override
     public String getTemplateUrl() {
         return "billing";
     }
 
-    @Override
-    public String getMenuCssClass() {
-        return "fa fa-money";
-    }
-
-    @Override
-    public String getRole() {
-        return "MANAGER";
+    public List<Map<String, Object>> getLinks(){
+        List<Map<String, Object>> list = new ArrayList<>();
+        Map<String, Object> link = new HashMap<>();
+        link.put("label", "Billing");
+        link.put("url", "billing/payments/list");
+        link.put("cssClass", "fa fa-money");
+        link.put("role", "MANAGER");
+        list.add(link);
+        return list;
     }
 }

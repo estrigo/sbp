@@ -15,7 +15,6 @@
 
     <link th:href="@{/plugins/switchery/switchery.min.css}" rel="stylesheet" />
     <link th:href="@{/plugins/morris/morris.css}" rel="stylesheet" />
-
     <script th:src="@{/assets/js/modernizr.min.js}"></script>
 
     <th:block th:replace="${links}" />
@@ -59,7 +58,7 @@
                     </li-->
                     <li>
                         <a th:href="@{|/arm/realtime|}" class="waves-effect waves-primary"><i
-                                class="ti-files"></i><span th:text=" #{crm.arm} "></span></a>
+                                class="ti-desktop"></i><span th:text=" #{crm.arm} "></span></a>
                     </li>
                     <li>
                         <a th:href="@{|/cars/list|}" class="waves-effect waves-primary"><i
@@ -67,12 +66,19 @@
                     </li>
                     <li>
                         <a th:href="@{|/events/list|}" class="waves-effect waves-primary"><i
-                                class="ti-car"></i><span th:text=" События "></span></a>
+                                class="ti-files"></i><span th:text=" События "></span></a>
                     </li>
-                    <li th:each="template : ${@pluginServiceImpl.getTemplateMenus()}" th:if="${template.url != null and template.label != null}">
-                        <a th:href="@{|/${template.url}|}"
-                           class="waves-effect waves-primary"><i
-                                th:class="${template.cssClass}"></i><span th:text=" ${template.label} "></span></a>
+                    <li th:each="template : ${@pluginServiceImpl.getTemplateMenus()}" th:if="${template != null}" th:class="${template['subMenus'] != null ? 'has_sub' : ''}">
+                        <a th:if="${template['subMenus'] == null}" th:href="@{|/${template['url']}|}" class="waves-effect waves-primary">
+                            <i th:class="${template['cssClass']}"></i><span th:text=" ${template['label']} "></span>
+                        </a>
+
+                        <a th:if="${template['subMenus'] != null}" href="javascript:void(0);" class="waves-effect waves-primary">
+                            <i th:class="${template['cssClass']}"></i><span th:text=" ${template['label']} "></span><span class="menu-arrow"></span>
+                        </a>
+                        <ul th:if="${template['subMenus'] != null}" class="list-unstyled">
+                            <li th:each="submenu : ${template['subMenus']}"><a th:href="@{|/${submenu['url']}|}" th:text=" ${submenu['label']} "></a></li>
+                        </ul>
                     </li>
                 </ul>
                 <ul sec:authorize="!isAuthenticated()">
@@ -96,6 +102,10 @@
     </div>
 </div>
 
+<script>
+    var resizefunc = [];
+</script>
+
 <!-- Plugins  -->
 <script th:src="@{/assets/js/jquery.min.js}"></script>
 <script th:src="@{/assets/js/tether.min.js}"></script>
@@ -111,6 +121,9 @@
 <script th:src="@{/plugins/switchery/switchery.min.js}"></script>
 
 <th:block th:replace="${scripts}" />
+
+<script th:src="@{/assets/js/jquery.core.js}"></script>
+<script th:src="@{/assets/js/jquery.app.js}"></script>
 
 </body>
 </html>
