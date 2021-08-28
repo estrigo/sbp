@@ -1,14 +1,7 @@
 package kz.spt.app.controller;
 
-import kz.spt.api.model.Barrier;
-import kz.spt.api.model.Camera;
-import kz.spt.api.model.Gate;
-import kz.spt.api.model.Parking;
-import kz.spt.app.service.BarrierService;
-import kz.spt.app.service.CameraService;
-import kz.spt.app.service.GateService;
-import kz.spt.app.service.ParkingService;
-import org.springframework.stereotype.Controller;
+import kz.spt.api.model.*;
+import kz.spt.app.service.*;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
 
-@Controller
+@org.springframework.stereotype.Controller
 @RequestMapping("/parking")
 public class ParkingController {
 
@@ -26,12 +19,15 @@ public class ParkingController {
     private CameraService cameraService;
     private GateService gateService;
     private BarrierService barrierService;
+    private ControllerService controllerService;
 
-    public ParkingController(ParkingService parkingService, CameraService cameraService, GateService gateService, BarrierService barrierService){
+    public ParkingController(ParkingService parkingService, CameraService cameraService, GateService gateService,
+                             BarrierService barrierService, ControllerService controllerService){
         this.parkingService = parkingService;
         this.cameraService = cameraService;
         this.gateService = gateService;
         this.barrierService = barrierService;
+        this.controllerService = controllerService;
     }
 
     @GetMapping("/list")
@@ -157,5 +153,30 @@ public class ParkingController {
         gate.setParking(parkingService.findById(parkingId));
         model.addAttribute("gate", gate);
         return "parking/gate/edit";
+    }
+
+    @GetMapping("/controller/{controllerId}")
+    public String getEditingControllerId(Model model, @PathVariable Long controllerId) {
+        model.addAttribute("controller", controllerService.getControllerById(controllerId));
+        return "parking/controller/edit";
+    }
+
+    @PostMapping("/controller/{gateId}")
+    public String barrierEdit(@PathVariable Long gateId, @Valid Controller controller, BindingResult bindingResult){
+
+        if (!bindingResult.hasErrors()) {
+            Gate gate = gateService.getById(gateId);
+            controller.setGate(gate);
+            controllerService.saveController(controller);
+        }
+        return "redirect:/parking/details/" + controller.getGate().getParking().getId();
+    }
+
+    @GetMapping("/{gateId}/new/controller")
+    public String getEditingControllerId(@PathVariable Long gateId, Model model) {
+        Controller controller = new Controller();
+        controller.setGate(gateService.getById(gateId));
+        model.addAttribute("controller", controller);
+        return "parking/controller/edit";
     }
 }
