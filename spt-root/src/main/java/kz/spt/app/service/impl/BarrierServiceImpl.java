@@ -46,7 +46,19 @@ public class BarrierServiceImpl implements BarrierService {
             // TODO: open modbus type
             return false;
         } else {
-            throw new RuntimeException("Unknown barrier type");
+            throw new RuntimeException("Unable open barrier: unknown barrier type");
+        }
+    }
+
+    @Override
+    public Boolean closeBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException {
+        if(Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())){
+            return closeSnmp(barrier, properties);
+        } else if(Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
+            // TODO: close modbus type
+            return false;
+        } else {
+            throw new RuntimeException("Unable close barrier: unknown barrier type");
         }
     }
 
@@ -63,7 +75,7 @@ public class BarrierServiceImpl implements BarrierService {
                     }
                     if(!isOpenValueChanged){
                         result = false;
-                        eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда":"въезда/выезда")) +" не получилась перенести на значение 1 чтобы открыть для номер авто " + properties.get("carNumber"));
+                        eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда":"въезда/выезда")) +" не получилась перенести на значение 1 чтобы открыть " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
                     }
                 } else {
                     Thread.sleep(1000);
@@ -74,7 +86,42 @@ public class BarrierServiceImpl implements BarrierService {
                                 isReturnValueChanged = client.changeValue(barrier.getOpenOid(), 0);
                             }
                             if (!isReturnValueChanged) {
-                                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 для номер авто " + properties.get("carNumber"));
+                                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
+                            }
+                        }
+                    }
+                }
+            }
+            client.close();
+        }
+        return result;
+    }
+
+    private Boolean closeSnmp(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException {
+        Boolean result = true;
+        if(!disableOpen){
+            SNMPManager client = new SNMPManager("udp:" + barrier.getIp() + "/161", barrier.getPassword(), barrier.getSnmpVersion());
+            client.start();
+            if(!"1".equals(client.getCurrentValue(barrier.getCloseOid()))){
+                Boolean isCloseValueChanged =client.changeValue(barrier.getCloseOid(), 1);
+                if(!isCloseValueChanged){
+                    for(int i=0; i<3; i++){
+                        isCloseValueChanged =client.changeValue(barrier.getCloseOid(), 1);
+                    }
+                    if(!isCloseValueChanged){
+                        result = false;
+                        eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда":"въезда/выезда")) +" не получилась перенести на значение 1 чтобы закрыть " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
+                    }
+                } else {
+                    Thread.sleep(1000);
+                    if(!"0".equals(client.getCurrentValue(barrier.getCloseOid()))){
+                        Boolean isReturnValueChanged =client.changeValue(barrier.getCloseOid(), 0);
+                        if(!isReturnValueChanged) {
+                            for (int i = 0; i < 3; i++) {
+                                isReturnValueChanged = client.changeValue(barrier.getCloseOid(), 0);
+                            }
+                            if (!isReturnValueChanged) {
+                                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
                             }
                         }
                     }

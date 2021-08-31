@@ -37,6 +37,7 @@ public class CarEventServiceImpl implements CarEventService {
     private final CarImageService carImageService;
     private final BarrierService barrierService;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private String dateFormat = "yyyy-MM-dd'T'HH:mm";
 
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                PluginManager pluginManager, CarStateService carStateService, CarImageService carImageService,
@@ -52,8 +53,6 @@ public class CarEventServiceImpl implements CarEventService {
 
     @Override
     public void saveCarEvent(CarEventDto eventDto) throws Exception {
-
-        String dateFormat = "yyyy-MM-dd'T'HH:mm";
         SimpleDateFormat format = new SimpleDateFormat(dateFormat);
         Camera camera = cameraService.findCameraByIp(eventDto.ip_address);
 

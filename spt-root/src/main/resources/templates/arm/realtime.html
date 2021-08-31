@@ -13,6 +13,14 @@
                     </div>
                     <img th:id="${'image' + camera.id}" class="img-fluid m-b-10" th:src="@{/assets/images/no_photo.jpeg}" alt="Card image cap">
                     <div class="card-block">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-outline-success w-100" th:cameraId="${camera.id}" th:onclick="openGate(this.getAttribute('cameraId'))">Открыть</button>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-outline-warning w-100" th:cameraId="${camera.id}" th:onclick="closeGate(this.getAttribute('cameraId'))">Закрыть</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <textarea class="m-b-10" style="width: 100%" rows="3" th:id="${'logs' + camera.id}"></textarea>
@@ -55,5 +63,17 @@
         });
         connect();
     });
+
+    function openGate(cameraId){
+        $.get("/rest/arm/open/" + cameraId, function (data) {
+            console.log(data);
+        });
+    }
+
+    function closeGate(cameraId){
+        $.get("/rest/arm/close/" + cameraId, function (data) {
+            console.log(data);
+        });
+    }
 </script>
 </html>
