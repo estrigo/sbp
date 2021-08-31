@@ -1,7 +1,10 @@
 package kz.spt.api.service;
 
+import jdk.jfr.Event;
 import kz.spt.api.model.EventLog;
+import kz.spt.api.model.dto.EventFilterDto;
 
+import java.text.ParseException;
 import java.util.Map;
 
 public interface EventLogService {
@@ -16,6 +19,8 @@ public interface EventLogService {
     void sendSocketMessage(ArmEventType eventType, Long gateId, String plateNumber, String message);
 
     Iterable<EventLog> listAllLogs();
+
+    Iterable<EventLog> listByFilters(EventFilterDto eventFilterDo) throws ParseException;
 
     EventLog getById(Long id);
 }

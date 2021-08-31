@@ -12,25 +12,25 @@
                 <div class="card-box table-responsive">
                     <h4 class="m-t-0 header-title"><b th:text="#{events.events}"></b></h4>
 
-                    <!--form th:action="@{|/event/list|}" th:object="${eventFilter}" method="post"-->
+                    <form th:action="@{|/events/list|}" th:object="${eventFilter}" method="post">
                     <div class="row">
                         <div class="col-3">
-                            <input type="datetime-local" class="form-control"  placeholder="Дата с:">
+                            <input type="datetime-local" class="form-control" th:field="*{dateToString}" placeholder="#{events.dateTo}">
                         </div>
                         <div class="col-3">
-                            <input type="datetime-local" class="form-control" placeholder="Дата по:">
+                            <input type="datetime-local" class="form-control" th:field="*{dateFromString}" th:placeholder="#{events.dateFrom}">
                         </div>
                         <div class="col-3">
-                            <input type="text" class="form-control" placeholder="Номер авто">
+                            <input type="text" class="form-control" th:placeholder="#{car.platenumber}">
                         </div>
                         <div class="col-3">
-                            <input type="text" class="form-control" placeholder="Описание">
+                            <input type="text" class="form-control" th:placeholder="#{events.description}">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-3">
                             <select class="form-control">
-                                <option value="">Не выбрано</option>
+                                <option value="" th:text="#{crm.notSelected}"></option>
                                 <option value="0">0</option>
                                 <option value="1">1</option>
                                 <option value="3">3</option>
@@ -38,7 +38,7 @@
                         </div>
                         <div class="col-3">
                             <select class="form-control">
-                                <option value="">Не выбрано</option>
+                                <option value="" th:text="#{crm.notSelected}"></option>
                                 <option value="0">0</option>
                                 <option value="1">1</option>
                                 <option value="3">3</option>
@@ -46,17 +46,18 @@
                         </div>
                         <div class="col-3">
                             <select class="form-control">
-                                <option value="">Не выбрано</option>
+                                <option value="" th:text="#{crm.notSelected}"></option>
                                 <option value="0">0</option>
                                 <option value="1">1</option>
                                 <option value="3">3</option>
                             </select>
                         </div>
                         <div class="col-3">
-                            <button type="submit" class="btn btn-succes">Поиск</button>
-                            <button type="submit" class="btn btn-secondary">Сброс</button>
+                            <button type="submit" class="btn btn-succes" th:text="#{crm.search}"></button>
+                            <button type="submit" class="btn btn-secondary" th:text="#{crm.clear}"></button>
                         </div>
                     </div>
+                    </form>
 
                     <div class="mb-5"></div>
 

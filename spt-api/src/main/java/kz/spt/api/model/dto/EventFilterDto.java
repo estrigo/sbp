@@ -1,5 +1,8 @@
-package kz.spt.app.entity.dto;
+package kz.spt.api.model.dto;
 
+import lombok.Data;
+
+@Data
 public class EventFilterDto {
 
     public String dateFromString;

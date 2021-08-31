@@ -1,7 +1,8 @@
 package kz.spt.app.controller;
 
 import kz.spt.api.service.EventLogService;
-import kz.spt.app.entity.dto.EventFilterDto;
+import kz.spt.api.model.dto.EventFilterDto;
+import lombok.extern.java.Log;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -11,10 +12,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 @Controller
 @RequestMapping("/events")
+@Log
 public class EventController {
 
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
@@ -25,23 +30,34 @@ public class EventController {
     }
 
     @GetMapping("/list")
-    public String showAllEvents(Model model) {
+    public String showAllEvents(Model model) throws ParseException {
+        EventFilterDto eventFilter = null;
         if(!model.containsAttribute("eventFilter")){
             SimpleDateFormat format = new SimpleDateFormat(dateformat);
-            EventFilterDto eventFilter = new EventFilterDto();
-            //            eventFilter.dateFromString =
-        }
+            eventFilter = new EventFilterDto();
 
-        model.addAttribute("events", eventLogService.listAllLogs());
+            Calendar calendar = Calendar.getInstance();
+            Date dateTo = calendar.getTime();
+            eventFilter.dateToString = format.format(dateTo);
+
+            calendar.add(Calendar.MONTH, -1);
+            Date dateFrom = calendar.getTime();
+            eventFilter.dateFromString = format.format(dateFrom);
+            model.addAttribute("eventFilter", eventFilter);
+        } else {
+            eventFilter = (EventFilterDto) model.getAttribute("eventFilter");
+        }
+        model.addAttribute("events", eventLogService.listByFilters(eventFilter));
         return "events/list";
     }
 
     @PostMapping("/list")
-    public String processRequestAddCar(Model model, @Valid @ModelAttribute("eventFilter") EventFilterDto eventFilter, BindingResult bindingResult) {
+    public String processRequestAddCar(Model model, @Valid @ModelAttribute("eventFilter") EventFilterDto eventFilter, BindingResult bindingResult) throws ParseException {
         if (bindingResult.hasErrors()) {
-            return "cars/list";
+            return "events/list";
         } else {
-            return "cars/list";
+            model.addAttribute("events", eventLogService.listByFilters(eventFilter));
+            return "events/list";
         }
     }
 }
