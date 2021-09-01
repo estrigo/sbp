@@ -78,7 +78,10 @@
                                     <td th:text="${iterStat.count}"></td>
                                     <td><span th:if="${event.properties != null}" th:text="${event.properties['carNumber']}"></span></td>
                                     <td th:text="${event.created}"></td>
-                                    <td th:text="${event.description}"></td>
+                                    <td>
+                                        <b th:if="${event.properties != null}" th:text="${event.properties['gateName']}"></b><br />
+                                        <span th:text="${event.description}"></span>
+                                    </td>
                                     <td>
                                         <div class="thumb-custom" th:if="${event.properties != null && event.properties['carImageUrl'] != null}">
                                             <a href="#">

@@ -66,7 +66,7 @@
                     </li>
                     <li>
                         <a th:href="@{|/events/list|}" class="waves-effect waves-primary"><i
-                                class="ti-files"></i><span th:text=" #{event.events} "></span></a>
+                                class="ti-files"></i><span th:text=" #{events.events} "></span></a>
                     </li>
                     <li th:each="template : ${@pluginServiceImpl.getTemplateMenus()}" th:if="${template != null}" th:class="${template['subMenus'] != null ? 'has_sub' : ''}">
                         <a th:if="${template['subMenus'] == null}" th:href="@{|/${template['url']}|}" class="waves-effect waves-primary">
