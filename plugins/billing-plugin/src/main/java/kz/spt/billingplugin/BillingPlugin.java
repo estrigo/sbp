@@ -3,7 +3,9 @@ package kz.spt.billingplugin;
 import kz.spt.api.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
+import org.modelmapper.ModelMapper;
 import org.pf4j.PluginWrapper;
+import org.springframework.context.annotation.Bean;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,5 +38,10 @@ public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
         link.put("role", "MANAGER");
         list.add(link);
         return list;
+    }
+
+    @Bean
+    public static ModelMapper modelMapper() {
+        return new ModelMapper();
     }
 }

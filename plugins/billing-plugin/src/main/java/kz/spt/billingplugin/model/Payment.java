@@ -59,6 +59,8 @@ public class Payment {
 
     @Enumerated(EnumType.STRING)
     private Type type;
+
+
     @Column(name = "car_number")
     String carNumber;
 

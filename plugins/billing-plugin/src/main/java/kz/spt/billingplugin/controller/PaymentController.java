@@ -1,5 +1,7 @@
 package kz.spt.billingplugin.controller;
 
+import kz.spt.billingplugin.dto.PaymentLogDTO;
+import kz.spt.billingplugin.dto.TableDataDTO;
 import kz.spt.billingplugin.model.Payment;
 import kz.spt.billingplugin.service.PaymentService;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/billing/payments")
@@ -30,8 +33,13 @@ public class PaymentController {
     @PostMapping("/list")
     public ResponseEntity getData() {
 
-        Iterable<Payment> paymentList = paymentService.listAllPayments();
-        return new ResponseEntity(paymentList, HttpStatus.OK);
+        List<Payment> paymentList = (List<Payment>) paymentService.listAllPayments();
+        TableDataDTO tableDataDTO = new TableDataDTO();
+        tableDataDTO.setDraw(1);
+        tableDataDTO.setRecordsTotal(10);
+        tableDataDTO.setRecordsFiltered(1);
+        tableDataDTO.setData(paymentList.stream().map(payment -> PaymentLogDTO.convertToDto(payment)).collect(Collectors.toList()));
+        return new ResponseEntity(tableDataDTO, HttpStatus.OK);
 
     }
 }

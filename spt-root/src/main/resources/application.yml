@@ -33,6 +33,10 @@ spring:
     cache: false
   flyway:
     enabled: false
+  main:
+    banner-mode: off
+
+
 
 org:
   hibernate:
