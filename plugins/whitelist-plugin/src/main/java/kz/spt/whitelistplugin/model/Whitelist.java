@@ -43,6 +43,10 @@ public class Whitelist {
     @Enumerated(EnumType.STRING)
     private Type type;
 
+    @ManyToOne
+    @JoinColumn(name = "category")
+    private Category category;
+
     @CreationTimestamp
     private Date created;
 
