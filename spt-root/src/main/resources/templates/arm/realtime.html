@@ -76,7 +76,7 @@
 
     $(function() {
         $("form").on('submit', function(e) {
-            e.preventDefault(); 
+            e.preventDefault();
         });
         connect();
     });
@@ -94,9 +94,21 @@
     }
 
     function passCar(cameraId){
+        var plateNumber = $("#plateNumber" + cameraId).val();
+        if(plateNumber && plateNumber.length > 2 && plateNumber.length < 17){
+
+        } else {
+            alert("Invalid plate number!");
+        }
     }
 
     function checkBalance(cameraId){
+        var plateNumber = $("#plateNumber" + cameraId).val();
+        if(plateNumber && plateNumber.length > 2 && plateNumber.length < 17){
+
+        } else {
+            alert("Invalid plate number!");
+        }
     }
 </script>
 </html>
