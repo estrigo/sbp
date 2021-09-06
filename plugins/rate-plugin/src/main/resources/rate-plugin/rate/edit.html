@@ -1,0 +1,35 @@
+<form th:action="@{|/rate/add/parking/${parkingRate.parking.id}|}" th:object="${parkingRate}" method="post">
+    <input type="hidden" th:field="*{id}" th:value="*{id}">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="beforeFreeMinutes" class="control-label" th:text="#{rate.beforeFreeMinutes}"></label>
+                <input type="number" class="form-control" th:field="*{beforeFreeMinutes}" th:value="*{beforeFreeMinutes}" id="beforeFreeMinutes" placeholder="15">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="afterFreeMinutes" class="control-label" th:text="#{rate.afterFreeMinutes}"></label>
+                <input type="number" class="form-control" th:field="*{afterFreeMinutes}" th:value="*{afterFreeMinutes}" id="afterFreeMinutes" placeholder="15">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="cashPaymentValue" class="control-label" th:text="#{rate.cashPaymentValue}"></label>
+                <input type="number" class="form-control" th:field="*{cashPaymentValue}" th:value="*{cashPaymentValue}" id="cashPaymentValue" placeholder="15">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="onlinePaymentValue" class="control-label" th:text="#{rate.onlinePaymentValue}"></label>
+                <input type="number" class="form-control" th:field="*{onlinePaymentValue}" th:value="*{onlinePaymentValue}" id="onlinePaymentValue" placeholder="15">
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>
+        <button type="submit" class="btn btn-info waves-effect waves-light" th:text="#{crm.saveChanges}"></button>
+    </div>
+</form>

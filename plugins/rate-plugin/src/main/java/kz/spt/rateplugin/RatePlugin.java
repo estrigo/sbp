@@ -29,6 +29,7 @@ public class RatePlugin extends SpringBootPlugin implements CustomPlugin {
         return "rate";
     }
 
+    @Override
     public List<Map<String, Object>> getLinks(){
         List<Map<String, Object>> list = new ArrayList<>();
         Map<String, Object> link = new HashMap<>();

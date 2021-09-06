@@ -1,6 +1,7 @@
 package kz.spt.app.controller;
 
 import kz.spt.api.model.*;
+import kz.spt.api.service.ParkingService;
 import kz.spt.app.service.*;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -53,7 +54,7 @@ public class ParkingController {
     }
 
     @GetMapping("/edit/{id}")
-    public String showFormEditParrking(Model model, @PathVariable Long id) {
+    public String showFormEditParking(Model model, @PathVariable Long id) {
         model.addAttribute("parking", parkingService.findById(id));
         return "parking/edit";
     }

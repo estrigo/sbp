@@ -1,4 +1,4 @@
-package kz.spt.app.service;
+package kz.spt.api.service;
 
 import kz.spt.api.model.Parking;
 

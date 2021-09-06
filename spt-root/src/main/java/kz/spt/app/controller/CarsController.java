@@ -27,7 +27,7 @@ public class CarsController {
     /**
      * /cars/list
      * <p>
-     * Shows psginated cars
+     * Shows paginated cars
      *
      * @param model model to add attributes to
      * @return cars/list

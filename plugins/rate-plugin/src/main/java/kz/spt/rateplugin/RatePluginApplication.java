@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @SpringBootApplication
-@EntityScan(basePackages = {"kz.spt.api.model"})
+@EntityScan(basePackages = {"kz.spt.api.model", "kz.spt.rateplugin.model"})
 public class RatePluginApplication {
 
     public static void main(String[] args) {

@@ -29,6 +29,7 @@ public class WhitelistPlugin extends SpringBootPlugin implements CustomPlugin {
         return "whitelist";
     }
 
+    @Override
     public List<Map<String, Object>> getLinks(){
         List<Map<String, Object>> list = new ArrayList<>();
         Map<String, Object> link = new HashMap<>();

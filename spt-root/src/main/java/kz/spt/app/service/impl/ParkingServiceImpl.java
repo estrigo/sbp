@@ -2,7 +2,7 @@ package kz.spt.app.service.impl;
 
 import kz.spt.api.model.Parking;
 import kz.spt.app.repository.ParkingRepository;
-import kz.spt.app.service.ParkingService;
+import kz.spt.api.service.ParkingService;
 import org.springframework.stereotype.Service;
 
 @Service
