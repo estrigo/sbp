@@ -50,7 +50,7 @@
 <script th:src="@{/assets/js/stomp.js}"></script>
 <script type="text/javascript">
     function connect() {
-        var socket = new WebSocket('ws://localhost:8080/greeting');
+        var socket = new WebSocket('ws://' + window.location.host + '/greeting');
         ws = Stomp.over(socket);
 
         ws.connect({}, function(frame) {
