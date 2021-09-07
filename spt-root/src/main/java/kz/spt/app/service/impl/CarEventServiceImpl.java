@@ -39,7 +39,7 @@ public class CarEventServiceImpl implements CarEventService {
     private final CarImageService carImageService;
     private final BarrierService barrierService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private String dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
+    private String dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ";
 
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                PluginManager pluginManager, CarStateService carStateService, CarImageService carImageService,

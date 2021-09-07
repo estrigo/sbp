@@ -12,27 +12,15 @@
                 <div class="card-box table-responsive">
                     <h4 class="m-t-0 header-title"><b th:text="#{car.cars}"></b></h4>
 
-                    <table id="datatable-buttons" class="table table-bordered table-bordered">
+                    <table id="carsTable" class="table table-bordered table-bordered">
                         <thead>
                         <tr>
-                            <th><a th:text="#{ordinal.number}"></a></th>
                             <th><a th:text="#{car.platenumber}"></a></th>
                             <th><a th:text="#{car.brand}"></a></th>
                             <th><a th:text="#{car.color}"></a></th>
                             <th></th>
                         </tr>
                         </thead>
-                        <tbody>
-                        <tr th:each="car, iterStat : ${cars}">
-                            <td th:text="${iterStat.count}"></td>
-                            <td th:text="${car.platenumber}"></td>
-                            <td th:text="${car.brand}"></td>
-                            <td th:text="${car.color}"></td>
-                            <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
-                            <td><a th:href="@{|/cars/edit/${car.id}|}" th:text="#{crm.edit}"></a></td>
-                            </p>
-                        </tr>
-                        </tbody>
                     </table>
                 </div>
                 <p sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')">
@@ -64,18 +52,24 @@
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
 <script type="text/javascript">
-    $(document).ready(function() {
-        $('#datatable').DataTable();
+    $('#carsTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "/rest/cars",
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+                return JSON.stringify(d);
+            }
+        },
+        "columns": [
+            {"data": "platenumber"},
+            {"data": "brand"},
+            {"data": "color"}
+        ]
     });
-
-    //Buttons examples
-    var table = $('#datatable-buttons').DataTable({
-        lengthChange: false,
-        buttons: ['copy', 'excel', 'pdf', 'csv']
-    });
-
-    table.buttons().container()
-        .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
 </script>
 
 </html>
