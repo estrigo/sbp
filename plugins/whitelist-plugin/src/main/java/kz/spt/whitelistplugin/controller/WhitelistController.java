@@ -66,4 +66,13 @@ public class WhitelistController {
             return "redirect:/whitelist/list";
         }
     }
+
+    @GetMapping("/current-status")
+    public String showCurrentStatus(Model model)
+    {
+        model.addAttribute("currentStatus", whitelistService.listAllCarsInParking());
+        return "current-status/list";
+    }
+
+
 }

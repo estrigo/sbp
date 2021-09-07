@@ -14,4 +14,7 @@ public interface CarStateService {
     Boolean checkIsLastEnteredNotLeft(String carNumber);
 
     CarState getLastNotLeft(String carNumber);
+
+    Iterable<CarState> getAllNotLeft();
+
 }

@@ -32,12 +32,29 @@ public class WhitelistPlugin extends SpringBootPlugin implements CustomPlugin {
     @Override
     public List<Map<String, Object>> getLinks(){
         List<Map<String, Object>> list = new ArrayList<>();
-        Map<String, Object> link = new HashMap<>();
-        link.put("label", "White list");
-        link.put("url", "whitelist/list");
-        link.put("cssClass", "ti-file");
-        link.put("role", "MANAGER");
-        list.add(link);
+        Map<String, Object> mainMenu = new HashMap<>();
+        mainMenu.put("label", "White list");
+//        mainMenu.put("url", "whitelist/list");
+        mainMenu.put("cssClass", "ti-file");
+        mainMenu.put("role", "MANAGER");
+
+        List<Map<String, Object>> subMenus = new ArrayList<>();
+
+        Map<String, Object> subMenu1 = new HashMap<>();
+        subMenu1.put("label", "White list");
+        subMenu1.put("url", "whitelist/list");
+        subMenu1.put("role", "MANAGER");
+        subMenus.add(subMenu1);
+
+        Map<String, Object> subMenu2 = new HashMap<>();
+        subMenu2.put("label", "Cars in parking");
+        subMenu2.put("url", "whitelist/current-status");
+        subMenu2.put("role", "MANAGER");
+        subMenus.add(subMenu2);
+
+        mainMenu.put("subMenus", subMenus);
+
+        list.add(mainMenu);
         return list;
     }
 }

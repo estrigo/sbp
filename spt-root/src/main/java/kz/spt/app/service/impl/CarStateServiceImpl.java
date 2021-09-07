@@ -13,6 +13,7 @@ public class CarStateServiceImpl implements CarStateService {
 
     private CarStateRepository carStateRepository;
 
+
     public CarStateServiceImpl(CarStateRepository carStateRepository){
         this.carStateRepository = carStateRepository;
     }
@@ -57,4 +58,11 @@ public class CarStateServiceImpl implements CarStateService {
     public CarState getLastNotLeft(String carNumber) {
         return carStateRepository.getCarStateNotLeft(carNumber);
     }
+
+    @Override
+    public Iterable<CarState> getAllNotLeft() {
+        return carStateRepository.getAllCarStateNotLeft();
+    }
+
+
 }
