@@ -12,8 +12,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class CarImageServiceImpl implements CarImageService {
@@ -44,7 +46,16 @@ public class CarImageServiceImpl implements CarImageService {
             theDir.mkdirs();
         }
 
-        String base64Raw = base64.replaceFirst("data:image/jpeg;base64,", "");
+        List<String> base64imageTypes = new ArrayList<>();
+        base64imageTypes.add("data:image/jpeg;base64,");
+        base64imageTypes.add("data:image/jpg;base64,");
+
+        for(String imageType : base64imageTypes){
+            if(base64.startsWith(imageType)){
+                base64 = base64.replaceFirst(imageType, "");
+            }
+        }
+        String base64Raw = base64;
         byte[] imageBytes = Base64.decodeBase64(base64Raw);
 
         String fullPath = path + fileName;

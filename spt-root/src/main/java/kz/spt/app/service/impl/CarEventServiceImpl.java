@@ -14,6 +14,7 @@ import kz.spt.app.service.CameraService;
 import kz.spt.app.service.CarEventService;
 import kz.spt.api.service.CarsService;
 import kz.spt.app.service.CarImageService;
+import lombok.extern.java.Log;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Log
 @Service
 public class CarEventServiceImpl implements CarEventService {
 
@@ -68,6 +70,8 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("gateName", camera.getGate().getName());
             properties.put("gateDescription", camera.getGate().getDescription());
             properties.put("gateType", camera.getGate().getGateType().toString());
+
+            log.info("eventDto.car_picture : " + eventDto.car_picture);
             String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
 
             if(Gate.GateType.IN.equals(camera.getGate().getGateType())){
