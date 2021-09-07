@@ -39,7 +39,7 @@ public class CarEventServiceImpl implements CarEventService {
     private final CarImageService carImageService;
     private final BarrierService barrierService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private String dateFormat = "yyyy-MM-dd'T'HH:mm";
+    private String dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
 
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                PluginManager pluginManager, CarStateService carStateService, CarImageService carImageService,
@@ -56,8 +56,9 @@ public class CarEventServiceImpl implements CarEventService {
     @Override
     public void saveCarEvent(CarEventDto eventDto) throws Exception {
         SimpleDateFormat format = new SimpleDateFormat(dateFormat);
-        Camera camera = cameraService.findCameraByIp(eventDto.ip_address);
+        eventDto.car_number = eventDto.car_number.toUpperCase();
 
+        Camera camera = cameraService.findCameraByIp(eventDto.ip_address);
         Map<String, Object> properties = new HashMap<>();
         properties.put("carNumber", eventDto.car_number);
         properties.put("eventTime", format.format(eventDto.event_time));
@@ -65,8 +66,6 @@ public class CarEventServiceImpl implements CarEventService {
         properties.put("cameraIp", eventDto.ip_address);
 
         if(camera!=null){
-            eventDto.car_number = eventDto.car_number.toUpperCase();
-
             properties.put("gateName", camera.getGate().getName());
             properties.put("gateDescription", camera.getGate().getDescription());
             properties.put("gateType", camera.getGate().getGateType().toString());
@@ -85,9 +84,9 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     private void handleCarInEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format, String carImageUrl) throws Exception{
-        if(carStateService.checkIsLastEnteredNotLeft(eventDto.car_number)){
-            eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
-        } else {
+        eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
+
+        if(!carStateService.checkIsLastEnteredNotLeft(eventDto.car_number)){
             properties.put("carImageUrl", carImageUrl);
             eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
             eventLogService.createEventLog(Camera.class.getSimpleName(), camera.getId(), properties, "Зафиксирован новый номер авто " + eventDto.car_number);
@@ -146,6 +145,7 @@ public class CarEventServiceImpl implements CarEventService {
     private void handleCarOutEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format, String carImageUrl) throws Exception {
 
         properties.put("carImageUrl", carImageUrl);
+        eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
 
         if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())){
             eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
