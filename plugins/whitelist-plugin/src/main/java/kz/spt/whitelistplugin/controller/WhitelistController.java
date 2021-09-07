@@ -74,5 +74,15 @@ public class WhitelistController {
         return "current-status/list";
     }
 
+    @GetMapping("/current-status/details/{id}")
+    public String showCarsInParking(Model model, @PathVariable Long id)
+    {
+        model.addAttribute("currentStatus" ,whitelistService.carsInParking(id));
+        return "current-status/cars/list";
+    }
+
+
+
+
 
 }

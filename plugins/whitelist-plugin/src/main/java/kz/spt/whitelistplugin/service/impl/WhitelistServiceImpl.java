@@ -93,7 +93,6 @@ public class WhitelistServiceImpl implements WhitelistService {
     @Override
     public List<ParkingCarsDTO> listAllCarsInParking() {
         Iterable<CarState> carStates = getCarStateService().getAllNotLeft();
-        Iterable<Cars> cars = getCarsService().listAllCars();
         List<Parking> parkings = (List<Parking>) getParkingService().listAllParking();
 
         List<ParkingCarsDTO> carsInParkings = new ArrayList<>();
@@ -111,6 +110,18 @@ public class WhitelistServiceImpl implements WhitelistService {
             carsInParkings.add(parkingCarsDTO);
         }
         return carsInParkings;
+    }
+
+    @Override
+    public ParkingCarsDTO carsInParking(Long parkingId){
+        List<ParkingCarsDTO> listCarsInParkings = listAllCarsInParking();
+        for(ParkingCarsDTO parkingCarsDTO : listCarsInParkings)
+        {
+            if(parkingCarsDTO.getParking().getId() == parkingId){
+                return parkingCarsDTO;
+            }
+        }
+        return null;
     }
 
 

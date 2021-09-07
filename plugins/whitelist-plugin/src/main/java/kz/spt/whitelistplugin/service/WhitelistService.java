@@ -19,5 +19,6 @@ public interface WhitelistService {
 
     List<ParkingCarsDTO> listAllCarsInParking();
 
+    ParkingCarsDTO carsInParking(Long parkingId);
 
 }
