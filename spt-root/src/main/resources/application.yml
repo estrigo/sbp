@@ -1,6 +1,7 @@
 spring:
   mvc:
     static-path-pattern: /**
+    locale: ru_RU
   resources:
     add-mappings: true
     cache:
@@ -35,8 +36,6 @@ spring:
     enabled: false
   main:
     banner-mode: off
-
-
 
 org:
   hibernate:

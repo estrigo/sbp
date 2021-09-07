@@ -18,3 +18,5 @@ spring:
         dialect: org.hibernate.dialect.MySQL55Dialect
   flyway:
     enabled: false
+  messages:
+    basename: billing-plugin

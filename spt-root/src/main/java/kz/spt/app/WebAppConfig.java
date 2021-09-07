@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Description;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.http.MediaType;
 import org.springframework.web.accept.ContentNegotiationManager;
@@ -35,7 +37,8 @@ import java.util.*;
 @Configuration
 public class WebAppConfig implements WebMvcConfigurer {
 
-    @Autowired @Lazy
+    @Autowired
+    @Lazy
     private PluginManager pluginManager;
 
     @Override
@@ -54,12 +57,12 @@ public class WebAppConfig implements WebMvcConfigurer {
                 .defaultContentType(MediaType.APPLICATION_JSON)
                 .useJaf(false);
 
-        final Map<String,MediaType> mediaTypes = new HashMap<>();
+        final Map<String, MediaType> mediaTypes = new HashMap<>();
         mediaTypes.put("html", MediaType.TEXT_HTML);
         mediaTypes.put("json", MediaType.APPLICATION_JSON);
         mediaTypes.put("xls", MediaType.valueOf("application/vnd.ms-excel"));
         mediaTypes.put("pdf", MediaType.APPLICATION_PDF);
-        mediaTypes.put("csv", new MediaType("text","csv", Charset.forName("utf-8")));
+        mediaTypes.put("csv", new MediaType("text", "csv", Charset.forName("utf-8")));
         configurer.mediaTypes(mediaTypes);
     }
 
@@ -107,13 +110,13 @@ public class WebAppConfig implements WebMvcConfigurer {
         List<PluginWrapper> plugins = pluginManager.getPlugins();
 
         int orderStart = 2;
-        for(PluginWrapper pluginWrapper: plugins){
+        for (PluginWrapper pluginWrapper : plugins) {
 
-            if(pluginWrapper.getPlugin() instanceof CustomPlugin){
+            if (pluginWrapper.getPlugin() instanceof CustomPlugin) {
                 ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver(pluginWrapper.getPluginClassLoader());
-                CustomPlugin plugin =(CustomPlugin) pluginWrapper.getPlugin();
+                CustomPlugin plugin = (CustomPlugin) pluginWrapper.getPlugin();
 
-                if(plugin.getLinks() != null){
+                if (plugin.getLinks() != null) {
                     templateResolver.setPrefix(pluginWrapper.getPluginId() + "/");
                     templateResolver.setCacheable(false);
                     templateResolver.setSuffix(".html");
@@ -136,7 +139,7 @@ public class WebAppConfig implements WebMvcConfigurer {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         templateEngine.addTemplateResolver(templateResolver());
 
-        for(ClassLoaderTemplateResolver pluginTemplateResolver: pluginTemplateResolvers()){
+        for (ClassLoaderTemplateResolver pluginTemplateResolver : pluginTemplateResolvers()) {
             templateEngine.addTemplateResolver(pluginTemplateResolver);
         }
 
@@ -192,7 +195,7 @@ public class WebAppConfig implements WebMvcConfigurer {
     @Bean
     public LocaleResolver localeResolver() {
         SessionLocaleResolver slr = new SessionLocaleResolver();
-        slr.setDefaultLocale(Locale.US);
+        slr.setDefaultLocale(Locale.ENGLISH);
         return slr;
     }
 
@@ -207,4 +210,23 @@ public class WebAppConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
     }
+
+    @Bean
+    public ReloadableResourceBundleMessageSource messageSource() {
+        List<PluginWrapper> plugins = pluginManager.getPlugins();
+        List<String> messageClassPath = new ArrayList<>();
+        messageClassPath.add("classpath:messages");
+        for (PluginWrapper pluginWrapper : plugins) {
+            if (pluginWrapper.getPlugin() instanceof CustomPlugin) {
+                messageClassPath.add("classpath:billing-plugin/messages/billing-plugin");
+            }
+        }
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setUseCodeAsDefaultMessage(true);
+        messageSource.setDefaultEncoding("UTF-8");
+        messageSource.setCacheSeconds(0);
+        messageSource.setBasenames(messageClassPath.toArray(new String[messageClassPath.size()]));
+        return messageSource;
+    }
+
 }

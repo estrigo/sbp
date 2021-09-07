@@ -1,0 +1,13 @@
+table.dataTable {
+    border-spacing: 0px;
+}
+
+.dataTables_wrapper {
+    margin-top: 15px;
+}
+
+.data-filter{
+    padding: 15px;
+    background-color: #dfdfdf;
+    border-bottom: 2px solid #000;
+}
