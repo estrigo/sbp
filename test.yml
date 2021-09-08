@@ -41,6 +41,8 @@ spring:
     cache: false
   flyway:
     enabled: false
+  main:
+    allow-bean-definition-overriding: true
 org:
   hibernate:
     envers:
