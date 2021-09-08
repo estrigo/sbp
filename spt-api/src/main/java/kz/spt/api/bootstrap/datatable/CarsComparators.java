@@ -25,11 +25,11 @@ public final class CarsComparators {
         map.put(new Key("platenumber", Direction.asc), Comparator.comparing(Cars::getPlatenumber));
         map.put(new Key("platenumber", Direction.desc), Comparator.comparing(Cars::getPlatenumber).reversed());
 
-        map.put(new Key("brand", Direction.asc), Comparator.comparing(Cars::getBrand));
-        map.put(new Key("brand", Direction.desc), Comparator.comparing(Cars::getBrand).reversed());
+        map.put(new Key("brand", Direction.asc), Comparator.comparing(Cars::getNullSafeBrand));
+        map.put(new Key("brand", Direction.desc), Comparator.comparing(Cars::getNullSafeBrand).reversed());
 
-        map.put(new Key("color", Direction.asc), Comparator.comparing(Cars::getColor));
-        map.put(new Key("color", Direction.desc), Comparator.comparing(Cars::getColor).reversed());
+        map.put(new Key("color", Direction.asc), Comparator.comparing(Cars::getNullSafeColor));
+        map.put(new Key("color", Direction.desc), Comparator.comparing(Cars::getNullSafeColor).reversed());
     }
 
     public static Comparator<Cars> getComparator(String name, Direction dir) {

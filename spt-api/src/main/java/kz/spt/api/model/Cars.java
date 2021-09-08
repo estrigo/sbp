@@ -41,4 +41,12 @@ public class Cars {
 
     @UpdateTimestamp
     private Date updated;
+
+    public String getNullSafeBrand(){
+        return getBrand() != null ? getBrand() : "";
+    }
+
+    public String getNullSafeColor(){
+        return getColor() != null ? getColor() : "";
+    }
 }
