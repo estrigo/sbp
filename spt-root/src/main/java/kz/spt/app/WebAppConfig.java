@@ -1,6 +1,6 @@
 package kz.spt.app;
 
-import kz.spt.api.plugin.CustomPlugin;
+import kz.spt.lib.plugin.CustomPlugin;
 import kz.spt.app.viewResolver.CsvViewResolver;
 import kz.spt.app.viewResolver.ExcelViewResolver;
 import kz.spt.app.viewResolver.PdfViewResolver;
@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Description;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.http.MediaType;
 import org.springframework.web.accept.ContentNegotiationManager;

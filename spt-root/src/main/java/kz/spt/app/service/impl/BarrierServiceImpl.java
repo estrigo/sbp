@@ -1,8 +1,8 @@
 package kz.spt.app.service.impl;
 
-import kz.spt.api.model.Barrier;
-import kz.spt.api.model.Gate;
-import kz.spt.api.service.EventLogService;
+import kz.spt.lib.model.Barrier;
+import kz.spt.lib.model.Gate;
+import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.BarrierRepository;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.snmp.SNMPManager;

@@ -35,7 +35,7 @@
         </dependency>
         <dependency>
             <groupId>kz.spt</groupId>
-            <artifactId>spt-api</artifactId>
+            <artifactId>spt-lib</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>

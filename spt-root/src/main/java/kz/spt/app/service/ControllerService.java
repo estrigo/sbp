@@ -1,7 +1,7 @@
 package kz.spt.app.service;
 
 
-import kz.spt.api.model.Controller;
+import kz.spt.lib.model.Controller;
 
 public interface ControllerService {
 

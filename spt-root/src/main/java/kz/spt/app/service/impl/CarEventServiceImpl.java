@@ -3,17 +3,17 @@ package kz.spt.app.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import kz.spt.api.extension.PluginRegister;
-import kz.spt.api.model.*;
-import kz.spt.api.service.CarStateService;
-import kz.spt.api.service.EventLogService;
-import kz.spt.api.service.EventLogService.ArmEventType;
+import kz.spt.lib.extension.PluginRegister;
+import kz.spt.lib.model.*;
+import kz.spt.lib.service.CarStateService;
+import kz.spt.lib.service.EventLogService;
+import kz.spt.lib.service.EventLogService.ArmEventType;
 import kz.spt.app.entity.dto.CarEventDto;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
 import kz.spt.app.service.CarEventService;
-import kz.spt.api.service.CarsService;
-import kz.spt.app.service.CarImageService;
+import kz.spt.lib.service.CarsService;
+import kz.spt.lib.service.CarImageService;
 import lombok.extern.java.Log;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
@@ -70,7 +70,6 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("gateDescription", camera.getGate().getDescription());
             properties.put("gateType", camera.getGate().getGateType().toString());
 
-            log.info("eventDto.car_picture : " + eventDto.car_picture);
             String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
 
             if(Gate.GateType.IN.equals(camera.getGate().getGateType())){

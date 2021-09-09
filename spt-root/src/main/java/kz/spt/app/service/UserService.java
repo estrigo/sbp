@@ -1,8 +1,8 @@
 package kz.spt.app.service;
 
-import kz.spt.api.bootstrap.datatable.Page;
-import kz.spt.api.bootstrap.datatable.PagingRequest;
-import kz.spt.api.model.User;
+import kz.spt.lib.bootstrap.datatable.Page;
+import kz.spt.lib.bootstrap.datatable.PagingRequest;
+import kz.spt.lib.model.User;
 
 public interface UserService {
 

@@ -1,11 +1,7 @@
 package kz.spt.app.controller;
 
-import kz.spt.api.extension.PluginRegister;
-import kz.spt.api.model.Cars;
-import kz.spt.api.service.CarsService;
-import org.laxture.spring.util.ApplicationContextProvider;
-import org.pf4j.Extension;
-import org.springframework.beans.factory.annotation.Autowired;
+import kz.spt.lib.model.Cars;
+import kz.spt.lib.service.CarsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;

@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @SpringBootApplication
-@EntityScan(basePackages = {"kz.spt.api.model", "kz.spt.whitelistplugin.model"})
+@EntityScan(basePackages = {"kz.spt.lib.model", "kz.spt.whitelistplugin.model"})
 public class WhitelistPluginApplication {
 
     public static void main(String[] args) {

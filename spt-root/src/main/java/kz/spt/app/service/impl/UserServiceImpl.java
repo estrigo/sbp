@@ -1,9 +1,8 @@
 package kz.spt.app.service.impl;
 
-import kz.spt.api.bootstrap.datatable.*;
-import kz.spt.api.model.Cars;
-import kz.spt.api.model.Role;
-import kz.spt.api.model.User;
+import kz.spt.lib.bootstrap.datatable.*;
+import kz.spt.lib.model.Role;
+import kz.spt.lib.model.User;
 import kz.spt.app.repository.RoleRepository;
 import kz.spt.app.repository.UserRepository;
 import kz.spt.app.service.SpringDataUserDetailsService;

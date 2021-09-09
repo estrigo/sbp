@@ -1,7 +1,7 @@
 package kz.spt.app.controller;
 
-import kz.spt.api.service.EventLogService;
-import kz.spt.api.model.dto.EventFilterDto;
+import kz.spt.lib.service.EventLogService;
+import kz.spt.lib.model.dto.EventFilterDto;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

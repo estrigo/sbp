@@ -1,6 +1,6 @@
 package kz.spt.app.service;
 
-import kz.spt.api.model.Camera;
+import kz.spt.lib.model.Camera;
 
 import java.util.List;
 

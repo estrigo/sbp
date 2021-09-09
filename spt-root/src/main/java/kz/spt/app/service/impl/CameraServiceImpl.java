@@ -1,9 +1,8 @@
 package kz.spt.app.service.impl;
 
-import kz.spt.api.model.Camera;
+import kz.spt.lib.model.Camera;
 import kz.spt.app.repository.CameraRepository;
 import kz.spt.app.service.CameraService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

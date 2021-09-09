@@ -1,6 +1,6 @@
 package kz.spt.app.repository;
 
-import kz.spt.api.model.Gate;
+import kz.spt.lib.model.Gate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

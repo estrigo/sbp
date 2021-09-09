@@ -1,8 +1,8 @@
 package kz.spt.app.service.impl;
 
-import kz.spt.api.model.Camera;
-import kz.spt.api.model.CarState;
-import kz.spt.api.service.CarStateService;
+import kz.spt.lib.model.Camera;
+import kz.spt.lib.model.CarState;
+import kz.spt.lib.service.CarStateService;
 import kz.spt.app.repository.CarStateRepository;
 import org.springframework.stereotype.Service;
 

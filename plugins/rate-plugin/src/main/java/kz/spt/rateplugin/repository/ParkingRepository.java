@@ -1,6 +1,6 @@
 package kz.spt.rateplugin.repository;
 
-import kz.spt.api.model.Parking;
+import kz.spt.lib.model.Parking;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

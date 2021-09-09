@@ -1,7 +1,7 @@
 package kz.spt.app.service;
 
 
-import kz.spt.api.model.Barrier;
+import kz.spt.lib.model.Barrier;
 
 import java.io.IOException;
 import java.text.ParseException;

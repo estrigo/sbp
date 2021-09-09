@@ -1,6 +1,6 @@
 package kz.spt.whitelistplugin;
 
-import kz.spt.api.plugin.CustomPlugin;
+import kz.spt.lib.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;

@@ -1,11 +1,11 @@
 package kz.spt.whitelistplugin.service.impl;
 
-import kz.spt.api.model.CarState;
-import kz.spt.api.model.Cars;
-import kz.spt.api.model.Parking;
-import kz.spt.api.service.CarStateService;
-import kz.spt.api.service.CarsService;
-import kz.spt.api.service.ParkingService;
+import kz.spt.lib.model.CarState;
+import kz.spt.lib.model.Cars;
+import kz.spt.lib.model.Parking;
+import kz.spt.lib.service.CarStateService;
+import kz.spt.lib.service.CarsService;
+import kz.spt.lib.service.ParkingService;
 import kz.spt.whitelistplugin.WhitelistPlugin;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.dto.ParkingCarsDTO;

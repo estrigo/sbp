@@ -11,7 +11,7 @@
             <div class="form-group">
                 <label for="type" class="control-label" th:text="#{gate.type}"></label>
                 <select th:field="*{gateType}" th:value="*{gateType}" class="form-control" id="type">
-                    <option th:each="gateType : ${T(kz.spt.api.model.Gate.GateType).ALL}"
+                    <option th:each="gateType : ${T(kz.spt.lib.model.Gate.GateType).ALL}"
                             th:value="${gateType}" th:text="#{'gate.gateType.' + ${gateType}}">
                     </option>
                 </select>

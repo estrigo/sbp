@@ -1,6 +1,6 @@
 package kz.spt.app;
 
-import kz.spt.api.plugin.CustomPlugin;
+import kz.spt.lib.plugin.CustomPlugin;
 import kz.spt.app.service.SpringDataUserDetailsService;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
@@ -15,7 +15,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 

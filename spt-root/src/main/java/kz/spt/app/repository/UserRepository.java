@@ -1,6 +1,6 @@
 package kz.spt.app.repository;
 
-import kz.spt.api.model.User;
+import kz.spt.lib.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

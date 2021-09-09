@@ -3,7 +3,7 @@ package kz.spt.rateplugin.extension;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import kz.spt.api.extension.PluginRegister;
+import kz.spt.lib.extension.PluginRegister;
 import kz.spt.rateplugin.RatePlugin;
 import kz.spt.rateplugin.service.RateService;
 import org.pf4j.Extension;

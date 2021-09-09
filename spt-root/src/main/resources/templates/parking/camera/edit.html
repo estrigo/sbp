@@ -27,7 +27,7 @@
             <div class="form-group">
                 <label for="type" class="control-label" th:text="#{camera.type}"></label>
                 <select th:field="*{cameraType}" th:value="*{cameraType}" class="form-control" id="type">
-                    <option th:each="cameraType : ${T(kz.spt.api.model.Camera.CameraType).ALL}"
+                    <option th:each="cameraType : ${T(kz.spt.lib.model.Camera.CameraType).ALL}"
                             th:value="${cameraType}" th:text="#{'camera.cameraType.' + ${cameraType}}">
                     </option>
                 </select>

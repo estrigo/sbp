@@ -1,6 +1,5 @@
 package kz.spt.billingplugin.model;
 
-import kz.spt.api.model.Cars;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

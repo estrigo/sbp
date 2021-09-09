@@ -1,9 +1,9 @@
 package kz.spt.app.service.impl;
 
-import kz.spt.api.model.Camera;
-import kz.spt.api.model.CurrentUser;
-import kz.spt.api.model.Gate;
-import kz.spt.api.service.EventLogService;
+import kz.spt.lib.model.Camera;
+import kz.spt.lib.model.CurrentUser;
+import kz.spt.lib.model.Gate;
+import kz.spt.lib.service.EventLogService;
 import kz.spt.app.service.ArmService;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;

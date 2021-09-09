@@ -1,6 +1,6 @@
 package kz.spt.rateplugin.controller;
 
-import kz.spt.api.model.Parking;
+import kz.spt.lib.model.Parking;
 import kz.spt.rateplugin.model.ParkingRate;
 import kz.spt.rateplugin.service.RateService;
 import org.springframework.stereotype.Controller;

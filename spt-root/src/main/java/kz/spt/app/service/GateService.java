@@ -1,6 +1,6 @@
 package kz.spt.app.service;
 
-import kz.spt.api.model.Gate;
+import kz.spt.lib.model.Gate;
 
 public interface GateService {
 

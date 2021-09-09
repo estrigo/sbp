@@ -1,6 +1,6 @@
 package kz.spt.app.repository;
 
-import kz.spt.api.model.CarState;
+import kz.spt.lib.model.CarState;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;

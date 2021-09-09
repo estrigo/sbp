@@ -1,6 +1,6 @@
 package kz.spt.app.service.impl;
 
-import kz.spt.api.plugin.CustomPlugin;
+import kz.spt.lib.plugin.CustomPlugin;
 import kz.spt.app.service.PluginService;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

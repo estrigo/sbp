@@ -1,7 +1,7 @@
 package kz.spt.rateplugin.service.impl;
 
-import kz.spt.api.model.Parking;
-import kz.spt.api.service.ParkingService;
+import kz.spt.lib.model.Parking;
+import kz.spt.lib.service.ParkingService;
 import kz.spt.rateplugin.RatePlugin;
 import kz.spt.rateplugin.repository.ParkingRepository;
 import kz.spt.rateplugin.model.ParkingRate;

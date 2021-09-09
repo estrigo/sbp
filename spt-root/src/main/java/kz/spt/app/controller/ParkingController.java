@@ -1,8 +1,11 @@
 package kz.spt.app.controller;
 
-import kz.spt.api.model.*;
-import kz.spt.api.service.ParkingService;
-import kz.spt.app.service.*;
+import kz.spt.lib.model.*;
+import kz.spt.lib.service.ParkingService;
+import kz.spt.app.service.BarrierService;
+import kz.spt.app.service.CameraService;
+import kz.spt.app.service.ControllerService;
+import kz.spt.app.service.GateService;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;

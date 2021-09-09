@@ -1,6 +1,6 @@
 package kz.spt.app.controller;
 
-import kz.spt.api.model.User;
+import kz.spt.lib.model.User;
 import kz.spt.app.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

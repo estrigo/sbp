@@ -1,8 +1,8 @@
 package kz.spt.app.service.impl;
 
-import kz.spt.api.model.EventLog;
-import kz.spt.api.service.EventLogService;
-import kz.spt.app.service.CarImageService;
+import kz.spt.lib.model.EventLog;
+import kz.spt.lib.service.EventLogService;
+import kz.spt.lib.service.CarImageService;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

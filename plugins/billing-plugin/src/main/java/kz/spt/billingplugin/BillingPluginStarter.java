@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @SpringBootApplication
-@EntityScan(basePackages = {"kz.spt.api.model", "kz.spt.billingplugin.model"})
+@EntityScan(basePackages = {"kz.spt.lib.model", "kz.spt.billingplugin.model"})
 public class BillingPluginStarter {
 
     public static void main(String[] args) {

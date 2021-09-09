@@ -1,6 +1,6 @@
 package kz.spt.rateplugin.model;
 
-import kz.spt.api.model.Parking;
+import kz.spt.lib.model.Parking;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

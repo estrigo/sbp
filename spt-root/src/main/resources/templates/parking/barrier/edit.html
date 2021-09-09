@@ -27,7 +27,7 @@
             <div class="form-group">
                 <label for="type" class="control-label" th:text="#{barrier.type}"></label>
                 <select th:field="*{barrierType}" th:value="*{barrierType}" class="form-control" id="type">
-                    <option th:each="barrierType : ${T(kz.spt.api.model.Barrier.BarrierType).ALL}"
+                    <option th:each="barrierType : ${T(kz.spt.lib.model.Barrier.BarrierType).ALL}"
                             th:value="${barrierType}" th:text="#{'barrier.barrierType.' + ${barrierType}}">
                     </option>
                 </select>

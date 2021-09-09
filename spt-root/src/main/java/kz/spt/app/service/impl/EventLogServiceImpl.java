@@ -2,11 +2,11 @@ package kz.spt.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import kz.spt.api.bootstrap.datatable.*;
-import kz.spt.api.model.EventLog;
-import kz.spt.api.model.EventLogSpecification;
-import kz.spt.api.model.dto.EventFilterDto;
-import kz.spt.api.service.EventLogService;
+import kz.spt.lib.bootstrap.datatable.*;
+import kz.spt.lib.model.EventLog;
+import kz.spt.lib.model.EventLogSpecification;
+import kz.spt.lib.model.dto.EventFilterDto;
+import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.EventLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;

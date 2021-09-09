@@ -1,15 +1,14 @@
 package kz.spt.app.service.impl;
 
-import kz.spt.api.bootstrap.datatable.*;
-import kz.spt.api.model.Cars;
-import kz.spt.api.service.EventLogService;
+import kz.spt.lib.bootstrap.datatable.*;
+import kz.spt.lib.model.Cars;
+import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.CarsRepository;
-import kz.spt.api.service.CarsService;
+import kz.spt.lib.service.CarsService;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;

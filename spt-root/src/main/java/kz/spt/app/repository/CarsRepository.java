@@ -1,6 +1,6 @@
 package kz.spt.app.repository;
 
-import kz.spt.api.model.Cars;
+import kz.spt.lib.model.Cars;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

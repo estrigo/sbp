@@ -1,6 +1,6 @@
 package kz.spt.whitelistplugin.model;
 
-import kz.spt.api.model.Cars;
+import kz.spt.lib.model.Cars;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;

@@ -1,6 +1,6 @@
 package kz.spt.app.view;
 
-import kz.spt.api.model.User;
+import kz.spt.lib.model.User;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.web.servlet.view.document.AbstractXlsView;

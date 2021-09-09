@@ -1,6 +1,6 @@
 package kz.spt.app.view;
 
-import kz.spt.api.model.User;
+import kz.spt.lib.model.User;
 import org.supercsv.io.CsvBeanWriter;
 import org.supercsv.io.ICsvBeanWriter;
 import org.supercsv.prefs.CsvPreference;
