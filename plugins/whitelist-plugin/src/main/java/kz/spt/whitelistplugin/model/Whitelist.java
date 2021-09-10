@@ -1,6 +1,7 @@
 package kz.spt.whitelistplugin.model;
 
 import kz.spt.lib.model.Cars;
+import kz.spt.lib.model.Groups;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -44,8 +45,8 @@ public class Whitelist {
     private Type type;
 
     @ManyToOne
-    @JoinColumn(name = "category")
-    private Category category;
+    @JoinColumn(name = "group_id")
+    private Groups group;
 
     @CreationTimestamp
     private Date created;

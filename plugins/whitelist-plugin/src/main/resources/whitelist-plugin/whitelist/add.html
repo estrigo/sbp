@@ -16,6 +16,16 @@
                             <div class="p-20">
                                 <form th:action="@{|/whitelist/add|}" th:object="${whitelist}" method="post">
                                     <div class="form-group row">
+                                        <label class="col-2 col-form-label" th:text="#{whitelist.type}"></label>
+                                        <div class="col-10">
+                                            <select id="kind" th:field="*{kind}" class="form-control">
+                                                <option th:value="INDIVIDUAL" th:text="INDIVIDUAL"></option>
+                                                <option th:value="GROUP" th:text="GROUP"></option>
+                                                <!--option th:value="WEEKDAYS" th:text="WEEKDAYS"></option-->
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
                                         <label class="col-2 col-form-label" th:text="#{car.platenumber}"></label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{platenumber}">

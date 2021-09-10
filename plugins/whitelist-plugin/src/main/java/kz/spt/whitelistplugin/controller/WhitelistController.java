@@ -81,6 +81,13 @@ public class WhitelistController {
         return "current-status/cars/list";
     }
 
+    @GetMapping("/groups")
+    public String showGroups(Model model)
+    {
+        model.addAttribute("groups" , whitelistService.listAllGroupsInWhitelist());
+        return "whitelist/groups/list";
+    }
+
 
 
 

@@ -2,9 +2,11 @@ package kz.spt.whitelistplugin.service.impl;
 
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Cars;
+import kz.spt.lib.model.Groups;
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.CarsService;
+import kz.spt.lib.service.GroupsService;
 import kz.spt.lib.service.ParkingService;
 import kz.spt.whitelistplugin.WhitelistPlugin;
 import kz.spt.whitelistplugin.model.Whitelist;
@@ -27,7 +29,7 @@ public class WhitelistServiceImpl implements WhitelistService {
     private CarsService carsService;
     private CarStateService carStateService;
     private ParkingService parkingService;
-
+    private GroupsService groupsService;
 
     @Autowired
     private WhitelistRepository whitelistRepository;
@@ -124,6 +126,11 @@ public class WhitelistServiceImpl implements WhitelistService {
         return null;
     }
 
+    @Override
+    public List<Groups> listAllGroupsInWhitelist() {
+        return getGroupsService().listAllGroups();
+    }
+
 
     private CarsService getCarsService() {
         if (this.carsService == null) {
@@ -145,5 +152,16 @@ public class WhitelistServiceImpl implements WhitelistService {
         }
         return parkingService;
     }
+
+    private GroupsService getGroupsService()
+        {
+            if(this.groupsService == null)
+            {
+                groupsService = (GroupsService) WhitelistPlugin.INSTANCE.getMainApplicationContext().getBean("groupsServiceImpl");
+            }
+            return groupsService;
+
+
+        }
 
 }
