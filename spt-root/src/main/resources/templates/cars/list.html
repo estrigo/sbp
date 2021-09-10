@@ -15,10 +15,9 @@
                     <table id="carsTable" class="table table-bordered table-bordered">
                         <thead>
                         <tr>
-                            <th><a th:text="#{car.platenumber}"></a></th>
-                            <th><a th:text="#{car.brand}"></a></th>
-                            <th><a th:text="#{car.color}"></a></th>
-                            <th></th>
+                            <th style="width: 34%"><a th:text="#{car.platenumber}"></a></th>
+                            <th style="width: 33%"><a th:text="#{car.brand}"></a></th>
+                            <th style="width: 33%"><a th:text="#{car.color}"></a></th>
                         </tr>
                         </thead>
                     </table>
@@ -65,9 +64,9 @@
             }
         },
         "columns": [
-            {"data": "platenumber"},
-            {"data": "brand"},
-            {"data": "color"}
+            {"data": "platenumber", "width" : "34%"},
+            {"data": "brand", "width" : "33%"},
+            {"data": "color", "width" : "33%"}
         ]
     });
 </script>
