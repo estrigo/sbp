@@ -11,3 +11,8 @@ table.dataTable {
     background-color: #dfdfdf;
     border-bottom: 2px solid #000;
 }
+
+.btn-secondary{
+    background-color: #CCC;
+    color:#000;
+}
