@@ -97,12 +97,16 @@
             {"data": "email"},
             {"data": "firstName"},
             {"data": "lastName"},
+            {"data" : "roles" ,
+              "render" : "[, ].name"
+            },
             {"data": "id",
             "render" : function(id){
                 return '<a href = "edit/' + id+'">Edit<a>';
             }}
         ]
     });
+
 
 
 

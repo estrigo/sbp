@@ -28,11 +28,11 @@ public final class UsersComparator {
         map.put(new UsersComparator.Key("email", Direction.asc), Comparator.comparing(User::getEmail));
         map.put(new UsersComparator.Key("email", Direction.desc), Comparator.comparing(User::getEmail).reversed());
 
-        map.put(new UsersComparator.Key("first_name", Direction.asc), Comparator.comparing(User::getFirstName));
-        map.put(new UsersComparator.Key("first_name", Direction.desc), Comparator.comparing(User::getFirstName).reversed());
+        map.put(new UsersComparator.Key("firstName", Direction.asc), Comparator.comparing(User::getFirstName));
+        map.put(new UsersComparator.Key("firstName", Direction.desc), Comparator.comparing(User::getFirstName).reversed());
 
-        map.put(new UsersComparator.Key("last_name", Direction.asc), Comparator.comparing(User::getLastName));
-        map.put(new UsersComparator.Key("last_name", Direction.desc), Comparator.comparing(User::getLastName).reversed());
+        map.put(new UsersComparator.Key("lastName", Direction.asc), Comparator.comparing(User::getLastName));
+        map.put(new UsersComparator.Key("lastName", Direction.desc), Comparator.comparing(User::getLastName).reversed());
 
 //        map.put(new UsersComparator.Key("role", Direction.asc), Comparator.comparing(User::getRoles));
 //        map.put(new UsersComparator.Key("role", Direction.desc), Comparator.comparing(User::getRoles).reversed());
