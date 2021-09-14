@@ -2,11 +2,11 @@ package kz.spt.whitelistplugin.service.impl;
 
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Cars;
-import kz.spt.lib.model.Groups;
+import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.service.CarStateService;
-import kz.spt.lib.service.CarsService;
-import kz.spt.lib.service.GroupsService;
+import kz.spt.whitelistplugin.service.RootServicesGetterService;
+import kz.spt.whitelistplugin.service.WhitelistGroupsService;
 import kz.spt.lib.service.ParkingService;
 import kz.spt.whitelistplugin.WhitelistPlugin;
 import kz.spt.whitelistplugin.model.Whitelist;
@@ -14,34 +14,59 @@ import kz.spt.whitelistplugin.model.dto.ParkingCarsDTO;
 import kz.spt.whitelistplugin.repository.WhitelistRepository;
 import kz.spt.whitelistplugin.service.WhitelistService;
 import org.pf4j.util.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.swing.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+
 @Service
 public class WhitelistServiceImpl implements WhitelistService {
 
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
-    private CarsService carsService;
     private CarStateService carStateService;
     private ParkingService parkingService;
-    private GroupsService groupsService;
-
-    @Autowired
     private WhitelistRepository whitelistRepository;
+    private WhitelistGroupsService whitelistGroupsService;
+    private RootServicesGetterService rootServicesGetterService;
+
+    public WhitelistServiceImpl(WhitelistRepository whitelistRepository, WhitelistGroupsService whitelistGroupsService,
+                                RootServicesGetterService rootServicesGetterService){
+        this.whitelistRepository = whitelistRepository;
+        this.whitelistGroupsService = whitelistGroupsService;
+        this.rootServicesGetterService  = rootServicesGetterService;
+    }
 
     @Override
     public void saveWhitelist(Whitelist whitelist, UserDetails currentUser) throws Exception {
-        getCarsService().createCar(whitelist.getPlatenumber());
-        Cars car = getCarsService().findByPlatenumber(whitelist.getPlatenumber());
-        whitelist.setCar(car);
+
+        if(Whitelist.Kind.GROUP.equals(whitelist.getKind())){
+            if(whitelist.getGroup() != null){
+                WhitelistGroups group = whitelist.getGroup();
+                whitelistGroupsService.updateGroup(group.getId(), whitelist.getGroupName(), whitelist.getCarsList(), currentUser.getUsername());
+            } else {
+                WhitelistGroups whitelistGroups = whitelistGroupsService.createGroup(whitelist.getGroupName(), whitelist.getCarsList(), currentUser.getUsername());
+                whitelist.setGroup(whitelistGroups);
+            }
+            whitelist.setCar(null);
+        }
+
+        if(Whitelist.Kind.INDIVIDUAL.equals(whitelist.getKind())){
+            Cars car = rootServicesGetterService.getCarsService().createCar(whitelist.getPlatenumber());
+            whitelist.setCar(car);
+            if(whitelist.getGroup() != null){
+                WhitelistGroups group = whitelist.getGroup();
+                whitelist.setGroup(null);
+                group.setCars(null);
+                whitelistGroupsService.deleteGroup(group);
+            }
+        }
 
         SimpleDateFormat format = new SimpleDateFormat(dateformat);
-
         if (Whitelist.Type.PERIOD.equals(whitelist.getType()) || Whitelist.Type.ONCE.equals(whitelist.getType()) || Whitelist.Type.MONTHLY.equals(whitelist.getType())) {
             if (StringUtils.isNotNullOrEmpty(whitelist.getAccessStartString())) {
                 whitelist.setAccess_start(format.parse(whitelist.getAccessStartString()));
@@ -55,34 +80,45 @@ public class WhitelistServiceImpl implements WhitelistService {
         } else {
             whitelist.setCreatedUser(currentUser.getUsername());
         }
-
         whitelistRepository.save(whitelist);
     }
 
     @Override
     public Iterable<Whitelist> listAllWhitelist() {
-        return whitelistRepository.findAllByCarIsNotNull();
+        return whitelistRepository.findAll();
     }
 
     @Override
     public Boolean hasAccess(String platenumber, Date date) {
 
-        Cars car = getCarsService().findByPlatenumber(platenumber);
+        Cars car = rootServicesGetterService.getCarsService().findByPlatenumber(platenumber);
         if (car != null) {
             List<Whitelist> whitelists = whitelistRepository.findValidWhiteListByCar(car, date);
-            if (whitelists.size() > 0) {
-                return true;
-            }
+            List<Whitelist> groupWhitelists = whitelistRepository.findValidGroupWhiteListByCar(car, date);
+            return whitelists.size() > 0 || groupWhitelists.size() > 0;
         }
 
         return false;
     }
 
     @Override
-    public Whitelist findById(Long id) {
+    public Whitelist prepareById(Long id) {
         SimpleDateFormat format = new SimpleDateFormat(dateformat);
-        Whitelist whitelist = whitelistRepository.getWithCar(id);
-        whitelist.setPlatenumber(whitelist.getCar().getPlatenumber());
+        Whitelist whitelist = whitelistRepository.getWithCarAndGroup(id);
+        if(Whitelist.Kind.INDIVIDUAL.equals(whitelist.getKind())){
+            whitelist.setPlatenumber(whitelist.getCar().getPlatenumber());
+        }
+        if(Whitelist.Kind.GROUP.equals(whitelist.getKind())){
+            Set<Cars> cars = whitelist.getGroup().getCars();
+            List<String> plateNumbers = new ArrayList<>();
+            for (Cars car : cars){
+                plateNumbers.add(car.getPlatenumber());
+            }
+            String[] arr = new String[plateNumbers.size()];
+            plateNumbers.toArray(arr);
+            whitelist.carsList = arr;
+            whitelist.setGroupName(whitelist.getGroup().getName());
+        }
         if (Whitelist.Type.PERIOD.equals(whitelist.getType())) {
             if (whitelist.getAccess_start() != null) {
                 whitelist.setAccessStartString(format.format(whitelist.getAccess_start()));
@@ -104,8 +140,8 @@ public class WhitelistServiceImpl implements WhitelistService {
             ParkingCarsDTO parkingCarsDTO = new ParkingCarsDTO();
             parkingCarsDTO.setParking(parking);
             for (CarState carState : carStates) {
-                if (carState.getParking() != null && carState.getParking().getId() == parking.getId()) {
-                    resultCars.add(getCarsService().findByPlatenumber(carState.getCarNumber()));
+                if (carState.getParking() != null && carState.getParking().getId().equals(parking.getId())) {
+                    resultCars.add(rootServicesGetterService.getCarsService().findByPlatenumber(carState.getCarNumber()));
                 }
             }
             parkingCarsDTO.setCarsList(resultCars);
@@ -119,24 +155,11 @@ public class WhitelistServiceImpl implements WhitelistService {
         List<ParkingCarsDTO> listCarsInParkings = listAllCarsInParking();
         for(ParkingCarsDTO parkingCarsDTO : listCarsInParkings)
         {
-            if(parkingCarsDTO.getParking().getId() == parkingId){
+            if(parkingCarsDTO.getParking().getId().equals(parkingId)){
                 return parkingCarsDTO;
             }
         }
         return null;
-    }
-
-    @Override
-    public List<Groups> listAllGroupsInWhitelist() {
-        return getGroupsService().listAllGroups();
-    }
-
-
-    private CarsService getCarsService() {
-        if (this.carsService == null) {
-            carsService = (CarsService) WhitelistPlugin.INSTANCE.getMainApplicationContext().getBean("carsServiceImpl");
-        }
-        return carsService;
     }
 
     private CarStateService getCarStateService() {
@@ -152,16 +175,4 @@ public class WhitelistServiceImpl implements WhitelistService {
         }
         return parkingService;
     }
-
-    private GroupsService getGroupsService()
-        {
-            if(this.groupsService == null)
-            {
-                groupsService = (GroupsService) WhitelistPlugin.INSTANCE.getMainApplicationContext().getBean("groupsServiceImpl");
-            }
-            return groupsService;
-
-
-        }
-
 }

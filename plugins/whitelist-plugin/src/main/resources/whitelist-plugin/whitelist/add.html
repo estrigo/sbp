@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{})">
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})">
 
+<link th:href="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css}" rel="stylesheet" />
 
 <div class="content">
     <div class="container">
@@ -15,20 +16,40 @@
                         <div class="col-12">
                             <div class="p-20">
                                 <form th:action="@{|/whitelist/add|}" th:object="${whitelist}" method="post">
+                                    <div class="form-group row" th:if="${#fields.hasAnyErrors()}">
+                                        <label class="col-2 col-form-label">Errors</label>
+                                        <label class="col-2 col-form-label">
+                                            <ul>
+                                                <li th:each="err : ${#fields.allErrors()}" th:text="${err}" />
+                                            </ul>
+                                        </label>
+                                    </div>
                                     <div class="form-group row">
-                                        <label class="col-2 col-form-label" th:text="#{whitelist.type}"></label>
+                                        <label class="col-2 col-form-label" th:text="#{whitelist.kind}"></label>
                                         <div class="col-10">
-                                            <select id="kind" th:field="*{kind}" class="form-control">
+                                            <select id="kind" th:field="*{kind}" class="form-control" onchange="checkSelectedKinds(value)">
                                                 <option th:value="INDIVIDUAL" th:text="INDIVIDUAL"></option>
                                                 <option th:value="GROUP" th:text="GROUP"></option>
-                                                <!--option th:value="WEEKDAYS" th:text="WEEKDAYS"></option-->
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="form-group row">
+                                    <div class="form-group row" id="platenumber">
                                         <label class="col-2 col-form-label" th:text="#{car.platenumber}"></label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{platenumber}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row" id="groupName" style="display: none">
+                                        <label class="col-2 col-form-label" th:text="#{whitelist.groupName}"></label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{groupName}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row" id="carsList" style="display: none">
+                                        <label class="col-2 col-form-label" th:text="#{whitelist.carsList}"></label>
+                                        <div class="col-10">
+                                            <select class="form-control" multiple data-role="tagsinput" th:field="*{carsList}" placeholder="Add car numbers">
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="form-group row">
@@ -76,15 +97,37 @@
         </div>
     </div>
 </div>
+
+<script th:src="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js}"></script>
+
 <script type="text/javascript">
     function checkSelectedTypes(){
         var value = $('#types').val();
         if(!value || value == 'UNLIMITED' || value == 'WEEKDAYS'){
-            $('#beginDate').hide();
+            $('#platenumber').hide();
             $('#endDate').hide();
         } else {
             $('#beginDate').show();
             $('#endDate').show();
+        }
+    }
+
+    function checkSelectedKinds(){
+        var value = $('#kind').val();
+        if(value) {
+            if (value == 'GROUP') {
+                $('#platenumber').hide();
+                $('#carsList').show();
+                $('#groupName').show();
+            } else {
+                $('#platenumber').show();
+                $('#carsList').hide();
+                $('#groupName').hide();
+            }
+        } else {
+            $('#platenumber').show();
+            $('#carsList').hide();
+            $('#groupName').hide();
         }
     }
 </script>

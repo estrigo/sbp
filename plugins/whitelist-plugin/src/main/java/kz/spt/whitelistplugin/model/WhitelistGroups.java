@@ -1,13 +1,13 @@
-package kz.spt.lib.model;
+package kz.spt.whitelistplugin.model;
 
 
+import kz.spt.lib.model.Cars;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -19,9 +19,8 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Audited
-@Table(name = "Groups", schema = "crm")
-public class Groups {
+@Table(name = "whitelist_group", schema = "crm")
+public class WhitelistGroups {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +29,7 @@ public class Groups {
 
     private String name;
 
-    @ManyToMany(cascade = {CascadeType.ALL})
+    @ManyToMany
     @JoinTable(
             name = "whitelist_groups_cars",
             joinColumns = {@JoinColumn(name = "groups_id")},

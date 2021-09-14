@@ -1,6 +1,7 @@
 package kz.spt.whitelistplugin.service;
 
-import kz.spt.lib.model.Groups;
+import kz.spt.lib.model.Cars;
+import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.dto.ParkingCarsDTO;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,12 +17,9 @@ public interface WhitelistService {
 
     Boolean hasAccess(String platenumber, Date enterDate);
 
-    Whitelist findById(Long id);
+    Whitelist prepareById(Long id);
 
     List<ParkingCarsDTO> listAllCarsInParking();
 
     ParkingCarsDTO carsInParking(Long parkingId);
-
-    List<Groups> listAllGroupsInWhitelist();
-
 }

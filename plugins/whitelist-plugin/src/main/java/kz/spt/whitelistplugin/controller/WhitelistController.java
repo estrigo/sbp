@@ -1,6 +1,8 @@
 package kz.spt.whitelistplugin.controller;
 
 import kz.spt.whitelistplugin.model.Whitelist;
+import kz.spt.whitelistplugin.model.WhitelistGroups;
+import kz.spt.whitelistplugin.service.WhitelistGroupsService;
 import kz.spt.whitelistplugin.service.WhitelistService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,9 +22,11 @@ import javax.validation.Valid;
 public class WhitelistController {
 
     private WhitelistService whitelistService;
+    private WhitelistGroupsService whitelistGroupsService;
 
-    public WhitelistController(WhitelistService whitelistService){
+    public WhitelistController(WhitelistService whitelistService, WhitelistGroupsService whitelistGroupsService){
         this.whitelistService = whitelistService;
+        this.whitelistGroupsService = whitelistGroupsService;
     }
 
     @GetMapping("/list")
@@ -40,19 +44,42 @@ public class WhitelistController {
     @PostMapping("/add")
     public String processRequestAddCar(Model model, @Valid Whitelist whitelist, BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         if (bindingResult.hasErrors()) {
-            for(ObjectError objectError : bindingResult.getAllErrors()){
-                System.out.println(objectError.getObjectName() + " " + objectError.getCode() + " " + objectError.getDefaultMessage());
-            }
             return "whitelist/add";
         } else {
-            whitelistService.saveWhitelist(whitelist, currentUser);
-            return "redirect:/whitelist/list";
+            if(Whitelist.Kind.GROUP.equals(whitelist.getKind())){
+                if(whitelist.getCarsList() == null || whitelist.getCarsList().length == 0){
+                    ObjectError error = new ObjectError("emptyCarList", "Please fill plate numbers");
+                    bindingResult.addError(error);
+                }
+                if(whitelist.getGroupName() == null || "".equals(whitelist.getGroupName())){
+                    ObjectError error = new ObjectError("emptyGroupName", "Please fill group name");
+                    bindingResult.addError(error);
+                }
+
+                if(!bindingResult.hasErrors()){
+                    whitelistService.saveWhitelist(whitelist, currentUser);
+                    return "redirect:/whitelist/list";
+                }
+            } else if(Whitelist.Kind.INDIVIDUAL.equals(whitelist.getKind())){
+                if(whitelist.getPlatenumber()!=null && whitelist.getPlatenumber().length() >= 3  && whitelist.getPlatenumber().length() <= 16){
+                    whitelistService.saveWhitelist(whitelist, currentUser);
+                    return "redirect:/whitelist/list";
+                } else {
+                    ObjectError error = new ObjectError("invalidPlateNumber", "Invalid plate number");
+                    bindingResult.addError(error);
+                }
+            } else {
+                ObjectError error = new ObjectError("unknownKind", "Please select a Individual or Group");
+                bindingResult.addError(error);
+            }
+            return "whitelist/add";
         }
     }
 
     @GetMapping("/edit/{id}")
     public String showFormEditWhiteList(Model model, @PathVariable Long id) {
-        model.addAttribute("whitelist", whitelistService.findById(id));
+        Whitelist whitelist = whitelistService.prepareById(id);
+        model.addAttribute("whitelist", whitelistService.prepareById(id));
         return "whitelist/edit";
     }
 
@@ -62,8 +89,33 @@ public class WhitelistController {
         if (bindingResult.hasErrors()) {
             return "redirect:/whitelist/edit/" + id;
         } else {
-            whitelistService.saveWhitelist(whitelist, currentUser);
-            return "redirect:/whitelist/list";
+            if(Whitelist.Kind.GROUP.equals(whitelist.getKind())){
+                if(whitelist.getCarsList() == null || whitelist.getCarsList().length == 0){
+                    ObjectError error = new ObjectError("emptyCarList", "Please fill plate numbers");
+                    bindingResult.addError(error);
+                }
+                if(whitelist.getGroupName() == null || "".equals(whitelist.getGroupName())){
+                    ObjectError error = new ObjectError("emptyGroupName", "Please fill group name");
+                    bindingResult.addError(error);
+                }
+
+                if(!bindingResult.hasErrors()){
+                    whitelistService.saveWhitelist(whitelist, currentUser);
+                    return "redirect:/whitelist/list";
+                }
+            } else if(Whitelist.Kind.INDIVIDUAL.equals(whitelist.getKind())){
+                if(whitelist.getPlatenumber()!=null && whitelist.getPlatenumber().length() >= 3  && whitelist.getPlatenumber().length() <= 16){
+                    whitelistService.saveWhitelist(whitelist, currentUser);
+                    return "redirect:/whitelist/list";
+                } else {
+                    ObjectError error = new ObjectError("invalidPlateNumber", "Invalid plate number");
+                    bindingResult.addError(error);
+                }
+            } else {
+                ObjectError error = new ObjectError("unknownKind", "Please select a Individual or Group");
+                bindingResult.addError(error);
+            }
+            return "redirect:/whitelist/edit/" + id;
         }
     }
 
@@ -81,15 +133,9 @@ public class WhitelistController {
         return "current-status/cars/list";
     }
 
-    @GetMapping("/groups")
-    public String showGroups(Model model)
-    {
-        model.addAttribute("groups" , whitelistService.listAllGroupsInWhitelist());
+    @GetMapping("/group/{groupId}")
+    public String getWhitelistGroupCars(Model model, @PathVariable Long groupId) {
+        model.addAttribute("group", whitelistGroupsService.getWithCars(groupId));
         return "whitelist/groups/list";
     }
-
-
-
-
-
 }

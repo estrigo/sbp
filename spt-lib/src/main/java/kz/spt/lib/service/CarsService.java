@@ -16,7 +16,7 @@ public interface CarsService {
 
     Iterable<Cars> findAllByDeletedFalse();
 
-    void createCar(String platenumber);
+    Cars createCar(String platenumber);
 
     Page<Cars> getCars(PagingRequest pagingRequest);
 }

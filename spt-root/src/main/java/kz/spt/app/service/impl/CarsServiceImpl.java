@@ -46,13 +46,15 @@ public class CarsServiceImpl implements CarsService {
         return carsRepository.save(cars);
     }
 
-    public void createCar(String platenumber){
-        if(findByPlatenumber(platenumber) == null){
-            Cars cars = new Cars();
-            cars.setPlatenumber(platenumber);
-            Cars savedCar = saveCars(cars);
-            eventLogService.createEventLog(String.valueOf(Cars.class), savedCar.getId(), null, "Новый номер авто " + cars.getPlatenumber() + " сохранен в системе ");
+    public Cars createCar(String platenumber){
+        Cars car = findByPlatenumber(platenumber);
+        if(car == null){
+            car = new Cars();
+            car.setPlatenumber(platenumber);
+            car = saveCars(car);
+            eventLogService.createEventLog(Cars.class.getSimpleName(), car.getId(), null, "Новый номер авто " + car.getPlatenumber() + " сохранен в системе ");
         }
+        return car;
     }
 
     @Override

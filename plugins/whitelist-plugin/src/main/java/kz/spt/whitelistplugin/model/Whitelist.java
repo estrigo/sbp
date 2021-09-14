@@ -1,13 +1,13 @@
 package kz.spt.whitelistplugin.model;
 
 import kz.spt.lib.model.Cars;
-import kz.spt.lib.model.Groups;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.Date;
 
 @Entity
@@ -28,6 +28,13 @@ public class Whitelist {
         public static final Type[] ACTIVE = {UNLIMITED, PERIOD, MONTHLY, ONCE, WEEKDAYS};
     }
 
+    public enum Kind {
+        INDIVIDUAL,
+        GROUP;
+
+        public static final Kind[] ACTIVE = {INDIVIDUAL, GROUP};
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -42,11 +49,14 @@ public class Whitelist {
     private Date access_end;
 
     @Enumerated(EnumType.STRING)
+    private Kind kind;
+
+    @Enumerated(EnumType.STRING)
     private Type type;
 
     @ManyToOne
     @JoinColumn(name = "group_id")
-    private Groups group;
+    private WhitelistGroups group;
 
     @CreationTimestamp
     private Date created;
@@ -59,7 +69,6 @@ public class Whitelist {
     private String updatedUser;
 
     @Transient
-    @Size(min = 3, max = 16)
     private String platenumber;
 
     @Transient
@@ -67,4 +76,10 @@ public class Whitelist {
 
     @Transient
     private String accessEndString;
+
+    @Transient
+    public String[] carsList;
+
+    @Transient
+    private String groupName;
 }

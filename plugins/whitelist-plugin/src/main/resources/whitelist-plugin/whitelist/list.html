@@ -16,7 +16,12 @@
                         <thead>
                         <tr>
                             <th><a th:text="#{ordinal.number}"></a></th>
-                            <th><a th:text="#{car.platenumber}"></a></th>
+                            <th>
+                                <a>
+                                    <span th:text="#{car.platenumber}"></span> /
+                                    <span th:text="#{whitelist.groupName}"></span>
+                                </a>
+                            </th>
                             <th><a th:text="#{whitelist.type}"></a></th>
                             <th><a th:text="#{whitelist.condition}"></a></th>
                             <th></th>
@@ -25,10 +30,19 @@
                         <tbody>
                         <tr th:each="w, iterStat : ${whitelist}">
                             <td th:text="${iterStat.count}"></td>
-                            <td th:text="${w.car.platenumber}"></td>
+                            <td th:if="${'INDIVIDUAL'.equals(w.kind.toString())}">
+                                <span th:text="${w.car.platenumber}"></span>
+                            </td>
+                            <td th:if="${'GROUP'.equals(w.kind.toString())}">
+                                <a href="#" data-toggle="modal" data-target="#group-close-modal" th:groupId="${w.group.id}" th:onclick="groupModalContent(this.getAttribute('groupId'))">
+                                    <h4 class="header-title m-t-0 m-b-0"><span th:text="${w.group.name}"></span></h4>
+                                </a>
+                            </td>
                             <td th:text="${w.type}"></td>
-                            <td th:if="${'UNLIMITED'.equals(w.type.toString())}" th:text="${'Авто с гос. номером ' + w.car.platenumber + ' может посещать объект в любое время.'}"></td>
-                            <td th:if="${'PERIOD'.equals(w.type.toString())}" th:text="${'Авто с гос. номером ' + w.car.platenumber + ' может посещать объект ' + (w.access_start != null && w.access_start > #dates.createNow() ? 'с даты ' + #dates.format(w.access_start, 'dd.MM.yyyy HH:mm') : 'в любое время') + '. Сроком до ' + #dates.format(w.access_end, 'dd.MM.yyyy HH:mm')}"></td>
+                            <td th:if="${'INDIVIDUAL'.equals(w.kind.toString()) && 'UNLIMITED'.equals(w.type.toString())}" th:text="${'Авто с гос. номером ' + w.car.platenumber + ' может посещать объект в любое время.'}"></td>
+                            <td th:if="${'INDIVIDUAL'.equals(w.kind.toString()) && 'PERIOD'.equals(w.type.toString())}" th:text="${'Авто с гос. номером ' + w.car.platenumber + ' может посещать объект ' + (w.access_start != null && w.access_start > #dates.createNow() ? 'с даты ' + #dates.format(w.access_start, 'dd.MM.yyyy HH:mm') : 'в любое время') + '. Сроком до ' + #dates.format(w.access_end, 'dd.MM.yyyy HH:mm')}"></td>
+                            <td th:if="${'GROUP'.equals(w.kind.toString()) && 'UNLIMITED'.equals(w.type.toString())}" th:text="${'Группа авто с названием ' + w.group.name + ' может посещать объект в любое время.'}"></td>
+                            <td th:if="${'GROUP'.equals(w.kind.toString()) && 'PERIOD'.equals(w.type.toString())}" th:text="${'Группа авто с названием ' + w.group.name + ' может посещать объект ' + (w.access_start != null && w.access_start > #dates.createNow() ? 'с даты ' + #dates.format(w.access_start, 'dd.MM.yyyy HH:mm') : 'в любое время') + '. Сроком до ' + #dates.format(w.access_end, 'dd.MM.yyyy HH:mm')}"></td>
                             <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
                             <td><a th:href="@{|/whitelist/edit/${w.id}|}">Edit</a></td>
                             </p>
@@ -44,6 +58,10 @@
                 </div>
                 </p>
             </div>
+        </div>
+    </div>
+    <div id="group-close-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog" id="groupModalBody">
         </div>
     </div>
 </div>
@@ -72,11 +90,19 @@
     //Buttons examples
     var table = $('#datatable-buttons').DataTable({
         lengthChange: false,
-        buttons: ['copy', 'excel', 'pdf', 'csv']
+        buttons: ['excel']
     });
 
     table.buttons().container()
         .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+
+    function groupModalContent(groupId){
+        if(groupId){
+            $.get("/whitelist/group/" + groupId, function (data) {
+                $('#group-close-modal').find('#groupModalBody').html(data);
+            });
+        }
+    }
 </script>
 
 </html>

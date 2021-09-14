@@ -57,6 +57,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             if (pluginWrapper.getPlugin() instanceof CustomPlugin) {
                 CustomPlugin plugin = (CustomPlugin) pluginWrapper.getPlugin();
 
+                if(plugin.getTemplateUrl() != null){
+                    http.authorizeRequests().antMatchers("/" + plugin.getTemplateUrl() + "/**").fullyAuthenticated();
+                }
+
                 if (plugin.getLinks() != null) {
                     for(Map<String,Object> link: plugin.getLinks()){
                         if(link.containsKey("url") && link.containsKey("role")){
