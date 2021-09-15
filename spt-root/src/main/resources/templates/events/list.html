@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
 
-<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
 
 <div class="content">
     <div class="container">
@@ -13,84 +13,85 @@
                     <h4 class="m-t-0 header-title"><b th:text="#{events.events}"></b></h4>
 
                     <form th:action="@{|/events/list|}" th:object="${eventFilter}" method="post">
-                    <div class="row">
-                        <div class="col-3">
-                            <input type="datetime-local" class="form-control" th:field="*{dateToString}" placeholder="#{events.dateTo}">
+                        <div class="row">
+                            <div class="col-3">
+                                <input type="datetime-local" class="form-control" th:field="*{dateToString}"
+                                       placeholder="#{events.dateTo}">
+                            </div>
+                            <div class="col-3">
+                                <input type="datetime-local" class="form-control" th:field="*{dateFromString}"
+                                       th:placeholder="#{events.dateFrom}">
+                            </div>
+                            <div class="col-3">
+                                <input type="text" class="form-control" th:placeholder="#{car.platenumber}">
+                            </div>
+                            <div class="col-3">
+                                <input type="text" class="form-control" th:placeholder="#{events.description}">
+                            </div>
                         </div>
-                        <div class="col-3">
-                            <input type="datetime-local" class="form-control" th:field="*{dateFromString}" th:placeholder="#{events.dateFrom}">
+                        <div class="row">
+                            <div class="col-3">
+                                <select class="form-control">
+                                    <option value="" th:text="#{crm.notSelected}"></option>
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                    <option value="3">3</option>
+                                </select>
+                            </div>
+                            <div class="col-3">
+                                <select class="form-control">
+                                    <option value="" th:text="#{crm.notSelected}"></option>
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                    <option value="3">3</option>
+                                </select>
+                            </div>
+                            <div class="col-3">
+                                <select class="form-control">
+                                    <option value="" th:text="#{crm.notSelected}"></option>
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                    <option value="3">3</option>
+                                </select>
+                            </div>
+                            <div class="col-3">
+                                <button type="submit" class="btn btn-succes" th:text="#{crm.search}"></button>
+                                <button type="submit" class="btn btn-secondary" th:text="#{crm.clear}"></button>
+                            </div>
                         </div>
-                        <div class="col-3">
-                            <input type="text" class="form-control" th:placeholder="#{car.platenumber}">
-                        </div>
-                        <div class="col-3">
-                            <input type="text" class="form-control" th:placeholder="#{events.description}">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-3">
-                            <select class="form-control">
-                                <option value="" th:text="#{crm.notSelected}"></option>
-                                <option value="0">0</option>
-                                <option value="1">1</option>
-                                <option value="3">3</option>
-                            </select>
-                        </div>
-                        <div class="col-3">
-                            <select class="form-control">
-                                <option value="" th:text="#{crm.notSelected}"></option>
-                                <option value="0">0</option>
-                                <option value="1">1</option>
-                                <option value="3">3</option>
-                            </select>
-                        </div>
-                        <div class="col-3">
-                            <select class="form-control">
-                                <option value="" th:text="#{crm.notSelected}"></option>
-                                <option value="0">0</option>
-                                <option value="1">1</option>
-                                <option value="3">3</option>
-                            </select>
-                        </div>
-                        <div class="col-3">
-                            <button type="submit" class="btn btn-succes" th:text="#{crm.search}"></button>
-                            <button type="submit" class="btn btn-secondary" th:text="#{crm.clear}"></button>
-                        </div>
-                    </div>
                     </form>
 
                     <div class="mb-5"></div>
 
                     <div class="row">
                         <div class="table-responsive" data-pattern="priority-columns">
-                            <table id="datatable-buttons" class="table table-bordered">
+                            <table id="eventTable" class="table table-bordered">
                                 <thead>
                                 <tr>
-                                    <th><a th:text="#{ordinal.number}"></a></th>
                                     <th><a th:text="#{car.platenumber}"></a></th>
                                     <th><a th:text="#{events.date}"></a></th>
                                     <th><a th:text="#{parking.description}"></a></th>
                                     <th><a th:text="#{events.photo}"></a></th>
                                 </tr>
                                 </thead>
-                                <tbody>
-                                <tr th:each="event, iterStat : ${events}">
-                                    <td th:text="${iterStat.count}"></td>
-                                    <td><span th:if="${event.properties != null}" th:text="${event.properties['carNumber']}"></span></td>
-                                    <td th:text="${event.created}"></td>
-                                    <td>
-                                        <b th:if="${event.properties != null}" th:text="${event.properties['gateName']}"></b><br />
-                                        <span th:text="${event.description}"></span>
-                                    </td>
-                                    <td>
-                                        <div class="thumb-custom" th:if="${event.properties != null && event.properties['carImageUrl'] != null}">
-                                            <a href="#">
-                                                <img class="thumb-img" alt th:src="@{${'/rest/image/value/' + event.id}}">
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                </tbody>
+                                <!--                                <tbody>-->
+                                <!--                                <tr th:each="event, iterStat : ${events}">-->
+                                <!--                                    <td th:text="${iterStat.count}"></td>-->
+                                <!--                                    <td><span th:if="${event.properties != null}" th:text="${event.properties['carNumber']}"></span></td>-->
+                                <!--                                    <td th:text="${event.created}"></td>-->
+                                <!--                                    <td>-->
+                                <!--                                        <b th:if="${event.properties != null}" th:text="${event.properties['gateName']}"></b><br />-->
+                                <!--                                        <span th:text="${event.description}"></span>-->
+                                <!--                                    </td>-->
+                                <!--                                    <td>-->
+                                <!--                                        <div class="thumb-custom" th:if="${event.properties != null && event.properties['carImageUrl'] != null}">-->
+                                <!--                                            <a href="#">-->
+                                <!--                                                <img class="thumb-img" alt th:src="@{${'/rest/image/value/' + event.id}}">-->
+                                <!--                                            </a>-->
+                                <!--                                        </div>-->
+                                <!--                                    </td>-->
+                                <!--                                </tr>-->
+                                <!--                                </tbody>-->
                             </table>
                         </div>
                     </div>
@@ -117,18 +118,45 @@
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
 <script type="text/javascript">
-    $(document).ready(function() {
-        $('#datatable').DataTable();
+<!--    $(document).ready(function() {-->
+<!--        $('#datatable').DataTable();-->
+<!--    });-->
+
+<!--    //Buttons examples-->
+<!--    var table = $('#datatable-buttons').DataTable({-->
+<!--        lengthChange: false,-->
+<!--        buttons: ['copy', 'excel', 'pdf', 'csv']-->
+<!--    });-->
+
+<!--    table.buttons().container()-->
+<!--        .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');-->
+<!--        -->
+
+
+
+       $('#eventTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "/rest/events?dateFromString="+$('#dateFromString').val()+"&dateToString="+$('#dateToString').val(),
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+            return JSON.stringify(d);
+            }
+
+        },
+        "columns": [
+            {"data": "plateNumber"},
+            {"data": "created"},
+            {"data": "description"}
+        ]
     });
 
-    //Buttons examples
-    var table = $('#datatable-buttons').DataTable({
-        lengthChange: false,
-        buttons: ['copy', 'excel', 'pdf', 'csv']
-    });
 
-    table.buttons().container()
-        .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+
+
 </script>
 
 </html>

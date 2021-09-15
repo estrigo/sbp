@@ -34,6 +34,8 @@ public class EventLog {
 
     private String description;
 
+    private String plateNumber;
+
     @Column(name = "properties", columnDefinition = "text")
     @Convert(converter = HashMapConverter.class)
     private Map<String, Object> properties;
