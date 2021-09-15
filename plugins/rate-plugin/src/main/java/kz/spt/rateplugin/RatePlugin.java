@@ -33,7 +33,7 @@ public class RatePlugin extends SpringBootPlugin implements CustomPlugin {
     public List<Map<String, Object>> getLinks(){
         List<Map<String, Object>> list = new ArrayList<>();
         Map<String, Object> link = new HashMap<>();
-        link.put("label", "Rate list");
+        link.put("label", "Список тарифов");
         link.put("url", "rate/list");
         link.put("cssClass", "ti-money");
         link.put("role", "MANAGER");

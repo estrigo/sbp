@@ -23,7 +23,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="form-group">
                 <label for="type" class="control-label" th:text="#{camera.type}"></label>
                 <select th:field="*{cameraType}" th:value="*{cameraType}" class="form-control" id="type">
@@ -35,7 +35,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>
-        <button type="submit" class="btn btn-info waves-effect waves-light" th:text="#{crm.saveChanges}"></button>
+        <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>
+        <button type="submit" class="btn btn-success waves-effect waves-light" th:text="#{crm.saveChanges}"></button>
     </div>
 </form>

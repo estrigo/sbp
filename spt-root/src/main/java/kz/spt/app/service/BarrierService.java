@@ -13,6 +13,8 @@ public interface BarrierService {
 
     void saveBarrier(Barrier barrier);
 
+    void deleteBarrier(Barrier barrier);
+
     Boolean openBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException;
 
     Boolean closeBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException;

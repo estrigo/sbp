@@ -13,4 +13,6 @@ public interface CameraService {
     Camera getCameraById(Long id);
 
     void saveCamera(Camera camera);
+
+    void deleteCamera(Camera camera);
 }

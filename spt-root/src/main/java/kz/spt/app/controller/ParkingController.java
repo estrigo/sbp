@@ -62,6 +62,12 @@ public class ParkingController {
         return "parking/edit";
     }
 
+    @GetMapping("/delete/{id}")
+    public String deleteParking(Model model, @PathVariable Long id) {
+        parkingService.deleteById(id);
+        return "redirect:/parking/list";
+    }
+
     @PostMapping("/edit/{id}")
     public String processRequestEditCar(@PathVariable Long id, @Valid Parking parking, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {

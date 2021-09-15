@@ -104,9 +104,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(User user) {
-        user.setEnabled(0);
-        user.setPassword(null);
-        userRepository.save(user);
+        if(user.getRoles() != null){
+            user.setRoles(null);
+        }
+        userRepository.delete(user);
     }
 
     @Override

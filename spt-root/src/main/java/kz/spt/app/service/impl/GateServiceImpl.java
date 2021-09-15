@@ -28,4 +28,9 @@ public class GateServiceImpl implements GateService {
     public void saveGate(Gate gate) {
         gateRepository.save(gate);
     }
+
+    @Override
+    public void deleteGate(Gate gate) {
+        gateRepository.delete(gate);
+    }
 }

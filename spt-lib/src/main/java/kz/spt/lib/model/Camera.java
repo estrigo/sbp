@@ -22,7 +22,7 @@ public class Camera {
         FRONT,
         BACK;
 
-        public static final Camera.CameraType[] ALL = {FRONT};
+        public static final Camera.CameraType[] ALL = {FRONT,BACK};
     }
 
     @Id

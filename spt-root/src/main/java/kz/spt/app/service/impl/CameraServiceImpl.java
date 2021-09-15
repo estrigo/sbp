@@ -35,4 +35,9 @@ public class CameraServiceImpl implements CameraService {
     public void saveCamera(Camera camera) {
         cameraRepository.save(camera);
     }
+
+    @Override
+    public void deleteCamera(Camera camera) {
+        cameraRepository.delete(camera);
+    }
 }

@@ -39,6 +39,11 @@ public class BarrierServiceImpl implements BarrierService {
     }
 
     @Override
+    public void deleteBarrier(Barrier barrier) {
+        barrierRepository.delete(barrier);
+    }
+
+    @Override
     public Boolean openBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException {
         if(Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())){
             return openSnmp(barrier, properties);

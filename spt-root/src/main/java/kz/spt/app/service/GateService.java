@@ -9,4 +9,6 @@ public interface GateService {
     Gate getById(Long id);
 
     void saveGate(Gate gate);
+
+    void deleteGate(Gate gate);
 }

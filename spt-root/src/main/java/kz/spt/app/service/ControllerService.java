@@ -8,4 +8,6 @@ public interface ControllerService {
     Controller getControllerById(Long id);
 
     void saveController(Controller controller);
+
+    void deleteController(Controller controller);
 }

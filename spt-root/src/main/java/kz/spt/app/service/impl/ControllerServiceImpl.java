@@ -25,4 +25,9 @@ public class ControllerServiceImpl implements ControllerService {
     public void saveController(Controller controller) {
         controllerRepository.save(controller);
     }
+
+    @Override
+    public void deleteController(Controller controller) {
+        controllerRepository.delete(controller);
+    }
 }

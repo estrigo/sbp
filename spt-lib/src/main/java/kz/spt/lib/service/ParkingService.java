@@ -9,4 +9,6 @@ public interface ParkingService {
     Parking saveParking(Parking parking);
 
     Parking findById(Long id);
+
+    void deleteById(Long id);
 }
