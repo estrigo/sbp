@@ -20,7 +20,6 @@ import javax.validation.Valid;
 public class UserController {
 
     private UserService userService;
-
     private RoleService roleService;
 
     public UserController(UserService userService, RoleService roleService) {

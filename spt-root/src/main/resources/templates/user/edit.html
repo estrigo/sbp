@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{})">
+<html th:replace="layouts/main::main(~{::div}, ~{}, ~{})">
 
 
 <div class="content">
@@ -8,7 +8,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card-box">
-                    <h4 class="m-t-0 header-title"><b>Edit user form</b></h4>
+                    <h4 class="m-t-0 header-title"><b th:text="#{user.editUserForm}"></b></h4>
                     <p class="text-muted m-b-30 font-14"></p>
 
                     <div class="row">
@@ -28,6 +28,12 @@
                                         </div>
                                     </div>
                                     <div class="form-group row">
+                                        <label class="col-2 col-form-label"  th:text="#{user.password}"></label>
+                                        <div class="col-10">
+                                            <input type="password" th:field="*{password}" th:value="*{password}" class="form-control" value="password">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
                                         <label class="col-2 col-form-label" th:text="#{user.first.name}"></label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{firstName}" th:value="*{firstName}">
@@ -40,18 +46,59 @@
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label class="col-2 col-form-label"  th:text="#{user.password}"></label>
+                                        <label class="col-2 col-form-label"  th:text="#{user.patronymic}"></label>
                                         <div class="col-10">
-                                            <input type="password" th:field="*{password}" th:value="*{password}" class="form-control" value="password">
+                                            <input type="text" class="form-control" th:field="*{patronymic}" th:value="*{patronymic}">
                                         </div>
                                     </div>
-
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label" th:text="#{user.mainServerIpPort}"></label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{mainServerPort}" th:value="*{mainServerPort}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label" th:text="#{user.onlineServerIpPort}"></label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{onlineServerIpPort}" th:value="*{onlineServerIpPort}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label" th:text="#{user.parkingServerIpPort}"></label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{parkingServerIpPort}" th:value="*{parkingServerIpPort}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label" th:text="#{user.telegramChannel}"></label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{telegramChannel}" th:value="*{telegramChannel}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label" th:text="#{user.webKassaId}"></label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{webKassaId}" th:value="*{webKassaId}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label" th:text="#{user.webKassaLogin}"></label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{webKassaLogin}" th:value="*{webKassaLogin}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label" th:text="#{user.webKassaPassword}"></label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{webKassaPassword}" th:value="*{webKassaPassword}">
+                                        </div>
+                                    </div>
                                     <div class="form-group row" sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
                                         <label class="col-2 col-form-label"  th:text="#{role.name}"></label>
                                         <div class="col-10">
-                                            <select id="roles" multiple class="form-control" th:field="*{roles}" onchange="checkSelectedRoles(value)">
+                                            <select id="roles" multiple class="form-control" th:field="*{roles}">
                                                 <option th:each="r : ${allRoles}"
-                                                        th:value="${r.id}" th:text="${r.name}">
+                                                        th:value="${r.id}" th:text="${r.name_ru}">
                                                 </option>
                                             </select>
                                         </div>
@@ -59,7 +106,8 @@
                                     <div class="form-group row">
                                         <label class="col-2 col-form-label"></label>
                                         <div class="col-10">
-                                            <button type="submit" class="btn btn-danger waves-effect waves-light" th:text="#{user.addUser}"></button>
+                                            <a th:href="@{|/user/list|}" class="btn btn-primary btn-custom waves-effect waves-light w-md" type="button" th:text="#{crm.cancel}"></a>
+                                            <button type="submit" class="btn btn-success waves-effect waves-light" th:text="#{crm.save}"></button>
                                         </div>
                                     </div>
                                 </form>
@@ -71,16 +119,5 @@
         </div>
     </div>
 </div>
-
-<script type="text/javascript">
-    function checkSelectedRoles(values){
-        var values = $('#roles').val();
-        if(values && values.indexOf('5')!==-1){
-            $('#patronymicDiv').show();
-        } else {
-            $('#patronymicDiv').hide();
-        }
-    }
-</script>
 
 </html>

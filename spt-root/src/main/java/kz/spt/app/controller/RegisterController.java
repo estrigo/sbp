@@ -1,5 +1,6 @@
 package kz.spt.app.controller;
 
+import kz.spt.app.service.RoleService;
 import kz.spt.lib.model.User;
 import kz.spt.app.service.UserService;
 import org.springframework.stereotype.Controller;
@@ -14,14 +15,17 @@ import javax.validation.Valid;
 public class RegisterController {
 
     private UserService userService;
+    private RoleService roleService;
 
-    public RegisterController(UserService userService) {
+    public RegisterController(UserService userService, RoleService roleService) {
         this.userService = userService;
+        this.roleService = roleService;
     }
 
     @GetMapping("/register")
     public String showRegistrationPage(Model model, User user){
         model.addAttribute("user", user);
+        model.addAttribute("allRoles", roleService.listRolesByPlugins());
         return "register";
     }
 
