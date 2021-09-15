@@ -2,7 +2,7 @@ package kz.spt.app.controller;
 
 import kz.spt.lib.model.User;
 import kz.spt.app.service.RoleService;
-import kz.spt.app.service.UserService;
+import kz.spt.lib.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;

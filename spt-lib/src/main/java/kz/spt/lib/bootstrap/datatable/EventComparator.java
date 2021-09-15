@@ -28,11 +28,11 @@ public final class EventComparator {
         map.put(new EventComparator.Key("created", Direction.asc), Comparator.comparing(EventLog::getCreated));
         map.put(new EventComparator.Key("created", Direction.desc), Comparator.comparing(EventLog::getCreated).reversed());
 
-        map.put(new EventComparator.Key("plateNumber", Direction.asc), Comparator.comparing((EventLog::getPlateNumber)));
-        map.put(new EventComparator.Key("plateNumber", Direction.desc), Comparator.comparing(EventLog::getPlateNumber).reversed());
+        map.put(new EventComparator.Key("plateNumber", Direction.asc), Comparator.comparing((EventLog::getNullSafePlateNumber)));
+        map.put(new EventComparator.Key("plateNumber", Direction.desc), Comparator.comparing(EventLog::getNullSafePlateNumber).reversed());
 
-        map.put(new EventComparator.Key("description", Direction.asc), Comparator.comparing(EventLog::getDescription));
-        map.put(new EventComparator.Key("description", Direction.desc), Comparator.comparing(EventLog::getDescription).reversed());
+        map.put(new EventComparator.Key("description", Direction.asc), Comparator.comparing(EventLog::getNullSafeDescription));
+        map.put(new EventComparator.Key("description", Direction.desc), Comparator.comparing(EventLog::getNullSafeDescription).reversed());
     }
 
     public static Comparator<EventLog> getComparator(String name, Direction dir) {

@@ -37,4 +37,12 @@ public class EventLog {
 
     @CreationTimestamp
     private Date created;
+
+    public String getNullSafePlateNumber() {
+        return getPlateNumber() != null ? this.plateNumber : "";
+    }
+
+    public String getNullSafeDescription() {
+        return getDescription() != null ? this.description : "";
+    }
 }

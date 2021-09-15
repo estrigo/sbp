@@ -1,4 +1,4 @@
-package kz.spt.app.service;
+package kz.spt.lib.service;
 
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;

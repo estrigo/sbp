@@ -6,7 +6,7 @@ import kz.spt.lib.model.User;
 import kz.spt.app.repository.RoleRepository;
 import kz.spt.app.repository.UserRepository;
 import kz.spt.app.service.SpringDataUserDetailsService;
-import kz.spt.app.service.UserService;
+import kz.spt.lib.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
