@@ -1,10 +1,10 @@
 package kz.spt.app.rest;
 
-import kz.spt.api.bootstrap.datatable.Page;
-import kz.spt.api.bootstrap.datatable.PagingRequest;
-import kz.spt.api.model.EventLog;
-import kz.spt.api.model.dto.EventFilterDto;
-import kz.spt.api.service.EventLogService;
+import kz.spt.lib.bootstrap.datatable.Page;
+import kz.spt.lib.bootstrap.datatable.PagingRequest;
+import kz.spt.lib.model.EventLog;
+import kz.spt.lib.model.dto.EventFilterDto;
+import kz.spt.lib.service.EventLogService;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
