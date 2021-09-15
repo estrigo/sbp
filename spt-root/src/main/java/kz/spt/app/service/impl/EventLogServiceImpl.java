@@ -38,6 +38,7 @@ public class EventLogServiceImpl implements EventLogService {
         EventLog eventLog = new EventLog();
         eventLog.setObjectClass(objectClass);
         eventLog.setObjectId(objectId);
+        eventLog.setPlateNumber(properties.containsKey("carNumber") ? (String) properties.get("carNumber") : "");
         eventLog.setDescription(description);
         eventLog.setCreated(new Date());
         eventLog.setProperties(properties != null ? properties : new HashMap<>());
