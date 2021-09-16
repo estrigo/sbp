@@ -84,11 +84,11 @@
                                 <!--                                        <span th:text="${event.description}"></span>-->
                                 <!--                                    </td>-->
                                 <!--                                    <td>-->
-                                <!--                                        <div class="thumb-custom" th:if="${event.properties != null && event.properties['carImageUrl'] != null}">-->
-                                <!--                                            <a href="#">-->
-                                <!--                                                <img class="thumb-img" alt th:src="@{${'/rest/image/value/' + event.id}}">-->
-                                <!--                                            </a>-->
-                                <!--                                        </div>-->
+                                <!--                                                                        <div class="thumb-custom" th:if="${event.properties != null && event.properties['carImageUrl'] != null}">-->
+                                <!--                                                                            <a href="#">-->
+                                <!--                                                                                <img class="thumb-img" alt th:src="@{${'/rest/image/value/' + event.id}}">-->
+                                <!--                                                                            </a>-->
+                                <!--                                                                        </div>-->
                                 <!--                                    </td>-->
                                 <!--                                </tr>-->
                                 <!--                                </tbody>-->
@@ -147,12 +147,28 @@
             }
 
         },
+        columnDefs: [{
+    "defaultContent": "-",
+    "targets": "_all"
+             }]
+        ,
         "columns": [
-            {"data": "plateNumber"},
-            {"data": "created"},
-            {"data": "description"}
+            {"data": "plateNumber", "width" : "15%"},
+            {"data": "created", "width": "25%"},
+            {"data": "description", "width" : "25%"},
+            {"data": "properties",
+            "render" : function (data, type, event)
+             {
+             if(event.properties  && event.properties['carImageUrl']){
+                return   '<img class="thumb-img" alt src="@{${'/rest/image/value/' + event.id}}">';
+                    return data;
+             }
+            },
+            "width" : "25%"
+           }
         ]
     });
+
 
 
 
