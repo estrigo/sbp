@@ -160,8 +160,10 @@
             "render" : function (data, type, event)
              {
              if(event.properties  && event.properties['carImageUrl']){
-                return   '<img class="thumb-img" alt src="@{${'/rest/image/value/' + event.id}}">';
+                return   '<img class="thumb-img" alt src="/rest/image/value/' + event.id + '">';
                     return data;
+             } else {
+                 return '';
              }
             },
             "width" : "25%"
