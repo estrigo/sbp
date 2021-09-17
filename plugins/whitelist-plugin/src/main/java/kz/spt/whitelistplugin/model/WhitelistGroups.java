@@ -1,12 +1,12 @@
 package kz.spt.whitelistplugin.model;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -32,6 +32,9 @@ public class WhitelistGroups {
     private Date access_start;
 
     private Date access_end;
+
+    @OneToMany(mappedBy = "group")
+    private List<Whitelist> whitelists;
 
     @CreationTimestamp
     private Date created;

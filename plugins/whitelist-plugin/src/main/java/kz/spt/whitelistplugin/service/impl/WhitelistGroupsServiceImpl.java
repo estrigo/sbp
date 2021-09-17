@@ -1,7 +1,6 @@
 package kz.spt.whitelistplugin.service.impl;
 
 
-import kz.spt.lib.model.Cars;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
@@ -13,8 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,7 +39,7 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
 
     @Override
     public WhitelistGroups getWithCars(Long id) {
-        return whitelistGroupsRepository.getWhitelistGroupsWithCars(id);
+        return whitelistGroupsRepository.getWhitelistGroup(id);
     }
 
     @Override
@@ -75,5 +74,39 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
     @Override
     public Iterable<WhitelistGroups> listAllWhitelistGroups() {
         return whitelistGroupsRepository.findAll();
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        WhitelistGroups whitelistGroups = whitelistGroupsRepository.getWhitelistGroup(id);
+        List<Whitelist> groupWhitelists = whitelistService.listByGroupId(whitelistGroups.getId());
+        if(groupWhitelists != null){
+            for(Whitelist w: groupWhitelists){
+                whitelistService.deleteById(w.getId());
+            }
+        }
+        whitelistGroupsRepository.deleteById(id);
+    }
+
+    @Override
+    public WhitelistGroups prepareById(Long id) {
+        SimpleDateFormat format = new SimpleDateFormat(dateformat);
+        WhitelistGroups whitelistGroups = whitelistGroupsRepository.getWhitelistGroup(id);
+        List<String> plateNumbers = new ArrayList<>();
+        List<Whitelist> groupWhitelists = whitelistService.listByGroupId(whitelistGroups.getId());
+        if(groupWhitelists != null){
+            for(Whitelist w: groupWhitelists){
+                plateNumbers.add(w.getCar().getPlatenumber());
+            }
+        }
+        whitelistGroups.setPlateNumbers(plateNumbers);
+        if (Whitelist.Type.PERIOD.equals(whitelistGroups.getType())) {
+            if (whitelistGroups.getAccess_start() != null) {
+                whitelistGroups.setAccessStartString(format.format(whitelistGroups.getAccess_start()));
+            }
+            whitelistGroups.setAccessEndString(format.format(whitelistGroups.getAccess_end()));
+        }
+
+        return whitelistGroups;
     }
 }

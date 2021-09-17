@@ -80,6 +80,11 @@ public class WhitelistServiceImpl implements WhitelistService {
     }
 
     @Override
+    public List<Whitelist> listByGroupId(Long groupId) {
+        return whitelistRepository.findByGroupId(groupId);
+    }
+
+    @Override
     public Boolean hasAccess(String platenumber, Date date) {
 
         Cars car = rootServicesGetterService.getCarsService().findByPlatenumber(platenumber);

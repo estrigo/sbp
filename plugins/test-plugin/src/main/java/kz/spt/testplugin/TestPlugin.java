@@ -28,7 +28,7 @@ public class TestPlugin extends SpringBootPlugin implements CustomPlugin {
     }
 
     public List<Map<String, Object>> getLinks(){
-        List<Map<String, Object>> list = new ArrayList<>();
+/*        List<Map<String, Object>> list = new ArrayList<>();
 
         Map<String, Object> mainMenu = new HashMap<>();
         mainMenu.put("label", "Test menu");
@@ -53,6 +53,7 @@ public class TestPlugin extends SpringBootPlugin implements CustomPlugin {
 
         list.add(mainMenu);
 
-        return list;
+        return list;*/
+        return null;
     }
 }

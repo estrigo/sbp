@@ -32,6 +32,7 @@ public class WhitelistController {
     @GetMapping("/list")
     public String showAllWhitelist(Model model) {
         model.addAttribute("whitelist", whitelistService.listAllWhitelist());
+        model.addAttribute("whitelistGroups", whitelistGroupsService.listAllWhitelistGroups());
         return "whitelist/list";
     }
 
@@ -130,9 +131,38 @@ public class WhitelistController {
         return "current-status/cars/list";
     }
 
-    @GetMapping("/group/{groupId}")
-    public String getWhitelistGroupCars(Model model, @PathVariable Long groupId) {
-        model.addAttribute("group", whitelistGroupsService.getWithCars(groupId));
-        return "whitelist/groups/list";
+    @GetMapping("/group/delete/{id}")
+    public String deleteWhiteListGroup(@PathVariable Long id) {
+        whitelistGroupsService.deleteById(id);
+        return "redirect:/whitelist/list";
+    }
+
+    @GetMapping("/group/edit/{id}")
+    public String showFormEditWhiteListGroup(Model model, @PathVariable Long id) {
+        model.addAttribute("whitelistGroup", whitelistGroupsService.prepareById(id));
+        return "whitelist/groups/edit";
+    }
+
+    @PostMapping("/group/edit/{id}")
+    public String processRequestEditWhitelisttet(@PathVariable Long id, @Valid WhitelistGroups whitelistGroups,
+                                              BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        if (bindingResult.hasErrors()) {
+            return "redirect:/whitelist/group/edit/" + id;
+        } else {
+            if(whitelistGroups.getName() == null || "".equals(whitelistGroups.getName())){
+                ObjectError error = new ObjectError("emptyGroupName", "Please fill group name");
+                bindingResult.addError(error);
+            }
+            if(whitelistGroups.getPlateNumbers() == null || whitelistGroups.getPlateNumbers().size() == 0){
+                ObjectError error = new ObjectError("emptyCarList", "Please fill car plate numbers");
+                bindingResult.addError(error);
+            }
+
+            if(!bindingResult.hasErrors()) {
+                whitelistGroupsService.saveWhitelistGroup(whitelistGroups, currentUser.getUsername());
+                return "redirect:/whitelist/list";
+            }
+            return "redirect:/whitelist/edit/" + id;
+        }
     }
 }

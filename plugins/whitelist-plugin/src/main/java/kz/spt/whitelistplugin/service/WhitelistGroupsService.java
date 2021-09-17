@@ -19,4 +19,8 @@ public interface WhitelistGroupsService {
     void deleteGroup(WhitelistGroups group);
 
     Iterable<WhitelistGroups> listAllWhitelistGroups();
+
+    void deleteById(Long id);
+
+    WhitelistGroups prepareById(Long id);
 }

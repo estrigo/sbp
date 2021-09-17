@@ -14,7 +14,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="p-20">
-                                <form th:action="@{|/whitelist/edit/${whitelist.id}|}" th:object="${whitelistGroup}" method="post">
+                                <form th:action="@{|/whitelist/group/edit/${whitelistGroup.id}|}" th:object="${whitelistGroup}" method="post">
                                     <div class="form-group row" th:if="${#fields.hasAnyErrors()}">
                                         <label class="col-2 col-form-label">Errors</label>
                                         <label class="col-2 col-form-label">
@@ -23,7 +23,7 @@
                                             </ul>
                                         </label>
                                     </div>
-                                    <div class="form-group row" id="groupName" style="display: none">
+                                    <div class="form-group row" id="groupName">
                                         <label class="col-2 col-form-label" th:text="#{whitelist.groupName}"></label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{name}" th:value="*{name}">
@@ -89,7 +89,7 @@
 
     $( document ).ready(function() {
         checkSelectedTypes($('#types').val());
-        $('$bootstrap-tagsinput').addClass('form-control');
+        $('.bootstrap-tagsinput').addClass('form-control');
     });
 </script>
 </html>

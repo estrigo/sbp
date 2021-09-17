@@ -14,6 +14,8 @@ public interface WhitelistService {
 
     Iterable<Whitelist> listAllWhitelist();
 
+    List<Whitelist> listByGroupId(Long groupId);
+
     Boolean hasAccess(String plateNumber, Date enterDate);
 
     Whitelist prepareById(Long id);
