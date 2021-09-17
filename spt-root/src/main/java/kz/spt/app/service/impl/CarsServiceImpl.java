@@ -9,9 +9,7 @@ import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -52,6 +50,8 @@ public class CarsServiceImpl implements CarsService {
             car = new Cars();
             car.setPlatenumber(platenumber);
             car = saveCars(car);
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("carNumber", car.getPlatenumber());
             eventLogService.createEventLog(Cars.class.getSimpleName(), car.getId(), null, "Новый номер авто " + car.getPlatenumber() + " сохранен в системе ");
         }
         return car;

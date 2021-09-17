@@ -2,12 +2,17 @@ package kz.spt.whitelistplugin.service.impl;
 
 
 import kz.spt.lib.model.Cars;
+import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
 import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import kz.spt.whitelistplugin.service.WhitelistGroupsService;
+import kz.spt.whitelistplugin.service.WhitelistService;
+import org.pf4j.util.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,12 +21,16 @@ import java.util.stream.Collectors;
 @Service
 public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
 
+    private final String dateformat = "yyyy-MM-dd'T'HH:mm";
     private WhitelistGroupsRepository whitelistGroupsRepository;
     private RootServicesGetterService rootServicesGetterService;
+    private WhitelistService whitelistService;
 
-    public WhitelistGroupsServiceImpl(WhitelistGroupsRepository whitelistGroupsRepository, RootServicesGetterService  rootServicesGetterService) {
+    public WhitelistGroupsServiceImpl(WhitelistGroupsRepository whitelistGroupsRepository, RootServicesGetterService rootServicesGetterService,
+                                      WhitelistService whitelistService) {
         this.whitelistGroupsRepository = whitelistGroupsRepository;
         this.rootServicesGetterService = rootServicesGetterService;
+        this.whitelistService = whitelistService;
     }
 
     @Override
@@ -35,44 +44,36 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
     }
 
     @Override
-    public WhitelistGroups createGroup(String name, String[] carList, String username) {
-
-        WhitelistGroups groups = new WhitelistGroups();
-        groups.setName(name);
-
-        Set<String> plateNumbers = Arrays.stream(carList).collect(Collectors.toSet());
-
-        Set<Cars> cars = new HashSet<>();
-        for(String plateNumber: plateNumbers){
-            Cars car = rootServicesGetterService.getCarsService().createCar(plateNumber);
-            cars.add(car);
+    public WhitelistGroups saveWhitelistGroup(WhitelistGroups whitelistGroups, String currentUser) throws ParseException {
+        SimpleDateFormat format = new SimpleDateFormat(dateformat);
+        if (Whitelist.Type.PERIOD.equals(whitelistGroups.getType())) {
+            if (StringUtils.isNotNullOrEmpty(whitelistGroups.getAccessStartString())) {
+                whitelistGroups.setAccess_start(format.parse(whitelistGroups.getAccessStartString()));
+            }
+            if (StringUtils.isNotNullOrEmpty(whitelistGroups.getAccessEndString())) {
+                whitelistGroups.setAccess_end(format.parse(whitelistGroups.getAccessEndString()));
+            }
+        }  else {
+            whitelistGroups.setAccess_start(null);
+            whitelistGroups.setAccess_end(null);
         }
-        groups.setCars(cars);
-        groups.setUpdatedUser(username);
-        whitelistGroupsRepository.save(groups);
+        whitelistGroups.setUpdatedUser(currentUser);
+        WhitelistGroups updatedWhitelistGroups = whitelistGroupsRepository.save(whitelistGroups);
 
-        return groups;
-    }
-
-    @Override
-    public void updateGroup(Long groupId, String name, String[] carList, String username) {
-        WhitelistGroups groups = findById(groupId);
-        groups.setName(name);
-
-        Set<String> plateNumbers = Arrays.stream(carList).collect(Collectors.toSet());
-
-        Set<Cars> cars = new HashSet<>();
-        for(String plateNumber: plateNumbers){
-            Cars car = rootServicesGetterService.getCarsService().createCar(plateNumber);
-            cars.add(car);
+        Set<String> plateNumbers = whitelistGroups.getPlateNumbers().stream().collect(Collectors.toSet());
+        for(String plateNumber : plateNumbers){
+            whitelistService.saveWhitelistFromGroup(plateNumber, updatedWhitelistGroups, currentUser);
         }
-        groups.setCars(cars);
-        groups.setUpdatedUser(username);
-        whitelistGroupsRepository.save(groups);
+        return updatedWhitelistGroups;
     }
 
     @Override
     public void deleteGroup(WhitelistGroups group) {
         whitelistGroupsRepository.delete(group);
+    }
+
+    @Override
+    public Iterable<WhitelistGroups> listAllWhitelistGroups() {
+        return whitelistGroupsRepository.findAll();
     }
 }

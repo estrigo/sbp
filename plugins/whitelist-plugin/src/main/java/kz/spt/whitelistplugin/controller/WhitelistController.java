@@ -38,6 +38,7 @@ public class WhitelistController {
     @GetMapping("/add")
     public String showFormAddCar(Model model) {
         model.addAttribute("whitelist", new Whitelist());
+        model.addAttribute("groupList", whitelistGroupsService.listAllWhitelistGroups());
         return "whitelist/add";
     }
 
@@ -46,41 +47,56 @@ public class WhitelistController {
         if (bindingResult.hasErrors()) {
             return "whitelist/add";
         } else {
-            if(Whitelist.Kind.GROUP.equals(whitelist.getKind())){
-                if(whitelist.getCarsList() == null || whitelist.getCarsList().length == 0){
-                    ObjectError error = new ObjectError("emptyCarList", "Please fill plate numbers");
-                    bindingResult.addError(error);
-                }
-                if(whitelist.getGroupName() == null || "".equals(whitelist.getGroupName())){
-                    ObjectError error = new ObjectError("emptyGroupName", "Please fill group name");
-                    bindingResult.addError(error);
-                }
-
-                if(!bindingResult.hasErrors()){
-                    whitelistService.saveWhitelist(whitelist, currentUser);
-                    return "redirect:/whitelist/list";
-                }
-            } else if(Whitelist.Kind.INDIVIDUAL.equals(whitelist.getKind())){
-                if(whitelist.getPlatenumber()!=null && whitelist.getPlatenumber().length() >= 3  && whitelist.getPlatenumber().length() <= 16){
-                    whitelistService.saveWhitelist(whitelist, currentUser);
-                    return "redirect:/whitelist/list";
-                } else {
-                    ObjectError error = new ObjectError("invalidPlateNumber", "Invalid plate number");
-                    bindingResult.addError(error);
-                }
+            if(whitelist.getPlatenumber()!=null && whitelist.getPlatenumber().length() >= 3  && whitelist.getPlatenumber().length() <= 16){
+                whitelistService.saveWhitelist(whitelist, currentUser);
+                return "redirect:/whitelist/list";
             } else {
-                ObjectError error = new ObjectError("unknownKind", "Please select a Individual or Group");
+                ObjectError error = new ObjectError("invalidPlateNumber", "Invalid plate number");
                 bindingResult.addError(error);
             }
             return "whitelist/add";
         }
     }
 
+    @GetMapping("/groups/add")
+    public String showFormAddGroup(Model model) {
+        model.addAttribute("whitelistGroup", new WhitelistGroups());
+        return "whitelist/groups/add";
+    }
+
+    @PostMapping("/groups/add")
+    public String processRequestAddGroup(Model model, @Valid WhitelistGroups whitelistGroups, BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        if (bindingResult.hasErrors()) {
+            return "whitelist/add";
+        } else {
+            if(whitelistGroups.getName() == null || "".equals(whitelistGroups.getName())){
+                ObjectError error = new ObjectError("emptyGroupName", "Please fill group name");
+                bindingResult.addError(error);
+            }
+            if(whitelistGroups.getPlateNumbers() == null || whitelistGroups.getPlateNumbers().size() == 0){
+                ObjectError error = new ObjectError("emptyCarList", "Please fill car plate numbers");
+                bindingResult.addError(error);
+            }
+
+            if(!bindingResult.hasErrors()){
+                whitelistGroupsService.saveWhitelistGroup(whitelistGroups, currentUser.getUsername());
+                return "redirect:/whitelist/list";
+            }
+            return "whitelist/groups/add";
+        }
+    }
+
     @GetMapping("/edit/{id}")
     public String showFormEditWhiteList(Model model, @PathVariable Long id) {
-        Whitelist whitelist = whitelistService.prepareById(id);
         model.addAttribute("whitelist", whitelistService.prepareById(id));
+        model.addAttribute("groupList", whitelistGroupsService.listAllWhitelistGroups());
         return "whitelist/edit";
+    }
+
+    @GetMapping("/delete/{id}")
+    public String deleteWhiteList(@PathVariable Long id) {
+        whitelistService.deleteById(id);
+        return "redirect:/whitelist/list";
     }
 
     @PostMapping("/edit/{id}")
@@ -89,30 +105,11 @@ public class WhitelistController {
         if (bindingResult.hasErrors()) {
             return "redirect:/whitelist/edit/" + id;
         } else {
-            if(Whitelist.Kind.GROUP.equals(whitelist.getKind())){
-                if(whitelist.getCarsList() == null || whitelist.getCarsList().length == 0){
-                    ObjectError error = new ObjectError("emptyCarList", "Please fill plate numbers");
-                    bindingResult.addError(error);
-                }
-                if(whitelist.getGroupName() == null || "".equals(whitelist.getGroupName())){
-                    ObjectError error = new ObjectError("emptyGroupName", "Please fill group name");
-                    bindingResult.addError(error);
-                }
-
-                if(!bindingResult.hasErrors()){
-                    whitelistService.saveWhitelist(whitelist, currentUser);
-                    return "redirect:/whitelist/list";
-                }
-            } else if(Whitelist.Kind.INDIVIDUAL.equals(whitelist.getKind())){
-                if(whitelist.getPlatenumber()!=null && whitelist.getPlatenumber().length() >= 3  && whitelist.getPlatenumber().length() <= 16){
-                    whitelistService.saveWhitelist(whitelist, currentUser);
-                    return "redirect:/whitelist/list";
-                } else {
-                    ObjectError error = new ObjectError("invalidPlateNumber", "Invalid plate number");
-                    bindingResult.addError(error);
-                }
+            if(whitelist.getPlatenumber()!=null && whitelist.getPlatenumber().length() >= 3  && whitelist.getPlatenumber().length() <= 16){
+                whitelistService.saveWhitelist(whitelist, currentUser);
+                return "redirect:/whitelist/list";
             } else {
-                ObjectError error = new ObjectError("unknownKind", "Please select a Individual or Group");
+                ObjectError error = new ObjectError("invalidPlateNumber", "Invalid plate number");
                 bindingResult.addError(error);
             }
             return "redirect:/whitelist/edit/" + id;

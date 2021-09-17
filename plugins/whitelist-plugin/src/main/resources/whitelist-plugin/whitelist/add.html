@@ -24,67 +24,48 @@
                                             </ul>
                                         </label>
                                     </div>
-                                    <div class="form-group row">
-                                        <label class="col-2 col-form-label" th:text="#{whitelist.kind}"></label>
-                                        <div class="col-10">
-                                            <select id="kind" th:field="*{kind}" class="form-control" onchange="checkSelectedKinds(value)">
-                                                <option th:value="INDIVIDUAL" th:text="INDIVIDUAL"></option>
-                                                <option th:value="GROUP" th:text="GROUP"></option>
-                                            </select>
-                                        </div>
-                                    </div>
                                     <div class="form-group row" id="platenumber">
                                         <label class="col-2 col-form-label" th:text="#{car.platenumber}"></label>
                                         <div class="col-10">
                                             <input type="text" class="form-control" th:field="*{platenumber}">
                                         </div>
                                     </div>
-                                    <div class="form-group row" id="groupName" style="display: none">
+                                    <div class="form-group row">
                                         <label class="col-2 col-form-label" th:text="#{whitelist.groupName}"></label>
                                         <div class="col-10">
-                                            <input type="text" class="form-control" th:field="*{groupName}">
-                                        </div>
-                                    </div>
-                                    <div class="form-group row" id="carsList" style="display: none">
-                                        <label class="col-2 col-form-label" th:text="#{whitelist.carsList}"></label>
-                                        <div class="col-10">
-                                            <select class="form-control" multiple data-role="tagsinput" th:field="*{carsList}" placeholder="Add car numbers">
+                                            <select id="groupId" th:field="*{groupId}" class="form-control" onchange="checkSelectedGroups(value)">
+                                                <option value="">Не выбрано</option>
+                                                <option th:each="group : ${groupList}" th:text="${group.name}" th:value="${group.id}"></option>
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="form-group row">
-                                        <label class="col-2 col-form-label" th:text="#{whitelist.type}"></label>
-                                        <div class="col-10">
-                                            <select id="types" th:field="*{type}" class="form-control" onchange="checkSelectedTypes(value)">
-                                                <option th:value="UNLIMITED" th:text="UNLIMITED"></option>
-                                                <option th:value="PERIOD" th:text="PERIOD"></option>
-                                                <option th:value="ONCE" th:text="ONCE"></option>
-                                                <option th:value="MONTHLY" th:text="MONTHLY"></option>
-                                                <!--option th:value="WEEKDAYS" th:text="WEEKDAYS"></option-->
-                                            </select>
+                                    <div id="conditionsBlock">
+                                        <div class="form-group row">
+                                            <label class="col-2 col-form-label" th:text="#{whitelist.type}"></label>
+                                            <div class="col-10">
+                                                <select id="types" th:field="*{type}" class="form-control" onchange="checkSelectedTypes(value)">
+                                                    <option th:value="UNLIMITED" th:text="#{'whitelist.Type.UNLIMITED'}"></option>
+                                                    <option th:value="PERIOD" th:text="#{'whitelist.Type.PERIOD'}"></option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row" id="beginDate" style="display: none">
+                                            <label class="col-2 col-form-label" th:text="#{whitelist.beginDate}"></label>
+                                            <div class="col-10">
+                                                <input type="datetime-local" class="form-control" th:field="*{accessStartString}">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row" id="endDate" style="display: none">
+                                            <label class="col-2 col-form-label" th:text="#{whitelist.endDate}"></label>
+                                            <div class="col-10">
+                                                <input type="datetime-local" class="form-control" th:field="*{accessEndString}">
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="form-group row" id="beginDate" style="display: none">
-                                        <label class="col-2 col-form-label" th:text="#{whitelist.beginDate}"></label>
-                                        <div class="col-10">
-                                            <input type="datetime-local" class="form-control" th:field="*{accessStartString}">
-                                        </div>
-                                    </div>
-                                    <div class="form-group row" id="endDate" style="display: none">
-                                        <label class="col-2 col-form-label" th:text="#{whitelist.endDate}"></label>
-                                        <div class="col-10">
-                                            <input type="datetime-local" class="form-control" th:field="*{accessEndString}">
-                                        </div>
-                                    </div>
-                                    <!--div class="form-group row" id="weekDays" style="display: none">
-                                        <label class="col-2 col-form-label" th:text="#{whitelist.weekdays}"></label>
-                                        <div class="col-10">
-                                            <button type="button" class="btn btn-secondary btn-rounded w-md waves-effect waves-light m-b-5">Primary</button>
-                                        </div>
-                                    </div-->
                                     <div class="form-group row">
                                         <label class="col-2 col-form-label"></label>
                                         <div class="col-10">
+                                            <a th:href="@{|/whitelist/list|}" class="btn btn-primary btn-custom waves-effect waves-light w-md" type="button" th:text="#{crm.cancel}"></a>
                                             <button type="submit" class="btn btn-danger waves-effect waves-light" th:text="#{whitelist.addNew}"></button>
                                         </div>
                                     </div>
@@ -101,33 +82,20 @@
 <script th:src="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js}"></script>
 
 <script type="text/javascript">
-    function checkSelectedTypes(){
-        var value = $('#types').val();
-        if(!value || value == 'UNLIMITED' || value == 'WEEKDAYS'){
-            $('#platenumber').hide();
+    function checkSelectedTypes(value){
+        if(value === 'UNLIMITED'){
+            $('#beginDate').hide();
             $('#endDate').hide();
         } else {
             $('#beginDate').show();
             $('#endDate').show();
         }
     }
-
-    function checkSelectedKinds(){
-        var value = $('#kind').val();
-        if(value) {
-            if (value == 'GROUP') {
-                $('#platenumber').hide();
-                $('#carsList').show();
-                $('#groupName').show();
-            } else {
-                $('#platenumber').show();
-                $('#carsList').hide();
-                $('#groupName').hide();
-            }
+    function checkSelectedGroups(value) {
+        if(value){
+            $('#conditionsBlock').hide();
         } else {
-            $('#platenumber').show();
-            $('#carsList').hide();
-            $('#groupName').hide();
+            $('#conditionsBlock').show();
         }
     }
 </script>

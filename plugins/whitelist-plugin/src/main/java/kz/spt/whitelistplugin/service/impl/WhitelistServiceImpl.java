@@ -5,6 +5,7 @@ import kz.spt.lib.model.Cars;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.service.CarStateService;
+import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
 import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import kz.spt.whitelistplugin.service.WhitelistGroupsService;
 import kz.spt.lib.service.ParkingService;
@@ -31,49 +32,39 @@ public class WhitelistServiceImpl implements WhitelistService {
     private CarStateService carStateService;
     private ParkingService parkingService;
     private WhitelistRepository whitelistRepository;
-    private WhitelistGroupsService whitelistGroupsService;
+    private WhitelistGroupsRepository whitelistGroupsRepository;
     private RootServicesGetterService rootServicesGetterService;
 
-    public WhitelistServiceImpl(WhitelistRepository whitelistRepository, WhitelistGroupsService whitelistGroupsService,
+    public WhitelistServiceImpl(WhitelistRepository whitelistRepository, WhitelistGroupsRepository whitelistGroupsRepository,
                                 RootServicesGetterService rootServicesGetterService){
         this.whitelistRepository = whitelistRepository;
-        this.whitelistGroupsService = whitelistGroupsService;
+        this.whitelistGroupsRepository = whitelistGroupsRepository;
         this.rootServicesGetterService  = rootServicesGetterService;
     }
 
     @Override
     public void saveWhitelist(Whitelist whitelist, UserDetails currentUser) throws Exception {
-
-        if(Whitelist.Kind.GROUP.equals(whitelist.getKind())){
-            if(whitelist.getGroup() != null){
-                WhitelistGroups group = whitelist.getGroup();
-                whitelistGroupsService.updateGroup(group.getId(), whitelist.getGroupName(), whitelist.getCarsList(), currentUser.getUsername());
-            } else {
-                WhitelistGroups whitelistGroups = whitelistGroupsService.createGroup(whitelist.getGroupName(), whitelist.getCarsList(), currentUser.getUsername());
-                whitelist.setGroup(whitelistGroups);
-            }
-            whitelist.setCar(null);
+        if(whitelist.getGroupId() != null){
+            WhitelistGroups group = whitelistGroupsRepository.getOne(whitelist.getGroupId());
+            whitelist.setGroup(group);
+        } else if(whitelist.getGroup() != null){
+            whitelist.setGroup(null);
         }
 
-        if(Whitelist.Kind.INDIVIDUAL.equals(whitelist.getKind())){
-            Cars car = rootServicesGetterService.getCarsService().createCar(whitelist.getPlatenumber());
-            whitelist.setCar(car);
-            if(whitelist.getGroup() != null){
-                WhitelistGroups group = whitelist.getGroup();
-                whitelist.setGroup(null);
-                group.setCars(null);
-                whitelistGroupsService.deleteGroup(group);
-            }
-        }
+        Cars car = rootServicesGetterService.getCarsService().createCar(whitelist.getPlatenumber());
+        whitelist.setCar(car);
 
         SimpleDateFormat format = new SimpleDateFormat(dateformat);
-        if (Whitelist.Type.PERIOD.equals(whitelist.getType()) || Whitelist.Type.ONCE.equals(whitelist.getType()) || Whitelist.Type.MONTHLY.equals(whitelist.getType())) {
+        if (Whitelist.Type.PERIOD.equals(whitelist.getType())) {
             if (StringUtils.isNotNullOrEmpty(whitelist.getAccessStartString())) {
                 whitelist.setAccess_start(format.parse(whitelist.getAccessStartString()));
             }
             if (StringUtils.isNotNullOrEmpty(whitelist.getAccessEndString())) {
                 whitelist.setAccess_end(format.parse(whitelist.getAccessEndString()));
             }
+        }  else {
+            whitelist.setAccess_start(null);
+            whitelist.setAccess_end(null);
         }
         if (whitelist.getId() != null) {
             whitelist.setUpdatedUser(currentUser.getUsername());
@@ -94,8 +85,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         Cars car = rootServicesGetterService.getCarsService().findByPlatenumber(platenumber);
         if (car != null) {
             List<Whitelist> whitelists = whitelistRepository.findValidWhiteListByCar(car, date);
-            List<Whitelist> groupWhitelists = whitelistRepository.findValidGroupWhiteListByCar(car, date);
-            return whitelists.size() > 0 || groupWhitelists.size() > 0;
+            return whitelists.size() > 0;
         }
 
         return false;
@@ -105,19 +95,9 @@ public class WhitelistServiceImpl implements WhitelistService {
     public Whitelist prepareById(Long id) {
         SimpleDateFormat format = new SimpleDateFormat(dateformat);
         Whitelist whitelist = whitelistRepository.getWithCarAndGroup(id);
-        if(Whitelist.Kind.INDIVIDUAL.equals(whitelist.getKind())){
-            whitelist.setPlatenumber(whitelist.getCar().getPlatenumber());
-        }
-        if(Whitelist.Kind.GROUP.equals(whitelist.getKind())){
-            Set<Cars> cars = whitelist.getGroup().getCars();
-            List<String> plateNumbers = new ArrayList<>();
-            for (Cars car : cars){
-                plateNumbers.add(car.getPlatenumber());
-            }
-            String[] arr = new String[plateNumbers.size()];
-            plateNumbers.toArray(arr);
-            whitelist.carsList = arr;
-            whitelist.setGroupName(whitelist.getGroup().getName());
+        whitelist.setPlatenumber(whitelist.getCar().getPlatenumber());
+        if(whitelist.getGroup() != null){
+            whitelist.setGroupId(whitelist.getGroup().getId());
         }
         if (Whitelist.Type.PERIOD.equals(whitelist.getType())) {
             if (whitelist.getAccess_start() != null) {
@@ -160,6 +140,23 @@ public class WhitelistServiceImpl implements WhitelistService {
             }
         }
         return null;
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        whitelistRepository.deleteById(id);
+    }
+
+    @Override
+    public void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser) {
+        Whitelist whitelist = new Whitelist();
+        whitelist.setGroup(group);
+        whitelist.setUpdatedUser(currentUser);
+
+        Cars car = rootServicesGetterService.getCarsService().createCar(plateNumber);
+        whitelist.setCar(car);
+
+        whitelistRepository.save(whitelist);
     }
 
     private CarStateService getCarStateService() {

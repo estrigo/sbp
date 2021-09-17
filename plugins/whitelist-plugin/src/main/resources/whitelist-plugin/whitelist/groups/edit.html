@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})">
+
+<link th:href="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css}" rel="stylesheet" />
+
+<div class="content">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card-box">
+                    <h4 class="m-t-0 header-title"><b th:text="#{whitelist.groupeditform}"></b></h4>
+                    <p class="text-muted m-b-30 font-14"></p>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="p-20">
+                                <form th:action="@{|/whitelist/edit/${whitelist.id}|}" th:object="${whitelistGroup}" method="post">
+                                    <div class="form-group row" th:if="${#fields.hasAnyErrors()}">
+                                        <label class="col-2 col-form-label">Errors</label>
+                                        <label class="col-2 col-form-label">
+                                            <ul>
+                                                <li th:each="err : ${#fields.allErrors()}" th:text="${err}" />
+                                            </ul>
+                                        </label>
+                                    </div>
+                                    <div class="form-group row" id="groupName" style="display: none">
+                                        <label class="col-2 col-form-label" th:text="#{whitelist.groupName}"></label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{name}" th:value="*{name}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row" id="carsList">
+                                        <label class="col-2 col-form-label" th:text="#{whitelist.carsList}"></label>
+                                        <div class="col-10">
+                                            <select class="form-control" multiple data-role="tagsinput" th:field="*{plateNumbers}" placeholder="Add car numbers">
+                                                <option th:each="pn : ${whitelistGroup.plateNumbers}" th:text="${pn}" th:value="${pn}">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label" th:text="#{whitelist.type}"></label>
+                                        <div class="col-10">
+                                            <select id="types" th:field="*{type}" th:value="*{type}" class="form-control" onchange="checkSelectedTypes(value)">
+                                                <option th:value="UNLIMITED" th:text="#{'whitelist.Type.UNLIMITED'}"></option>
+                                                <option th:value="PERIOD" th:text="#{'whitelist.Type.PERIOD'}"></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row" id="beginDate" style="display: none">
+                                        <label class="col-2 col-form-label" th:text="#{whitelist.beginDate}"></label>
+                                        <div class="col-10">
+                                            <input type="datetime-local" class="form-control" th:field="*{accessStartString}" th:value="*{accessStartString}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row" id="endDate" style="display: none">
+                                        <label class="col-2 col-form-label" th:text="#{whitelist.endDate}" th:value="#{whitelist.endDate}"></label>
+                                        <div class="col-10">
+                                            <input type="datetime-local" class="form-control" th:field="*{accessEndString}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label"></label>
+                                        <div class="col-10">
+                                            <a th:href="@{|/whitelist/list|}" class="btn btn-primary btn-custom waves-effect waves-light w-md" type="button" th:text="#{crm.cancel}"></a>
+                                            <button type="submit" class="btn btn-danger waves-effect waves-light" th:text="#{crm.save}"></button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js}"></script>
+<script type="text/javascript">
+    function checkSelectedTypes(value){
+        if(value == 'UNLIMITED'){
+            $('#beginDate').hide();
+            $('#endDate').hide();
+        } else {
+            $('#beginDate').show();
+            $('#endDate').show();
+        }
+    }
+
+    $( document ).ready(function() {
+        checkSelectedTypes($('#types').val());
+        $('$bootstrap-tagsinput').addClass('form-control');
+    });
+</script>
+</html>

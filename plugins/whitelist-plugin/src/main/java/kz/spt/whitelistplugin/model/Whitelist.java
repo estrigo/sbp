@@ -6,8 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import javax.validation.constraints.Size;
-import java.util.ArrayList;
 import java.util.Date;
 
 @Entity
@@ -19,20 +17,8 @@ import java.util.Date;
 public class Whitelist {
 
     public enum Type {
-        ONCE,
         PERIOD,
-        WEEKDAYS,
-        UNLIMITED,
-        MONTHLY;
-
-        public static final Type[] ACTIVE = {UNLIMITED, PERIOD, MONTHLY, ONCE, WEEKDAYS};
-    }
-
-    public enum Kind {
-        INDIVIDUAL,
-        GROUP;
-
-        public static final Kind[] ACTIVE = {INDIVIDUAL, GROUP};
+        UNLIMITED;
     }
 
     @Id
@@ -49,10 +35,7 @@ public class Whitelist {
     private Date access_end;
 
     @Enumerated(EnumType.STRING)
-    private Kind kind;
-
-    @Enumerated(EnumType.STRING)
-    private Type type;
+    private Whitelist.Type type;
 
     @ManyToOne
     @JoinColumn(name = "group_id")
@@ -72,14 +55,11 @@ public class Whitelist {
     private String platenumber;
 
     @Transient
+    private Long groupId;
+
+    @Transient
     private String accessStartString;
 
     @Transient
     private String accessEndString;
-
-    @Transient
-    public String[] carsList;
-
-    @Transient
-    private String groupName;
 }

@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface WhitelistGroupsRepository extends JpaRepository<WhitelistGroups, Long> {
 
-    @Query("from WhitelistGroups w LEFT JOIN FETCH w.cars where w.id = ?1")
+    @Query("from WhitelistGroups w where w.id = ?1")
     WhitelistGroups getWhitelistGroupsWithCars(Long id);
 }
