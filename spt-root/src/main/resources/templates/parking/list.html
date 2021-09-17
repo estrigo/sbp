@@ -31,7 +31,7 @@
               <td th:text="${iterStat.count}"></td>
               <td th:text="${parking.name}"></td>
               <td th:text="${parking.description}"></td>
-              <td th:text="${parking.parkingType}"></td>
+              <td th:text="#{'parking.parkingType.' + ${parking.parkingType}}"></td>
               <td th:text="${parking.parkingSpaceNumber}"></td>
               <td th:text="${parking.gateList.size()}"></td>
               <td>

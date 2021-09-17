@@ -90,7 +90,8 @@ public class WhitelistServiceImpl implements WhitelistService {
         Cars car = rootServicesGetterService.getCarsService().findByPlatenumber(platenumber);
         if (car != null) {
             List<Whitelist> whitelists = whitelistRepository.findValidWhiteListByCar(car, date);
-            return whitelists.size() > 0;
+            List<Whitelist> groupWhitelists = whitelistRepository.findValidWhiteListGroupByCar(car, date);
+            return whitelists.size() > 0 || groupWhitelists.size() > 0;
         }
 
         return false;
