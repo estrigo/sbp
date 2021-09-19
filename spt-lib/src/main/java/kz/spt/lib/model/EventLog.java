@@ -1,5 +1,6 @@
 package kz.spt.lib.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import kz.spt.lib.extension.HashMapConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,6 +36,7 @@ public class EventLog {
     @Convert(converter = HashMapConverter.class)
     private Map<String, Object> properties;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss",  timezone = "GMT+06:00")
     @CreationTimestamp
     private Date created;
 
