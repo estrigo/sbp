@@ -12,7 +12,7 @@
                 <div class="card-box table-responsive">
                     <h4 class="m-t-0 header-title"><b th:text="#{car.cars}"></b></h4>
 
-                    <table id="carsTable" class="table table-bordered table-bordered">
+                    <table id="carsTable" class="table table-bordered">
                         <thead>
                         <tr>
                             <th style="width: 34%"><a th:text="#{car.platenumber}"></a></th>
@@ -44,7 +44,7 @@
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
 <script type="text/javascript">
-    $('#carsTable').DataTable({
+    const table = $('#carsTable').DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
@@ -60,8 +60,21 @@
             {"data": "platenumber", "width" : "34%"},
             {"data": "brand", "width" : "33%"},
             {"data": "color", "width" : "33%"}
-        ]
+        ],
+        "buttons": ['copy', 'excel', 'pdf', 'csv']
     });
+
+    var interval = null;
+    $(document).on('ready',function(){
+        interval = setInterval(showButtons,1000);
+    });
+
+    function showButtons(){
+        if(table.buttons().container().length > 0){
+            clearInterval(interval);
+            table.buttons().container().appendTo('#carsTable_wrapper .col-md-6:eq(0)');
+        }
+    }
 </script>
 
 </html>

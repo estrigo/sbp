@@ -74,24 +74,6 @@
                                     <th><a th:text="#{events.photo}"></a></th>
                                 </tr>
                                 </thead>
-                                <!--                                <tbody>-->
-                                <!--                                <tr th:each="event, iterStat : ${events}">-->
-                                <!--                                    <td th:text="${iterStat.count}"></td>-->
-                                <!--                                    <td><span th:if="${event.properties != null}" th:text="${event.properties['carNumber']}"></span></td>-->
-                                <!--                                    <td th:text="${event.created}"></td>-->
-                                <!--                                    <td>-->
-                                <!--                                        <b th:if="${event.properties != null}" th:text="${event.properties['gateName']}"></b><br />-->
-                                <!--                                        <span th:text="${event.description}"></span>-->
-                                <!--                                    </td>-->
-                                <!--                                    <td>-->
-                                <!--                                                                        <div class="thumb-custom" th:if="${event.properties != null && event.properties['carImageUrl'] != null}">-->
-                                <!--                                                                            <a href="#">-->
-                                <!--                                                                                <img class="thumb-img" alt th:src="@{${'/rest/image/value/' + event.id}}">-->
-                                <!--                                                                            </a>-->
-                                <!--                                                                        </div>-->
-                                <!--                                    </td>-->
-                                <!--                                </tr>-->
-                                <!--                                </tbody>-->
                             </table>
                         </div>
                     </div>
@@ -118,23 +100,7 @@
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
 <script type="text/javascript">
-<!--    $(document).ready(function() {-->
-<!--        $('#datatable').DataTable();-->
-<!--    });-->
-
-<!--    //Buttons examples-->
-<!--    var table = $('#datatable-buttons').DataTable({-->
-<!--        lengthChange: false,-->
-<!--        buttons: ['copy', 'excel', 'pdf', 'csv']-->
-<!--    });-->
-
-<!--    table.buttons().container()-->
-<!--        .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');-->
-<!--        -->
-
-
-
-       $('#eventTable').DataTable({
+       const table = $('#eventTable').DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
@@ -148,10 +114,9 @@
 
         },
         columnDefs: [{
-    "defaultContent": "-",
-    "targets": "_all"
-             }]
-        ,
+            "defaultContent": "-",
+            "targets": "_all"
+        }],
         "columns": [
             {"data": "plateNumber", "width" : "15%"},
             {"data": "created", "width": "25%"},
@@ -168,13 +133,22 @@
             },
             "width" : "25%"
            }
-        ]
+        ],
+        buttons: ['copy', 'excel', 'pdf', 'csv']
     });
 
 
+   var interval = null;
+   $(document).on('ready',function(){
+       interval = setInterval(showButtons,1000);
+   });
 
-
-
+   function showButtons(){
+       if(table.buttons().container().length > 0){
+           clearInterval(interval);
+           table.buttons().container().appendTo('#eventTable_wrapper .col-md-6:eq(0)');
+       }
+   }
 </script>
 
 </html>

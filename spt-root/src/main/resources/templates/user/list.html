@@ -56,7 +56,7 @@
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
 <script type="text/javascript">
-    $('#userTable').DataTable({
+    const table = $('#userTable').DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
@@ -84,14 +84,21 @@
             "render" : function(id){
                 return '<a href = "delete/' + id+'">Удалить<a>';
             }}
-        ]
+        ],
+        "buttons": ['copy', 'excel', 'pdf', 'csv']
     });
 
+    var interval = null;
+    $(document).on('ready',function(){
+        interval = setInterval(showButtons,1000);
+    });
 
-
-
-
-
+    function showButtons(){
+        if(table.buttons().container().length > 0){
+            clearInterval(interval);
+            table.buttons().container().appendTo('#userTable_wrapper .col-md-6:eq(0)');
+        }
+    }
 </script>
 
 </html>

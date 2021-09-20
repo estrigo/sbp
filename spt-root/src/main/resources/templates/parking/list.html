@@ -12,7 +12,7 @@
         <div class="card-box table-responsive">
           <h4 class="m-t-0 header-title"><b th:text="#{parking.parkings}"></b></h4>
 
-          <table id="datatable-buttons" class="table table-bordered table-bordered">
+          <table id="datatable-buttons" class="table table-bordered">
             <thead>
             <tr>
               <th><a th:text="#{ordinal.number}"></a></th>
@@ -76,14 +76,10 @@
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
 <script type="text/javascript">
-  $(document).ready(function() {
-    $('#datatable').DataTable();
-  });
-
   //Buttons examples
   var table = $('#datatable-buttons').DataTable({
     lengthChange: false,
-    buttons: ['excel']
+    buttons: ['copy', 'excel', 'pdf', 'csv']
   });
 
   table.buttons().container()
