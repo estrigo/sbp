@@ -51,8 +51,8 @@ public class CarsServiceImpl implements CarsService {
             car.setPlatenumber(platenumber);
             car = saveCars(car);
             Map<String, Object> properties = new HashMap<>();
-            properties.put("carNumber", car.getPlatenumber());
-            eventLogService.createEventLog(Cars.class.getSimpleName(), car.getId(), null, "Новый номер авто " + car.getPlatenumber() + " сохранен в системе ");
+            properties.put("carNumber", platenumber);
+            eventLogService.createEventLog(Cars.class.getSimpleName(), car.getId(), properties, "Новый номер авто " + car.getPlatenumber() + " сохранен в системе ");
         }
         return car;
     }

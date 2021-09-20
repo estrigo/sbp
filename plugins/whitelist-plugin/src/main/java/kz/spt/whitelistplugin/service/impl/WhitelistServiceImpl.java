@@ -36,6 +36,8 @@ public class WhitelistServiceImpl implements WhitelistService {
 
     @Override
     public void saveWhitelist(Whitelist whitelist, UserDetails currentUser) throws Exception {
+        whitelist.setPlatenumber(whitelist.getPlatenumber().toUpperCase());
+
         if(whitelist.getGroupId() != null){
             WhitelistGroups group = whitelistGroupsRepository.getOne(whitelist.getGroupId());
             whitelist.setGroup(group);
