@@ -52,7 +52,7 @@ public class EventController {
     }
 
     @PostMapping("/list")
-    public String processRequestAddCar(Model model, @Valid @ModelAttribute("eventFilter") EventFilterDto eventFilter, BindingResult bindingResult) throws ParseException {
+    public String processRequestSearch(Model model, @Valid @ModelAttribute("eventFilter") EventFilterDto eventFilter, BindingResult bindingResult) throws ParseException {
         if (bindingResult.hasErrors()) {
             return "events/list";
         } else {

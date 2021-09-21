@@ -13,6 +13,7 @@ import java.text.ParseException;
 @RestController
 @RequestMapping(value = "/rest/events")
 public class EventRestController {
+
     private EventLogService eventLogService;
 
     public EventRestController(EventLogService eventLogService) {
