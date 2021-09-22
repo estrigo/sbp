@@ -62,15 +62,15 @@ public class CarStateDto {
                 durationBuilder.append(days_difference + "д. ");
             }
             long hours_difference = TimeUnit.MILLISECONDS.toHours(time_difference) % 24;
-            if(hours_difference > 0){
+            if(hours_difference > 0 || durationBuilder.length() > 0){
                 durationBuilder.append(hours_difference + "ч. ");
             }
             long minutes_difference = TimeUnit.MILLISECONDS.toMinutes(time_difference) % 60;
-            if(minutes_difference > 0){
+            if(minutes_difference > 0 || durationBuilder.length() > 0){
                 durationBuilder.append(minutes_difference + "мин. ");
             }
             long seconds_difference = TimeUnit.MILLISECONDS.toSeconds(time_difference) % 60;
-            if(seconds_difference > 0){
+            if(seconds_difference > 0 || durationBuilder.length() > 0){
                 durationBuilder.append(seconds_difference + "сек. ");
             }
         }
