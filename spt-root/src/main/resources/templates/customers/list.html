@@ -59,7 +59,7 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            "url": "/rest/users",
+            "url": "/rest/customers",
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",
@@ -68,11 +68,11 @@
             }
         },
         "columns": [
-            {"data": "username", "width" : "25%"},
-            {"data": "firstName"},
+            {"data": "firstName", "width" : "25%"},
             {"data": "lastName"},
-            {"data" : "roles" ,
-              "render" : "[, ].name_ru"
+            {"data": "phoneNumber"},
+            {"data" : "cars" ,
+              "render" : "[, ].platenumber"
             },
             {"data": "id",
             "render" : function(id){
@@ -94,7 +94,7 @@
     function showButtons(){
         if(table.buttons().container().length > 0){
             clearInterval(interval);
-            table.buttons().container().appendTo('#userTable_wrapper .col-md-6:eq(0)');
+            table.buttons().container().appendTo('#customerTable_wrapper .col-md-6:eq(0)');
         }
     }
 </script>

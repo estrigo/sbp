@@ -1,6 +1,8 @@
 package kz.spt.lib.service;
 
 
+import kz.spt.lib.bootstrap.datatable.Page;
+import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Customer;
 
 import java.util.List;
@@ -11,6 +13,7 @@ public interface CustomerService {
 
     void saveCustomer(Customer customer);
 
+    Page<Customer> getCustomer(PagingRequest pagingRequest);
 
 
 }
