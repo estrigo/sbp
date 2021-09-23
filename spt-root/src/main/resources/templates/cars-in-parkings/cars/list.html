@@ -10,8 +10,8 @@
         <div class="row">
             <div class="col-12">
                 <div class="card-box table-responsive">
-                    <h4 class="m-t-0 header-title"><b th:text="#{whitelist.currentStatus.title}"></b>
-                        <b th:text="${currentStatus.getParking().getName()}"></b>
+                    <h4 class="m-t-0 header-title"><b th:text="#{Parking.parkingList}"></b>
+                        <b th:text="${parkingCars.getParking().getName()}"></b>
                     </h4>
 
                     <table id=" datatable-buttons" class="table table-bordered table-bordered">
@@ -23,7 +23,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="car, iterStat : ${currentStatus.carsList}">
+                        <tr th:each="car, iterStat : ${parkingCars.carsList}">
                             <td th:text="${iterStat.count}"></td>
                             <td th:text="${car.getPlatenumber()}"></td>
                             <td th:text="${car.getBrand()}"></td>

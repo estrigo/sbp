@@ -1,4 +1,4 @@
-package kz.spt.whitelistplugin.model.dto;
+package kz.spt.lib.model.dto;
 
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.Parking;

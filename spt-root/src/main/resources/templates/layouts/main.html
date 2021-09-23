@@ -81,6 +81,11 @@
                             <li th:each="submenu : ${template['subMenus']}"><a th:href="@{|/${submenu['url']}|}" th:text=" ${submenu['label']} "></a></li>
                         </ul>
                     </li>
+
+                    <li>
+                        <a th:href="@{|/parking/cars|}" class="waves-effect waves-primary"><i
+                                class="ti-files"></i><span th:text=" #{parking.cars} "></span></a>
+                    </li>
                 </ul>
                 <ul sec:authorize="!isAuthenticated()">
                     <li class="menu-title">Main</li>

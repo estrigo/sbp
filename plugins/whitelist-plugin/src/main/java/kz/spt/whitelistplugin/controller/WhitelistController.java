@@ -117,20 +117,6 @@ public class WhitelistController {
         }
     }
 
-    @GetMapping("/current-status")
-    public String showCurrentStatus(Model model)
-    {
-        model.addAttribute("currentStatus", whitelistService.listAllCarsInParking());
-        return "current-status/list";
-    }
-
-    @GetMapping("/current-status/details/{id}")
-    public String showCarsInParking(Model model, @PathVariable Long id)
-    {
-        model.addAttribute("currentStatus" ,whitelistService.carsInParking(id));
-        return "current-status/cars/list";
-    }
-
     @GetMapping("/group/delete/{id}")
     public String deleteWhiteListGroup(@PathVariable Long id) {
         whitelistGroupsService.deleteById(id);

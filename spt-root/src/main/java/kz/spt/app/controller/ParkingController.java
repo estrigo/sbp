@@ -189,4 +189,21 @@ public class ParkingController {
         model.addAttribute("controller", controller);
         return "parking/controller/edit";
     }
+
+
+    @GetMapping("/cars")
+    public String showCurrentStatus(Model model)
+    {
+        model.addAttribute("parkingCars", parkingService.listAllParkingCars());
+        return "cars-in-parkings/list";
+    }
+
+    @GetMapping("/cars/details/{id}")
+    public String showCarsInParking(Model model, @PathVariable Long id)
+    {
+        model.addAttribute("parkingCars" ,parkingService.carsInParking(id));
+        return "cars-in-parkings/cars/list";
+    }
+
+
 }

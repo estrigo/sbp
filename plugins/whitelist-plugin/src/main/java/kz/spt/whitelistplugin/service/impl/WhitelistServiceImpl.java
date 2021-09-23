@@ -1,29 +1,21 @@
 package kz.spt.whitelistplugin.service.impl;
 
-import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Cars;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
-import kz.spt.lib.model.Parking;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
 import kz.spt.whitelistplugin.service.RootServicesGetterService;
-import kz.spt.whitelistplugin.service.WhitelistGroupsService;
 import kz.spt.lib.service.ParkingService;
-import kz.spt.whitelistplugin.WhitelistPlugin;
 import kz.spt.whitelistplugin.model.Whitelist;
-import kz.spt.whitelistplugin.model.dto.ParkingCarsDTO;
 import kz.spt.whitelistplugin.repository.WhitelistRepository;
 import kz.spt.whitelistplugin.service.WhitelistService;
 import org.pf4j.util.StringUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class WhitelistServiceImpl implements WhitelistService {
@@ -115,40 +107,6 @@ public class WhitelistServiceImpl implements WhitelistService {
     }
 
     @Override
-    public List<ParkingCarsDTO> listAllCarsInParking() {
-        Iterable<CarState> carStates = getCarStateService().getAllNotLeft();
-        List<Parking> parkings = (List<Parking>) getParkingService().listAllParking();
-
-        List<ParkingCarsDTO> carsInParkings = new ArrayList<>();
-
-        List<Cars> resultCars = new ArrayList<>();
-        for (Parking parking : parkings) {
-            ParkingCarsDTO parkingCarsDTO = new ParkingCarsDTO();
-            parkingCarsDTO.setParking(parking);
-            for (CarState carState : carStates) {
-                if (carState.getParking() != null && carState.getParking().getId().equals(parking.getId())) {
-                    resultCars.add(rootServicesGetterService.getCarsService().findByPlatenumber(carState.getCarNumber()));
-                }
-            }
-            parkingCarsDTO.setCarsList(resultCars);
-            carsInParkings.add(parkingCarsDTO);
-        }
-        return carsInParkings;
-    }
-
-    @Override
-    public ParkingCarsDTO carsInParking(Long parkingId){
-        List<ParkingCarsDTO> listCarsInParkings = listAllCarsInParking();
-        for(ParkingCarsDTO parkingCarsDTO : listCarsInParkings)
-        {
-            if(parkingCarsDTO.getParking().getId().equals(parkingId)){
-                return parkingCarsDTO;
-            }
-        }
-        return null;
-    }
-
-    @Override
     public void deleteById(Long id) {
         whitelistRepository.deleteById(id);
     }
@@ -163,19 +121,5 @@ public class WhitelistServiceImpl implements WhitelistService {
         whitelist.setCar(car);
 
         whitelistRepository.save(whitelist);
-    }
-
-    private CarStateService getCarStateService() {
-        if (this.carStateService == null) {
-            carStateService = (CarStateService) WhitelistPlugin.INSTANCE.getMainApplicationContext().getBean("carStateServiceImpl");
-        }
-        return carStateService;
-    }
-
-    private ParkingService getParkingService() {
-        if (this.parkingService == null) {
-            parkingService = (ParkingService) WhitelistPlugin.INSTANCE.getMainApplicationContext().getBean("parkingServiceImpl");
-        }
-        return parkingService;
     }
 }
