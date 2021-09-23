@@ -79,7 +79,10 @@
   //Buttons examples
   var table = $('#datatable-buttons').DataTable({
     lengthChange: false,
-    buttons: ['copy', 'excel', 'pdf', 'csv']
+    buttons: ['copy', 'excel', 'pdf', 'csv'],
+    language: {
+      url: '/plugins/datatables/json/ru.json'
+    }
   });
 
   table.buttons().container()
