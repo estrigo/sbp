@@ -121,8 +121,8 @@ public class EventLogServiceImpl implements EventLogService {
         }
         String value = pagingRequest.getSearch().getValue();
 
-        return events -> (events.getCreated() != null && events.getCreated().toString().toLowerCase().contains(value)
-                || (events.getDescription() != null && events.getDescription().toLowerCase().contains(value))
+        return events -> (events.getCreated() != null && events.getCreated().toString().toLowerCase().contains(value.toLowerCase())
+                || (events.getDescription() != null && events.getDescription().toLowerCase().contains(value.toLowerCase()))
         );
     }
 

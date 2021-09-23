@@ -144,10 +144,10 @@ public class UserServiceImpl implements UserService {
         }
         String value = pagingRequest.getSearch().getValue();
 
-        return users -> (users.getUsername() != null && users.getUsername().toLowerCase().contains(value))
-                || (users.getEmail() != null && users.getEmail().toLowerCase().contains(value))
-                || (users.getFirstName() != null && users.getFirstName().toLowerCase().contains(value))
-                || (users.getLastName() != null && users.getLastName().toLowerCase().contains(value));
+        return users -> (users.getUsername() != null && users.getUsername().toLowerCase().contains(value.toLowerCase()))
+                || (users.getEmail() != null && users.getEmail().toLowerCase().contains(value.toLowerCase()))
+                || (users.getFirstName() != null && users.getFirstName().toLowerCase().contains(value.toLowerCase()))
+                || (users.getLastName() != null && users.getLastName().toLowerCase().contains(value.toLowerCase()));
     }
 
     private Comparator<User> sortUsers(PagingRequest pagingRequest) {
