@@ -1,21 +1,17 @@
 package kz.spt.app.controller;
 
-
 import kz.spt.lib.model.Customer;
-import kz.spt.lib.model.Parking;
 import kz.spt.lib.service.CustomerService;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @Controller
 @RequestMapping("/customers")
@@ -41,6 +37,30 @@ public class CustomerController {
         model.addAttribute("customer", new Customer());
         return "customers/add";
     }
+
+    @GetMapping("/edit/{id}")
+    public String showFormEditCar(Model model, @PathVariable Long id) {
+        model.addAttribute("customer", customerService.findById(id));
+        return "customers/edit";
+    }
+
+    @PostMapping("/edit/{id}")
+    public String processRequestEditCar(@PathVariable Long id, @Valid Customer customer,
+                                        BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "redirect:/customers/edit/" + id;
+        } else {
+            customerService.saveCustomer(customer);
+            return "redirect:/customers/list";
+        }
+    }
+
+    @GetMapping("/delete/{id}")
+    public String deleteCustomer(@PathVariable Long id) {
+        customerService.deleteCustomer(customerService.findById(id));
+        return "redirect:/customers/list";
+    }
+
 
     @PostMapping("/add")
     public String processRequestAddParking(Model model, @Valid Customer customer, BindingResult bindingResult) {

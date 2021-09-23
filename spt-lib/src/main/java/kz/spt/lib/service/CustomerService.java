@@ -15,5 +15,9 @@ public interface CustomerService {
 
     Page<Customer> getCustomer(PagingRequest pagingRequest);
 
+    Customer findById(Long id);
+
+    void deleteCustomer(Customer customer);
+
 
 }

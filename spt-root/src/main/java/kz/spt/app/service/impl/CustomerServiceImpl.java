@@ -47,6 +47,16 @@ public class CustomerServiceImpl implements CustomerService {
         return getPage(customers, pagingRequest);
     }
 
+    @Override
+    public Customer findById(Long id) {
+        return customerRepository.getOne(id);
+    }
+
+    @Override
+    public void deleteCustomer(Customer customer) {
+        customerRepository.delete(customer);
+    }
+
     private Page<Customer> getPage(List<Customer> customers, PagingRequest pagingRequest) {
         List<Customer> filtered = customers.stream()
                 .sorted(sortCustomers(pagingRequest))
