@@ -33,6 +33,8 @@ public class Customer {
             inverseJoinColumns = @JoinColumn(name = "car_id"))
     private List<Cars> cars;
 
+    @Transient
+    List<String> plateNumbers;
 
 
 
