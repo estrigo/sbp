@@ -1,5 +1,6 @@
 package kz.spt.lib.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,7 +27,7 @@ public class Cars {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique=true)
+    @Column(unique = true)
     @Size(min = 3, max = 16)
     private String platenumber;
 
@@ -36,17 +37,23 @@ public class Cars {
 
     private Boolean deleted = false;
 
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+
     @CreationTimestamp
     private Date created;
 
     @UpdateTimestamp
     private Date updated;
 
-    public String getNullSafeBrand(){
+    public String getNullSafeBrand() {
         return getBrand() != null ? getBrand() : "";
     }
 
-    public String getNullSafeColor(){
+    public String getNullSafeColor() {
         return getColor() != null ? getColor() : "";
     }
+
 }

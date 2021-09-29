@@ -1,15 +1,14 @@
 package kz.spt.lib.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,11 +26,9 @@ public class Customer {
     private String phoneNumber;
 
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "customers_cars", schema = "crm",
-            joinColumns = @JoinColumn(name = "customer_id"),
-            inverseJoinColumns = @JoinColumn(name = "car_id"))
+    @OneToMany(mappedBy = "customer")
     private List<Cars> cars;
+
 
     @Transient
     List<String> plateNumbers;

@@ -36,7 +36,9 @@ public class CustomerServiceImpl implements CustomerService {
         Set<String> plateNumbers = customer.getPlateNumbers().stream().collect(Collectors.toSet());
         customer.setCars(new ArrayList<Cars>());
         for (String plateNumber : plateNumbers) {
-            customer.getCars().add(carsService.createCar(plateNumber));
+            Cars car = carsService.createCar(plateNumber);
+            car.setCustomer(customer);
+            customer.getCars().add(car);
         }
         customerRepository.save(customer);
     }
