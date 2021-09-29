@@ -26,7 +26,7 @@ public class Whitelist {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne
+    @OneToOne(optional=false)
     @JoinColumn(name = "car_id")
     private Cars car;
 

@@ -19,7 +19,6 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Audited
 @Table(name = "cars", schema = "crm")
 public class Cars {
 
