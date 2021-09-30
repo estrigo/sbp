@@ -10,6 +10,7 @@ import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.repository.WhitelistRepository;
 import kz.spt.whitelistplugin.service.WhitelistService;
 import org.pf4j.util.StringUtils;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -28,20 +29,20 @@ public class WhitelistServiceImpl implements WhitelistService {
     private RootServicesGetterService rootServicesGetterService;
 
     public WhitelistServiceImpl(WhitelistRepository whitelistRepository, WhitelistGroupsRepository whitelistGroupsRepository,
-                                RootServicesGetterService rootServicesGetterService){
+                                RootServicesGetterService rootServicesGetterService) {
         this.whitelistRepository = whitelistRepository;
         this.whitelistGroupsRepository = whitelistGroupsRepository;
-        this.rootServicesGetterService  = rootServicesGetterService;
+        this.rootServicesGetterService = rootServicesGetterService;
     }
 
     @Override
     public void saveWhitelist(Whitelist whitelist, UserDetails currentUser) throws Exception {
         whitelist.setPlatenumber(whitelist.getPlatenumber().toUpperCase());
 
-        if(whitelist.getGroupId() != null){
+        if (whitelist.getGroupId() != null) {
             WhitelistGroups group = whitelistGroupsRepository.getOne(whitelist.getGroupId());
             whitelist.setGroup(group);
-        } else if(whitelist.getGroup() != null){
+        } else if (whitelist.getGroup() != null) {
             whitelist.setGroup(null);
         }
 
@@ -56,7 +57,7 @@ public class WhitelistServiceImpl implements WhitelistService {
             if (StringUtils.isNotNullOrEmpty(whitelist.getAccessEndString())) {
                 whitelist.setAccess_end(format.parse(whitelist.getAccessEndString()));
             }
-        }  else {
+        } else {
             whitelist.setAccess_start(null);
             whitelist.setAccess_end(null);
         }
@@ -96,7 +97,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         SimpleDateFormat format = new SimpleDateFormat(dateformat);
         Whitelist whitelist = whitelistRepository.getWithCarAndGroup(id);
         whitelist.setPlatenumber(whitelist.getCar().getPlatenumber());
-        if(whitelist.getGroup() != null){
+        if (whitelist.getGroup() != null) {
             whitelist.setGroupId(whitelist.getGroup().getId());
         }
         if (Whitelist.Type.PERIOD.equals(whitelist.getType())) {
@@ -115,13 +116,22 @@ public class WhitelistServiceImpl implements WhitelistService {
 
     @Override
     public void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser) {
-        Whitelist whitelist = new Whitelist();
-        whitelist.setGroup(group);
-        whitelist.setUpdatedUser(currentUser);
-
         Cars car = rootServicesGetterService.getCarsService().createCar(plateNumber);
-        whitelist.setCar(car);
 
+        Whitelist whitelist = whitelistRepository.findWhiteListByCar(car);
+
+        if (whitelist == null) {
+            whitelist = new Whitelist();
+            whitelist.setGroup(group);
+            whitelist.setUpdatedUser(currentUser);
+            whitelist.setCar(car);
+        } else {
+
+            if(!group.getId().equals(whitelist.getGroupId())) {
+                // alert
+                whitelist.setGroup(group);
+            }
+        }
         whitelistRepository.save(whitelist);
     }
 }

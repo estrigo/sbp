@@ -7,6 +7,7 @@ import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
 import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import kz.spt.whitelistplugin.service.WhitelistGroupsService;
 import kz.spt.whitelistplugin.service.WhitelistService;
+import lombok.extern.java.Log;
 import org.pf4j.util.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -52,16 +53,25 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
             if (StringUtils.isNotNullOrEmpty(whitelistGroups.getAccessEndString())) {
                 whitelistGroups.setAccess_end(format.parse(whitelistGroups.getAccessEndString()));
             }
-        }  else {
+        } else {
             whitelistGroups.setAccess_start(null);
             whitelistGroups.setAccess_end(null);
         }
         whitelistGroups.setUpdatedUser(currentUser);
         WhitelistGroups updatedWhitelistGroups = whitelistGroupsRepository.save(whitelistGroups);
 
-        Set<String> plateNumbers = whitelistGroups.getPlateNumbers().stream().collect(Collectors.toSet());
-        for(String plateNumber : plateNumbers){
-            whitelistService.saveWhitelistFromGroup(plateNumber, updatedWhitelistGroups, currentUser);
+        Set<String> updatedPlateNumbers = whitelistGroups.getPlateNumbers().stream().collect(Collectors.toSet());
+        List<Whitelist> groupWhitelists = whitelistService.listByGroupId(whitelistGroups.getId());
+        if (groupWhitelists != null) {
+            for (Whitelist w : groupWhitelists) {
+                if (!updatedPlateNumbers.contains(w.getCar().getPlatenumber())) {
+                    whitelistService.deleteById(w.getId());
+                }
+            }
+        }
+
+        for (String updatedPlateNumber : updatedPlateNumbers) {
+            whitelistService.saveWhitelistFromGroup(updatedPlateNumber, updatedWhitelistGroups, currentUser);
         }
         return updatedWhitelistGroups;
     }
@@ -80,8 +90,8 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
     public void deleteById(Long id) {
         WhitelistGroups whitelistGroups = whitelistGroupsRepository.getWhitelistGroup(id);
         List<Whitelist> groupWhitelists = whitelistService.listByGroupId(whitelistGroups.getId());
-        if(groupWhitelists != null){
-            for(Whitelist w: groupWhitelists){
+        if (groupWhitelists != null) {
+            for (Whitelist w : groupWhitelists) {
                 whitelistService.deleteById(w.getId());
             }
         }
@@ -94,8 +104,8 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
         WhitelistGroups whitelistGroups = whitelistGroupsRepository.getWhitelistGroup(id);
         List<String> plateNumbers = new ArrayList<>();
         List<Whitelist> groupWhitelists = whitelistService.listByGroupId(whitelistGroups.getId());
-        if(groupWhitelists != null){
-            for(Whitelist w: groupWhitelists){
+        if (groupWhitelists != null) {
+            for (Whitelist w : groupWhitelists) {
                 plateNumbers.add(w.getCar().getPlatenumber());
             }
         }
