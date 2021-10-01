@@ -14,7 +14,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="p-20">
-                                <form th:action="@{|/user/edit/${user.id}|}" th:object="${user}" method="post">
+                                <form th:action="@{|/users/edit/${user.id}|}" th:object="${user}" method="post">
                                     <div class="form-group row">
                                         <label class="col-2 col-form-label" th:text="#{user.username}"></label>
                                         <div class="col-10">
@@ -106,7 +106,7 @@
                                     <div class="form-group row">
                                         <label class="col-2 col-form-label"></label>
                                         <div class="col-10">
-                                            <a th:href="@{|/user/list|}" class="btn btn-primary btn-custom waves-effect waves-light w-md" type="button" th:text="#{crm.cancel}"></a>
+                                            <a th:href="@{|/users/list|}" class="btn btn-primary btn-custom waves-effect waves-light w-md" type="button" th:text="#{crm.cancel}"></a>
                                             <button type="submit" class="btn btn-success waves-effect waves-light" th:text="#{crm.save}"></button>
                                         </div>
                                     </div>

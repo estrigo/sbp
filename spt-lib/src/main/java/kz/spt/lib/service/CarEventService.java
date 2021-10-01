@@ -1,6 +1,6 @@
 package kz.spt.app.service;
 
-import kz.spt.app.entity.dto.CarEventDto;
+import kz.spt.app.model.dto.CarEventDto;
 
 public interface CarEventService {
 

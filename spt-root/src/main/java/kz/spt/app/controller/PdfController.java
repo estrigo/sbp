@@ -4,7 +4,7 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
-import kz.spt.app.entity.Pdf;
+import kz.spt.app.model.Pdf;
 import kz.spt.app.service.PdfService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;

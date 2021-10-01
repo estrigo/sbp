@@ -10,4 +10,7 @@ public interface RateRepository extends JpaRepository<ParkingRate, Long> {
 
     @Query("from ParkingRate pr JOIN FETCH pr.parking where pr.id = ?1")
     ParkingRate getWithParking(Long id);
+
+    @Query("from ParkingRate pr where pr.parking.id = ?1")
+    ParkingRate getByParkingId(Long id);
 }

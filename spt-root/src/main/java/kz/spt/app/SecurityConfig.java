@@ -47,9 +47,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/admin/**", "/user/delete/**").hasRole("ADMIN")
-                .antMatchers("/pdf-generator", "/search/**", "/customer/**", "/user/edit/**", "/register/**", "/user/list",
-                        "/contract/**", "/cars/**", "/parking/**", "/arm/**", "/events/**", "/journal/**")
+                .antMatchers("/users/delete/**").hasRole("ADMIN")
+                .antMatchers("/pdf-generator", "/search/**", "/customer/**", "/users/edit/**", "/register/**", "/users/list",
+                        "/contract/**", "/cars/**", "/parking/**", "/arm/**", "/events/**", "/journal/**", "/customer/**")
                 .hasAnyRole( "ADMIN", "USER", "MANAGER", "OWNER");
 
         List<PluginWrapper> plugins = pluginManager.getPlugins();

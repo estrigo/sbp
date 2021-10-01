@@ -1,6 +1,6 @@
 package kz.spt.app.service;
 
-import kz.spt.app.entity.Pdf;
+import kz.spt.app.model.Pdf;
 
 public interface PdfService {
 

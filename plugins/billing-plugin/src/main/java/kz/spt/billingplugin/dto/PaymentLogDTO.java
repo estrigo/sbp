@@ -2,19 +2,14 @@ package kz.spt.billingplugin.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import kz.spt.billingplugin.model.Payment;
-import kz.spt.billingplugin.model.PaymentProvider;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
-import static kz.spt.billingplugin.BillingPlugin.modelMapper;
-
 @Data @NoArgsConstructor
 public class PaymentLogDTO {
-
-
 
     public Long id;
     @JsonFormat(pattern="dd.MM.yyyy HH:mm:ss")

@@ -11,6 +11,8 @@ public interface RateService {
 
     ParkingRate getById(Long id);
 
+    ParkingRate getByParkingId(Long parkingId);
+
     int calculatePayment(Long parkingId, Date inDate, Date outDate);
 
     List<ParkingRateDto> listPaymentParkings();

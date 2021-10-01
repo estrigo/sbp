@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.validation.Valid;
 
 @Controller
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
     private UserService userService;
@@ -28,69 +28,69 @@ public class UserController {
     }
 
     /**
-     * /user/list
+     * /users/list
      * <p>
      * Shows all users
      *
      * @param model model to attributes to
-     * @return user/list
+     * @return users/list
      */
     @GetMapping("/list")
     public String showAllUsers(Model model, @AuthenticationPrincipal UserDetails currentUser) {
         model.addAttribute("currentUser", userService.findByUsername(currentUser.getUsername()));
         model.addAttribute("users", userService.listAllUsers());
-        return "user/list";
+        return "users/list";
     }
 
     /**
-     * /user/edit/{id}
+     * /users/edit/{id}
      * <p>
      * Shows edit user form
      *
      * @param model model to attributes to
      * @param id    variable type long user id
-     * @return user/edit
+     * @return users/edit
      */
     @GetMapping("/edit/{id}")
     public String showFormEditUser(Model model, @PathVariable Long id) {
         model.addAttribute("user", userService.showUser(id));
         model.addAttribute("allRoles", roleService.listRolesByPlugins());
-        return "user/edit";
+        return "users/edit";
     }
 
     /**
-     * /user/edit/{id}
+     * /users/edit/{id}
      * <p>
      * Processes edit user request
      *
      * @param id            variable type long user id
      * @param user          variable type User
      * @param bindingResult variable type BindingResult
-     * @return redirect:/user/list
+     * @return redirect:/users/list
      */
     @PostMapping("/edit/{id}")
     public String processRequestEditUser(@PathVariable Long id, @Valid User user,
                                          BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/user/edit/" + id;
+            return "redirect:/users/edit/" + id;
         } else {
             userService.editUser(user);
-            return "redirect:/user/list";
+            return "redirect:/users/list";
         }
     }
 
     /**
-     * /user/delete/{id}
+     * /users/delete/{id}
      * <p>
      * Deletes user
      *
      * @param id variable type long user id
-     * @return redirect:/user/list
+     * @return redirect:/users/list
      */
     @GetMapping("/delete/{id}")
     public String deleteUser(@PathVariable Long id) {
         userService.deleteUser(userService.showUser(id));
-        return "redirect:/user/list";
+        return "redirect:/users/list";
     }
 
 }

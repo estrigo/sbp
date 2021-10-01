@@ -3,12 +3,13 @@ package kz.spt.app.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.app.utils.StaticValues;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.EventLogService.ArmEventType;
-import kz.spt.app.entity.dto.CarEventDto;
+import kz.spt.app.model.dto.CarEventDto;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
 import kz.spt.app.service.CarEventService;
@@ -39,7 +40,6 @@ public class CarEventServiceImpl implements CarEventService {
     private final CarImageService carImageService;
     private final BarrierService barrierService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private String dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ";
 
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                PluginManager pluginManager, CarStateService carStateService, CarImageService carImageService,
@@ -55,7 +55,7 @@ public class CarEventServiceImpl implements CarEventService {
 
     @Override
     public void saveCarEvent(CarEventDto eventDto) throws Exception {
-        SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
         eventDto.car_number = eventDto.car_number.toUpperCase();
 
         Camera camera = cameraService.findCameraByIp(eventDto.ip_address);
@@ -157,7 +157,7 @@ public class CarEventServiceImpl implements CarEventService {
         } else if(Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType())){
             PluginWrapper ratePlugin = pluginManager.getPlugin("rate-plugin");
             if(ratePlugin!=null && ratePlugin.getPluginState().equals(PluginState.STARTED)){
-                List<PluginRegister> pluginRegisters =  pluginManager.getExtensions(PluginRegister.class, ratePlugin.getPluginId());
+                List<PluginRegister> pluginRegisters = pluginManager.getExtensions(PluginRegister.class, ratePlugin.getPluginId());
                 if(pluginRegisters.size() > 0){
                     CarState carState = carStateService.getLastNotLeft(eventDto.car_number);
                     if(carState != null){

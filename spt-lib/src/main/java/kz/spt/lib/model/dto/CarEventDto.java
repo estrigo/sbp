@@ -1,4 +1,4 @@
-package kz.spt.app.entity.dto;
+package kz.spt.app.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 

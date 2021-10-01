@@ -20,9 +20,17 @@ public class PaymentProvider {
     @Column(name = "id")
     private Long id;
 
-    String provider;
+    private String provider;
 
-    String name;
+    private String name;
 
+    private Boolean enabled = true;
 
+    @Column(name = "client_id", unique=true)
+    private String clientId;
+
+    private String secret;
+
+    @Transient
+    private String password;
 }

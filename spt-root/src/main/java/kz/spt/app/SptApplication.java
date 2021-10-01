@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
-@EntityScan(basePackages = {"kz.spt.lib.model", "kz.spt.app.entity"})
+@EntityScan(basePackages = {"kz.spt.lib.model", "kz.spt.app.model"})
 public class SptApplication {
 
     public static void main(String[] args) {

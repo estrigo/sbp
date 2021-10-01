@@ -1,0 +1,45 @@
+<form th:action="@{|/billing/providers/save/${paymentProvider.id}|}" th:object="${paymentProvider}" method="post">
+    <input type="hidden" th:field="*{id}" th:value="*{id}">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="provider" class="control-label">Провайдер</label>
+                <input type="text" class="form-control" th:field="*{provider}" th:value="*{provider}" id="provider">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="name" class="control-label">Название</label>
+                <input type="text" class="form-control" id="name" th:field="*{name}" th:value="*{name}">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="clientId" class="control-label">Id клиента</label>
+                <input type="text" class="form-control" id="clientId" th:field="*{clientId}" th:value="*{clientId}">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="password" class="control-label">Пароль</label>
+                <input type="password" class="form-control" id="password" th:field="*{password}" th:value="*{password}">
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="checkbox3" class="control-label">Разрешен</label>
+                <div class="checkbox-primary">
+                    <input id="checkbox3" type="checkbox" th:field="*{enabled}" th:value="*{enabled}">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>
+        <button type="submit" class="btn btn-success waves-effect waves-light" th:text="#{crm.saveChanges}"></button>
+    </div>
+</form>

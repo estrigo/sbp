@@ -14,9 +14,6 @@ public class TableDataDTO {
     public int draw;
     public int recordsTotal;
     public int recordsFiltered;
-    public List<PaymentLogDTO> data = new ArrayList<>();
-
-
-
+    public List<Object> data = new ArrayList<>();
 }
 

@@ -1,6 +1,6 @@
 package kz.spt.app.service.impl;
 
-import kz.spt.app.entity.Pdf;
+import kz.spt.app.model.Pdf;
 import kz.spt.app.repository.PdfRepository;
 import kz.spt.app.service.PdfService;
 import org.springframework.stereotype.Service;

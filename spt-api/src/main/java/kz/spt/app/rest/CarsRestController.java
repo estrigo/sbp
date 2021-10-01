@@ -4,7 +4,7 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.service.CarsService;
-import kz.spt.app.entity.dto.CarEventDto;
+import kz.spt.app.model.dto.CarEventDto;
 import kz.spt.app.service.CarEventService;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;

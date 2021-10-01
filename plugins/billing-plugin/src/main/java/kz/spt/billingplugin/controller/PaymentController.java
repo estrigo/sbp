@@ -19,20 +19,19 @@ import java.util.stream.Collectors;
 @RequestMapping("/billing/payments")
 public class PaymentController {
 
-    PaymentService paymentService;
+    private PaymentService paymentService;
 
     public PaymentController(PaymentService paymentService) {
         this.paymentService = paymentService;
     }
 
     @GetMapping("/list")
-    public String showAllWhitelist(Model model) {
+    public String showAllPayments(Model model) {
         return "/billing/payments/list";
     }
 
     @PostMapping("/list")
     public ResponseEntity getData() {
-
         List<Payment> paymentList = (List<Payment>) paymentService.listAllPayments();
         TableDataDTO tableDataDTO = new TableDataDTO();
         tableDataDTO.setDraw(1);
@@ -40,6 +39,5 @@ public class PaymentController {
         tableDataDTO.setRecordsFiltered(1);
         tableDataDTO.setData(paymentList.stream().map(payment -> PaymentLogDTO.convertToDto(payment)).collect(Collectors.toList()));
         return new ResponseEntity(tableDataDTO, HttpStatus.OK);
-
     }
 }

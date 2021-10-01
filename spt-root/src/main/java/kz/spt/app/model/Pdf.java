@@ -1,4 +1,4 @@
-package kz.spt.app.entity;
+package kz.spt.app.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

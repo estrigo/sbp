@@ -33,9 +33,18 @@ public class RateServiceImpl implements RateService {
     }
 
     @Override
+    public ParkingRate getByParkingId(Long parkingId) {
+        return rateRepository.getByParkingId(parkingId);
+    }
+
+    @Override
     public int calculatePayment(Long parkingId, Date inDate, Date outDate) {
+
+        ParkingRate parkingRate = getByParkingId(parkingId);
+
         Calendar inCalendar = Calendar.getInstance();
         inCalendar.setTime(inDate);
+        inCalendar.add(Calendar.MINUTE, parkingRate.getBeforeFreeMinutes());
 
         Calendar outCalendar = Calendar.getInstance();
         outCalendar.setTime(outDate);
@@ -48,7 +57,8 @@ public class RateServiceImpl implements RateService {
             hours++;
             inCalendar.add(Calendar.HOUR, 1);
         }
-        return hours*100;
+
+        return hours*parkingRate.getOnlinePaymentValue();
     }
 
     @Override
