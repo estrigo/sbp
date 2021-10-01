@@ -3,6 +3,7 @@ package kz.spt.app.auth;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.app.service.PluginService;
 import kz.spt.lib.extension.PluginRegister;
 import lombok.extern.java.Log;
 import org.pf4j.PluginManager;
@@ -33,7 +34,7 @@ public class AuthorizationServer extends AuthorizationServerConfigurerAdapter {
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private PluginManager pluginManager;
+    private PluginService pluginService;
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
@@ -53,26 +54,21 @@ public class AuthorizationServer extends AuthorizationServerConfigurerAdapter {
                 details.setScope(Arrays.asList("payment"));
                 details.setAccessTokenValiditySeconds(10800);
 
-                PluginWrapper billingPlugin = pluginManager.getPlugin("billing-plugin");
-                if(billingPlugin != null && billingPlugin.getPluginState().equals(PluginState.STARTED)){
-                    List<PluginRegister> pluginRegisters =  pluginManager.getExtensions(PluginRegister.class, billingPlugin.getPluginId());
-                    if(pluginRegisters.size() > 0){
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        ObjectNode node = objectMapper.createObjectNode();
-                        node.put("client_id", clientId);
-                        node.put("command", "getPasswordHash");
+                PluginRegister billingPluginRegister = pluginService.getPluginRegister("billing-plugin");
+                if(billingPluginRegister != null){
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    ObjectNode node = objectMapper.createObjectNode();
+                    node.put("client_id", clientId);
+                    node.put("command", "getPasswordHash");
 
-                        PluginRegister pluginRegister = pluginRegisters.get(0);
-                        try {
-                            JsonNode result = pluginRegister.execute(node);
-                            if(result.get("passwordHash") != null){
-                                log.info("passwordHash: " + result.get("passwordHash").textValue());
-                                details.setClientSecret(result.get("passwordHash").textValue());
-                                return details;
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    try {
+                        JsonNode result = billingPluginRegister.execute(node);
+                        if(result.get("passwordHash") != null){
+                            details.setClientSecret(result.get("passwordHash").textValue());
+                            return details;
                         }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
                 return null;
