@@ -34,13 +34,25 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void saveCustomer(Customer customer) {
         Set<String> plateNumbers = customer.getPlateNumbers().stream().collect(Collectors.toSet());
+
         customer.setCars(new ArrayList<Cars>());
-        for (String plateNumber : plateNumbers) {
-            Cars car = carsService.createCar(plateNumber);
-            car.setCustomer(customer);
-            customer.getCars().add(car);
+
+        Customer oldCustomer = findById(customer.getId());
+        if (oldCustomer != null) {
+            for (Cars car : oldCustomer.getCars()) {
+                if (!plateNumbers.contains(car.getPlatenumber())) {
+                    car.setCustomer(null);
+                }
+            }
+            customerRepository.save(oldCustomer);
+        } else {
+            for (String plateNumber : plateNumbers) {
+                Cars car = carsService.createCar(plateNumber);
+                car.setCustomer(customer);
+                customer.getCars().add(car);
+                customerRepository.save(customer);
+            }
         }
-        customerRepository.save(customer);
     }
 
     @Override
