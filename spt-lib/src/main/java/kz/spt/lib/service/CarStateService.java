@@ -10,7 +10,7 @@ import java.util.Date;
 
 public interface CarStateService {
 
-    void createINState(String carNumber, Date inTimestamp, Camera camera);
+    void createINState(String carNumber, Date inTimestamp, Camera camera, String whitelistJson);
 
     void createOUTState(String carNumber, Date outTimestamp, Camera camera, Long paymentId, Long amount, Boolean paid);
 

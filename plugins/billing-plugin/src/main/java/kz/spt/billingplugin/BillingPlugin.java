@@ -26,6 +26,7 @@ public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
         return "billing";
     }
 
+    @Override
     public List<Map<String, Object>> getLinks(){
         ResourceBundle bundle = ResourceBundle.getBundle("billing-plugin", Locale.forLanguageTag("ru-RU"));
         List<Map<String, Object>> list = new ArrayList<>();

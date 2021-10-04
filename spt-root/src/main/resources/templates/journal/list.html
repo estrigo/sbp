@@ -7,46 +7,42 @@
 
 <div class="content">
     <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="card-box table-responsive">
-                    <h4 class="m-t-0 header-title"><b th:text="#{carstate.journal}"></b></h4>
-                    <form th:action="@{|/journal/list|}" th:object="${carStateDtoFilter}" method="post">
-                        <div class="row">
-                            <div class="col-3">
-                                <input type="datetime-local" class="form-control" id="dateFromString" th:field="*{dateFromString}">
-                            </div>
-                            <div class="col-3">
-                                <input type="datetime-local" class="form-control" id="dateToString" th:field="*{dateToString}">
-                            </div>
-                            <div class="col-3">
-                                <input type="text" class="form-control" id="plateNumber" th:field="*{plateNumber}" th:placeholder="#{car.platenumber}">
-                            </div>
-                            <div class="col-3">
-                                <button type="submit" class="btn btn-success" th:text="#{crm.search}"></button>
-                                <button type="button" class="btn btn-secondary" th:text="#{crm.clear}"></button>
-                            </div>
-                        </div>
-                    </form>
-                    <div class="mb-5"></div>
-
-                    <div class="row">
-                        <div class="table-responsive" data-pattern="priority-columns">
-                            <table id="carStateTable" class="table table-bordered">
-                                <thead>
-                                <tr>
-                                    <th><a th:text="#{crm.id}"></a></th>
-                                    <th><a th:text="#{car.platenumber}"></a></th>
-                                    <th><a th:text="#{carState.inTimestamp}"></a></th>
-                                    <th><a th:text="#{carState.outTimestamp}"></a></th>
-                                    <th><a th:text="#{carState.duration}"></a></th>
-                                    <th><a th:text="#{carState.payment}"></a></th>
-                                    <th><a th:text="#{carState.paid}"></a></th>
-                                </tr>
-                                </thead>
-                            </table>
-                        </div>
+        <div class="card-box table-responsive">
+            <h4 class="m-t-0 header-title"><b th:text="#{carstate.journal}"></b></h4>
+            <form th:action="@{|/journal/list|}" th:object="${carStateDtoFilter}" method="post">
+                <div class="row">
+                    <div class="col-3">
+                        <input type="datetime-local" class="form-control" id="dateFromString" th:field="*{dateFromString}">
                     </div>
+                    <div class="col-3">
+                        <input type="datetime-local" class="form-control" id="dateToString" th:field="*{dateToString}">
+                    </div>
+                    <div class="col-3">
+                        <input type="text" class="form-control" id="plateNumber" th:field="*{plateNumber}" th:placeholder="#{car.platenumber}">
+                    </div>
+                    <div class="col-3">
+                        <button type="submit" class="btn btn-success" th:text="#{crm.search}"></button>
+                        <button type="button" class="btn btn-secondary" th:text="#{crm.clear}"></button>
+                    </div>
+                </div>
+            </form>
+            <div class="mb-5"></div>
+
+            <div class="row">
+                <div class="table-responsive" data-pattern="priority-columns">
+                    <table id="carStateTable" class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th><a th:text="#{crm.id}"></a></th>
+                            <th><a th:text="#{car.platenumber}"></a></th>
+                            <th><a th:text="#{carState.inTimestamp}"></a></th>
+                            <th><a th:text="#{carState.outTimestamp}"></a></th>
+                            <th><a th:text="#{carState.duration}"></a></th>
+                            <th><a th:text="#{carState.payment}"></a></th>
+                            <th><a th:text="#{carState.paid}"></a></th>
+                        </tr>
+                        </thead>
+                    </table>
                 </div>
             </div>
         </div>
@@ -87,12 +83,29 @@
             "targets": "_all"
         }],
         "columns": [
-            {"data": "id", "width" : "10%"},
-            {"data": "carNumber", "width" : "15%"},
-            {"data": "inTimestampString", "width": "20%"},
-            {"data": "outTimestampString", "width" : "20%"},
-            {"data": "duration", "width" : "20%"},
-            {"data": "payment", "width" : "10%"},
+            {"data": "id", "width" : "5%"},
+            {"data": "carNumber", "width" : "10%"},
+            {"data": "inTimestampString", "width": "15%"},
+            {"data": "outTimestampString", "width" : "15%"},
+            {"data": "duration", "width" : "15%"},
+            {"data": function (carState)
+                {
+                    if(carState.whitelistJson && carState.whitelistJson !== ""){
+                        const whitelists = JSON.parse(carState.whitelistJson);
+                        let text = '<span>Белый лист</span><br/>';
+                        for(const w of whitelists){
+                            if(w.type === 'UNLIMITED'){
+                                text = text + '<small class="text-muted">Авто с гос. номером ' + w.plateNumber + ' может посещать объект в любое время.</small>';
+                            } else {
+                                text = text + '<small class="text-muted">Авто с гос. номером ' + w.plateNumber + ' может посещать объект ' + (w.access_start ? 'с даты ' + w.access_start : 'в любое время') + '. Сроком до ' + w.access_end + '</small>';
+                            }
+                        }
+                        return text;
+                    } else {
+                        return carState.payment;
+                    }
+                }, "width" : "35%"
+            },
             {"data": "paid", "width" : "5%"}
         ],
         "order": [ //[[ in thymeleaf is inline script

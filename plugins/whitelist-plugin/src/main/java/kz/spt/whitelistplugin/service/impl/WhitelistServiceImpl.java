@@ -1,6 +1,10 @@
 package kz.spt.whitelistplugin.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.model.Cars;
+import kz.spt.lib.utils.StaticValues;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
@@ -10,7 +14,6 @@ import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.repository.WhitelistRepository;
 import kz.spt.whitelistplugin.service.WhitelistService;
 import org.pf4j.util.StringUtils;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -80,16 +83,52 @@ public class WhitelistServiceImpl implements WhitelistService {
     }
 
     @Override
-    public Boolean hasAccess(String platenumber, Date date) {
+    public ArrayNode hasAccess(String platenumber, Date date) {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        ArrayNode arrayNode = objectMapper.createArrayNode();
 
         Cars car = rootServicesGetterService.getCarsService().findByPlatenumber(platenumber);
         if (car != null) {
             List<Whitelist> whitelists = whitelistRepository.findValidWhiteListByCar(car, date);
             List<Whitelist> groupWhitelists = whitelistRepository.findValidWhiteListGroupByCar(car, date);
-            return whitelists.size() > 0 || groupWhitelists.size() > 0;
+            SimpleDateFormat format =  new SimpleDateFormat("dd.MM.yyyy hh:mm:ss");
+
+            for(Whitelist whitelist : whitelists){
+                ObjectNode objectNode = objectMapper.createObjectNode();
+                objectNode.put("id", whitelist.getId());
+                objectNode.put("plateNumber", whitelist.getCar().getPlatenumber());
+                objectNode.put("type", whitelist.getType().toString());
+                if(Whitelist.Type.PERIOD.equals(whitelist.getType())){
+                    if(whitelist.getAccess_start() != null){
+                        objectNode.put("accessStart", format.format(whitelist.getAccess_start()));
+                    }
+                    if(whitelist.getAccess_end() != null){
+                        objectNode.put("accessEnd", format.format(whitelist.getAccess_end()));
+                    }
+                }
+                arrayNode.add(objectNode);
+            }
+            for(Whitelist whitelist : groupWhitelists){
+                ObjectNode objectNode = objectMapper.createObjectNode();
+                objectNode.put("id", whitelist.getGroup().getId());
+                objectNode.put("plateNumber", whitelist.getCar().getPlatenumber());
+                objectNode.put("groupId", whitelist.getGroup().getId());
+                objectNode.put("groupName", whitelist.getGroup().getName());
+                objectNode.put("type", whitelist.getGroup().getType().toString());
+                if(Whitelist.Type.PERIOD.equals(whitelist.getGroup().getType())){
+                    if(whitelist.getGroup().getAccess_start() != null){
+                        objectNode.put("accessStart", format.format(whitelist.getGroup().getAccess_start()));
+                    }
+                    if(whitelist.getGroup().getAccess_end() != null){
+                        objectNode.put("accessEnd", format.format(whitelist.getGroup().getAccess_end()));
+                    }
+                }
+                arrayNode.add(objectNode);
+            }
         }
 
-        return false;
+        return arrayNode;
     }
 
     @Override

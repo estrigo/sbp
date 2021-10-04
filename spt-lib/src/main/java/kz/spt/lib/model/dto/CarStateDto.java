@@ -23,6 +23,7 @@ public class CarStateDto {
     private String paid;
     private Long payment;
     private String duration;
+    private String whitelistJson;
 
     public Date getNullSafeInTimestamp(){
         return this.inTimestamp == null ? new Date() : this.inTimestamp;
@@ -47,6 +48,7 @@ public class CarStateDto {
         dto.inTimestampString = carState.getInTimestamp() == null ? "" : format.format(carState.getInTimestamp());
         dto.outTimestampString = carState.getOutTimestamp() == null ? "" : format.format(carState.getOutTimestamp());
         dto.id = carState.getId();
+        dto.whitelistJson = carState.getWhitelistJson();
         if(carState.getPaid()!=null && carState.getPaid()){
             dto.paid = "Да";
         } else {

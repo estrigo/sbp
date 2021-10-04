@@ -1,7 +1,7 @@
 package kz.spt.app.csv;
 
 import com.opencsv.CSVReader;
-import kz.spt.app.utils.ReadDataUtils;
+import kz.spt.lib.utils.ReadDataUtils;
 
 import java.io.File;
 import java.io.FileReader;

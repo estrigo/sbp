@@ -66,6 +66,9 @@ public class CarState {
 
     private Long payment;
 
+    @Column(name = "whitelist_json", columnDefinition = "text")
+    private String whitelistJson;
+
     @CreationTimestamp
     private Date created;
 

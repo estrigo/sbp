@@ -1,5 +1,6 @@
 package kz.spt.whitelistplugin.service;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,7 +16,7 @@ public interface WhitelistService {
 
     List<Whitelist> listByGroupId(Long groupId);
 
-    Boolean hasAccess(String plateNumber, Date enterDate);
+    ArrayNode hasAccess(String plateNumber, Date enterDate);
 
     Whitelist prepareById(Long id);
 

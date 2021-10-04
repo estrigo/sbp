@@ -2,6 +2,7 @@ package kz.spt.whitelistplugin.extension;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.whitelistplugin.WhitelistPlugin;
@@ -22,10 +23,10 @@ public class CommandExecutor implements PluginRegister {
 
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode node = objectMapper.createObjectNode();
-        node.put("whitelistCheckResult", false);
+        node.set("whitelistCheckResult", null);
 
         if(command!=null && command.get("car_number")!=null && command.get("event_time")!=null){
-            node.put("whitelistCheckResult", getWhitelistService().hasAccess(command.get("car_number").textValue(), format.parse(command.get("event_time").textValue())));
+            node.set("whitelistCheckResult", getWhitelistService().hasAccess(command.get("car_number").textValue(), format.parse(command.get("event_time").textValue())));
         }
 
         return node;

@@ -1,4 +1,4 @@
-package kz.spt.app.utils;
+package kz.spt.lib.utils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
