@@ -1,20 +1,33 @@
 <!DOCTYPE html>
 
-<html xmlns:th="http://www.thymeleaf.org">
+<html th:fragment="main(body_content, scripts, links)" xmlns:th="http://www.thymeleaf.org">
 
-<nav th:fragment="head_nav" class="navbar-custom">
+
+<nav th:fragment="head_nav" class="navbar-custom" style="display: flex; align-items: center; justify-content: space-between;">
+
+    <ul class="list-inline menu-left center mb-0">
+
+        <li sec:authorize="isAuthenticated()" class="hide-phone">
+            <a th:href="@{|/parking/list|}" style="color: white; border-color: white;" class="btn">
+                <i class="ti-settings"></i>
+                <span style="display: inline-block; margin-right: 8px;" th:text="#{parking.settings}"></span>
+            </a>
+        </li>
+    </ul>
 
     <ul class="list-inline float-right mb-0">
 
         <li sec:authorize="isAuthenticated()" class="list-inline-item dropdown notification-list">
-            <a class="nav-link dropdown-toggle waves-effect waves-light nav-user" data-toggle="dropdown" href="#" role="button"
+            <a class="nav-link dropdown-toggle waves-effect waves-light nav-user" data-toggle="dropdown" href="#"
+               role="button"
                aria-haspopup="false" aria-expanded="false">
                 <img th:src="@{/assets/images/users/avatar.jpg}" alt="user" class="rounded-circle">
             </a>
             <div class="dropdown-menu dropdown-menu-right profile-dropdown " aria-labelledby="Preview">
                 <!-- item-->
                 <div class="dropdown-item noti-title">
-                    <h5 class="text-overflow"><small><span th:text="#{crm.welcome}"></span>! <span sec:authentication="name"></span></small> </h5>
+                    <h5 class="text-overflow"><small><span th:text="#{crm.welcome}"></span>! <span
+                            sec:authentication="name"></span></small></h5>
                 </div>
 
                 <!-- item-->
@@ -22,7 +35,8 @@
                     <i class="mdi mdi-account-star-variant"></i> <span th:text="#{crm.profile}"></span>
                 </a>
                 <!-- item-->
-                <a href="/logout" th:href="@{#}" onclick="$('#logout_form').submit();" class="dropdown-item notify-item">
+                <a href="/logout" th:href="@{#}" onclick="$('#logout_form').submit();"
+                   class="dropdown-item notify-item">
                     <i class="mdi mdi-logout"></i> <span th:text="#{crm.logout}"></span>
                 </a>
 
@@ -32,16 +46,6 @@
             </div>
         </li>
 
-    </ul>
-
-    <ul class="list-inline menu-left mb-0">
-
-        <!--li class="hide-phone app-search">
-            <form role="search" class="">
-                <input type="text" placeholder="Search..." class="form-control">
-                <a href=""><i class="fa fa-search"></i></a>
-            </form>
-        </li-->
     </ul>
 
 </nav>
