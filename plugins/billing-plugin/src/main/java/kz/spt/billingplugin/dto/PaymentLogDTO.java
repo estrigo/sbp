@@ -16,29 +16,41 @@ public class PaymentLogDTO {
     public Date created;
     public Date updated;
 
+    @JsonFormat(pattern="dd.MM.yyyy HH:mm:ss")
+    public Date inDate;
+    @JsonFormat(pattern="dd.MM.yyyy HH:mm:ss")
+    public Date outDate;
+
     private BigDecimal price;
 
     String transaction;
 
-
-    private Payment.Status status;
+    String rateDetails;
 
     private String provider;
 
     String description;
 
-    private Payment.Type type;
     String carNumber;
+
+    private String customerDetail;
+
+    private String parking;
 
     public static PaymentLogDTO convertToDto(Payment payment) {
         PaymentLogDTO paymentLogDTO = new PaymentLogDTO();
         paymentLogDTO.setId(payment.getId());
         paymentLogDTO.setCarNumber(payment.getCarNumber());
         paymentLogDTO.setCreated(payment.getCreated());
+        paymentLogDTO.setInDate(payment.getInDate());
+        paymentLogDTO.setOutDate(payment.getOutDate());
         paymentLogDTO.setDescription(payment.getDescription());
         paymentLogDTO.setPrice(payment.getPrice());
         paymentLogDTO.setProvider(payment.getProvider().getName());
         paymentLogDTO.setTransaction(payment.getTransaction());
+        paymentLogDTO.setRateDetails(payment.getRateDetails());
+        paymentLogDTO.setParking(payment.getParking() != null ? payment.getParking().getName() : "");
+        paymentLogDTO.setCustomerDetail(payment.getCustomer() != null ? payment.getCustomer().getFirstName() + " " + payment.getCustomer().getLastName(): null);
         return paymentLogDTO;
     }
 }

@@ -128,7 +128,7 @@ public class WhitelistServiceImpl implements WhitelistService {
             }
         }
 
-        return arrayNode;
+        return arrayNode.isEmpty() ? null : arrayNode;
     }
 
     @Override

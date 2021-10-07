@@ -4,6 +4,7 @@ import kz.spt.lib.model.Parking;
 import kz.spt.rateplugin.model.ParkingRate;
 import kz.spt.rateplugin.model.dto.ParkingRateDto;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -13,7 +14,7 @@ public interface RateService {
 
     ParkingRate getByParkingId(Long parkingId);
 
-    int calculatePayment(Long parkingId, Date inDate, Date outDate);
+    BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate);
 
     List<ParkingRateDto> listPaymentParkings();
 

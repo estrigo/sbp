@@ -33,6 +33,8 @@ public class ParkingRate {
     @JoinColumn(name = "parking")
     private Parking parking;
 
+    private String name;
+
     @Column(name = "before_free_minutes")
     private int beforeFreeMinutes = 15;  //  Бесплатные минуты до оплаты
 

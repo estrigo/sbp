@@ -12,7 +12,7 @@ public interface CarStateService {
 
     void createINState(String carNumber, Date inTimestamp, Camera camera, String whitelistJson);
 
-    void createOUTState(String carNumber, Date outTimestamp, Camera camera, Long paymentId, Long amount, Boolean paid);
+    void createOUTState(String carNumber, Date outTimestamp, Camera camera, CarState carState);
 
     Boolean checkIsLastEnteredNotLeft(String carNumber);
 
@@ -21,5 +21,7 @@ public interface CarStateService {
     Iterable<CarState> getAllNotLeft();
 
     Page<CarStateDto> getAll(PagingRequest pagingRequest, String plateNumber, String dateFromString, String dateToString);
+
+    CarState save(CarState carState);
 
 }

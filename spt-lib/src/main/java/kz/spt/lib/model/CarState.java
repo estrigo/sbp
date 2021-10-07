@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -36,7 +37,18 @@ public class CarState {
     @Column(name = "type")
     private Parking.ParkingType type;
 
-    private Long amount;
+    @Column ( name="rate_amount", precision = 8, scale = 2 )
+    private BigDecimal rateAmount;
+
+    @Column ( name="amount", precision = 8, scale = 2 )
+    private BigDecimal amount;
+
+    private Boolean paid = false;
+
+    private Long paymentId;
+
+    @Column(name = "payment_json", columnDefinition = "text")
+    private String paymentJson;
 
     private String inChannelIp;
 
@@ -61,10 +73,6 @@ public class CarState {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "out_barrier")
     private Barrier outBarrier;
-
-    private Boolean paid = false;
-
-    private Long payment;
 
     @Column(name = "whitelist_json", columnDefinition = "text")
     private String whitelistJson;

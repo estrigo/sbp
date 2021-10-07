@@ -9,6 +9,7 @@ import kz.spt.app.repository.CarStateRepository;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -42,20 +43,11 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
-    public void createOUTState(String carNumber, Date outTimestamp, Camera camera, Long paymentId, Long amount, Boolean paid) {
-        CarState carState = getLastNotLeft(carNumber);
-        if(carState == null){
-            carState = new CarState();
-            carState.setCarNumber(carNumber);
-        }
+    public void createOUTState(String carNumber, Date outTimestamp, Camera camera, CarState carState) {
         carState.setOutTimestamp(outTimestamp);
         carState.setOutChannelIp(camera.getIp());
         carState.setOutGate(camera.getGate());
         carState.setOutBarrier(camera.getGate().getBarrier());
-        carState.setPayment(paymentId);
-        carState.setAmount(amount);
-        carState.setPayment(paymentId);
-        carState.setPaid(paid);
         carStateRepository.save(carState);
     }
 
@@ -86,6 +78,11 @@ public class CarStateServiceImpl implements CarStateService {
         List<CarState> carStates = this.listByFilters(plateNumber);
         List<CarStateDto> carStateDtos = CarStateDto.fromCarStates(carStates);
         return getPage(carStateDtos, pagingRequest);
+    }
+
+    @Override
+    public CarState save(CarState carState) {
+        return carStateRepository.save(carState);
     }
 
     private Page<CarStateDto> getPage(List<CarStateDto> carStates, PagingRequest pagingRequest) {

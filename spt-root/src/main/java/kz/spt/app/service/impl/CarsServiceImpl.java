@@ -31,6 +31,11 @@ public class CarsServiceImpl implements CarsService {
         return carsRepository.findCarsByPlatenumberIgnoreCase(platenumber);
     }
 
+    @Override
+    public Cars findByPlatenumberWithCustomer(String platenumber) {
+        return carsRepository.findCarsByPlatenumberWithCustomers(platenumber);
+    }
+
     public Cars findById(Long id){
         return carsRepository.getOne(id);
     }

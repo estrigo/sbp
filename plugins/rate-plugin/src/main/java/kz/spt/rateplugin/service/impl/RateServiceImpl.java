@@ -10,6 +10,7 @@ import kz.spt.rateplugin.repository.RateRepository;
 import kz.spt.rateplugin.service.RateService;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,7 +39,7 @@ public class RateServiceImpl implements RateService {
     }
 
     @Override
-    public int calculatePayment(Long parkingId, Date inDate, Date outDate) {
+    public BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate) {
 
         ParkingRate parkingRate = getByParkingId(parkingId);
 
@@ -50,7 +51,7 @@ public class RateServiceImpl implements RateService {
         outCalendar.setTime(outDate);
 
         if(inCalendar.after(outCalendar)){
-            return 0;
+            return BigDecimal.ZERO;
         }
         int hours = 0;
         while (inCalendar.before(outCalendar)){
@@ -58,7 +59,7 @@ public class RateServiceImpl implements RateService {
             inCalendar.add(Calendar.HOUR, 1);
         }
 
-        return hours*parkingRate.getOnlinePaymentValue();
+        return BigDecimal.valueOf(parkingRate.getOnlinePaymentValue()).multiply(BigDecimal.valueOf(hours));
     }
 
     @Override

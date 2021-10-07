@@ -38,8 +38,8 @@
                             <th><a th:text="#{carState.inTimestamp}"></a></th>
                             <th><a th:text="#{carState.outTimestamp}"></a></th>
                             <th><a th:text="#{carState.duration}"></a></th>
+                            <th><a th:text="#{carState.rate}"></a></th>
                             <th><a th:text="#{carState.payment}"></a></th>
-                            <th><a th:text="#{carState.paid}"></a></th>
                         </tr>
                         </thead>
                     </table>
@@ -88,25 +88,32 @@
             {"data": "inTimestampString", "width": "15%"},
             {"data": "outTimestampString", "width" : "15%"},
             {"data": "duration", "width" : "15%"},
+            {"data": "rateAmount", "width" : "15%"},
             {"data": function (carState)
                 {
                     if(carState.whitelistJson && carState.whitelistJson !== ""){
                         const whitelists = JSON.parse(carState.whitelistJson);
-                        let text = '<span>Белый лист</span><br/>';
+                        let text = '<span>Белый лист</span>';
                         for(const w of whitelists){
                             if(w.type === 'UNLIMITED'){
-                                text = text + '<small class="text-muted">Авто с гос. номером ' + w.plateNumber + ' может посещать объект в любое время.</small>';
+                                text = text + '<br/><small class="text-muted">Авто с гос. номером ' + w.plateNumber + ' может посещать объект в любое время.</small>';
                             } else {
-                                text = text + '<small class="text-muted">Авто с гос. номером ' + w.plateNumber + ' может посещать объект ' + (w.access_start ? 'с даты ' + w.access_start : 'в любое время') + '. Сроком до ' + w.access_end + '</small>';
+                                text = text + '<br/><small class="text-muted">Авто с гос. номером ' + w.plateNumber + ' может посещать объект ' + (w.access_start ? 'с даты ' + w.access_start : 'в любое время') + '. Сроком до ' + w.access_end + '</small>';
                             }
+                        }
+                        return text;
+                    } else if(carState.paymentJson && carState.paymentJson !== ""){
+                        const payments = JSON.parse(carState.paymentJson);
+                        let text = '<span>' + carState.payment + '</span>';
+                        for(const p of payments){
+                            text = text + '<br/><small class="text-muted">Сумма ' + p.price + 'тг. Провайдер: ' + p.providerPaymentName + '. Дата ' + p.created + '</small>';
                         }
                         return text;
                     } else {
                         return carState.payment;
                     }
                 }, "width" : "35%"
-            },
-            {"data": "paid", "width" : "5%"}
+            }
         ],
         "order": [ //[[ in thymeleaf is inline script
             [ 0, "desc" ]

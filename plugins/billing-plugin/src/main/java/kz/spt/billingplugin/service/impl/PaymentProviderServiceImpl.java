@@ -40,11 +40,7 @@ public class PaymentProviderServiceImpl implements PaymentProviderService {
     }
 
     @Override
-    public String getClientPasswordHash(String clientId) {
-        PaymentProvider paymentProvider = paymentProviderRepository.findByClientId(clientId);
-        if(paymentProvider != null){
-            return paymentProvider.getSecret();
-        }
-        return null;
+    public PaymentProvider getProviderByClientId(String clientId) {
+        return paymentProviderRepository.findByClientId(clientId);
     }
 }

@@ -3,6 +3,7 @@ package kz.spt.lib.model.dto;
 import kz.spt.lib.model.CarState;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,9 +22,11 @@ public class CarStateDto {
     public String inTimestampString;
     public String outTimestampString;
     private String paid;
-    private Long payment;
+    private BigDecimal payment;
     private String duration;
     private String whitelistJson;
+    private String paymentJson;
+    private BigDecimal rateAmount;
 
     public Date getNullSafeInTimestamp(){
         return this.inTimestamp == null ? new Date() : this.inTimestamp;
@@ -33,8 +36,8 @@ public class CarStateDto {
         return this.outTimestamp == null ? new Date() : this.outTimestamp;
     }
 
-    public Long getNullSafePayment(){
-        return this.payment == null ? 0 : this.payment;
+    public BigDecimal getNullSafePayment(){
+        return this.payment == null ? BigDecimal.ZERO : this.payment;
     }
 
     public static CarStateDto fromCarState(CarState carState){
@@ -49,12 +52,14 @@ public class CarStateDto {
         dto.outTimestampString = carState.getOutTimestamp() == null ? "" : format.format(carState.getOutTimestamp());
         dto.id = carState.getId();
         dto.whitelistJson = carState.getWhitelistJson();
+        dto.paymentJson = carState.getPaymentJson();
+        dto.rateAmount = carState.getRateAmount();
         if(carState.getPaid()!=null && carState.getPaid()){
             dto.paid = "Да";
         } else {
             dto.paid = "Нет";
         }
-        dto.payment = carState.getPayment() == null ? 0 : carState.getPayment();
+        dto.payment = carState.getAmount() == null ? BigDecimal.ZERO : carState.getAmount();
 
         StringBuilder durationBuilder = new StringBuilder("");
         if(carState.getInTimestamp() != null){

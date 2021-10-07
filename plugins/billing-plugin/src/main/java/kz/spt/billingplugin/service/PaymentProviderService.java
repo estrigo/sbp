@@ -12,5 +12,5 @@ public interface PaymentProviderService {
 
     void saveProvider(PaymentProvider provider) throws NoSuchAlgorithmException;
 
-    String getClientPasswordHash(String clientId);
+    PaymentProvider getProviderByClientId(String clientId);
 }

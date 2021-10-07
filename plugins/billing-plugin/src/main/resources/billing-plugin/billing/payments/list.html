@@ -60,11 +60,14 @@
                             <tr>
                                 <th>№</th>
                                 <th>Номер</th>
-                                <th>Дата</th>
+                                <th>Паркинг</th>
+                                <th>Дата заезда</th>
+                                <th>Дата выезда</th>
+                                <th>Дата оплаты</th>
+                                <th>Тариф</th>
                                 <th>Сумма</th>
                                 <th>Провайдер</th>
                                 <th>Транзакция</th>
-
                             </tr>
                             </thead>
 
@@ -72,12 +75,6 @@
                         </table>
                     </div>
                 </div>
-
-
-
-
-
-
             </div>
         </div>
     </div>
@@ -110,8 +107,16 @@
             },
             "columns": [
                 { "data": "id" },
-                { "data": "carNumber" },
+                {"data": function (payment)
+                    {
+                        return '<span>' + payment.carNumber + '</span><br />' + (payment.customerDetail ? '<small class="text-muted">' + payment.customerDetail + '</small>' : '');
+                    }
+                },
+                { "data": "parking" },
+                { "data": "inDate" },
+                { "data": "outDate" },
                 { "data": "created" },
+                { "data": "rateDetails" },
                 { "data": "price" },
                 { "data": "provider" },
                 { "data": "transaction" },
