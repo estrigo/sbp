@@ -36,12 +36,25 @@ public class CustomerServiceImpl implements CustomerService {
         Set<String> plateNumbers = customer.getPlateNumbers().stream().collect(Collectors.toSet());
 
         customer.setCars(new ArrayList<Cars>());
-
-        Customer oldCustomer = findById(customer.getId());
+        Customer oldCustomer = customerRepository.getCustomerWithCar(customer.getId());
         if (oldCustomer != null) {
             for (Cars car : oldCustomer.getCars()) {
                 if (!plateNumbers.contains(car.getPlatenumber())) {
                     car.setCustomer(null);
+                }
+            }
+            for (String plateNumber : plateNumbers) {
+                boolean isContains = false;
+                for (Cars car : oldCustomer.getCars()) {
+                    if (car.getPlatenumber().equals(plateNumber)) {
+                        isContains = true;
+                    }
+                }
+
+                if (!isContains) {
+                    Cars newCar = carsService.createCar(plateNumber);
+                    newCar.setCustomer(customer);
+                    oldCustomer.getCars().add(newCar);
                 }
             }
             customerRepository.save(oldCustomer);
@@ -63,7 +76,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer findById(Long id) {
-        return customerRepository.getOne(id);
+        Optional<Customer> customer = customerRepository.findById(id);
+        return customer.orElse(null);
+
     }
 
     @Override
