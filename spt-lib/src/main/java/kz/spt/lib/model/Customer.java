@@ -1,10 +1,11 @@
 package kz.spt.lib.model;
 
 import lombok.*;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.Set;
+
 
 @Entity
 @Getter
@@ -12,6 +13,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Audited
 @Table(name = "customers", schema = "crm")
 public class Customer {
 
@@ -26,7 +28,7 @@ public class Customer {
     private String phoneNumber;
 
 
-    @OneToMany(mappedBy = "customer", cascade=CascadeType.ALL)
+    @OneToMany(mappedBy = "customer")
     private List<Cars> cars;
 
 

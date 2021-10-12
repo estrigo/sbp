@@ -83,6 +83,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public void deleteCustomer(Customer customer) {
+        for (Cars car : customer.getCars()) {
+            car.setCustomer(null);
+        }
         customerRepository.delete(customer);
     }
 
