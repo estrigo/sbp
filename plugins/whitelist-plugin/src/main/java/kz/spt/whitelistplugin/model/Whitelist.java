@@ -4,6 +4,7 @@ import kz.spt.lib.model.Cars;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -35,6 +36,7 @@ public class Whitelist {
     private Date access_end;
 
     @Enumerated(EnumType.STRING)
+//    @Column(name = "type")
     private Whitelist.Type type;
 
     @ManyToOne

@@ -27,6 +27,7 @@ public class WhitelistGroups {
     private String name;
 
     @Enumerated(EnumType.STRING)
+//    @Column(name = "whitelist_type")
     private Whitelist.Type type;
 
     private Date access_start;
