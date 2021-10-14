@@ -29,7 +29,7 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
-    public void createINState(String carNumber, Date inTimestamp, Camera camera, String whitelistJson) {
+    public void createINState(String carNumber, Date inTimestamp, Camera camera, Boolean paid, String whitelistJson) {
         CarState carState = new CarState();
         carState.setCarNumber(carNumber);
         carState.setInTimestamp(inTimestamp);
@@ -39,6 +39,7 @@ public class CarStateServiceImpl implements CarStateService {
         carState.setInGate(camera.getGate());
         carState.setInBarrier(camera.getGate().getBarrier());
         carState.setWhitelistJson(whitelistJson);
+        carState.setPaid(paid);
         carStateRepository.save(carState);
     }
 
@@ -85,6 +86,11 @@ public class CarStateServiceImpl implements CarStateService {
         return carStateRepository.save(carState);
     }
 
+    @Override
+    public List<String> getInButNotPaidFromList(List<String> checkList) {
+        return carStateRepository.getInButNotPaidFromList(checkList);
+    }
+
     private Page<CarStateDto> getPage(List<CarStateDto> carStates, PagingRequest pagingRequest) {
         List<CarStateDto> filtered = carStates.stream()
                 .sorted(sortCarStates(pagingRequest))
@@ -114,7 +120,6 @@ public class CarStateServiceImpl implements CarStateService {
         return  carState -> ((carState.getCarNumber() != null && carState.getCarNumber().contains(value))
                 || carState.getInTimestampString().contains(value)
                 || carState.getOutTimestampString().contains(value)
-                || carState.getPaid().contains(value)
                 || carState.getDuration().contains(value)
                 || (carState.getPayment()!=null && carState.getPayment().toString().contains(value))
         );

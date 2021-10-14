@@ -59,7 +59,7 @@ public class PaymentServiceImpl implements PaymentService {
                     if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())) {
                         return fillPayment(carState, format);
                     } else if (Parking.ParkingType.WHITELIST_PAYMENT.equals(carState.getParking().getParkingType())) {
-                        if(carState.getWhitelistJson() == null){
+                        if(carState.getPaid()){
                             return fillPayment(carState, format);
                         }
                     }

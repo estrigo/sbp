@@ -21,4 +21,7 @@ public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSp
 
     @Query("from CarState cs where cs.carNumber = :carNumber")
     List<CarState> getAllByPlateNumber(@Param("carNumber") String carNumber);
+
+    @Query("select distinct cs.carNumber from CarState cs where cs.carNumber in (?1) and cs.outTimestamp is null and (cs.paid is null or cs.paid = false)")
+    List<String> getInButNotPaidFromList(List<String> checkList);
 }

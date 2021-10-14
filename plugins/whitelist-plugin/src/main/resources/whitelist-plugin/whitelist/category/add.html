@@ -1,0 +1,27 @@
+<form th:action="@{|/whitelist/category/add|}" th:object="${category}" method="post">
+    <div class="form-group row" th:if="${#fields.hasAnyErrors()}">
+        <label class="col-2 col-form-label">Errors</label>
+        <label class="col-10 col-form-label">
+            <ul>
+                <li th:each="err : ${#fields.allErrors()}" th:text="${err}" />
+            </ul>
+        </label>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="name" class="control-label" th:text="#{category.name}"></label>
+                <input type="text" class="form-control" th:field="*{name}" id="name">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="name" class="control-label"></label>
+                <button type="button" class="btn btn-primary btn-custom waves-effect waves-light w-md" data-dismiss="modal" th:text="#{crm.cancel}"></button>
+                <button type="submit" class="btn btn-danger waves-effect waves-light" th:text="#{crm.save}"></button>
+            </div>
+        </div>
+    </div>
+</form>

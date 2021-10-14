@@ -8,24 +8,38 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-@Entity
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "category", schema = "crm")
-public class Category {
+@MappedSuperclass
+public class AbstractWhitelist {
+
+    public enum Type {
+        PERIOD,
+        UNLIMITED,
+        CUSTOM;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @NotNull
-    private String name;
+    private Date access_start;
+
+    private Date access_end;
+
+    @Enumerated(EnumType.STRING)
+    private Type type;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private WhitelistCategory category;
+
+    @Column(columnDefinition = "text")
+    private String customJson;
 
     @CreationTimestamp
     private Date created;
@@ -36,4 +50,16 @@ public class Category {
     private String createdUser;
 
     private String updatedUser;
+
+    @Transient
+    private Long categoryId;
+
+    @Transient
+    private String accessStartString;
+
+    @Transient
+    private String accessEndString;
+
+    @Transient
+    private String conditionDetail;
 }

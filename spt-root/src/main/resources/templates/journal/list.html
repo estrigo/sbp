@@ -91,14 +91,13 @@
             {"data": "rateAmount", "width" : "15%"},
             {"data": function (carState)
                 {
-                    if(carState.whitelistJson && carState.whitelistJson !== ""){
+                    if(!carState.paid && carState.whitelistJson){
                         const whitelists = JSON.parse(carState.whitelistJson);
-                        let text = '<span>Белый лист</span>';
+                        let text = '';
                         for(const w of whitelists){
-                            if(w.type === 'UNLIMITED'){
-                                text = text + '<br/><small class="text-muted">Авто с гос. номером ' + w.plateNumber + ' может посещать объект в любое время.</small>';
-                            } else {
-                                text = text + '<br/><small class="text-muted">Авто с гос. номером ' + w.plateNumber + ' может посещать объект ' + (w.access_start ? 'с даты ' + w.access_start : 'в любое время') + '. Сроком до ' + w.access_end + '</small>';
+                            text = text + '<span>' + (w.categoryName ? w.categoryName : '') + ' (Белый лист)</><br/>';
+                            if(w.conditionDetails){
+                                text = text + '<small class="text-muted">' + w.conditionDetails + '</small><br/>';
                             }
                         }
                         return text;

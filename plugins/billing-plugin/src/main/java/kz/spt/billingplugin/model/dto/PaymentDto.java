@@ -41,7 +41,7 @@ public class PaymentDto {
         List<PaymentDto> paymentDtoList = fromPayments(payments);
         ObjectMapper objectMapper = new ObjectMapper();
         ArrayNode arrayNode = objectMapper.createArrayNode();
-        SimpleDateFormat format =  new SimpleDateFormat("dd.MM.yyyy hh:mm:ss");
+        SimpleDateFormat format =  new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         for (PaymentDto dto:paymentDtoList){
             ObjectNode objectNode = objectMapper.createObjectNode();
             objectNode.put("id", dto.id);

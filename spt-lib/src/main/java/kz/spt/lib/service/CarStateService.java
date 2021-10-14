@@ -7,10 +7,11 @@ import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.dto.CarStateDto;
 
 import java.util.Date;
+import java.util.List;
 
 public interface CarStateService {
 
-    void createINState(String carNumber, Date inTimestamp, Camera camera, String whitelistJson);
+    void createINState(String carNumber, Date inTimestamp, Camera camera, Boolean paid, String whitelistJson);
 
     void createOUTState(String carNumber, Date outTimestamp, Camera camera, CarState carState);
 
@@ -24,4 +25,5 @@ public interface CarStateService {
 
     CarState save(CarState carState);
 
+    List<String> getInButNotPaidFromList(List<String> checkList);
 }

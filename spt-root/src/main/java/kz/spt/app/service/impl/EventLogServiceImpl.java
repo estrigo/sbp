@@ -47,7 +47,7 @@ public class EventLogServiceImpl implements EventLogService {
 
     public void sendSocketMessage(ArmEventType eventType, Long id, String plateNumber, String message) {
 
-        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy hh:mm");
+        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         ObjectNode node = objectMapper.createObjectNode();
         node.put("datetime", format.format(new Date()));
         node.put("message", message);

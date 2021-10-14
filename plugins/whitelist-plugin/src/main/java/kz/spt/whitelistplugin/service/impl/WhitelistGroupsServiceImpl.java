@@ -1,13 +1,15 @@
 package kz.spt.whitelistplugin.service.impl;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import kz.spt.whitelistplugin.model.Whitelist;
+import kz.spt.whitelistplugin.model.WhitelistCategory;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
+import kz.spt.whitelistplugin.repository.WhitelistCategoryRepository;
 import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
 import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import kz.spt.whitelistplugin.service.WhitelistGroupsService;
 import kz.spt.whitelistplugin.service.WhitelistService;
-import lombok.extern.java.Log;
 import org.pf4j.util.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -24,13 +26,15 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
     private WhitelistGroupsRepository whitelistGroupsRepository;
     private RootServicesGetterService rootServicesGetterService;
+    private WhitelistCategoryRepository whitelistCategoryRepository;
     private WhitelistService whitelistService;
 
     public WhitelistGroupsServiceImpl(WhitelistGroupsRepository whitelistGroupsRepository, RootServicesGetterService rootServicesGetterService,
-                                      WhitelistService whitelistService) {
+                                      WhitelistService whitelistService, WhitelistCategoryRepository whitelistCategoryRepository) {
         this.whitelistGroupsRepository = whitelistGroupsRepository;
         this.rootServicesGetterService = rootServicesGetterService;
         this.whitelistService = whitelistService;
+        this.whitelistCategoryRepository = whitelistCategoryRepository;
     }
 
     @Override
@@ -54,8 +58,17 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
                 whitelistGroups.setAccess_end(format.parse(whitelistGroups.getAccessEndString()));
             }
         } else {
+            if(!Whitelist.Type.CUSTOM.equals(whitelistGroups.getType())){
+                whitelistGroups.setCustomJson(null);
+            }
             whitelistGroups.setAccess_start(null);
             whitelistGroups.setAccess_end(null);
+        }
+        if(whitelistGroups.getCategoryId() != null){
+            WhitelistCategory whitelistCategory = whitelistCategoryRepository.getOne(whitelistGroups.getCategoryId());
+            whitelistGroups.setCategory(whitelistCategory);
+        } else {
+            whitelistGroups.setCategory(null);
         }
         whitelistGroups.setUpdatedUser(currentUser);
         WhitelistGroups updatedWhitelistGroups = whitelistGroupsRepository.save(whitelistGroups);
@@ -82,8 +95,12 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
     }
 
     @Override
-    public Iterable<WhitelistGroups> listAllWhitelistGroups() {
-        return whitelistGroupsRepository.findAll();
+    public Iterable<WhitelistGroups> listAllWhitelistGroups() throws JsonProcessingException {
+        List<WhitelistGroups> whitelistGroupsList = whitelistGroupsRepository.findAll();
+        for(WhitelistGroups wg: whitelistGroupsList){
+            wg.setConditionDetail(WhitelistServiceImpl.formConditionDetails(wg, wg.getName()));
+        }
+        return whitelistGroupsList;
     }
 
     @Override

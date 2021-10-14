@@ -14,7 +14,7 @@ public class CarEventDto {
     public String ip_address;
 
     @NotNull
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="dd:MM:yyyy hh:mm:ssZ")
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="dd:MM:yyyy HH:mm:ssZ")
     public Date event_time;
 
     @NotNull

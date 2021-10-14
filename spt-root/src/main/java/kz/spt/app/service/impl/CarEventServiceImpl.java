@@ -2,6 +2,7 @@ package kz.spt.app.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
@@ -25,6 +26,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 @Log
@@ -95,29 +97,78 @@ public class CarEventServiceImpl implements CarEventService {
                 checkWhiteList(eventDto, camera, properties, format);
             }
             else {
-                JsonNode whitelistCheckResult = null;
+                JsonNode whitelistCheckResults = null;
                 if(Parking.ParkingType.WHITELIST_PAYMENT.equals(camera.getGate().getParking().getParkingType())){
-                    whitelistCheckResult = getWhiteLists(camera.getGate().getParking().getId(), eventDto.car_number, eventDto.event_time, format, properties);
-
+                    whitelistCheckResults = getWhiteLists(camera.getGate().getParking().getId(), eventDto.car_number, eventDto.event_time, format, properties);
                 }
                 Boolean barrierResult = openGateBarrier(camera, properties);
                 if(barrierResult){
-                    carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, whitelistCheckResult != null ? whitelistCheckResult.toString() : null);
-                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number);
+                    if(whitelistCheckResults == null){
+                        carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, true, null);
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе");
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе");
+                    } else {
+                        ArrayNode whitelistCheckResultArray = (ArrayNode) whitelistCheckResults;
+                        boolean hasAccess = false;
+                        JsonNode customDetails = null;
+                        Iterator<JsonNode> iterator = whitelistCheckResultArray.iterator();
+                        while (iterator.hasNext()){
+                            JsonNode node = iterator.next();
+                            if("CUSTOM".equals(node.get("type").asText())){
+                                if(!node.has("exceedPlaceLimit") || (node.has("exceedPlaceLimit") && !node.get("exceedPlaceLimit").booleanValue())){
+                                    hasAccess = true;
+                                } else {
+                                    customDetails = node;
+                                }
+                            } else {
+                                hasAccess = true;
+                            }
+                        }
+                        if(hasAccess){
+                            carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, false, whitelistCheckResults.toString());
+                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа");
+                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа");
+                        } else {
+                            carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, true, whitelistCheckResults.toString());
+                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе. Все места в для группы " + customDetails.get("groupName").textValue() + " заняты следующим списком " + customDetails.get("placeOccupiedCars").toString());
+                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе. Все места в для группы " + customDetails.get("groupName").textValue() + " заняты следующим списком " + customDetails.get("placeOccupiedCars").toString());
+                        }
+                    }
                 }
             }
         }
     }
 
     private void checkWhiteList(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format) throws Exception{
-        JsonNode whitelistCheckResult = getWhiteLists(camera.getGate().getParking().getId(), eventDto.car_number, eventDto.event_time, format, properties);
-        if(whitelistCheckResult != null){
-            Boolean barrierResult = openGateBarrier(camera, properties);
-            if(barrierResult){
-                carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, whitelistCheckResult.toString());
-                eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
+        JsonNode whitelistCheckResults = getWhiteLists(camera.getGate().getParking().getId(), eventDto.car_number, eventDto.event_time, format, properties);
+        if(whitelistCheckResults != null){
+            ArrayNode whitelistCheckResultArray = (ArrayNode) whitelistCheckResults;
+            JsonNode customDetails = null;
+            boolean hasAccess = false;
+            Iterator<JsonNode> iterator = whitelistCheckResultArray.iterator();
+            while (iterator.hasNext()){
+                JsonNode node = iterator.next();
+
+                if("CUSTOM".equals(node.get("type").asText())){
+                    if(!node.has("exceedPlaceLimit") || (node.has("exceedPlaceLimit") && !node.get("exceedPlaceLimit").booleanValue())){
+                        hasAccess = true;
+                    } else {
+                        customDetails = node;
+                    }
+                } else {
+                    hasAccess = true;
+                }
+            }
+            if(hasAccess){
+                Boolean barrierResult = openGateBarrier(camera, properties);
+                if(barrierResult){
+                    carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, false, whitelistCheckResults.toString());
+                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
+                }
+            } else {
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "В проезде отказано: Все места в для группы " + customDetails.get("groupName").textValue() + " заняты следующим списком " + customDetails.get("placeOccupiedCars").toString() + ". Авто "  + eventDto.car_number);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "В проезде отказано: Все места в для группы " + customDetails.get("groupName").textValue() + " заняты следующим списком " + customDetails.get("placeOccupiedCars").toString() + ". Авто "  + eventDto.car_number);
             }
         } else {
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number);
@@ -154,10 +205,10 @@ public class CarEventServiceImpl implements CarEventService {
 
         CarState carState = carStateService.getLastNotLeft(eventDto.car_number);
         if(carState == null){
-            eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Не найден запись о вьезде. Авто с гос. номером" + eventDto.car_number);
-            eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о вьезде. Авто с гос. номером" + eventDto.car_number);
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number);
+            eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number);
+            return;
         }
-
 
         if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())){
             eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
@@ -170,7 +221,7 @@ public class CarEventServiceImpl implements CarEventService {
         } else {
             Boolean isWhitelistCar = false;
             if(Parking.ParkingType.WHITELIST_PAYMENT.equals(camera.getGate().getParking().getParkingType())){
-                if(carState != null && carState.getWhitelistJson() != null){
+                if(carState != null && carState.getPaid() != null && !carState.getPaid()){
                     isWhitelistCar = true;
                 }
             }
