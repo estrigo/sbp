@@ -1,8 +1,11 @@
 package kz.spt.whitelistplugin.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import kz.spt.lib.service.ParkingService;
+import kz.spt.whitelistplugin.model.AbstractWhitelist;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
+import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import kz.spt.whitelistplugin.service.WhitelistCategoryService;
 import kz.spt.whitelistplugin.service.WhitelistGroupsService;
 import kz.spt.whitelistplugin.service.WhitelistService;
@@ -26,11 +29,14 @@ public class WhitelistController {
     private WhitelistService whitelistService;
     private WhitelistGroupsService whitelistGroupsService;
     private WhitelistCategoryService whitelistCategoryService;
+    private RootServicesGetterService rootServicesGetterService;
 
-    public WhitelistController(WhitelistService whitelistService, WhitelistGroupsService whitelistGroupsService, WhitelistCategoryService whitelistCategoryService){
+    public WhitelistController(WhitelistService whitelistService, WhitelistGroupsService whitelistGroupsService,
+                               WhitelistCategoryService whitelistCategoryService, RootServicesGetterService rootServicesGetterService){
         this.whitelistService = whitelistService;
         this.whitelistGroupsService = whitelistGroupsService;
         this.whitelistCategoryService = whitelistCategoryService;
+        this.rootServicesGetterService = rootServicesGetterService;
     }
 
     @GetMapping("/list")
@@ -46,17 +52,26 @@ public class WhitelistController {
         model.addAttribute("whitelist", new Whitelist());
         model.addAttribute("groupList", whitelistGroupsService.listAllWhitelistGroups());
         model.addAttribute("categoryList", whitelistCategoryService.listAllCategories());
+        model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
         return "whitelist/add";
     }
 
     @PostMapping("/add")
     public String processRequestAddCar(Model model, @Valid Whitelist whitelist, BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         if(whitelist.getPlatenumber()==null || whitelist.getPlatenumber().length() < 3  || whitelist.getPlatenumber().length() > 16){
-            ObjectError error = new ObjectError("invalidPlateNumber", "Invalid plate number");
+            ObjectError error = new ObjectError("invalidPlateNumber", "Не правильный гос. номер");
             bindingResult.addError(error);
         }
         if(whitelist.getCategoryId() == null){
-            ObjectError error = new ObjectError("selectCategory", "Please select category");
+            ObjectError error = new ObjectError("selectCategory", "Пожалуйста выберите категорию");
+            bindingResult.addError(error);
+        }
+        if(Whitelist.Type.PERIOD.equals(whitelist.getType()) && whitelist.getAccess_end() == null){
+            ObjectError error = new ObjectError("selectCategory", "Заполнение даты окончания обязательно");
+            bindingResult.addError(error);
+        }
+        if(Whitelist.Type.CUSTOM.equals(whitelist.getType()) && (whitelist.getCustomJson() == null || whitelist.getCustomJson().length() < 4)){
+            ObjectError error = new ObjectError("selectCategory", "Выбор дней и часов обязательно");
             bindingResult.addError(error);
         }
 
@@ -80,15 +95,23 @@ public class WhitelistController {
     @PostMapping("/groups/add")
     public String processRequestAddGroup(Model model, @Valid WhitelistGroups whitelistGroups, BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         if(whitelistGroups.getCategoryId() == null){
-            ObjectError error = new ObjectError("selectCategory", "Please select category");
+            ObjectError error = new ObjectError("selectCategory", "Пожалуйста выберите категорию");
             bindingResult.addError(error);
         }
         if(whitelistGroups.getName() == null || "".equals(whitelistGroups.getName())){
-            ObjectError error = new ObjectError("emptyGroupName", "Please fill group name");
+            ObjectError error = new ObjectError("emptyGroupName", "Пожалуйста заполните название группы");
             bindingResult.addError(error);
         }
         if(whitelistGroups.getPlateNumbers() == null || whitelistGroups.getPlateNumbers().size() == 0){
-            ObjectError error = new ObjectError("emptyCarList", "Please fill car plate numbers");
+            ObjectError error = new ObjectError("emptyCarList", "Пожалуйста заполните гос. номеры");
+            bindingResult.addError(error);
+        }
+        if(Whitelist.Type.PERIOD.equals(whitelistGroups.getType()) && whitelistGroups.getAccess_end() == null){
+            ObjectError error = new ObjectError("selectCategory", "Заполнение даты окончания обязательно");
+            bindingResult.addError(error);
+        }
+        if(Whitelist.Type.CUSTOM.equals(whitelistGroups.getType()) && (whitelistGroups.getCustomJson() == null || whitelistGroups.getCustomJson().length() < 4)){
+            ObjectError error = new ObjectError("selectCategory", "Выбор дней и часов обязательно");
             bindingResult.addError(error);
         }
         if (bindingResult.hasErrors()) {
@@ -105,6 +128,7 @@ public class WhitelistController {
         model.addAttribute("whitelist", whitelistService.prepareById(id));
         model.addAttribute("groupList", whitelistGroupsService.listAllWhitelistGroups());
         model.addAttribute("categoryList", whitelistCategoryService.listAllCategories());
+        model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
         return "whitelist/edit";
     }
 
@@ -115,18 +139,28 @@ public class WhitelistController {
     }
 
     @PostMapping("/edit/{id}")
-    public String processRequestEditWhitelist(@PathVariable Long id, @Valid Whitelist whitelist,
+    public String processRequestEditWhitelist(Model model, @PathVariable Long id, @Valid Whitelist whitelist,
                                         BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         if(whitelist.getPlatenumber()==null || whitelist.getPlatenumber().length() < 3 || whitelist.getPlatenumber().length() > 16){
-            ObjectError error = new ObjectError("invalidPlateNumber", "Invalid plate number");
+            ObjectError error = new ObjectError("invalidPlateNumber", "Не правильный гос. номер");
             bindingResult.addError(error);
         }
         if(whitelist.getCategoryId() == null){
-            ObjectError error = new ObjectError("selectCategory", "Please select category");
+            ObjectError error = new ObjectError("selectCategory", "Пожалуйста выберите категорию");
+            bindingResult.addError(error);
+        }
+        if(Whitelist.Type.PERIOD.equals(whitelist.getType()) && whitelist.getAccess_end() == null){
+            ObjectError error = new ObjectError("selectCategory", "Заполнение даты окончания обязательно");
+            bindingResult.addError(error);
+        }
+        if(Whitelist.Type.CUSTOM.equals(whitelist.getType()) && (whitelist.getCustomJson() == null || whitelist.getCustomJson().length() < 4)){
+            ObjectError error = new ObjectError("selectCategory", "Выбор дней и часов обязательно");
             bindingResult.addError(error);
         }
         if (bindingResult.hasErrors()) {
-            return "redirect:/whitelist/edit/" + id;
+            model.addAttribute("groupList", whitelistGroupsService.listAllWhitelistGroups());
+            model.addAttribute("categoryList", whitelistCategoryService.listAllCategories());
+            return "whitelist/edit";
         } else {
             whitelistService.saveWhitelist(whitelist, currentUser);
             return "redirect:/whitelist/list";
@@ -150,21 +184,28 @@ public class WhitelistController {
     public String processRequestEditWhitelist(Model model, @PathVariable Long id, @Valid WhitelistGroups whitelistGroups,
                                               BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         if(whitelistGroups.getCategoryId() == null){
-            ObjectError error = new ObjectError("selectCategory", "Please select category");
+            ObjectError error = new ObjectError("selectCategory", "Пожалуйста выберите категорию");
             bindingResult.addError(error);
         }
         if(whitelistGroups.getName() == null || "".equals(whitelistGroups.getName())){
-            ObjectError error = new ObjectError("emptyGroupName", "Please fill group name");
+            ObjectError error = new ObjectError("emptyGroupName", "Пожалуйста заполните название группы");
             bindingResult.addError(error);
         }
         if(whitelistGroups.getPlateNumbers() == null || whitelistGroups.getPlateNumbers().size() == 0){
-            ObjectError error = new ObjectError("emptyCarList", "Please fill car plate numbers");
+            ObjectError error = new ObjectError("emptyCarList", "Пожалуйста заполните гос. номеры");
             bindingResult.addError(error);
         }
-
+        if(Whitelist.Type.PERIOD.equals(whitelistGroups.getType()) && whitelistGroups.getAccess_end() == null){
+            ObjectError error = new ObjectError("selectCategory", "Заполнение даты окончания обязательно");
+            bindingResult.addError(error);
+        }
+        if(Whitelist.Type.CUSTOM.equals(whitelistGroups.getType()) && (whitelistGroups.getCustomJson() == null || whitelistGroups.getCustomJson().length() < 4)){
+            ObjectError error = new ObjectError("selectCategory", "Выбор дней и часов обязательно");
+            bindingResult.addError(error);
+        }
         if (bindingResult.hasErrors()) {
             model.addAttribute("categoryList", whitelistCategoryService.listAllCategories());
-            return "redirect:/whitelist/group/edit/" + id;
+            return "whitelist/group/edit";
         } else {
             whitelistGroupsService.saveWhitelistGroup(whitelistGroups, currentUser.getUsername());
             return "redirect:/whitelist/list";

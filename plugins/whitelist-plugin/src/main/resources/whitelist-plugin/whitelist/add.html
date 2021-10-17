@@ -13,7 +13,7 @@
                     <div class="card-body">
                         <form th:action="@{|/whitelist/add|}" th:object="${whitelist}" method="post">
                             <div class="form-group row" th:if="${#fields.hasAnyErrors()}">
-                                <label class="col-2 col-form-label">Errors</label>
+                                <label class="col-2 col-form-label" th:text="#{crm.errors}"></label>
                                 <label class="col-10 col-form-label">
                                     <ul>
                                         <li th:each="err : ${#fields.allErrors()}" th:text="${err}" />
@@ -24,6 +24,14 @@
                                 <label class="col-2 col-form-label" th:text="#{car.platenumber}"></label>
                                 <div class="col-10">
                                     <input type="text" class="form-control" th:field="*{platenumber}">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.parking}"></label>
+                                <div class="col-10">
+                                    <select id="parkingId" th:field="*{parkingId}" class="form-control">
+                                        <option th:each="parking : ${parkingList}" th:text="${parking.name}" th:value="${parking.id}"></option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="form-group row">

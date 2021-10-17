@@ -1,6 +1,7 @@
 package kz.spt.whitelistplugin.model;
 
 import kz.spt.lib.model.Cars;
+import kz.spt.lib.model.Parking;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -20,6 +21,10 @@ public class Whitelist extends AbstractWhitelist {
     @JoinColumn(name = "car_id")
     private Cars car;
 
+    @OneToOne(optional=false)
+    @JoinColumn(name = "parking_id")
+    private Parking parking;
+
     @ManyToOne
     @JoinColumn(name = "group_id")
     private WhitelistGroups group;
@@ -29,4 +34,7 @@ public class Whitelist extends AbstractWhitelist {
 
     @Transient
     private Long groupId;
+
+    @Transient
+    private Long parkingId;
 }

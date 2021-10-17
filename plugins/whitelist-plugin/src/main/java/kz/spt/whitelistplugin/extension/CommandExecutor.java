@@ -24,7 +24,7 @@ public class CommandExecutor implements PluginRegister {
         ObjectNode node = objectMapper.createObjectNode();
 
         if(command!=null && command.get("car_number")!=null && command.get("event_time")!=null){
-            JsonNode result = getWhitelistService().hasAccess(command.get("car_number").textValue(), format.parse(command.get("event_time").textValue()));
+            JsonNode result = getWhitelistService().hasAccess(command.get("parkingId").longValue(), command.get("car_number").textValue(), format.parse(command.get("event_time").textValue()));
             if(result != null){
                 node.set("whitelistCheckResult", result);
             }

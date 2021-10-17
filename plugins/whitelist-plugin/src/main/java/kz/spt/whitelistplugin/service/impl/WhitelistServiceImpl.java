@@ -87,6 +87,7 @@ public class WhitelistServiceImpl implements WhitelistService {
             if (StringUtils.isNotNullOrEmpty(whitelist.getAccessEndString())) {
                 whitelist.setAccess_end(format.parse(whitelist.getAccessEndString()));
             }
+            whitelist.setCustomJson(null);
         } else {
             if (!AbstractWhitelist.Type.CUSTOM.equals(whitelist.getType())) {
                 whitelist.setCustomJson(null);
@@ -99,6 +100,9 @@ public class WhitelistServiceImpl implements WhitelistService {
             whitelist.setUpdatedUser(currentUser.getUsername());
         } else {
             whitelist.setCreatedUser(currentUser.getUsername());
+        }
+        if(whitelist.getParkingId() != null){
+            whitelist.setParking(rootServicesGetterService.getParkingService().findById(whitelist.getParkingId()));
         }
         whitelistRepository.save(whitelist);
     }
@@ -118,13 +122,13 @@ public class WhitelistServiceImpl implements WhitelistService {
     }
 
     @Override
-    public ArrayNode hasAccess(String platenumber, Date date) throws JsonProcessingException {
+    public ArrayNode hasAccess(Long parkingId, String platenumber, Date date) throws JsonProcessingException {
         ArrayNode arrayNode = objectMapper.createArrayNode();
 
         Cars car = rootServicesGetterService.getCarsService().findByPlatenumber(platenumber);
         if (car != null) {
-            List<Whitelist> whitelists = whitelistRepository.findValidWhiteListByCar(car, date);
-            List<Whitelist> groupWhitelists = whitelistRepository.findValidWhiteListGroupByCar(car, date);
+            List<Whitelist> whitelists = whitelistRepository.findValidWhiteListByCar(car, date, parkingId);
+            List<Whitelist> groupWhitelists = whitelistRepository.findValidWhiteListGroupByCar(car, date, parkingId);
             SimpleDateFormat format =  new SimpleDateFormat(datePrettyFormat);
 
             Calendar calendar = Calendar.getInstance();
@@ -210,7 +214,7 @@ public class WhitelistServiceImpl implements WhitelistService {
     @Override
     public Whitelist prepareById(Long id) {
         SimpleDateFormat format = new SimpleDateFormat(dateformat);
-        Whitelist whitelist = whitelistRepository.getWithCarAndGroup(id);
+        Whitelist whitelist = whitelistRepository.getWithCarAndGroupAndParking(id);
         whitelist.setPlatenumber(whitelist.getCar().getPlatenumber());
         if (whitelist.getGroup() != null) {
             whitelist.setGroupId(whitelist.getGroup().getId());
@@ -223,6 +227,9 @@ public class WhitelistServiceImpl implements WhitelistService {
                 whitelist.setAccessStartString(format.format(whitelist.getAccess_start()));
             }
             whitelist.setAccessEndString(format.format(whitelist.getAccess_end()));
+        }
+        if(whitelist.getParking() != null){
+            whitelist.setParkingId(whitelist.getParking().getId());
         }
         return whitelist;
     }

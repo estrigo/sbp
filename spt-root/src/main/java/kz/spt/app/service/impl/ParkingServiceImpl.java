@@ -107,4 +107,9 @@ public class ParkingServiceImpl implements ParkingService {
         }
         return null;
     }
+
+    @Override
+    public Iterable<Parking> listWhitelistParkings() {
+        return parkingRepository.whitelistParkings();
+    }
 }

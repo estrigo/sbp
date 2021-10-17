@@ -19,5 +19,5 @@ public interface ParkingService {
 
     ParkingCarsDTO carsInParking(Long parkingId);
 
-
+    Iterable<Parking> listWhitelistParkings();
 }

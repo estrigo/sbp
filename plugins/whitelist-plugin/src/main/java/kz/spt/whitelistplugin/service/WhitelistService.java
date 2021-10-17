@@ -17,7 +17,7 @@ public interface WhitelistService {
 
     List<Whitelist> listByGroupId(Long groupId);
 
-    ArrayNode hasAccess(String plateNumber, Date enterDate) throws JsonProcessingException;
+    ArrayNode hasAccess(Long parkingId, String plateNumber, Date enterDate) throws JsonProcessingException;
 
     Whitelist prepareById(Long id);
 
