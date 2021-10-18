@@ -35,8 +35,10 @@
                                         <th><a th:text="#{whitelist.parking}"></a></th>
                                         <th><a th:text="#{whitelist.groupName}"></a></th>
                                         <th><a th:text="#{whitelist.condition}"></a></th>
-                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
+                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
                                         <th></th>
+                                        </p>
+                                        <p sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN')">
                                         <th></th>
                                         </p>
                                     </tr>
@@ -56,10 +58,10 @@
                                             <span th:if="${w.group != null}" th:text="${w.group.name}"></span>
                                         </td>
                                         <td th:text="${w.conditionDetail}"></td>
-                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
+                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPER_ADMIN')">
                                         <td><a th:href="@{|/whitelist/edit/${w.id}|}" th:text="#{crm.edit}"></a></td>
                                         </p>
-                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
+                                        <p sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPER_ADMIN')">
                                         <td><a th:href="@{|/whitelist/delete/${w.id}|}" th:text="#{crm.delete}"></a></td>
                                         </p>
                                     </tr>
@@ -84,8 +86,10 @@
                                         <th><a th:text="#{whitelist.parking}"></a></th>
                                         <th><a th:text="#{whitelist.groupSize}"></a></th>
                                         <th><a th:text="#{whitelist.condition}"></a></th>
-                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
+                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
                                         <th></th>
+                                        </p>
+                                        <p sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN')">
                                         <th></th>
                                         </p>
                                     </tr>
@@ -102,10 +106,10 @@
                                         </td>
                                         <td th:text="${w.size}"></td>
                                         <td th:text="${w.conditionDetail}"></td>
-                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
+                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER','ROLE_ADMIN' , 'ROLE_SUPERADMIN')">
                                         <td><a th:href="@{|/whitelist/group/edit/${w.id}|}" th:text="#{crm.edit}"></a></td>
                                         </p>
-                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
+                                        <p sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')">
                                         <td><a th:href="@{|/whitelist/group/delete/${w.id}|}" th:text="#{crm.delete}"></a></td>
                                         </p>
                                     </tr>
