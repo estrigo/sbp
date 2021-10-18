@@ -1,5 +1,6 @@
 package kz.spt.whitelistplugin.model;
 
+import kz.spt.lib.model.Parking;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +27,10 @@ public class AbstractWhitelist {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "parking_id")
+    private Parking parking;
 
     private Date access_start;
 
@@ -62,4 +67,7 @@ public class AbstractWhitelist {
 
     @Transient
     private String conditionDetail;
+
+    @Transient
+    private Long parkingId;
 }

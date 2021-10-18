@@ -78,6 +78,7 @@ public class WhitelistController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("groupList", whitelistGroupsService.listAllWhitelistGroups());
             model.addAttribute("categoryList", whitelistCategoryService.listAllCategories());
+            model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
             return "whitelist/add";
         } else {
             whitelistService.saveWhitelist(whitelist, currentUser);
@@ -89,6 +90,7 @@ public class WhitelistController {
     public String showFormAddGroup(Model model) {
         model.addAttribute("whitelistGroup", new WhitelistGroups());
         model.addAttribute("categoryList", whitelistCategoryService.listAllCategories());
+        model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
         return "whitelist/groups/add";
     }
 
@@ -116,7 +118,8 @@ public class WhitelistController {
         }
         if (bindingResult.hasErrors()) {
             model.addAttribute("categoryList", whitelistCategoryService.listAllCategories());
-            return "whitelist/add";
+            model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
+            return "whitelist/groups/add";
         } else {
             whitelistGroupsService.saveWhitelistGroup(whitelistGroups, currentUser.getUsername());
             return "redirect:/whitelist/list";
@@ -160,6 +163,7 @@ public class WhitelistController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("groupList", whitelistGroupsService.listAllWhitelistGroups());
             model.addAttribute("categoryList", whitelistCategoryService.listAllCategories());
+            model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
             return "whitelist/edit";
         } else {
             whitelistService.saveWhitelist(whitelist, currentUser);
@@ -177,6 +181,7 @@ public class WhitelistController {
     public String showFormEditWhiteListGroup(Model model, @PathVariable Long id) {
         model.addAttribute("whitelistGroup", whitelistGroupsService.prepareById(id));
         model.addAttribute("categoryList", whitelistCategoryService.listAllCategories());
+        model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
         return "whitelist/groups/edit";
     }
 
@@ -204,8 +209,10 @@ public class WhitelistController {
             bindingResult.addError(error);
         }
         if (bindingResult.hasErrors()) {
+            model.addAttribute("whitelistGroup", whitelistGroupsService.prepareById(id));
             model.addAttribute("categoryList", whitelistCategoryService.listAllCategories());
-            return "whitelist/group/edit";
+            model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
+            return "whitelist/groups/edit";
         } else {
             whitelistGroupsService.saveWhitelistGroup(whitelistGroups, currentUser.getUsername());
             return "redirect:/whitelist/list";

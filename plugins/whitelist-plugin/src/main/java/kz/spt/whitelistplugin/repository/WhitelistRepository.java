@@ -15,10 +15,10 @@ public interface WhitelistRepository extends JpaRepository<Whitelist, Long> {
     @Query("from Whitelist w where w.car = ?1 and w.parking.id = ?3 and w.group is null and (w.type = 'UNLIMITED' or w.type = 'CUSTOM' or (w.type = 'PERIOD' and ?2 between w.access_start and w.access_end))")
     List<Whitelist> findValidWhiteListByCar(Cars car, Date date, Long parkingId);
 
-    @Query("from Whitelist w LEFT JOIN FETCH w.group g where w.car = ?1 and w.parking.id = ?3 and w.group is not null and (g.type = 'UNLIMITED' or g.type = 'CUSTOM' or (g.type = 'PERIOD' and ?2 between g.access_start and g.access_end))")
+    @Query("from Whitelist w LEFT JOIN FETCH w.group g where w.car = ?1 and g.parking.id = ?3 and w.group is not null and (g.type = 'UNLIMITED' or g.type = 'CUSTOM' or (g.type = 'PERIOD' and ?2 between g.access_start and g.access_end))")
     List<Whitelist> findValidWhiteListGroupByCar(Cars car, Date date, Long parkingId);
 
-    @Query("from Whitelist w JOIN FETCH w.parking LEFT JOIN FETCH w.car LEFT JOIN FETCH w.group where w.id = ?1")
+    @Query("from Whitelist w LEFT JOIN FETCH w.parking LEFT JOIN FETCH w.car LEFT JOIN FETCH w.group LEFT JOIN FETCH w.group.parking where w.id = ?1")
     Whitelist getWithCarAndGroupAndParking(Long id);
 
     @Query("from Whitelist w where w.group.id = ?1")

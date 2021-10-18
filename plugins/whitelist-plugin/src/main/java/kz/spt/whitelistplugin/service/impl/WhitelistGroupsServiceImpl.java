@@ -2,6 +2,7 @@ package kz.spt.whitelistplugin.service.impl;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import kz.spt.lib.model.Parking;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistCategory;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
@@ -70,6 +71,10 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
         } else {
             whitelistGroups.setCategory(null);
         }
+        if(whitelistGroups.getParkingId() != null){
+            Parking parking = rootServicesGetterService.getParkingService().findById(whitelistGroups.getParkingId());
+            whitelistGroups.setParking(parking);
+        }
         whitelistGroups.setUpdatedUser(currentUser);
         WhitelistGroups updatedWhitelistGroups = whitelistGroupsRepository.save(whitelistGroups);
 
@@ -132,6 +137,9 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
                 whitelistGroups.setAccessStartString(format.format(whitelistGroups.getAccess_start()));
             }
             whitelistGroups.setAccessEndString(format.format(whitelistGroups.getAccess_end()));
+        }
+        if(whitelistGroups.getParking() != null){
+            whitelistGroups.setParkingId(whitelistGroups.getParking().getId());
         }
 
         return whitelistGroups;

@@ -81,6 +81,7 @@
                                         <th><a th:text="#{ordinal.number}"></a></th>
                                         <th><a th:text="#{whitelist.categoryName}"></a></th>
                                         <th><a th:text="#{whitelist.groupName}"></a></th>
+                                        <th><a th:text="#{whitelist.parking}"></a></th>
                                         <th><a th:text="#{whitelist.groupSize}"></a></th>
                                         <th><a th:text="#{whitelist.condition}"></a></th>
                                         <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
@@ -96,6 +97,9 @@
                                             <span th:if="${w.category != null}" th:text="${w.category.name}"></span>
                                         </td>
                                         <td th:text="${w.name}"></td>
+                                        <td>
+                                            <span th:if="${w.parking != null}" th:text="${w.parking.name}"></span>
+                                        </td>
                                         <td th:text="${w.size}"></td>
                                         <td th:text="${w.conditionDetail}"></td>
                                         <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
