@@ -33,6 +33,12 @@
                     </div>
                 </div>
                 </p>
+                <div sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')" id = "delete">
+
+                </div>
+                <div sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_MANAGER', 'ROLE_SUPERADMIN')" id = "edit">
+
+                </div>
             </div>
         </div>
     </div>
@@ -76,11 +82,22 @@
             },
             {"data": "id",
             "render" : function(id){
+                if($('#edit').length)
+                {
                 return '<a href = "edit/' + id+'">Редактировать<a>';
+                }
+                return '';
             }},
             {"data": "id",
             "render" : function(id){
-                return '<a href = "delete/' + id+'">Удалить<a>';
+                if($('#delete').length)
+                {
+                    return '<a href = "delete/' + id+'">Удалить<a>';
+                }
+                else
+                {
+                    return '';
+                }
             }}
         ],
         "buttons": ['copy', 'excel', 'pdf', 'csv']
