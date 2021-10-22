@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
 
-<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
 
 <div class="content">
-  <div class="container">
-    <div class="row">
-      <div class="col-12">
-        <div class="card-box table-responsive">
-          <h4 class="m-t-0 header-title"><b th:text="#{parking.parkings}"></b></h4>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card table-responsive">
+                    <div class="card-header" th:text="#{parking.parkings}"></div>
+                    <div class="card-body">
 
           <table id="datatable-buttons" class="table table-bordered">
             <thead>
@@ -87,6 +88,7 @@
 
   table.buttons().container()
           .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+
 </script>
 
 </html>

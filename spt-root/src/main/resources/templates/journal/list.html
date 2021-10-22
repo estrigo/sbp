@@ -7,42 +7,47 @@
 
 <div class="content">
     <div class="container">
-        <div class="card-box table-responsive">
-            <h4 class="m-t-0 header-title"><b th:text="#{carstate.journal}"></b></h4>
-            <form th:action="@{|/journal/list|}" th:object="${carStateDtoFilter}" method="post">
-                <div class="row">
-                    <div class="col-3">
-                        <input type="datetime-local" class="form-control" id="dateFromString" th:field="*{dateFromString}">
+        <div class="card table-responsive">
+            <div class="card-header" th:text="#{carstate.journal}"></div>
+            <div class="card-body">
+                <form th:action="@{|/journal/list|}" th:object="${carStateDtoFilter}" method="post">
+                    <div class="row">
+                        <div class="col-3">
+                            <input type="datetime-local" class="form-control" id="dateFromString"
+                                   th:field="*{dateFromString}">
+                        </div>
+                        <div class="col-3">
+                            <input type="datetime-local" class="form-control" id="dateToString"
+                                   th:field="*{dateToString}">
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class="form-control" id="plateNumber" th:field="*{plateNumber}"
+                                   th:placeholder="#{car.platenumber}">
+                        </div>
+                        <div class="col-3">
+                            <button type="submit" class="btn btn-success" th:text="#{crm.search}"></button>
+                            <button type="button" class="btn btn-secondary" th:text="#{crm.clear}"></button>
+                        </div>
                     </div>
-                    <div class="col-3">
-                        <input type="datetime-local" class="form-control" id="dateToString" th:field="*{dateToString}">
-                    </div>
-                    <div class="col-3">
-                        <input type="text" class="form-control" id="plateNumber" th:field="*{plateNumber}" th:placeholder="#{car.platenumber}">
-                    </div>
-                    <div class="col-3">
-                        <button type="submit" class="btn btn-success" th:text="#{crm.search}"></button>
-                        <button type="button" class="btn btn-secondary" th:text="#{crm.clear}"></button>
-                    </div>
-                </div>
-            </form>
-            <div class="mb-5"></div>
+                </form>
+                <div class="mb-5"></div>
 
-            <div class="row">
-                <div class="table-responsive" data-pattern="priority-columns">
-                    <table id="carStateTable" class="table table-bordered">
-                        <thead>
-                        <tr>
-                            <th><a th:text="#{crm.id}"></a></th>
-                            <th><a th:text="#{car.platenumber}"></a></th>
-                            <th><a th:text="#{carState.inTimestamp}"></a></th>
-                            <th><a th:text="#{carState.outTimestamp}"></a></th>
-                            <th><a th:text="#{carState.duration}"></a></th>
-                            <th><a th:text="#{carState.rate}"></a></th>
-                            <th><a th:text="#{carState.payment}"></a></th>
-                        </tr>
-                        </thead>
-                    </table>
+                <div class="row">
+                    <div class="table-responsive" data-pattern="priority-columns">
+                        <table id="carStateTable" class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th><a th:text="#{crm.id}"></a></th>
+                                <th><a th:text="#{car.platenumber}"></a></th>
+                                <th><a th:text="#{carState.inTimestamp}"></a></th>
+                                <th><a th:text="#{carState.outTimestamp}"></a></th>
+                                <th><a th:text="#{carState.duration}"></a></th>
+                                <th><a th:text="#{carState.rate}"></a></th>
+                                <th><a th:text="#{carState.payment}"></a></th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -134,6 +139,7 @@
            table.buttons().container().appendTo('#carStateTable_wrapper .col-md-6:eq(0)');
        }
    }
+
 </script>
 
 </html>
