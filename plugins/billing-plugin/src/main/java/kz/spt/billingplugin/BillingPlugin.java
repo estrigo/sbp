@@ -50,6 +50,12 @@ public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
         subMenu2.put("role", "MANAGER");
         subMenus.add(subMenu2);
 
+        Map<String, Object> subMenu3 = new HashMap<>();
+        subMenu2.put("label", bundle.getString("menu.billing.providers"));
+        subMenu2.put("url", "billing/balances/list");
+        subMenu2.put("role", "MANAGER");
+        subMenus.add(subMenu3);
+
         mainMenu.put("subMenus", subMenus);
 
         list.add(mainMenu);
