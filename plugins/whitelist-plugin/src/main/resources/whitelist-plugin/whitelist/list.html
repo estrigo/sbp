@@ -6,101 +6,171 @@
 <link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
 
 <div class="content">
-    <div class="container">
+    <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-                <div class="card-box table-responsive">
-                    <h4 class="m-t-0 header-title"><b th:text="#{whitelist.title}"></b></h4>
 
-                    <ul class="nav nav-tabs">
-                        <li class="nav-item">
-                            <a href="#whitelist" data-toggle="tab" aria-expanded="true" class="nav-link active">Белый лист</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#groups" data-toggle="tab" aria-expanded="false" class="nav-link">Группы</a>
-                        </li>
-                    </ul>
-                    <div class="tab-content">
-                        <div class="tab-pane fade show active" id="whitelist">
-                            <table id="datatable-buttons" class="table table-bordered table-bordered">
-                                <thead>
-                                <tr>
-                                    <th><a th:text="#{ordinal.number}"></a></th>
-                                    <th><a th:text="#{car.platenumber}"></a></th>
-                                    <th><a th:text="#{whitelist.groupName}"></a></th>
-                                    <th><a th:text="#{whitelist.condition}"></a></th>
-                                    <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
-                                    <th></th>
-                                    <th></th>
-                                    </p>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="w, iterStat : ${whitelist}">
-                                    <td th:text="${iterStat.count}"></td>
-                                    <td><span th:text="${w.car.platenumber}"></span></td>
-                                    <td>
-                                        <span th:if="${w.group != null}" th:text="${w.group.name}"></span>
-                                    </td>
-                                    <td th:if="${w.group == null && 'UNLIMITED'.equals(w.type.toString())}" th:text="${'Авто с гос. номером ' + w.car.platenumber + ' может посещать объект в любое время.'}"></td>
-                                    <td th:if="${w.group == null && 'PERIOD'.equals(w.type.toString())}" th:text="${'Авто с гос. номером ' + w.car.platenumber + ' может посещать объект ' + (w.access_start != null && w.access_start > #dates.createNow() ? 'с даты ' + #dates.format(w.access_start, 'dd.MM.yyyy HH:mm') : 'в любое время') + '. Сроком до ' + #dates.format(w.access_end, 'dd.MM.yyyy HH:mm')}"></td>
-                                    <td th:if="${w.group != null && 'UNLIMITED'.equals(w.group.type.toString())}" th:text="${'Авто с гос. номером ' + w.car.platenumber + ' может посещать объект в любое время.'}"></td>
-                                    <td th:if="${w.group != null && 'PERIOD'.equals(w.group.type.toString())}" th:text="${'Авто с гос. номером ' + w.car.platenumber + ' может посещать объект ' + (w.group.access_start != null && w.group.access_start > #dates.createNow() ? 'с даты ' + #dates.format(w.group.access_start, 'dd.MM.yyyy HH:mm') : 'в любое время') + '. Сроком до ' + #dates.format(w.group.access_end, 'dd.MM.yyyy HH:mm')}"></td>
-                                    <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
-                                    <td><a th:href="@{|/whitelist/edit/${w.id}|}" th:text="#{crm.edit}"></a></td>
-                                    </p>
-                                    <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
-                                    <td><a th:href="@{|/whitelist/delete/${w.id}|}" th:text="#{crm.delete}"></a></td>
-                                    </p>
-                                </tr>
-                                </tbody>
-                            </table>
-                            <p sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')">
-                            <div class="form-group row">
-                                <div class="col-12">
-                                    <a th:href="@{|/whitelist/add|}" class="btn btn-danger waves-effect waves-light" th:text="#{whitelist.addNew}"></a>
-                                    <a th:href="@{|/whitelist/groups/add|}" class="btn btn-danger waves-effect waves-light" th:text="#{whitelist.addNewGroup}"></a>
+                <div class="card">
+                    <div class="card-header"th:text="#{whitelist.title}"></div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                                <a href="#whitelist" data-toggle="tab" aria-expanded="true" class="nav-link active">Белый лист</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#groups" data-toggle="tab" aria-expanded="false" class="nav-link">Группы</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#categories" data-toggle="tab" aria-expanded="false" class="nav-link">Виды белого листа</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="whitelist">
+                                <table id="datatable-buttons" class="table table-bordered table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th><a th:text="#{ordinal.number}"></a></th>
+                                        <th><a th:text="#{whitelist.categoryName}"></a></th>
+                                        <th><a th:text="#{car.platenumber}"></a></th>
+                                        <th><a th:text="#{whitelist.parking}"></a></th>
+                                        <th><a th:text="#{whitelist.groupName}"></a></th>
+                                        <th><a th:text="#{whitelist.condition}"></a></th>
+                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
+                                        <th></th>
+                                        </p>
+                                        <p sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN')">
+                                        <th></th>
+                                        </p>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="w, iterStat : ${whitelist}">
+                                        <td th:text="${iterStat.count}"></td>
+                                        <td>
+                                            <span th:if="${w.group != null && w.group.category != null}" th:text="${w.group.category.name}"></span>
+                                            <span th:if="${w.group == null && w.category != null}" th:text="${w.category.name}"></span>
+                                        </td>
+                                        <td><span th:text="${w.car.platenumber}"></span></td>
+                                        <td>
+                                            <span th:if="${w.parking != null}" th:text="${w.parking.name}"></span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${w.group != null}" th:text="${w.group.name}"></span>
+                                        </td>
+                                        <td th:text="${w.conditionDetail}"></td>
+                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
+                                        <td><a th:href="@{|/whitelist/edit/${w.id}|}" th:text="#{crm.edit}"></a></td>
+                                        </p>
+                                        <p sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')">
+                                        <td><a th:href="@{|/whitelist/delete/${w.id}|}" th:text="#{crm.delete}"></a></td>
+                                        </p>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <a th:href="@{|/whitelist/add|}" class="btn btn-danger waves-effect waves-light" th:text="#{whitelist.addNew}"></a>
+                                        <a th:href="@{|/whitelist/groups/add|}" class="btn btn-danger waves-effect waves-light" th:text="#{whitelist.addNewGroup}"></a>
+                                    </div>
                                 </div>
+                                </p>
                             </div>
-                            </p>
-                        </div>
-                        <div class="tab-pane fade" id="groups">
-                            <table id="datatable-buttons1" class="table table-bordered table-bordered">
-                                <thead>
-                                <tr>
-                                    <th><a th:text="#{ordinal.number}"></a></th>
-                                    <th><a th:text="#{whitelist.groupName}"></a></th>
-                                    <th><a th:text="#{whitelist.condition}"></a></th>
-                                    <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
-                                    <th></th>
-                                    <th></th>
-                                    </p>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="w, iterStat : ${whitelistGroups}">
-                                    <td th:text="${iterStat.count}"></td>
-                                    <td th:text="${w.name}"></td>
-                                    <td th:if="${'UNLIMITED'.equals(w.type.toString())}" th:text="${'Группа ' + w.name + ' может посещать объект в любое время.'}"></td>
-                                    <td th:if="${'PERIOD'.equals(w.type.toString())}" th:text="${'Группа ' + w.name + ' может посещать объект ' + (w.access_start != null && w.access_start > #dates.createNow() ? 'с даты ' + #dates.format(w.access_start, 'dd.MM.yyyy HH:mm') : 'в любое время') + '. Сроком до ' + #dates.format(w.access_end, 'dd.MM.yyyy HH:mm')}"></td>
-                                    <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
-                                    <td><a th:href="@{|/whitelist/group/edit/${w.id}|}" th:text="#{crm.edit}"></a></td>
-                                    </p>
-                                    <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
-                                    <td><a th:href="@{|/whitelist/group/delete/${w.id}|}" th:text="#{crm.delete}"></a></td>
-                                    </p>
-                                </tr>
-                                </tbody>
-                            </table>
-                            <p sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')">
-                            <div class="form-group row">
-                                <div class="col-12">
-                                    <a th:href="@{|/whitelist/groups/add|}" class="btn btn-danger waves-effect waves-light" th:text="#{whitelist.addNewGroup}"></a>
+                            <div class="tab-pane fade" id="groups">
+                                <table id="datatable-buttons1" class="table table-bordered table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th><a th:text="#{ordinal.number}"></a></th>
+                                        <th><a th:text="#{whitelist.categoryName}"></a></th>
+                                        <th><a th:text="#{whitelist.groupName}"></a></th>
+                                        <th><a th:text="#{whitelist.parking}"></a></th>
+                                        <th><a th:text="#{whitelist.groupSize}"></a></th>
+                                        <th><a th:text="#{whitelist.condition}"></a></th>
+                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
+                                        <th></th>
+                                        </p>
+                                        <p sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')">
+                                        <th></th>
+                                        </p>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="w, iterStat : ${whitelistGroups}">
+                                        <td th:text="${iterStat.count}"></td>
+                                        <td>
+                                            <span th:if="${w.category != null}" th:text="${w.category.name}"></span>
+                                        </td>
+                                        <td th:text="${w.name}"></td>
+                                        <td>
+                                            <span th:if="${w.parking != null}" th:text="${w.parking.name}"></span>
+                                        </td>
+                                        <td th:text="${w.size}"></td>
+                                        <td th:text="${w.conditionDetail}"></td>
+                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER','ROLE_ADMIN' , 'ROLE_SUPERADMIN')">
+                                        <td><a th:href="@{|/whitelist/group/edit/${w.id}|}" th:text="#{crm.edit}"></a></td>
+                                        </p>
+                                        <p sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')">
+                                        <td><a th:href="@{|/whitelist/group/delete/${w.id}|}" th:text="#{crm.delete}"></a></td>
+                                        </p>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <a th:href="@{|/whitelist/groups/add|}" class="btn btn-danger waves-effect waves-light" th:text="#{whitelist.addNewGroup}"></a>
+                                    </div>
                                 </div>
+                                </p>
                             </div>
-                            </p>
+                            <div class="tab-pane fade" id="categories">
+                                <table id="datatable-buttons2" class="table table-bordered table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th><a th:text="#{ordinal.number}"></a></th>
+                                        <th><a th:text="#{category.name}"></a></th>
+                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
+                                        <th></th>
+                                        </p>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="cat, iterStat : ${categories}">
+                                        <td th:text="${iterStat.count}"></td>
+                                        <td th:text="${cat.name}"></td>
+                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                                        <td>
+                                            <a href="#" data-toggle="modal" data-target="#category-close-modal" th:categoryId="${cat.id}" th:onclick="categoryModalContent(this.getAttribute('categoryId'))">
+                                                <i class="ion-edit"></i>
+                                            </a>
+                                            </a></td>
+                                        </p>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <button data-toggle="modal" data-target="#category-close-modal" class="btn btn-danger waves-effect waves-light"
+                                                th:text="#{category.addNew}" th:onclick="categoryModalContent(null)"></button>
+                                    </div>
+                                </div>
+                                </p>
+                            </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="category-close-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <div class="modal-header">
+                    <h4 class="modal-title">Форма категории</h4>
+                </div>
+                <div class="modal-body" id="categoryModalBody">
                 </div>
             </div>
         </div>
@@ -150,6 +220,17 @@
         if(groupId){
             $.get("/whitelist/group/" + groupId, function (data) {
                 $('#group-close-modal').find('#groupModalBody').html(data);
+            });
+        }
+    }
+    function categoryModalContent(categoryId){
+        if(categoryId){
+            $.get("/whitelist/category/edit/" + categoryId, function (data) {
+                $('#category-close-modal').find('#categoryModalBody').html(data);
+            });
+        } else {
+            $.get("/whitelist/category/add", function (data) {
+                $('#category-close-modal').find('#categoryModalBody').html(data);
             });
         }
     }

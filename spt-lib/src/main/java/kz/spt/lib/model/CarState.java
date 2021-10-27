@@ -45,7 +45,7 @@ public class CarState {
     @Column ( name="amount", precision = 8, scale = 2 )
     private BigDecimal amount;
 
-    private Boolean paid = false;
+    private Boolean paid = false; // Заезжает на платной основе?
 
     private Long paymentId;
 

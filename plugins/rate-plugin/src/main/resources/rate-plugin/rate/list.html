@@ -1,47 +1,55 @@
 <!DOCTYPE html>
 <html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
 
-<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
 
 <div class="content">
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <div class="card-box table-responsive">
-                    <h4 class="m-t-0 header-title"><b th:text="#{rate.rates}"></b></h4>
-
-                    <table id="datatable-buttons" class="table table-bordered table-bordered">
-                        <thead>
-                        <tr>
-                            <th><a th:text="#{ordinal.number}"></a></th>
-                            <th><a th:text="#{parking.name}"></a></th>
-                            <th><a th:text="#{rate.hasRate}"></a></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="pr, iterStat : ${parkings}">
-                            <td th:text="${iterStat.count}"></td>
-                            <td th:text="${pr.parking.name}"></td>
-                            <td th:if="${pr.parkingRate != null}">
-                                <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
-                                    <a href="#" data-toggle="modal" data-target="#rate-close-modal" th:rateId="${pr.parkingRate.id}" th:onclick="rateModalContent(this.getAttribute('rateId'), null)" th:text="#{crm.edit}"></a>
-                                </p>
-                            </td>
-                            <td th:if="${pr.parkingRate == null}">
-                                <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
-                                    <a href="#" data-toggle="modal" data-target="#rate-close-modal" th:parkingId="${pr.parking.id}" th:onclick="rateModalContent(null, this.getAttribute('parkingId'))" th:text="#{crm.add}"></a>
-                                </p>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+                <div class="card table-responsive">
+                    <div class="card-header" th:text="#{rate.rates}"></div>
+                    <div class="card-body">
+                        <table id="datatable-buttons" class="table table-bordered table-bordered">
+                            <thead>
+                            <tr>
+                                <th><a th:text="#{ordinal.number}"></a></th>
+                                <th><a th:text="#{parking.name}"></a></th>
+                                <th><a th:text="#{rate.hasRate}"></a></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="pr, iterStat : ${parkings}">
+                                <td th:text="${iterStat.count}"></td>
+                                <td th:text="${pr.parking.name}"></td>
+                                <td th:if="${pr.parkingRate != null}">
+                                    <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
+                                        <a href="#" data-toggle="modal" data-target="#rate-close-modal"
+                                           th:rateId="${pr.parkingRate.id}"
+                                           th:onclick="rateModalContent(this.getAttribute('rateId'), null)"
+                                           th:text="#{crm.edit}"></a>
+                                    </p>
+                                </td>
+                                <td th:if="${pr.parkingRate == null}">
+                                    <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
+                                        <a href="#" data-toggle="modal" data-target="#rate-close-modal"
+                                           th:parkingId="${pr.parking.id}"
+                                           th:onclick="rateModalContent(null, this.getAttribute('parkingId'))"
+                                           th:text="#{crm.add}"></a>
+                                    </p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div id="rate-close-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div id="rate-close-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true" style="display: none;">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -95,5 +103,6 @@
 
     table.buttons().container()
         .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+
 </script>
 </html>

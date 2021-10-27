@@ -6,7 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Data @NoArgsConstructor
 public class PaymentLogDTO {
@@ -21,21 +23,29 @@ public class PaymentLogDTO {
     @JsonFormat(pattern="dd.MM.yyyy HH:mm:ss")
     public Date outDate;
 
-    private BigDecimal price;
+    public BigDecimal price;
 
-    String transaction;
+    public String transaction;
 
-    String rateDetails;
+    public String rateDetails;
 
-    private String provider;
+    public String provider;
 
-    String description;
+    public String description;
 
-    String carNumber;
+    public String carNumber;
 
-    private String customerDetail;
+    public String customerDetail;
 
-    private String parking;
+    public String parking;
+
+    public Date getNullSafeInDate(){
+        return (getInDate() == null ? new Date() : getInDate());
+    }
+
+    public Date getNullSafeOutDate(){
+        return (getOutDate() == null ? new Date() : getOutDate());
+    }
 
     public static PaymentLogDTO convertToDto(Payment payment) {
         PaymentLogDTO paymentLogDTO = new PaymentLogDTO();
@@ -52,5 +62,13 @@ public class PaymentLogDTO {
         paymentLogDTO.setParking(payment.getParking() != null ? payment.getParking().getName() : "");
         paymentLogDTO.setCustomerDetail(payment.getCustomer() != null ? payment.getCustomer().getFirstName() + " " + payment.getCustomer().getLastName(): null);
         return paymentLogDTO;
+    }
+
+    public static List<PaymentLogDTO> convertToDto(List<Payment> payments){
+        List<PaymentLogDTO> paymentLogDTOS = new ArrayList<>();
+        for (Payment payment:payments){
+            paymentLogDTOS.add(convertToDto(payment));
+        }
+        return paymentLogDTOS;
     }
 }

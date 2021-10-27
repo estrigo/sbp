@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 @Data
 public class CarStateDto {
 
-    private static String dateFormat = "dd.MM.yyyy hh:mm:ss";
+    private static String dateFormat = "dd.MM.yyyy HH:mm:ss";
 
     public Long id;
     public String carNumber;
@@ -21,7 +21,7 @@ public class CarStateDto {
     public Date outTimestamp;
     public String inTimestampString;
     public String outTimestampString;
-    private String paid;
+    private Boolean paid;
     private BigDecimal payment;
     private String duration;
     private String whitelistJson;
@@ -54,11 +54,7 @@ public class CarStateDto {
         dto.whitelistJson = carState.getWhitelistJson();
         dto.paymentJson = carState.getPaymentJson();
         dto.rateAmount = carState.getRateAmount();
-        if(carState.getPaid()!=null && carState.getPaid()){
-            dto.paid = "Да";
-        } else {
-            dto.paid = "Нет";
-        }
+        dto.paid = carState.getPaid()!=null && carState.getPaid();
         dto.payment = carState.getAmount() == null ? BigDecimal.ZERO : carState.getAmount();
 
         StringBuilder durationBuilder = new StringBuilder("");

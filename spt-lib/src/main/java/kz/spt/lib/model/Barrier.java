@@ -24,7 +24,7 @@ public class Barrier {
         MODBUS,
         SNMP;
 
-        public static final Barrier.BarrierType[] ALL = {MODBUS, SNMP};
+        public static final Barrier.BarrierType[] ALL = {SNMP, MODBUS};
     }
 
     @Id
@@ -54,6 +54,21 @@ public class Barrier {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gate")
     private Gate gate;
+
+    // --- Данные петли для проверки присуствия машины
+    @Enumerated(EnumType.STRING)
+    @Column(name = "loop_type")
+    private Barrier.BarrierType loopType;
+
+    private String loopIp;
+
+    private String loopPassword;
+
+    private String loopOid;
+
+    private Integer loopSnmpVersion;
+
+    private Integer loopDefaultValue;
 
     @CreationTimestamp
     private Date created;

@@ -4,70 +4,94 @@
 <link th:href="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css}" rel="stylesheet" />
 
 <div class="content">
-    <div class="container">
-
+    <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-                <div class="card-box">
-                    <h4 class="m-t-0 header-title"><b th:text="#{whitelist.groupaddform}"></b></h4>
-                    <p class="text-muted m-b-30 font-14"></p>
-
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="p-20">
-                                <form th:action="@{|/whitelist/groups/add|}" th:object="${whitelistGroup}" method="post">
-                                    <div class="form-group row" th:if="${#fields.hasAnyErrors()}">
-                                        <label class="col-2 col-form-label">Errors</label>
-                                        <label class="col-2 col-form-label">
-                                            <ul>
-                                                <li th:each="err : ${#fields.allErrors()}" th:text="${err}" />
-                                            </ul>
-                                        </label>
-                                    </div>
-                                    <div class="form-group row" id="groupName">
-                                        <label class="col-2 col-form-label" th:text="#{whitelist.groupName}"></label>
-                                        <div class="col-10">
-                                            <input type="text" class="form-control" th:field="*{name}">
-                                        </div>
-                                    </div>
-                                    <div class="form-group row" id="carsList">
-                                        <label class="col-2 col-form-label" th:text="#{whitelist.carsList}"></label>
-                                        <div class="col-10">
-                                            <select class="form-control" multiple data-role="tagsinput" th:field="*{plateNumbers}" placeholder="Add car numbers">
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <label class="col-2 col-form-label" th:text="#{whitelist.type}"></label>
-                                        <div class="col-10">
-                                            <select id="types" th:field="*{type}" th:value="*{type}" class="form-control" onchange="checkSelectedTypes(value)">
-                                                <option th:value="UNLIMITED" th:text="#{'whitelist.Type.UNLIMITED'}"></option>
-                                                <option th:value="PERIOD" th:text="#{'whitelist.Type.PERIOD'}"></option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group row" id="beginDate" style="display: none">
-                                        <label class="col-2 col-form-label" th:text="#{whitelist.beginDate}"></label>
-                                        <div class="col-10">
-                                            <input type="datetime-local" class="form-control" th:field="*{accessStartString}">
-                                        </div>
-                                    </div>
-                                    <div class="form-group row" id="endDate" style="display: none">
-                                        <label class="col-2 col-form-label" th:text="#{whitelist.endDate}"></label>
-                                        <div class="col-10">
-                                            <input type="datetime-local" class="form-control" th:field="*{accessEndString}">
-                                        </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <label class="col-2 col-form-label"></label>
-                                        <div class="col-10">
-                                            <a th:href="@{|/whitelist/list|}" class="btn btn-primary btn-custom waves-effect waves-light w-md" type="button" th:text="#{crm.cancel}"></a>
-                                            <button type="submit" class="btn btn-danger waves-effect waves-light" th:text="#{crm.save}"></button>
-                                        </div>
-                                    </div>
-                                </form>
+                <div class="card">
+                    <div class="card-header" th:text="#{whitelist.groupaddform}"></div>
+                    <div class="card-body">
+                        <form th:action="@{|/whitelist/groups/add|}" th:object="${whitelistGroup}" method="post">
+                            <div class="form-group row" th:if="${#fields.hasAnyErrors()}">
+                                <label class="col-2 col-form-label">Errors</label>
+                                <label class="col-2 col-form-label">
+                                    <ul>
+                                        <li th:each="err : ${#fields.allErrors()}" th:text="${err}" />
+                                    </ul>
+                                </label>
                             </div>
-                        </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.categoryName}"></label>
+                                <div class="col-10">
+                                    <select id="categoryId" th:field="*{categoryId}" class="form-control">
+                                        <option value="">Не выбрано</option>
+                                        <option th:each="category : ${categoryList}" th:text="${category.name}" th:value="${category.id}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row" id="groupName">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.groupName}"></label>
+                                <div class="col-10">
+                                    <input type="text" class="form-control" th:field="*{name}">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.parking}"></label>
+                                <div class="col-10">
+                                    <select id="parkingId" th:field="*{parkingId}" class="form-control">
+                                        <option th:each="parking : ${parkingList}" th:text="${parking.name}" th:value="${parking.id}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row" id="size">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.groupSize}"></label>
+                                <div class="col-10">
+                                    <input type="number" min="0" step="1" class="form-control" th:field="*{size}" th:placeholder="#{whitelistGroup.sizeComment}">
+                                </div>
+                            </div>
+                            <div class="form-group row" id="carsList">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.carsList}"></label>
+                                <div class="col-10">
+                                    <select class="form-control" multiple data-role="tagsinput" th:field="*{plateNumbers}" placeholder="Add car numbers">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.type}"></label>
+                                <div class="col-10">
+                                    <select id="types" th:field="*{type}" th:value="*{type}" class="form-control" onchange="checkSelectedTypes(value)">
+                                        <option th:value="UNLIMITED" th:text="#{'whitelist.Type.UNLIMITED'}"></option>
+                                        <option th:value="PERIOD" th:text="#{'whitelist.Type.PERIOD'}"></option>
+                                        <option th:value="CUSTOM" th:text="#{'whitelist.Type.CUSTOM'}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row" id="beginDate" style="display: none">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.beginDate}"></label>
+                                <div class="col-10">
+                                    <input type="datetime-local" class="form-control" th:field="*{accessStartString}">
+                                </div>
+                            </div>
+                            <div class="form-group row" id="endDate" style="display: none">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.endDate}"></label>
+                                <div class="col-10">
+                                    <input type="datetime-local" class="form-control" th:field="*{accessEndString}">
+                                </div>
+                            </div>
+                            <div class="form-group row" id="custom" style="display: none">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.timeDayPicker}"></label>
+                                <div class="col-10">
+                                    <div id="timeDayPicker" data-name="pickerValue"></div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="customJson" th:field="*{customJson}" th:value="*{customJson}">
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label"></label>
+                                <div class="col-10">
+                                    <a th:href="@{|/whitelist/list|}" class="btn btn-primary btn-custom waves-effect waves-light w-md" type="button" th:text="#{crm.cancel}"></a>
+                                    <button type="submit" class="btn btn-danger waves-effect waves-light" th:text="#{crm.save}"></button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -76,20 +100,70 @@
 </div>
 
 <script th:src="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js}"></script>
-
+<script th:src="@{/assets/js/week-hours-picker.js}"></script>
 <script type="text/javascript">
     function checkSelectedTypes(value){
-        if(value == 'UNLIMITED'){
-            $('#beginDate').hide();
-            $('#endDate').hide();
-        } else {
+        if(value == 'PERIOD'){
             $('#beginDate').show();
             $('#endDate').show();
+        } else {
+            $('#beginDate').hide();
+            $('#endDate').hide();
+        }
+        if(value === 'CUSTOM'){
+            $('#custom').show();
+        } else {
+            $('#custom').hide();
         }
     }
 
     $( document ).ready(function() {
+        // initialState { [row]: [hours] }
+        let state = {};
+
+        // change callback
+        function handleStateChange(newState) {
+            $("#customJson").val(JSON.stringify(newState));
+        }
+
+        const options = {
+            // custom days names (it's default values)
+            days: {
+                0: 'Понедельник',
+                1: 'Вторник',
+                2: 'Среда',
+                3: 'Четверг',
+                4: 'Пятница',
+                5: 'Суббота',
+                6: 'Воскресенье',
+            },
+
+            // custom class names for dom elements (it's default values)
+            classes: {
+                active: '',
+                aside: '',
+                body: '',
+                container: '',
+                day: '',
+                grid: '',
+                header: '',
+                headerHour: '',
+                hour: '',
+                input: '',
+                node: '',
+                row: '',
+            },
+        }
+
+        weekHoursPicker(
+            document.querySelector('#timeDayPicker'), // required
+            state, // optional
+            handleStateChange, // optional
+            options, // optional
+        )
+
         $('.bootstrap-tagsinput').addClass('form-control');
+        checkSelectedTypes($('#types').val());
     });
 </script>
 </html>

@@ -16,8 +16,8 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "category", schema = "crm")
-public class Category {
+@Table(name = "whitelist_category", schema = "crm")
+public class WhitelistCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

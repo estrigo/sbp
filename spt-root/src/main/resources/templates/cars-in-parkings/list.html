@@ -1,34 +1,36 @@
 <!DOCTYPE html>
 <html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
 
-<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
 
 <div class="content">
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <div class="card-box table-responsive">
-                    <h4 class="m-t-0 header-title"><b th:text="#{parking.cars}"></b></h4>
+                <div class="card table-responsive">
+                    <div class="card-header" th:text="#{parking.cars}"></div>
+                    <div class="card-body">
+                        <table id="datatable-buttons" class="table table-bordered table-bordered">
+                            <thead>
+                            <tr>
+                                <th><a th:text="#{ordinal.number}"></a></th>
+                                <th><a th:text="#{parking.name}"></a></th>
+                                <th><a th:text="#{parking.numberOfCars}"></a></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="cs, iterStat : ${parkingCars}">
+                                <td th:text="${iterStat.count}"></td>
+                                <td th:text="${cs.parking.name}"></td>
+                                <td><a th:href="@{|/parking/cars/details/${cs.parking.id}|}"
+                                       th:text="${cs.carsList.size()}"></a></td>
 
-                    <table id="datatable-buttons" class="table table-bordered table-bordered">
-                        <thead>
-                        <tr>
-                            <th><a th:text="#{ordinal.number}"></a></th>
-                            <th><a th:text="#{parking.name}"></a></th>
-                            <th><a th:text="#{parking.numberOfCars}"></a></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="cs, iterStat : ${parkingCars}">
-                            <td th:text="${iterStat.count}"></td>
-                            <td th:text="${cs.parking.name}"></td>
-                            <td><a th:href="@{|/parking/cars/details/${cs.parking.id}|}" th:text="${cs.carsList.size()}"></a></td>
-
-                        </tr>
-                        </tbody>
-                    </table>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -63,6 +65,7 @@
 
     table.buttons().container()
         .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+
 </script>
 
 </html>

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ParkingServiceImpl implements ParkingService {
@@ -50,7 +51,8 @@ public class ParkingServiceImpl implements ParkingService {
 
     @Override
     public Parking findById(Long id) {
-        return parkingRepository.getOne(id);
+        Optional<Parking> optionalParking = parkingRepository.findById(id);
+        return optionalParking.isPresent() ? optionalParking.get() : null;
     }
 
     @Override
@@ -106,5 +108,10 @@ public class ParkingServiceImpl implements ParkingService {
             }
         }
         return null;
+    }
+
+    @Override
+    public Iterable<Parking> listWhitelistParkings() {
+        return parkingRepository.whitelistParkings();
     }
 }

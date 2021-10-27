@@ -48,29 +48,29 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers("/users/delete/**").hasRole("ADMIN")
-                .antMatchers("/pdf-generator", "/search/**", "/customers/**", "/users/edit/**", "/register/**", "/users/list",
-                        "/contract/**", "/cars/**", "/parking/**", "/arm/**", "/events/**", "/journal/**", "/customer/**")
-                .hasAnyRole( "ADMIN", "USER", "MANAGER", "OWNER");
+                .antMatchers("/pdf-generator", "/search/**", "/customers/list", "/register/**", "/contract/**", "/cars/list", "/parking/list", "/arm/**", "/events/**", "/journal/**", "/customer/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN")
+                .antMatchers("customer/edit/**", "/users/list",
+                        "cars/edit/**","parking/edit/**").hasAnyRole( "ADMIN", "MANAGER", "SUPERADMIN");
 
         List<PluginWrapper> plugins = pluginManager.getPlugins();
 
-        for(PluginWrapper pluginWrapper: plugins) {
+        for (PluginWrapper pluginWrapper : plugins) {
             if (pluginWrapper.getPlugin() instanceof CustomPlugin) {
                 CustomPlugin plugin = (CustomPlugin) pluginWrapper.getPlugin();
 
-                if(plugin.getTemplateUrl() != null){
+                if (plugin.getTemplateUrl() != null) {
                     http.authorizeRequests().antMatchers("/" + plugin.getTemplateUrl() + "/**").fullyAuthenticated();
                 }
 
                 if (plugin.getLinks() != null) {
-                    for(Map<String,Object> link: plugin.getLinks()){
-                        if(link.containsKey("url") && link.containsKey("role")){
+                    for (Map<String, Object> link : plugin.getLinks()) {
+                        if (link.containsKey("url") && link.containsKey("role")) {
                             http.authorizeRequests().antMatchers("/" + link.get("url")).hasRole((String) link.get("role"));
                         }
-                        if(link.containsKey("subMenus")){
+                        if (link.containsKey("subMenus")) {
                             List<Map<String, Object>> subMenus = (List<Map<String, Object>>) link.get("subMenus");
-                            for(Map<String,Object> subLink: subMenus){
-                                if(subLink.containsKey("url") && subLink.containsKey("role")){
+                            for (Map<String, Object> subLink : subMenus) {
+                                if (subLink.containsKey("url") && subLink.containsKey("role")) {
                                     http.authorizeRequests().antMatchers("/" + subLink.get("url")).hasRole((String) subLink.get("role"));
                                 }
                             }

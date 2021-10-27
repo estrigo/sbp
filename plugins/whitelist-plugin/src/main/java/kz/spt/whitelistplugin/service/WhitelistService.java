@@ -1,5 +1,6 @@
 package kz.spt.whitelistplugin.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
@@ -12,11 +13,11 @@ public interface WhitelistService {
 
     void saveWhitelist(Whitelist whitelist, UserDetails currentUser) throws Exception;
 
-    Iterable<Whitelist> listAllWhitelist();
+    Iterable<Whitelist> listAllWhitelist() throws JsonProcessingException;
 
     List<Whitelist> listByGroupId(Long groupId);
 
-    ArrayNode hasAccess(String plateNumber, Date enterDate);
+    ArrayNode hasAccess(Long parkingId, String plateNumber, Date enterDate) throws JsonProcessingException;
 
     Whitelist prepareById(Long id);
 
