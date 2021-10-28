@@ -6,6 +6,7 @@ import kz.spt.rateplugin.service.RateService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,28 +30,32 @@ public class RateController {
         return "rate/list";
     }
 
-    @GetMapping("{rateId}")
-    public String getEditingRateId(Model model, @PathVariable Long rateId) {
-        ParkingRate parkingRate = rateService.getById(rateId);
+    @GetMapping("/edit/{parkingId}")
+    public String getEditingRateId(Model model, @PathVariable Long parkingId) {
+        ParkingRate parkingRate = rateService.getByParkingId(parkingId);
+        if(parkingRate == null){
+            parkingRate = new ParkingRate();
+            Parking parking = rateService.getParkingById(parkingId);
+            parkingRate.setParking(parking);
+        }
         model.addAttribute("parkingRate", parkingRate);
         return "/rate/edit";
     }
 
     @PostMapping("/add/parking/{parkingId}")
     public String rateEdit(@PathVariable Long parkingId, @Valid ParkingRate rate, BindingResult bindingResult){
+        if(ParkingRate.RateType.STANDARD.equals(rate.getRateType()) && (rate.getOnlinePaymentValue() == 0 && rate.getCashPaymentValue() == 0)){
+            ObjectError error = new ObjectError("fillOnlineOrCash", "Пожалуйста заполните значение полей наличный расчет или онлайн расчет");
+            bindingResult.addError(error);
+        } else if(ParkingRate.RateType.PROGRESSIVE.equals(rate.getRateType()) && (rate.getProgressiveJson() == null || "".equals(rate.getProgressiveJson()))){
+            ObjectError error = new ObjectError("fillProgressiveValues", "Пожалуйста заполните значение для тарифa");
+            bindingResult.addError(error);
+        }
         if (!bindingResult.hasErrors()) {
             Parking parking = rateService.getParkingById(parkingId);
             rate.setParking(parking);
             rateService.saveRate(rate);
         }
         return "redirect:/rate/list";
-    }
-
-    @GetMapping("/{parkingId}/new/rate")
-    public String getEditingRateId(@PathVariable Long parkingId, Model model) {
-        ParkingRate parkingRate = new ParkingRate();
-        parkingRate.setParking(rateService.getParkingById(parkingId));
-        model.addAttribute("parkingRate", parkingRate);
-        return "/rate/edit";
     }
 }

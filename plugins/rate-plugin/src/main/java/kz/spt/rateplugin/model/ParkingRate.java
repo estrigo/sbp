@@ -26,6 +26,12 @@ import java.util.Date;
 @Table(name = "parking_rate", schema = "crm")
 public class ParkingRate {
 
+    public enum RateType {
+        STANDARD,   // Одинаковая сумма для всех часов.  например 200 тенге за каждый час
+        PROGRESSIVE, // Сумма за каждый час увеличивается или уменьшается. например 1 час 200mг, второй час 300тг, дальше по 400тг
+        INTERVAL // Разные суммы в зависимости от часов заезд. например каждый час между 08.00 - 16.00 по 500тг, между 16.00 - 08.00 по 1000тг
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -34,6 +40,10 @@ public class ParkingRate {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parking")
     private Parking parking;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rate_type")
+    private RateType rateType;
 
     private String name;
 
@@ -48,6 +58,10 @@ public class ParkingRate {
 
     @Column(name = "online_payment_value")
     private int onlinePaymentValue;
+
+    private String progressiveJson;
+
+    private String intervalJson;
 
     @CreationTimestamp
     private Date created;

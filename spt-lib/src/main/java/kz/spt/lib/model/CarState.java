@@ -79,6 +79,8 @@ public class CarState {
     @Column(name = "whitelist_json", columnDefinition = "text")
     private String whitelistJson;
 
+    private Boolean cashlessPayment = false;
+
     @CreationTimestamp
     private Date created;
 

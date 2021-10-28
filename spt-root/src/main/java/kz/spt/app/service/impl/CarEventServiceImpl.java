@@ -248,6 +248,7 @@ public class CarEventServiceImpl implements CarEventService {
                     node.put("parkingId", camera.getGate().getParking().getId());
                     node.put("inDate", format.format(carState.getInTimestamp()));
                     node.put("outDate", format.format(eventDto.event_time));
+                    node.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : false);
 
                     JsonNode result = ratePluginRegister.execute(node);
                     BigDecimal rateResult = result.get("rateResult").decimalValue().setScale(2);

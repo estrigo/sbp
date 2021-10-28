@@ -1,5 +1,6 @@
 package kz.spt.rateplugin.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import kz.spt.lib.model.Parking;
 import kz.spt.rateplugin.model.ParkingRate;
 import kz.spt.rateplugin.model.dto.ParkingRateDto;
@@ -14,7 +15,7 @@ public interface RateService {
 
     ParkingRate getByParkingId(Long parkingId);
 
-    BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate);
+    BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment) throws JsonProcessingException;
 
     List<ParkingRateDto> listPaymentParkings();
 

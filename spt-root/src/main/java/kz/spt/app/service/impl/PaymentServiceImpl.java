@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.service.PluginService;
 import kz.spt.lib.model.Cars;
+import kz.spt.lib.model.dto.RateQueryDto;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.extension.PluginRegister;
@@ -112,6 +113,7 @@ public class PaymentServiceImpl implements PaymentService {
                         carState.setAmount(carState.getAmount() != null ? carState.getAmount().add(commandDto.sum) : commandDto.sum); // if he paid early we should add this amount
                         carState.setPaymentId(paymentId);
                         carState.setPaymentJson(result.get("paymentArray").toString());
+                        carState.setCashlessPayment(result.get("cashlessPayment").booleanValue());
                         carStateService.save(carState);
 
                         BillingPaymentSuccessDto dto = new BillingPaymentSuccessDto();
@@ -127,6 +129,23 @@ public class PaymentServiceImpl implements PaymentService {
         return null;
     }
 
+    @Override
+    public BigDecimal getRateValue(RateQueryDto rateQueryDto) throws Exception {
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
+
+        PluginRegister ratePluginRegister = pluginService.getPluginRegister("rate-plugin");
+        if (ratePluginRegister != null) {
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("parkingId", rateQueryDto.parkingId);
+            node.put("inDate", format.format(rateQueryDto.inDate));
+            node.put("outDate", format.format(rateQueryDto.outDate));
+            node.put("cashlessPayment", rateQueryDto.cashlessPayment);
+            JsonNode result = ratePluginRegister.execute(node);
+            return result.get("rateResult").decimalValue().setScale(2);
+        }
+        return null;
+    }
+
     private BillingInfoSuccessDto fillPayment(CarState carState, SimpleDateFormat format) throws Exception {
         BillingInfoSuccessDto dto = null;
         PluginRegister ratePluginRegister = pluginService.getPluginRegister("rate-plugin");
@@ -135,6 +154,7 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("parkingId", carState.getParking().getId());
             node.put("inDate", format.format(carState.getInTimestamp()));
             node.put("outDate", format.format(new Date()));
+            node.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : false);
 
             JsonNode result = ratePluginRegister.execute(node);
             BigDecimal rateResult = result.get("rateResult").decimalValue();

@@ -33,6 +33,8 @@ public class PaymentProvider {
 
     private String secret;
 
+    private Boolean cashlessPayment = false;
+
     @Transient
     private String password;
 }

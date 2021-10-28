@@ -1,35 +1,271 @@
-<form th:action="@{|/rate/add/parking/${parkingRate.parking.id}|}" th:object="${parkingRate}" method="post">
-    <input type="hidden" th:field="*{id}" th:value="*{id}">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="beforeFreeMinutes" class="control-label" th:text="#{rate.beforeFreeMinutes}"></label>
-                <input type="number" class="form-control" th:field="*{beforeFreeMinutes}" th:value="*{beforeFreeMinutes}" id="beforeFreeMinutes" placeholder="15">
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="afterFreeMinutes" class="control-label" th:text="#{rate.afterFreeMinutes}"></label>
-                <input type="number" class="form-control" th:field="*{afterFreeMinutes}" th:value="*{afterFreeMinutes}" id="afterFreeMinutes" placeholder="15">
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header"><b th:text="#{rate.rateConfiguration}"></b></div>
+                    <div class="card-body">
+                        <input id="parkingId" type="hidden" th:field="*{parkingRate.parking.id}" th:value="*{parkingRate.parking.id}">
+                        <form th:action="@{|/rate/add/parking/${parkingRate.parking.id}|}" th:object="${parkingRate}" method="post">
+                            <input type="hidden" th:field="*{id}" th:value="*{id}">
+
+                            <div class="row" th:if="${#fields.hasAnyErrors()}">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="control-label" th:text="#{crm.errors}"></label>
+                                        <label class="control-label">
+                                            <ul>
+                                                <li th:each="err : ${#fields.allErrors()}" th:text="${err}" />
+                                            </ul>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label" th:text="#{rate.name}"></label>
+                                        <input type="text" class="form-control" th:field="*{name}" th:value="*{name}" id="name">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label" th:text="#{rate.type}"></label>
+                                        <select id="types" th:field="*{rateType}" th:value="*{rateType}" class="form-control" onchange="checkSelectedTypes(value)">
+                                            <option th:value="STANDARD" th:text="#{'rate.Type.STANDARD'}"></option>
+                                            <option th:value="PROGRESSIVE" th:text="#{'rate.Type.PROGRESSIVE'}"></option>
+                                            <option th:value="INTERVAL" th:text="#{'rate.Type.INTERVAL'}"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="beforeFreeMinutes" class="control-label" th:text="#{rate.beforeFreeMinutes}"></label>
+                                        <input type="number" class="form-control" th:field="*{beforeFreeMinutes}" th:value="*{beforeFreeMinutes}" id="beforeFreeMinutes" placeholder="15">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="afterFreeMinutes" class="control-label" th:text="#{rate.afterFreeMinutes}"></label>
+                                        <input type="number" class="form-control" th:field="*{afterFreeMinutes}" th:value="*{afterFreeMinutes}" id="afterFreeMinutes" placeholder="15">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="standard" class="row" style="display: none;">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="cashPaymentValue" class="control-label" th:text="#{rate.cashPaymentValue}"></label>
+                                        <input type="number" class="form-control" th:field="*{cashPaymentValue}" th:value="*{cashPaymentValue}" id="cashPaymentValue" placeholder="15">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="onlinePaymentValue" class="control-label" th:text="#{rate.onlinePaymentValue}"></label>
+                                        <input type="number" class="form-control" th:field="*{onlinePaymentValue}" th:value="*{onlinePaymentValue}" id="onlinePaymentValue" placeholder="15">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="progressive" class="row" style="display: none;">
+                                <input id="progressiveJson" type="hidden" th:field="*{progressiveJson}" th:value="*{progressiveJson}">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="control-label" th:text="#{rate.progressiveTable}"></label>
+                                        <table class="table table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th>Время</th>
+                                                <th>Значение</th>
+                                                <th></th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="progressiveContainer">
+                                            </tbody>
+                                            <tbody id="progressiveInputs">
+                                            <tr>
+                                                <td id="progressiveIndex">За 1-й час</td>
+                                                <td>
+                                                    <input id="progressiveCurrentHour" class="form-control" type="number" min="0" step="1" max="1000000">
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-secondary waves-effect" th:text="#{crm.add}" onclick="saveProgressive()"></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>За каждый последующий час</td>
+                                                <td>
+                                                    <input id="progressiveNextHours" class="form-control" type="number" min="0" step="1" max="1000000">
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-secondary waves-effect" th:text="#{crm.add}" onclick="addNextProgressive()"></button>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="interval" class="row" style="display: none;">
+                                <input id="intervalJson" type="hidden" th:field="*{intervalJson}" th:value="*{intervalJson}">
+
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-secondary waves-effect" th:text="#{crm.close}"></button>
+                                    <button type="submit" class="btn btn-info waves-effect waves-light" th:text="#{crm.saveChanges}"></button>                                </div>
+                                </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card" th:if="${parkingRate.rateType != null && parkingRate.beforeFreeMinutes != null && ((parkingRate.cashPaymentValue != null && parkingRate.onlinePaymentValue != null) || parkingRate.progressiveJson != null)}">
+                    <div class="card-header"><b th:text="#{rate.checkRate}"></b></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="inDate" class="control-label">Дата заезда</label>
+                                    <input type="datetime-local" class="form-control" id="inDate">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="outDate" class="control-label">Дата выезда</label>
+                                    <input type="datetime-local" class="form-control" id="outDate">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="cashlessPayment" class="control-label">Безналичный расчет</label>
+                                    <input type="checkbox" class="form-control" id="cashlessPayment">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <button type="button" class="btn btn-info waves-effect waves-light" th:text="#{crm.check}" onclick="getRateValue()"></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <span id="checkResult"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="cashPaymentValue" class="control-label" th:text="#{rate.cashPaymentValue}"></label>
-                <input type="number" class="form-control" th:field="*{cashPaymentValue}" th:value="*{cashPaymentValue}" id="cashPaymentValue" placeholder="15">
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="onlinePaymentValue" class="control-label" th:text="#{rate.onlinePaymentValue}"></label>
-                <input type="number" class="form-control" th:field="*{onlinePaymentValue}" th:value="*{onlinePaymentValue}" id="onlinePaymentValue" placeholder="15">
-            </div>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>
-        <button type="submit" class="btn btn-info waves-effect waves-light" th:text="#{crm.saveChanges}"></button>
-    </div>
-</form>
+</div>
+
+<script type="text/javascript">
+    function checkSelectedTypes(val){
+        if(val === 'STANDARD'){
+            $('#standard').show();
+        } else {
+            $('#standard').hide();
+        }
+        if(val === 'PROGRESSIVE'){
+            $('#progressive').show();
+        } else {
+            $('#progressive').hide();
+        }
+    }
+
+    let progressiveArray = [];
+
+    function saveProgressive(){
+        const progressiveCurrentHour = $('#progressiveCurrentHour').val();
+        if(progressiveCurrentHour && progressiveCurrentHour > 0){
+            progressiveArray.push({hour: progressiveArray.length + 1, value: progressiveCurrentHour});
+            drawProgressive();
+            $('#progressiveCurrentHour').val(undefined);
+            $('#progressiveIndex').text('За ' + (progressiveArray.length + 1) + '-й чаc');
+        }
+    }
+
+    function deleteProgressive(index){
+        if(progressiveArray[index].allNext){
+            $('#progressiveInputs').show();
+        }
+        progressiveArray.splice(index, 1);
+        drawProgressive();
+    }
+
+    function addNextProgressive(){
+        const progressiveNextHours = $('#progressiveNextHours').val();
+        if(progressiveNextHours && progressiveNextHours > 0) {
+            progressiveArray.push({hour: progressiveArray.length + 1, value: progressiveNextHours, allNext: true});
+            $('#progressiveNextHours').val(undefined);
+            drawProgressive();
+        }
+    }
+
+    function drawProgressive(){
+        let html = '';
+        for(let i = 0; i < progressiveArray.length; i++){
+            html = html + '<tr>';
+            if(progressiveArray[i].allNext){
+                html = html + '<td>За каждый последующий час</td><td>' + progressiveArray[i].value + '</td>';
+                $('#progressiveInputs').hide();
+            } else {
+                html = html + '<td>За ' + progressiveArray[i].hour + '-й час</td><td>' + progressiveArray[i].value + '</td>';
+            }
+            if (i + 1 === progressiveArray.length){
+                html = html + '<td><button type="button" class="btn btn-secondary waves-effect" onclick="deleteProgressive(' + i+ ')">Удалить</button></td></tr>';
+            } else {
+                html = html + '<td></td></tr>';
+            }
+        }
+        $('#progressiveContainer').html(html);
+        $('#progressiveJson').val(JSON.stringify(progressiveArray));
+    }
+
+    function getRateValue(){
+        let inDate = $('#inDate').val();
+        let outDate = $('#outDate').val();
+        let cashlessPayment = $('#cashlessPayment').is(":checked");
+        if(inDate && outDate){
+            let body = {
+                'inDate': inDate,
+                'outDate': outDate,
+                'cashlessPayment': cashlessPayment,
+                'parkingId': $('#parkingId').val()
+            }
+
+            console.log(body)
+
+            $.ajax({
+                url:"/rest/rate/get/value",
+                type:"POST",
+                data: JSON.stringify(body),
+                contentType:"application/json; charset=utf-8",
+                dataType: "json",
+                success: function(data){
+                    $('#checkResult').text(data + " тг");
+                }
+            });
+        }
+    }
+
+    $(document).ready(function() {
+        let type = $('#types').val();
+        checkSelectedTypes(type);
+        if(type === 'PROGRESSIVE'){
+            progressiveArray = JSON.parse($('#progressiveJson').val());
+            drawProgressive();
+        }
+
+    });
+</script>

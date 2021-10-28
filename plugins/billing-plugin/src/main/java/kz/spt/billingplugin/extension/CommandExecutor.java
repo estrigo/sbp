@@ -43,7 +43,7 @@ public class CommandExecutor implements PluginRegister {
             if("getPasswordHash".equals(command.get("command").textValue())){
                 if(command.has("client_id") && command.get("client_id").isTextual()){
                     PaymentProvider paymentProvider = getPaymentProviderService().getProviderByClientId(command.get("client_id").textValue());
-                    if(paymentProvider != null && paymentProvider.getSecret() != null){
+                    if(paymentProvider != null && paymentProvider.getEnabled() && paymentProvider.getSecret() != null){
                         node.put("passwordHash", paymentProvider.getSecret());
                     }
                 }
@@ -67,6 +67,7 @@ public class CommandExecutor implements PluginRegister {
 
                 Payment savedPayment = getPaymentService().savePayment(payment);
                 node.put("paymentId", savedPayment.getId());
+                node.put("cashlessPayment", payment.getProvider().getCashlessPayment() != null ? payment.getProvider().getCashlessPayment() : false);
 
                 getBalanceService().addBalance(command.get("carNumber").textValue(), command.get("sum").decimalValue());
 

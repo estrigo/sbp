@@ -1,5 +1,9 @@
 package kz.spt.rateplugin.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.service.ParkingService;
 import kz.spt.rateplugin.RatePlugin;
@@ -11,10 +15,7 @@ import kz.spt.rateplugin.service.RateService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class RateServiceImpl implements RateService {
@@ -22,6 +23,7 @@ public class RateServiceImpl implements RateService {
     private RateRepository rateRepository;
     private ParkingRepository parkingRepository;
     private ParkingService parkingService;
+    private static ObjectMapper mapper = new ObjectMapper();
 
     public RateServiceImpl(RateRepository rateRepository, ParkingRepository parkingRepository){
         this.rateRepository = rateRepository;
@@ -39,7 +41,7 @@ public class RateServiceImpl implements RateService {
     }
 
     @Override
-    public BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate) {
+    public BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment) throws JsonProcessingException {
 
         ParkingRate parkingRate = getByParkingId(parkingId);
 
@@ -53,13 +55,37 @@ public class RateServiceImpl implements RateService {
         if(inCalendar.after(outCalendar)){
             return BigDecimal.ZERO;
         }
-        int hours = 0;
-        while (inCalendar.before(outCalendar)){
-            hours++;
-            inCalendar.add(Calendar.HOUR, 1);
-        }
 
-        return BigDecimal.valueOf(parkingRate.getOnlinePaymentValue()).multiply(BigDecimal.valueOf(hours));
+        if(ParkingRate.RateType.PROGRESSIVE.equals(parkingRate.getRateType())){
+            ArrayNode progressiveJson = (ArrayNode) mapper.readTree(parkingRate.getProgressiveJson());
+            Map<Integer, Integer> prices = new HashMap<>();
+            Iterator<JsonNode> iterator = progressiveJson.iterator();
+            while (iterator.hasNext()) {
+                JsonNode node = iterator.next();
+                prices.put(node.get("hour").intValue(), Integer.valueOf(node.get("value").textValue()));
+            }
+
+            BigDecimal result = BigDecimal.ZERO;
+            int hours = 0;
+
+            while (inCalendar.before(outCalendar)){
+                hours++;
+                if(hours < prices.size()){
+                    result = result.add(BigDecimal.valueOf(prices.get(hours)));
+                } else {
+                    result = result.add(BigDecimal.valueOf(prices.get(prices.size())));
+                }
+                inCalendar.add(Calendar.HOUR, 1);
+            }
+            return result;
+        } else {
+            int hours = 0;
+            while (inCalendar.before(outCalendar)){
+                hours++;
+                inCalendar.add(Calendar.HOUR, 1);
+            }
+            return BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValue() : parkingRate.getCashPaymentValue()).multiply(BigDecimal.valueOf(hours));
+        }
     }
 
     @Override
