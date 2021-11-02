@@ -14,6 +14,7 @@ import kz.spt.lib.model.Parking;
 import kz.spt.lib.model.dto.payment.*;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.PaymentService;
+import lombok.extern.java.Log;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -23,6 +24,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+@Log
 @Service
 public class PaymentServiceImpl implements PaymentService {
 
@@ -137,7 +139,10 @@ public class PaymentServiceImpl implements PaymentService {
         if (ratePluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("parkingId", rateQueryDto.parkingId);
+            log.info("format.format(rateQueryDto.inDate): " + format.format(rateQueryDto.inDate));
             node.put("inDate", format.format(rateQueryDto.inDate));
+            log.info("format.format(rateQueryDto.outDate): " + format.format(rateQueryDto.outDate));
+            log.info("current time: " + (new Date()));
             node.put("outDate", format.format(rateQueryDto.outDate));
             node.put("cashlessPayment", rateQueryDto.cashlessPayment);
             JsonNode result = ratePluginRegister.execute(node);

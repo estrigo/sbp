@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 @Entity
 @Data
@@ -36,7 +37,7 @@ public class EventLog {
     @Convert(converter = HashMapConverter.class)
     private Map<String, Object> properties;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss",  timezone = "GMT+06:00")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = JsonFormat.DEFAULT_TIMEZONE)
     @CreationTimestamp
     private Date created;
 

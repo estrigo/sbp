@@ -22,7 +22,7 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Audited
+//@Audited
 @Table(name = "parking_rate", schema = "crm")
 public class ParkingRate {
 
@@ -59,8 +59,10 @@ public class ParkingRate {
     @Column(name = "online_payment_value")
     private int onlinePaymentValue;
 
+    @Column(name = "progressive_json", columnDefinition = "text")
     private String progressiveJson;
 
+    @Column(name = "interval_json", columnDefinition = "text")
     private String intervalJson;
 
     @CreationTimestamp

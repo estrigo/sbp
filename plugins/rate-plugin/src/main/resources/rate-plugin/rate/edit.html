@@ -83,7 +83,8 @@
                                             <thead>
                                             <tr>
                                                 <th>Время</th>
-                                                <th>Значение</th>
+                                                <th>Сумма онлайн</th>
+                                                <th>Сумма паркомат</th>
                                                 <th></th>
                                             </tr>
                                             </thead>
@@ -93,7 +94,10 @@
                                             <tr>
                                                 <td id="progressiveIndex">За 1-й час</td>
                                                 <td>
-                                                    <input id="progressiveCurrentHour" class="form-control" type="number" min="0" step="1" max="1000000">
+                                                    <input id="progressiveOnlineCurrentHour" class="form-control" type="number" min="0" step="1" max="1000000">
+                                                </td>
+                                                <td>
+                                                    <input id="progressiveParkomatCurrentHour" class="form-control" type="number" min="0" step="1" max="1000000">
                                                 </td>
                                                 <td>
                                                     <button type="button" class="btn btn-secondary waves-effect" th:text="#{crm.add}" onclick="saveProgressive()"></button>
@@ -102,7 +106,10 @@
                                             <tr>
                                                 <td>За каждый последующий час</td>
                                                 <td>
-                                                    <input id="progressiveNextHours" class="form-control" type="number" min="0" step="1" max="1000000">
+                                                    <input id="progressiveOnlineNextHours" class="form-control" type="number" min="0" step="1" max="1000000">
+                                                </td>
+                                                <td>
+                                                    <input id="progressiveParkomatNextHours" class="form-control" type="number" min="0" step="1" max="1000000">
                                                 </td>
                                                 <td>
                                                     <button type="button" class="btn btn-secondary waves-effect" th:text="#{crm.add}" onclick="addNextProgressive()"></button>
@@ -115,7 +122,37 @@
                             </div>
                             <div id="interval" class="row" style="display: none;">
                                 <input id="intervalJson" type="hidden" th:field="*{intervalJson}" th:value="*{intervalJson}">
-
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="control-label" th:text="#{rate.progressiveTable}"></label>
+                                        <table class="table table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th>Интервал от</th>
+                                                <th>Интервал до</th>
+                                                <th></th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="intervalContainer">
+                                            </tbody>
+                                            <tbody id="intervalInputs">
+                                                <tr>
+                                                    <td>
+                                                        <select id="intervalFrom">
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <select id="intervalTo">
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-secondary waves-effect" th:text="#{crm.add}" onclick="saveInterval()"></button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group row">
                                 <div class="col-12">
@@ -178,19 +215,29 @@
         }
         if(val === 'PROGRESSIVE'){
             $('#progressive').show();
+            drawProgressive();
         } else {
             $('#progressive').hide();
+        }
+        if(val === 'INTERVAL'){
+            $('#interval').show();
+            drawInterval();
+        } else {
+            $('#interval').hide();
         }
     }
 
     let progressiveArray = [];
+    let intervalArray = [];
 
     function saveProgressive(){
-        const progressiveCurrentHour = $('#progressiveCurrentHour').val();
-        if(progressiveCurrentHour && progressiveCurrentHour > 0){
-            progressiveArray.push({hour: progressiveArray.length + 1, value: progressiveCurrentHour});
+        const progressiveOnlineCurrentHour = $('#progressiveOnlineCurrentHour').val();
+        const progressiveParkomatCurrentHour = $('#progressiveParkomatCurrentHour').val();
+        if(progressiveOnlineCurrentHour && progressiveOnlineCurrentHour >= 0 && progressiveParkomatCurrentHour && progressiveParkomatCurrentHour >= 0){
+            progressiveArray.push({hour: progressiveArray.length + 1, onlineValue: progressiveOnlineCurrentHour, parkomatValue: progressiveParkomatCurrentHour});
             drawProgressive();
-            $('#progressiveCurrentHour').val(undefined);
+            $('#progressiveOnlineCurrentHour').val(undefined);
+            $('#progressiveParkomatCurrentHour').val(undefined);
             $('#progressiveIndex').text('За ' + (progressiveArray.length + 1) + '-й чаc');
         }
     }
@@ -204,10 +251,12 @@
     }
 
     function addNextProgressive(){
-        const progressiveNextHours = $('#progressiveNextHours').val();
-        if(progressiveNextHours && progressiveNextHours > 0) {
-            progressiveArray.push({hour: progressiveArray.length + 1, value: progressiveNextHours, allNext: true});
-            $('#progressiveNextHours').val(undefined);
+        const progressiveOnlineNextHours = $('#progressiveOnlineNextHours').val();
+        const progressiveParkomatNextHours = $('#progressiveParkomatNextHours').val();
+        if(progressiveOnlineNextHours && progressiveOnlineNextHours >= 0 && progressiveParkomatNextHours && progressiveParkomatNextHours >= 0) {
+            progressiveArray.push({hour: progressiveArray.length + 1, onlineValue: progressiveOnlineNextHours, parkomatValue: progressiveParkomatNextHours, allNext: true});
+            $('#progressiveOnlineNextHours').val(undefined);
+            $('#progressiveParkomatNextHours').val(undefined);
             drawProgressive();
         }
     }
@@ -230,6 +279,104 @@
         }
         $('#progressiveContainer').html(html);
         $('#progressiveJson').val(JSON.stringify(progressiveArray));
+    }
+
+    function optionsMap(id){
+        if(id === 'allNext'){
+            return 'Каждый последующие час'
+        } else if(id === 'entrance'){
+            return 'За заезд'
+        } else if(id.length > 4 && !isNaN(id.replace('hour', ''))){
+            return 'За ' + id.replace('hour', '') + ' час';
+        }
+    }
+
+    function drawInterval(){
+        let html = '';
+        for(let i = 0; i < intervalArray.length; i++){
+            html = html + '<tr>';
+            html = html + '<td>' + intervalArray[i].intervalFrom + '.00</td><td>' + intervalArray[i].intervalTo + '.00</td>';
+            html = html + '<td><button type="button" class="btn btn-secondary waves-effect" onclick="deleteInterval(' + i+ ')">Удалить</button></td></tr>';
+            html = html + '<tr><td colspan="3">' +
+                '<table class="table table-bordered">' +
+                '<thead><tr><th>Вид начисления</th><th>Сумма онлайн </th><th>Сумма паркомат</th><th>Операция</th></tr></thead>'
+
+            let addConditionFields1 = '<tbody><tr><td><select id="intervalType' + i + '">'
+            let addConditionFields2 = '</select></td><td><input id="intervalOnlineHours' + i + '" class="form-control" type="number" min="0" step="1" max="1000000"></input></td><td><input id="intervalParkomatHours' + i + '" class="form-control" type="number" min="0" step="1" max="1000000"></input></td><td><button type="button" class="btn btn-secondary waves-effect" onclick="addProgressive(' + i+ ')">Добавить</button></td></tr></tbody>'
+
+            let options =
+                '<option value="' + (intervalArray[i].condition? intervalArray[i].condition.length + 1 : 1) + 'hour">' + (intervalArray[i].condition? intervalArray[i].condition.length + 1 : 1) + ' час</option>' +
+                '<option value="allNext">Каждый последующий час</option>'
+
+            if(intervalArray[i].condition && intervalArray[i].condition.length > 0){
+                let addCondition = true;
+                let conditionHtml = '<tbody>'
+                for(let j = 0; j < intervalArray[i].condition.length; j++){
+                    if(intervalArray[i].condition[j].intervalType === 'entrance' || intervalArray[i].condition[j].intervalType === 'allNext'){
+                        addCondition = false;
+                    }
+                    conditionHtml = conditionHtml + '<tr><td>' + optionsMap(intervalArray[i].condition[j].intervalType)  + '</td><td>' + intervalArray[i].condition[j].intervalOnlineHours  + '</td><td>' + intervalArray[i].condition[j].intervalParkomatHours  + '</td><td>'
+                    if(j + 1 === intervalArray[i].condition.length){
+                        conditionHtml = conditionHtml + '<button type="button" class="btn btn-secondary waves-effect" onclick="deleteIntervalCondition(' + i+ ',' + j + ')">Удалить</button>'
+                    }
+                    conditionHtml = conditionHtml + '</td></tr>'
+                }
+                html = html + conditionHtml + '</tbody>';
+                if(addCondition){
+                    html = html + addConditionFields1 + options + addConditionFields2;
+                }
+            } else {
+                options = options + '<option value="entrance">За заезд</option>';
+                html = html + addConditionFields1 + options + addConditionFields2;
+            }
+
+            html = html + '</table></td></tr>'
+        }
+        $('#intervalContainer').html(html);
+        $('#intervalJson').val(JSON.stringify(intervalArray));
+    }
+
+    function saveInterval(){
+        let intervalFrom = $('#intervalFrom').val();
+        let intervalTo = $('#intervalTo').val();
+
+        if(intervalFrom && intervalTo){
+            intervalArray.push({
+                intervalFrom: intervalFrom,
+                intervalTo: intervalTo
+            });
+            drawInterval();
+            $('#intervalFrom').val(0);
+            $('#intervalTo').val(0);
+        }
+    }
+
+    function deleteInterval(index){
+        intervalArray.splice(index, 1);
+        drawInterval();
+    }
+
+    function deleteIntervalCondition(index, jndex){
+        intervalArray[index].condition.splice(jndex, 1);
+        drawInterval();
+    }
+
+    function addProgressive(index){
+        let intervalType = $('#intervalType' + index).val();
+        let intervalOnlineHours = $('#intervalOnlineHours' + index).val();
+        let intervalParkomatHours = $('#intervalParkomatHours' + index).val();
+
+        if(intervalType && intervalOnlineHours && intervalParkomatHours){
+            if(!intervalArray[index].condition){
+                intervalArray[index].condition = [];
+            }
+            intervalArray[index].condition.push({
+                intervalType: intervalType,
+                intervalOnlineHours: intervalOnlineHours,
+                intervalParkomatHours: intervalParkomatHours
+            });
+            drawInterval();
+        }
     }
 
     function getRateValue(){
@@ -261,11 +408,19 @@
 
     $(document).ready(function() {
         let type = $('#types').val();
-        checkSelectedTypes(type);
-        if(type === 'PROGRESSIVE'){
+        if($('#progressiveJson').val()){
             progressiveArray = JSON.parse($('#progressiveJson').val());
-            drawProgressive();
         }
+        if($('#intervalJson').val()){
+            intervalArray = JSON.parse($('#intervalJson').val());
+        }
+        checkSelectedTypes(type);
 
+        let options = '';
+        for(let i=0; i<24; i++){
+            options = options + '<option value="' + i + '">' + i + '.00' + '</option>'
+        }
+        $('#intervalFrom').html(options);
+        $('#intervalTo').html(options);
     });
 </script>

@@ -47,10 +47,24 @@ public class RateController {
         if(ParkingRate.RateType.STANDARD.equals(rate.getRateType()) && (rate.getOnlinePaymentValue() == 0 && rate.getCashPaymentValue() == 0)){
             ObjectError error = new ObjectError("fillOnlineOrCash", "Пожалуйста заполните значение полей наличный расчет или онлайн расчет");
             bindingResult.addError(error);
-        } else if(ParkingRate.RateType.PROGRESSIVE.equals(rate.getRateType()) && (rate.getProgressiveJson() == null || "".equals(rate.getProgressiveJson()))){
-            ObjectError error = new ObjectError("fillProgressiveValues", "Пожалуйста заполните значение для тарифa");
+        } else if(ParkingRate.RateType.PROGRESSIVE.equals(rate.getRateType())){
+            if(rate.getProgressiveJson() == null || "".equals(rate.getProgressiveJson())){
+                ObjectError error = new ObjectError("fillProgressiveValues", "Пожалуйста заполните значение для тарифa");
+                bindingResult.addError(error);
+            } else {
+                
+            }
+        } else if(ParkingRate.RateType.INTERVAL.equals(rate.getRateType())){
+            if(rate.getIntervalJson() == null || "".equals(rate.getIntervalJson())){
+                ObjectError error = new ObjectError("fillIntervalValues", "Пожалуйста заполните значение для тарифa");
+                bindingResult.addError(error);
+            }
+        }
+        if(rate.getName() == null || "".equals(rate.getName())){
+            ObjectError error = new ObjectError("fillName", "Пожалуйста заполните наименование для тарифa");
             bindingResult.addError(error);
         }
+
         if (!bindingResult.hasErrors()) {
             Parking parking = rateService.getParkingById(parkingId);
             rate.setParking(parking);

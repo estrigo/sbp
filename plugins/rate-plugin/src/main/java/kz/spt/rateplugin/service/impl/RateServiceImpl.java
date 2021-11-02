@@ -12,11 +12,13 @@ import kz.spt.rateplugin.model.ParkingRate;
 import kz.spt.rateplugin.model.dto.ParkingRateDto;
 import kz.spt.rateplugin.repository.RateRepository;
 import kz.spt.rateplugin.service.RateService;
+import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
 
+@Log
 @Service
 public class RateServiceImpl implements RateService {
 
@@ -47,22 +49,26 @@ public class RateServiceImpl implements RateService {
 
         Calendar inCalendar = Calendar.getInstance();
         inCalendar.setTime(inDate);
+        log.info("inCalendar: " + inCalendar.getTime());
         inCalendar.add(Calendar.MINUTE, parkingRate.getBeforeFreeMinutes());
 
         Calendar outCalendar = Calendar.getInstance();
         outCalendar.setTime(outDate);
 
-        if(inCalendar.after(outCalendar)){
+        if(!inCalendar.before(outCalendar)){
             return BigDecimal.ZERO;
         }
+        inCalendar.add(Calendar.MINUTE, (-1) * parkingRate.getBeforeFreeMinutes());
 
         if(ParkingRate.RateType.PROGRESSIVE.equals(parkingRate.getRateType())){
             ArrayNode progressiveJson = (ArrayNode) mapper.readTree(parkingRate.getProgressiveJson());
-            Map<Integer, Integer> prices = new HashMap<>();
+            Map<Integer, Integer> onlinePrices = new HashMap<>();
+            Map<Integer, Integer> parkomatPrices = new HashMap<>();
             Iterator<JsonNode> iterator = progressiveJson.iterator();
             while (iterator.hasNext()) {
                 JsonNode node = iterator.next();
-                prices.put(node.get("hour").intValue(), Integer.valueOf(node.get("value").textValue()));
+                onlinePrices.put(node.get("hour").intValue(), Integer.valueOf(node.get("onlineValue").textValue()));
+                parkomatPrices.put(node.get("hour").intValue(), Integer.valueOf(node.get("parkomatValue").textValue()));
             }
 
             BigDecimal result = BigDecimal.ZERO;
@@ -70,15 +76,104 @@ public class RateServiceImpl implements RateService {
 
             while (inCalendar.before(outCalendar)){
                 hours++;
-                if(hours < prices.size()){
-                    result = result.add(BigDecimal.valueOf(prices.get(hours)));
+                if(hours < onlinePrices.size()){
+                    if(cashlessPayment){
+                        result = result.add(BigDecimal.valueOf(onlinePrices.get(hours)));
+                    } else {
+                        result = result.add(BigDecimal.valueOf(parkomatPrices.get(hours)));
+                    }
                 } else {
-                    result = result.add(BigDecimal.valueOf(prices.get(prices.size())));
+                    if(cashlessPayment){
+                        result = result.add(BigDecimal.valueOf(onlinePrices.get(onlinePrices.size())));
+                    } else {
+                        result = result.add(BigDecimal.valueOf(parkomatPrices.get(parkomatPrices.size())));
+                    }
                 }
                 inCalendar.add(Calendar.HOUR, 1);
             }
             return result;
-        } else {
+        } else if(ParkingRate.RateType.INTERVAL.equals(parkingRate.getRateType())){
+
+            ArrayNode intervalJson = (ArrayNode) mapper.readTree(parkingRate.getIntervalJson());
+
+            BigDecimal result = BigDecimal.ZERO;
+
+            int inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY);
+            JsonNode current = getSatisfiedJsonNode(inCalendarHour, intervalJson);
+            ArrayNode conditionJson = (ArrayNode) current.get("condition");
+            Iterator<JsonNode> conditionIterator = conditionJson.iterator();
+            int intervalFrom = Integer.valueOf(current.get("intervalFrom").textValue());
+            int intervalTo = Integer.valueOf(current.get("intervalTo").textValue());
+            String intervalType = null;
+            Integer intervalOnlineHours = 0;
+            Integer intervalParkomatHours = 0;
+
+            log.info("intervalFrom: " + intervalFrom);
+            log.info("intervalTo: " + intervalTo);
+
+            while (inCalendar.before(outCalendar)){
+                log.info("while continues --------------------------");
+                log.info("inCalendar: " + inCalendar.getTime());
+                inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY);
+                log.info("inCalendarHour: " + inCalendarHour);
+                if(intervalFrom == intervalTo || (intervalFrom < intervalTo && inCalendarHour >= intervalFrom && inCalendarHour < intervalTo) || (intervalFrom > intervalTo && (inCalendarHour >= intervalFrom || inCalendarHour < intervalTo))){
+                    log.info("inCalendarHour inside interval");
+                } else {
+                    log.info("inCalendarHour outside interval");
+                    current = getSatisfiedJsonNode(inCalendarHour, intervalJson);
+                    conditionJson = (ArrayNode) current.get("condition");
+                    conditionIterator = conditionJson.iterator();
+                    intervalFrom = Integer.valueOf(current.get("intervalFrom").textValue());
+                    intervalTo = Integer.valueOf(current.get("intervalTo").textValue());
+                    intervalType = null;
+                    log.info("intervalFrom: " + intervalFrom);
+                    log.info("intervalTo: " + intervalTo);
+                }
+
+                if(intervalType == null || (!"entrance".equals(intervalType) && !"allNext".equals(intervalType))){
+                    log.info("intervalType is null or not equal entrance, allNext");
+                    log.info("conditionIterator.hasNext(): " + conditionIterator.hasNext());
+                    if (conditionIterator.hasNext()) {
+                        JsonNode conditionNode = conditionIterator.next();
+                        intervalType = conditionNode.get("intervalType").textValue();
+                        intervalOnlineHours = Integer.valueOf(conditionNode.get("intervalOnlineHours").textValue());
+                        intervalParkomatHours = Integer.valueOf(conditionNode.get("intervalParkomatHours").textValue());
+                        log.info("intervalType: " + intervalType);
+                        log.info("intervalOnlineHours: " + intervalOnlineHours);
+                        log.info("intervalParkomatHours: " + intervalParkomatHours);
+                    }
+                }
+                if(cashlessPayment){
+                    result = result.add(BigDecimal.valueOf(intervalOnlineHours));
+                } else {
+                    result = result.add(BigDecimal.valueOf(intervalParkomatHours));
+                }
+                log.info("result: " + result);
+
+                Calendar nextInCalendar = Calendar.getInstance();
+                nextInCalendar.setTime(inCalendar.getTime());
+                nextInCalendar.add(Calendar.HOUR, 1);
+
+                Calendar checkIntervalBorder = Calendar.getInstance();
+
+                checkIntervalBorder.set(Calendar.HOUR_OF_DAY, intervalTo);
+                checkIntervalBorder.set(Calendar.MINUTE, 0);
+                checkIntervalBorder.set(Calendar.SECOND, 0);
+                checkIntervalBorder.set(Calendar.MILLISECOND, 0);
+
+                if(intervalFrom > intervalTo && inCalendar.get(Calendar.HOUR_OF_DAY) >= intervalFrom){
+                    checkIntervalBorder.add(Calendar.DATE, 1);
+                }
+                if(intervalFrom != intervalTo && nextInCalendar.after(checkIntervalBorder)){
+                    inCalendar.setTime(checkIntervalBorder.getTime());
+                } else {
+                    inCalendar.add(Calendar.HOUR, 1);
+                }
+            }
+
+            return result;
+        }
+        else {
             int hours = 0;
             while (inCalendar.before(outCalendar)){
                 hours++;
@@ -116,6 +211,24 @@ public class RateServiceImpl implements RateService {
     @Override
     public Parking getParkingById(Long parkingId) {
         return getParkingService().findById(parkingId);
+    }
+
+    private JsonNode getSatisfiedJsonNode(int inCalendarHour, ArrayNode intervalJson){
+        Iterator<JsonNode> iterator = intervalJson.iterator();
+        JsonNode returnNode = null;
+        while (iterator.hasNext()) {
+            JsonNode node = iterator.next();
+            int intervalFrom = Integer.valueOf(node.get("intervalFrom").textValue());
+            int intervalTo = Integer.valueOf(node.get("intervalTo").textValue());
+            if(intervalFrom == intervalTo){ // 24 hours
+                returnNode = node;
+            } else if(intervalFrom < intervalTo && inCalendarHour >= intervalFrom && inCalendarHour < intervalTo){
+                returnNode = node;
+            } else if(intervalFrom > intervalTo && (inCalendarHour >= intervalFrom || inCalendarHour < intervalTo)){
+                returnNode = node;
+            }
+        }
+        return returnNode;
     }
 
     private ParkingService getParkingService(){
