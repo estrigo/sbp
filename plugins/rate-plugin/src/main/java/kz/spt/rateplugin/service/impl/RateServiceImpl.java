@@ -49,7 +49,6 @@ public class RateServiceImpl implements RateService {
 
         Calendar inCalendar = Calendar.getInstance();
         inCalendar.setTime(inDate);
-        log.info("inCalendar: " + inCalendar.getTime());
         inCalendar.add(Calendar.MINUTE, parkingRate.getBeforeFreeMinutes());
 
         Calendar outCalendar = Calendar.getInstance();
@@ -59,6 +58,21 @@ public class RateServiceImpl implements RateService {
             return BigDecimal.ZERO;
         }
         inCalendar.add(Calendar.MINUTE, (-1) * parkingRate.getBeforeFreeMinutes());
+
+        BigDecimal result = BigDecimal.ZERO;
+
+        Calendar inDayCalendar = Calendar.getInstance();
+        inDayCalendar.setTime(inCalendar.getTime());
+        inDayCalendar.add(Calendar.DATE, 1);
+
+        if(parkingRate.getDayPaymentValue() != null && inDayCalendar.before(outCalendar)){
+            while (inDayCalendar.before(outCalendar)){
+                result = result.add(BigDecimal.valueOf(parkingRate.getDayPaymentValue()));
+                inDayCalendar.add(Calendar.DATE, 1);
+            }
+            inDayCalendar.add(Calendar.DATE, -1);
+            inCalendar.setTime(inDayCalendar.getTime());
+        }
 
         if(ParkingRate.RateType.PROGRESSIVE.equals(parkingRate.getRateType())){
             ArrayNode progressiveJson = (ArrayNode) mapper.readTree(parkingRate.getProgressiveJson());
@@ -71,7 +85,6 @@ public class RateServiceImpl implements RateService {
                 parkomatPrices.put(node.get("hour").intValue(), Integer.valueOf(node.get("parkomatValue").textValue()));
             }
 
-            BigDecimal result = BigDecimal.ZERO;
             int hours = 0;
 
             while (inCalendar.before(outCalendar)){
@@ -95,8 +108,6 @@ public class RateServiceImpl implements RateService {
         } else if(ParkingRate.RateType.INTERVAL.equals(parkingRate.getRateType())){
 
             ArrayNode intervalJson = (ArrayNode) mapper.readTree(parkingRate.getIntervalJson());
-
-            BigDecimal result = BigDecimal.ZERO;
 
             int inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY);
             JsonNode current = getSatisfiedJsonNode(inCalendarHour, intervalJson);
@@ -179,7 +190,8 @@ public class RateServiceImpl implements RateService {
                 hours++;
                 inCalendar.add(Calendar.HOUR, 1);
             }
-            return BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValue() : parkingRate.getCashPaymentValue()).multiply(BigDecimal.valueOf(hours));
+            result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValue() : parkingRate.getCashPaymentValue()).multiply(BigDecimal.valueOf(hours)));
+            return result;
         }
     }
 

@@ -48,16 +48,19 @@ public class ParkingRate {
     private String name;
 
     @Column(name = "before_free_minutes")
-    private int beforeFreeMinutes = 15;  //  Бесплатные минуты до оплаты
+    private Integer beforeFreeMinutes = 15;  //  Бесплатные минуты до оплаты
 
     @Column(name = "after_free_minutes")
-    private int afterFreeMinutes = 15; //  Бесплатные минуты после оплаты для вьезда
+    private Integer afterFreeMinutes = 15; //  Бесплатные минуты после оплаты для вьезда
 
     @Column(name = "cash_payment_value")
-    private int cashPaymentValue;
+    private Integer cashPaymentValue;
 
     @Column(name = "online_payment_value")
-    private int onlinePaymentValue;
+    private Integer onlinePaymentValue;
+
+    @Column(name = "day_payment_value")
+    private Integer dayPaymentValue;
 
     @Column(name = "progressive_json", columnDefinition = "text")
     private String progressiveJson;
