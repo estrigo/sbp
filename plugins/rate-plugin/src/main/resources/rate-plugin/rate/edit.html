@@ -246,7 +246,6 @@
             drawProgressive();
             $('#progressiveOnlineCurrentHour').val(undefined);
             $('#progressiveParkomatCurrentHour').val(undefined);
-            $('#progressiveIndex').text('За ' + (progressiveArray.length + 1) + '-й чаc');
         }
     }
 
@@ -274,10 +273,10 @@
         for(let i = 0; i < progressiveArray.length; i++){
             html = html + '<tr>';
             if(progressiveArray[i].allNext){
-                html = html + '<td>За каждый последующий час</td><td>' + progressiveArray[i].value + '</td>';
+                html = html + '<td>За каждый последующий час</td><td>' + progressiveArray[i].onlineValue + '</td><td>' + progressiveArray[i].parkomatValue + '</td>';
                 $('#progressiveInputs').hide();
             } else {
-                html = html + '<td>За ' + progressiveArray[i].hour + '-й час</td><td>' + progressiveArray[i].value + '</td>';
+                html = html + '<td>За ' + progressiveArray[i].hour + '-й час</td><td>' + progressiveArray[i].onlineValue + '</td><td>' + progressiveArray[i].parkomatValue + '</td>';
             }
             if (i + 1 === progressiveArray.length){
                 html = html + '<td><button type="button" class="btn btn-secondary waves-effect" onclick="deleteProgressive(' + i+ ')">Удалить</button></td></tr>';
@@ -287,6 +286,7 @@
         }
         $('#progressiveContainer').html(html);
         $('#progressiveJson').val(JSON.stringify(progressiveArray));
+        $('#progressiveIndex').text('За ' + (progressiveArray.length + 1) + '-й чаc');
     }
 
     function optionsMap(id){
