@@ -193,7 +193,7 @@ public class CarEventServiceImpl implements CarEventService {
             JsonNode result = whitelistPluginRegister.execute(node);
             whitelistCheckResult = result.get("whitelistCheckResult");
         } else {
-            eventLogService.createEventLog("Whitelist", null, properties, "Плагин белого листа не найден или не запущен. Авто с гос. номером" + car_number);
+            eventLogService.createEventLog("Whitelist", null, properties, "Плагин белого листа не найден или не запущен. Авто с гос. номером " + car_number);
         }
         return whitelistCheckResult;
     }
