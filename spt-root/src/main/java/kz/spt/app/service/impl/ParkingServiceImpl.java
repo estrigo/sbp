@@ -7,6 +7,7 @@ import kz.spt.app.service.GateService;
 import kz.spt.lib.model.*;
 import kz.spt.app.repository.ParkingRepository;
 import kz.spt.lib.model.dto.ParkingCarsDTO;
+import kz.spt.lib.model.dto.ParkingDto;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.ParkingService;
@@ -113,5 +114,10 @@ public class ParkingServiceImpl implements ParkingService {
     @Override
     public Iterable<Parking> listWhitelistParkings() {
         return parkingRepository.whitelistParkings();
+    }
+
+    @Override
+    public List<ParkingDto> getParkings() {
+        return ParkingDto.fromParking(parkingRepository.findAll());
     }
 }

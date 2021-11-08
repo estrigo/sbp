@@ -24,5 +24,5 @@ public interface WhitelistRepository extends JpaRepository<Whitelist, Long> {
     @Query("from Whitelist w where w.group.id = ?1")
     List<Whitelist> findByGroupId(Long groupId);
 
-    Whitelist findWhiteListByCar(Cars car);
+    Whitelist findWhiteListByCar(Cars car, Long parkingId);
 }

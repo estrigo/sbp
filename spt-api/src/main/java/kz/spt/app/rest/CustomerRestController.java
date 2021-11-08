@@ -19,7 +19,6 @@ public class CustomerRestController {
         this.customerService = customerService;
     }
 
-
     @PostMapping
     public Page<Customer> list(@RequestBody PagingRequest pagingRequest) {
         return customerService.getCustomer(pagingRequest);

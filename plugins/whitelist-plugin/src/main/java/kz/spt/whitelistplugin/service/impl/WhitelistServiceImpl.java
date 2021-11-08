@@ -123,6 +123,7 @@ public class WhitelistServiceImpl implements WhitelistService {
 
     @Override
     public ArrayNode hasAccess(Long parkingId, String platenumber, Date date) throws JsonProcessingException {
+
         ArrayNode arrayNode = objectMapper.createArrayNode();
 
         Cars car = rootServicesGetterService.getCarsService().findByPlatenumber(platenumber);
@@ -243,7 +244,7 @@ public class WhitelistServiceImpl implements WhitelistService {
     public void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser) {
         Cars car = rootServicesGetterService.getCarsService().createCar(plateNumber);
 
-        Whitelist whitelist = whitelistRepository.findWhiteListByCar(car);
+        Whitelist whitelist = whitelistRepository.findWhiteListByCar(car, group.getParkingId());
 
         if (whitelist == null) {
             whitelist = new Whitelist();
@@ -257,6 +258,62 @@ public class WhitelistServiceImpl implements WhitelistService {
             }
         }
         whitelistRepository.save(whitelist);
+    }
+
+    @Override
+    public ArrayNode getList(Long parkingId, String plateNumber) throws JsonProcessingException {
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+
+        Cars car = rootServicesGetterService.getCarsService().findByPlatenumber(plateNumber);
+        if (car != null) {
+            Whitelist whitelist = whitelistRepository.findWhiteListByCar(car, parkingId);
+            SimpleDateFormat format =  new SimpleDateFormat(datePrettyFormat);
+            ObjectNode objectNode = objectMapper.createObjectNode();
+
+            if(whitelist.getGroup() == null){
+                objectNode.put("id", whitelist.getId());
+                objectNode.put("plateNumber", whitelist.getCar().getPlatenumber());
+                objectNode.put("type", whitelist.getType().toString());
+                if(whitelist.getCategory() != null){
+                    objectNode.put("categoryName", whitelist.getCategory().getName());
+                }
+                if(AbstractWhitelist.Type.PERIOD.equals(whitelist.getType())){
+                    if(whitelist.getAccess_start() != null){
+                        objectNode.put("accessStart", format.format(whitelist.getAccess_start()));
+                    }
+                    if(whitelist.getAccess_end() != null){
+                        objectNode.put("accessEnd", format.format(whitelist.getAccess_end()));
+                    }
+                }
+                if(Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null){
+                    objectNode.set("customJson", objectMapper.readTree(whitelist.getCustomJson()));
+                }
+                arrayNode.add(objectNode);
+            } else {
+                objectNode.put("id", whitelist.getGroup().getId());
+                objectNode.put("plateNumber", whitelist.getCar().getPlatenumber());
+                objectNode.put("groupId", whitelist.getGroup().getId());
+                objectNode.put("groupName", whitelist.getGroup().getName());
+                objectNode.put("type", whitelist.getGroup().getType().toString());
+                if(whitelist.getGroup().getCategory() != null){
+                    objectNode.put("categoryName", whitelist.getGroup().getCategory().getName());
+                }
+                if (Whitelist.Type.PERIOD.equals(whitelist.getGroup().getType())) {
+                    if (whitelist.getGroup().getAccess_start() != null) {
+                        objectNode.put("accessStart", format.format(whitelist.getGroup().getAccess_start()));
+                    }
+                    if (whitelist.getGroup().getAccess_end() != null) {
+                        objectNode.put("accessEnd", format.format(whitelist.getGroup().getAccess_end()));
+                    }
+                }
+                if(Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null){
+                    objectNode.set("customJson", objectMapper.readTree(whitelist.getCustomJson()));
+                }
+                arrayNode.add(objectNode);
+            }
+        }
+
+        return arrayNode.isEmpty() ? null : arrayNode;
     }
 
     public static String formConditionDetails(AbstractWhitelist w, String name) throws JsonProcessingException {

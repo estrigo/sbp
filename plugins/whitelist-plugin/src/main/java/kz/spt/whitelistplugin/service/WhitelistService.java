@@ -24,4 +24,6 @@ public interface WhitelistService {
     void deleteById(Long id);
 
     void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser);
+
+    ArrayNode getList(Long parkingId, String plateNumber) throws JsonProcessingException;
 }

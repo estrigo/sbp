@@ -3,7 +3,7 @@ package kz.spt.app.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import kz.spt.app.service.PluginService;
+import kz.spt.lib.service.PluginService;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.dto.RateQueryDto;
 import kz.spt.lib.service.CarsService;

@@ -1,7 +1,5 @@
 package kz.spt.billingplugin.rest;
 
-
-import kz.spt.billingplugin.dto.PaymentLogDTO;
 import kz.spt.billingplugin.model.Balance;
 import kz.spt.billingplugin.service.BalanceService;
 import kz.spt.lib.bootstrap.datatable.Page;

@@ -2,6 +2,7 @@ package kz.spt.lib.service;
 
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.model.dto.ParkingCarsDTO;
+import kz.spt.lib.model.dto.ParkingDto;
 
 import java.util.List;
 
@@ -20,4 +21,6 @@ public interface ParkingService {
     ParkingCarsDTO carsInParking(Long parkingId);
 
     Iterable<Parking> listWhitelistParkings();
+
+    List<ParkingDto> getParkings();
 }
