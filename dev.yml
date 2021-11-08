@@ -1,0 +1,57 @@
+spring:
+  mvc:
+    static-path-pattern: /**
+  resources:
+    add-mappings: true
+    cache:
+      period: 3600
+  sbp:
+    runtime-mode: deployment
+    plugins-root: plugins
+    enabled: true
+    auto-start-plugin: true
+    controller:
+      base-path: "/sbp/admin"
+    plugin-properties:
+      spring:
+        datasource:
+          url: jdbc:mysql://10.66.16.100:3306/new_parking?allowPublicKeyRetrieval=true&useSSL=false
+          username: root
+          password: root
+        jpa:
+          hibernate:
+            ddl-auto: update
+          database-platform: org.hibernate.dialect.MySQL55Dialect
+          properties:
+            hibernate:
+              dialect: org.hibernate.dialect.MySQL55Dialect
+  datasource:
+    url: jdbc:mysql://10.66.16.100:3306/parking?allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL55Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL55Dialect
+  thymeleaf:
+    mode: HTML
+    cache: false
+  flyway:
+    enabled: false
+  main:
+    allow-bean-definition-overriding: true
+org:
+  hibernate:
+    envers:
+      audit_table_suffix: _audit
+      default_schema: parking
+
+images:
+  file:
+    path: "/files/pictures"
+barrier:
+  open:
+    disabled: false
