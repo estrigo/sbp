@@ -21,6 +21,7 @@
                                 <th>Название</th>
                                 <th>Id клиента</th>
                                 <th>Разрешен</th>
+                                <th>Безналичная оплата</th>
                                 <th></th>
                             </tr>
                             </thead>
@@ -83,6 +84,7 @@
                 { "data": "name" },
                 { "data": "clientId" },
                 { "data": "enabled" },
+                { "data": "cashlessPayment" },
                 {"data": "id",
                  "render" : function(id){
                     return '<a href="#" data-toggle="modal" data-target="#provider-close-modal" providerid="' + id + '" onClick="providerModalContent(this.getAttribute(\'providerid\'))">Редактировать </a>';

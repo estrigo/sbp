@@ -13,6 +13,7 @@ public class PaymentProviderDTO {
     public String name;
     public String clientId;
     public String enabled;
+    public String cashlessPayment;
 
     public static PaymentProviderDTO convertToDto(PaymentProvider paymentProvider) {
         PaymentProviderDTO paymentProviderDTO = new PaymentProviderDTO();
@@ -20,7 +21,8 @@ public class PaymentProviderDTO {
         paymentProviderDTO.setProvider(paymentProvider.getProvider());
         paymentProviderDTO.setName( paymentProvider.getName());
         paymentProviderDTO.setClientId(paymentProvider.getClientId());
-        paymentProviderDTO.setEnabled(paymentProvider.getEnabled() != null && paymentProvider.getEnabled() ? "Нет" : "Да");
+        paymentProviderDTO.setEnabled(paymentProvider.getEnabled() != null && paymentProvider.getEnabled() ? "Да" : "Нет");
+        paymentProviderDTO.setCashlessPayment(paymentProvider.getCashlessPayment() != null && paymentProvider.getCashlessPayment() ? "Да" : "Нет");
         return paymentProviderDTO;
     }
 }

@@ -29,12 +29,12 @@
                                         <span th:text="${pr.parkingRate.name}"></span>
                                     </p>
                                     <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
-                                        <a th:href="@{|/rate/edit/${pr.parkingRate.id}||}"><span th:text="${pr.parkingRate.name}"></span><i class="ion-edit"></i></a>
+                                        <a th:href="@{|/rate/edit/${pr.parking.id}||}"><span th:text="${pr.parkingRate.name}"></span><i class="ion-edit"></i></a>
                                     </p>
                                 </td>
                                 <td th:if="${pr.parkingRate == null}">
                                     <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_OWNER', 'ROLE_ADMIN')">
-                                        <a th:href="@{|/rate/edit/${pr.parkingRate.id}||}" class="btn btn-danger waves-effect waves-light" th:text="#{crm.add}"></a>
+                                        <a th:href="@{|/rate/edit/${pr.parking.id}||}" class="btn btn-danger waves-effect waves-light" th:text="#{crm.add}"></a>
                                     </p>
                                 </td>
                             </tr>
