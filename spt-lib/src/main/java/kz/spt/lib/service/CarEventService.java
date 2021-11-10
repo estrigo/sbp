@@ -1,6 +1,6 @@
-package kz.spt.app.service;
+package kz.spt.lib.service;
 
-import kz.spt.app.model.dto.CarEventDto;
+import kz.spt.lib.model.dto.CarEventDto;
 
 public interface CarEventService {
 

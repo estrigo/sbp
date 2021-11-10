@@ -11,10 +11,10 @@ import kz.spt.lib.model.*;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.EventLogService.ArmEventType;
-import kz.spt.app.model.dto.CarEventDto;
+import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
-import kz.spt.app.service.CarEventService;
+import kz.spt.lib.service.CarEventService;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.CarImageService;
 import lombok.extern.java.Log;
@@ -220,8 +220,10 @@ public class CarEventServiceImpl implements CarEventService {
 
         CarState carState = carStateService.getLastNotLeft(eventDto.car_number);
         if(carState == null){
-            eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number);
-            eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number);
+            if(!carStateService.checkIsLastLeft(eventDto.car_number, eventDto.ip_address)){
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number);
+                eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number);
+            }
             return;
         }
 

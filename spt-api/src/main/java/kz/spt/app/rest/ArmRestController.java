@@ -1,6 +1,6 @@
 package kz.spt.app.rest;
 
-import kz.spt.app.service.ArmService;
+import kz.spt.lib.service.ArmService;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;

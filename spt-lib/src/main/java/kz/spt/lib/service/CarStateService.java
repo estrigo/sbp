@@ -26,4 +26,6 @@ public interface CarStateService {
     CarState save(CarState carState);
 
     List<String> getInButNotPaidFromList(List<String> checkList);
+
+    Boolean checkIsLastLeft(String carNumber, String cameraIp);
 }

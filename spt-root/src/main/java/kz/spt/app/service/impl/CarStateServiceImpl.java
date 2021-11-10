@@ -6,6 +6,8 @@ import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.app.repository.CarStateRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
@@ -59,7 +61,12 @@ public class CarStateServiceImpl implements CarStateService {
 
     @Override
     public CarState getLastNotLeft(String carNumber) {
-        return carStateRepository.getCarStateNotLeft(carNumber);
+        Pageable first = PageRequest.of(0, 1);
+        List<CarState> carStates = carStateRepository.getCarStateNotLeft(carNumber, first);
+        if(carStates.size() > 0){
+            return carStates.get(0);
+        }
+        return null;
     }
 
     @Override
@@ -89,6 +96,13 @@ public class CarStateServiceImpl implements CarStateService {
     @Override
     public List<String> getInButNotPaidFromList(List<String> checkList) {
         return carStateRepository.getInButNotPaidFromList(checkList);
+    }
+
+    @Override
+    public Boolean checkIsLastLeft(String carNumber, String cameraIp) {
+        Pageable first = PageRequest.of(0, 1);
+        List<CarState> carStates = carStateRepository.getCarStateLastLeft(cameraIp, first);
+        return carStates.size() > 0 && carNumber.equals(carStates.get(0).getCarNumber());
     }
 
     private Page<CarStateDto> getPage(List<CarStateDto> carStates, PagingRequest pagingRequest) {

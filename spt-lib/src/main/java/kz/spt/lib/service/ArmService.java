@@ -1,4 +1,4 @@
-package kz.spt.app.service;
+package kz.spt.lib.service;
 
 import java.io.IOException;
 import java.text.ParseException;

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.EventLogSpecification;
+import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.EventLogRepository;

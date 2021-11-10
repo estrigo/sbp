@@ -1,6 +1,7 @@
 package kz.spt.app.repository;
 
 import kz.spt.lib.model.CarState;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -14,7 +15,7 @@ import java.util.List;
 public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSpecificationExecutor<CarState>{
 
     @Query("from CarState cs where cs.carNumber = :carNumber and cs.outTimestamp is null order by cs.inTimestamp desc")
-    CarState getCarStateNotLeft(@Param("carNumber") String carNumber);
+    List<CarState> getCarStateNotLeft(@Param("carNumber") String carNumber, Pageable page);
 
     @Query("from CarState cs where cs.outTimestamp is null order by cs.inTimestamp desc")
     Iterable<CarState> getAllCarStateNotLeft();
@@ -24,4 +25,7 @@ public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSp
 
     @Query("select distinct cs.carNumber from CarState cs where cs.carNumber in (?1) and cs.outTimestamp is null and (cs.paid is null or cs.paid = false)")
     List<String> getInButNotPaidFromList(List<String> checkList);
+
+    @Query("from CarState cs where cs.outChannelIp = :cameraIp order by cs.outTimestamp desc")
+    List<CarState> getCarStateLastLeft(@Param("cameraIp") String cameraIp, Pageable page);
 }
