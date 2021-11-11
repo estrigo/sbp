@@ -7,9 +7,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.model.Cars;
 import kz.spt.whitelistplugin.model.AbstractWhitelist;
-import kz.spt.whitelistplugin.model.WhitelistCategory;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
-import kz.spt.whitelistplugin.repository.WhitelistCategoryRepository;
 import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
 import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import kz.spt.whitelistplugin.model.Whitelist;
@@ -35,7 +33,6 @@ public class WhitelistServiceImpl implements WhitelistService {
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
     private WhitelistRepository whitelistRepository;
     private WhitelistGroupsRepository whitelistGroupsRepository;
-    private WhitelistCategoryRepository whitelistCategoryRepository;
     private RootServicesGetterService rootServicesGetterService;
     private static final Map<String, String> dayValues = new HashMap<>() {{
         put("0", "Понедельник");
@@ -48,11 +45,10 @@ public class WhitelistServiceImpl implements WhitelistService {
     }};
 
     public WhitelistServiceImpl(WhitelistRepository whitelistRepository, WhitelistGroupsRepository whitelistGroupsRepository,
-                                RootServicesGetterService rootServicesGetterService, WhitelistCategoryRepository whitelistCategoryRepository) {
+                                RootServicesGetterService rootServicesGetterService) {
         this.whitelistRepository = whitelistRepository;
         this.whitelistGroupsRepository = whitelistGroupsRepository;
         this.rootServicesGetterService = rootServicesGetterService;
-        this.whitelistCategoryRepository  = whitelistCategoryRepository;
     }
 
     @Override
@@ -62,19 +58,12 @@ public class WhitelistServiceImpl implements WhitelistService {
         if (whitelist.getGroupId() != null) {
             WhitelistGroups group = whitelistGroupsRepository.getOne(whitelist.getGroupId());
             whitelist.setGroup(group);
-            whitelist.setCategory(null);
             whitelist.setType(null);
             whitelist.setCustomJson(null);
             whitelist.setAccess_start(null);
             whitelist.setAccess_end(null);
         } else if (whitelist.getGroupId() == null) {
             whitelist.setGroup(null);
-        }
-        if(whitelist.getCategoryId() != null){
-            WhitelistCategory whitelistCategory = whitelistCategoryRepository.getOne(whitelist.getCategoryId());
-            whitelist.setCategory(whitelistCategory);
-        } else {
-            whitelist.setCategory(null);
         }
         Cars car = rootServicesGetterService.getCarsService().createCar(whitelist.getPlatenumber());
         whitelist.setCar(car);
@@ -146,9 +135,6 @@ public class WhitelistServiceImpl implements WhitelistService {
                     objectNode.put("id", whitelist.getId());
                     objectNode.put("plateNumber", whitelist.getCar().getPlatenumber());
                     objectNode.put("type", whitelist.getType().toString());
-                    if(whitelist.getCategory() != null){
-                        objectNode.put("categoryName", whitelist.getCategory().getName());
-                    }
                     if(AbstractWhitelist.Type.PERIOD.equals(whitelist.getType())){
                         if(whitelist.getAccess_start() != null){
                             objectNode.put("accessStart", format.format(whitelist.getAccess_start()));
@@ -189,9 +175,6 @@ public class WhitelistServiceImpl implements WhitelistService {
                     objectNode.put("groupId", whitelist.getGroup().getId());
                     objectNode.put("groupName", whitelist.getGroup().getName());
                     objectNode.put("type", whitelist.getGroup().getType().toString());
-                    if(whitelist.getGroup().getCategory() != null){
-                        objectNode.put("categoryName", whitelist.getGroup().getCategory().getName());
-                    }
                     if (Whitelist.Type.PERIOD.equals(whitelist.getGroup().getType())) {
                         if (whitelist.getGroup().getAccess_start() != null) {
                             objectNode.put("accessStart", format.format(whitelist.getGroup().getAccess_start()));
@@ -219,9 +202,6 @@ public class WhitelistServiceImpl implements WhitelistService {
         whitelist.setPlatenumber(whitelist.getCar().getPlatenumber());
         if (whitelist.getGroup() != null) {
             whitelist.setGroupId(whitelist.getGroup().getId());
-        }
-        if (whitelist.getCategory() != null) {
-            whitelist.setCategoryId(whitelist.getCategory().getId());
         }
         if (AbstractWhitelist.Type.PERIOD.equals(whitelist.getType())) {
             if (whitelist.getAccess_start() != null) {
@@ -274,9 +254,6 @@ public class WhitelistServiceImpl implements WhitelistService {
                 objectNode.put("id", whitelist.getId());
                 objectNode.put("plateNumber", whitelist.getCar().getPlatenumber());
                 objectNode.put("type", whitelist.getType().toString());
-                if(whitelist.getCategory() != null){
-                    objectNode.put("categoryName", whitelist.getCategory().getName());
-                }
                 if(AbstractWhitelist.Type.PERIOD.equals(whitelist.getType())){
                     if(whitelist.getAccess_start() != null){
                         objectNode.put("accessStart", format.format(whitelist.getAccess_start()));
@@ -295,9 +272,6 @@ public class WhitelistServiceImpl implements WhitelistService {
                 objectNode.put("groupId", whitelist.getGroup().getId());
                 objectNode.put("groupName", whitelist.getGroup().getName());
                 objectNode.put("type", whitelist.getGroup().getType().toString());
-                if(whitelist.getGroup().getCategory() != null){
-                    objectNode.put("categoryName", whitelist.getGroup().getCategory().getName());
-                }
                 if (Whitelist.Type.PERIOD.equals(whitelist.getGroup().getType())) {
                     if (whitelist.getGroup().getAccess_start() != null) {
                         objectNode.put("accessStart", format.format(whitelist.getGroup().getAccess_start()));
@@ -314,6 +288,16 @@ public class WhitelistServiceImpl implements WhitelistService {
         }
 
         return arrayNode.isEmpty() ? null : arrayNode;
+    }
+
+    @Override
+    public Whitelist findByPlatenumber(String platenumber, Long parkingId) {
+        return whitelistRepository.findByPlatenumber(platenumber, parkingId);
+    }
+
+    @Override
+    public List<String> getExistingPlatenumbers(List<String> platenumbers, Long parkingId) {
+        return whitelistRepository.getExistingPlatenumbers(platenumbers, parkingId);
     }
 
     public static String formConditionDetails(AbstractWhitelist w, String name) throws JsonProcessingException {

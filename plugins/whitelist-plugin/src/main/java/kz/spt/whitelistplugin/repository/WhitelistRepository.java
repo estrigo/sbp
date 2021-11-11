@@ -26,4 +26,10 @@ public interface WhitelistRepository extends JpaRepository<Whitelist, Long> {
 
     @Query("from Whitelist w where w.car = ?1 and w.parking.id = ?2")
     Whitelist findWhiteListByCar(Cars car, Long parkingId);
+
+    @Query("from Whitelist w where w.car.platenumber = ?1 and w.parking.id = ?2")
+    Whitelist findByPlatenumber(String platenumber, Long parkingId);
+
+    @Query("SELECT w.car.platenumber from Whitelist w where w.car.platenumber in (?1) and w.parking.id = ?2")
+    List<String> getExistingPlatenumbers(List<String> platenumbers, Long parkingId);
 }

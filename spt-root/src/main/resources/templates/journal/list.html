@@ -100,7 +100,7 @@
                         const whitelists = JSON.parse(carState.whitelistJson);
                         let text = '';
                         for(const w of whitelists){
-                            text = text + '<span>' + (w.categoryName ? w.categoryName : '') + ' (Белый лист)</><br/>';
+                            text = text + '<span>' + (w.groupName ? w.groupName : 'Индивидуальный') + ' (Белый лист)</><br/>';
                             if(w.conditionDetails){
                                 text = text + '<small class="text-muted">' + w.conditionDetails + '</small><br/>';
                             }

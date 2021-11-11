@@ -118,40 +118,25 @@ public class RateServiceImpl implements RateService {
             String intervalType = null;
             Integer intervalOnlineHours = 0;
             Integer intervalParkomatHours = 0;
-
-            log.info("intervalFrom: " + intervalFrom);
-            log.info("intervalTo: " + intervalTo);
-
             while (inCalendar.before(outCalendar)){
-                log.info("while continues --------------------------");
-                log.info("inCalendar: " + inCalendar.getTime());
                 inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY);
-                log.info("inCalendarHour: " + inCalendarHour);
                 if(intervalFrom == intervalTo || (intervalFrom < intervalTo && inCalendarHour >= intervalFrom && inCalendarHour < intervalTo) || (intervalFrom > intervalTo && (inCalendarHour >= intervalFrom || inCalendarHour < intervalTo))){
                     log.info("inCalendarHour inside interval");
                 } else {
-                    log.info("inCalendarHour outside interval");
                     current = getSatisfiedJsonNode(inCalendarHour, intervalJson);
                     conditionJson = (ArrayNode) current.get("condition");
                     conditionIterator = conditionJson.iterator();
                     intervalFrom = Integer.valueOf(current.get("intervalFrom").textValue());
                     intervalTo = Integer.valueOf(current.get("intervalTo").textValue());
                     intervalType = null;
-                    log.info("intervalFrom: " + intervalFrom);
-                    log.info("intervalTo: " + intervalTo);
                 }
 
                 if(intervalType == null || (!"entrance".equals(intervalType) && !"allNext".equals(intervalType))){
-                    log.info("intervalType is null or not equal entrance, allNext");
-                    log.info("conditionIterator.hasNext(): " + conditionIterator.hasNext());
                     if (conditionIterator.hasNext()) {
                         JsonNode conditionNode = conditionIterator.next();
                         intervalType = conditionNode.get("intervalType").textValue();
                         intervalOnlineHours = Integer.valueOf(conditionNode.get("intervalOnlineHours").textValue());
                         intervalParkomatHours = Integer.valueOf(conditionNode.get("intervalParkomatHours").textValue());
-                        log.info("intervalType: " + intervalType);
-                        log.info("intervalOnlineHours: " + intervalOnlineHours);
-                        log.info("intervalParkomatHours: " + intervalParkomatHours);
                     }
                 }
                 if(cashlessPayment){
@@ -159,7 +144,6 @@ public class RateServiceImpl implements RateService {
                 } else {
                     result = result.add(BigDecimal.valueOf(intervalParkomatHours));
                 }
-                log.info("result: " + result);
 
                 Calendar nextInCalendar = Calendar.getInstance();
                 nextInCalendar.setTime(inCalendar.getTime());

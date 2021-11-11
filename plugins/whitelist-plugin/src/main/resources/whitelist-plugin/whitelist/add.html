@@ -7,7 +7,6 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-
                 <div class="card">
                     <div class="card-header" th:text="#{whitelist.addform}"></div>
                     <div class="card-body">
@@ -44,15 +43,6 @@
                                 </div>
                             </div>
                             <div id="conditionsBlock">
-                                <div class="form-group row">
-                                    <label class="col-2 col-form-label" th:text="#{whitelist.categoryName}"></label>
-                                    <div class="col-10">
-                                        <select id="categoryId" th:field="*{categoryId}" class="form-control">
-                                            <option value="">Не выбрано</option>
-                                            <option th:each="category : ${categoryList}" th:text="${category.name}" th:value="${category.id}"></option>
-                                        </select>
-                                    </div>
-                                </div>
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label" th:text="#{whitelist.type}"></label>
                                     <div class="col-10">

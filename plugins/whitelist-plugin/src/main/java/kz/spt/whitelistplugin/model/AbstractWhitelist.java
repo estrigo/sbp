@@ -28,7 +28,7 @@ public class AbstractWhitelist {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "parking_id")
     private Parking parking;
 
@@ -38,10 +38,6 @@ public class AbstractWhitelist {
 
     @Enumerated(EnumType.STRING)
     private Type type;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private WhitelistCategory category;
 
     @Column(columnDefinition = "text")
     private String customJson;
@@ -55,9 +51,6 @@ public class AbstractWhitelist {
     private String createdUser;
 
     private String updatedUser;
-
-    @Transient
-    private Long categoryId;
 
     @Transient
     private String accessStartString;

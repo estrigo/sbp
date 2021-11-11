@@ -26,4 +26,8 @@ public interface WhitelistService {
     void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser);
 
     ArrayNode getList(Long parkingId, String plateNumber) throws JsonProcessingException;
+
+    Whitelist findByPlatenumber(String platenumber, Long parkingId);
+
+    List<String> getExistingPlatenumbers(List<String> platenumbers, Long parkingId);
 }

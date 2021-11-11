@@ -54,4 +54,4 @@ images:
     path: "/files/pictures"
 barrier:
   open:
-    disabled: true
+    disabled: false

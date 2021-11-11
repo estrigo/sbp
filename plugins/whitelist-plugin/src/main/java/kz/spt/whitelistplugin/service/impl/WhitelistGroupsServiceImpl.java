@@ -4,9 +4,7 @@ package kz.spt.whitelistplugin.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import kz.spt.lib.model.Parking;
 import kz.spt.whitelistplugin.model.Whitelist;
-import kz.spt.whitelistplugin.model.WhitelistCategory;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
-import kz.spt.whitelistplugin.repository.WhitelistCategoryRepository;
 import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
 import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import kz.spt.whitelistplugin.service.WhitelistGroupsService;
@@ -27,15 +25,13 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
     private WhitelistGroupsRepository whitelistGroupsRepository;
     private RootServicesGetterService rootServicesGetterService;
-    private WhitelistCategoryRepository whitelistCategoryRepository;
     private WhitelistService whitelistService;
 
     public WhitelistGroupsServiceImpl(WhitelistGroupsRepository whitelistGroupsRepository, RootServicesGetterService rootServicesGetterService,
-                                      WhitelistService whitelistService, WhitelistCategoryRepository whitelistCategoryRepository) {
+                                      WhitelistService whitelistService) {
         this.whitelistGroupsRepository = whitelistGroupsRepository;
         this.rootServicesGetterService = rootServicesGetterService;
         this.whitelistService = whitelistService;
-        this.whitelistCategoryRepository = whitelistCategoryRepository;
     }
 
     @Override
@@ -64,12 +60,6 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
             }
             whitelistGroups.setAccess_start(null);
             whitelistGroups.setAccess_end(null);
-        }
-        if(whitelistGroups.getCategoryId() != null){
-            WhitelistCategory whitelistCategory = whitelistCategoryRepository.getOne(whitelistGroups.getCategoryId());
-            whitelistGroups.setCategory(whitelistCategory);
-        } else {
-            whitelistGroups.setCategory(null);
         }
         if(whitelistGroups.getParkingId() != null){
             Parking parking = rootServicesGetterService.getParkingService().findById(whitelistGroups.getParkingId());

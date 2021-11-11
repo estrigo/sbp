@@ -12,10 +12,10 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "whitelist", schema = "crm")
+@Table(name = "whitelist", schema = "crm",  uniqueConstraints = @UniqueConstraint(columnNames={"car_id", "parking_id"}))
 public class Whitelist extends AbstractWhitelist {
 
-    @OneToOne(optional=false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "car_id")
     private Cars car;
 
