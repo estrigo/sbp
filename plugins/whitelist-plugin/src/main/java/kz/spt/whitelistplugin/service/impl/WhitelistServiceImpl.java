@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.model.Cars;
+import kz.spt.lib.model.Parking;
 import kz.spt.whitelistplugin.model.AbstractWhitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
@@ -221,7 +222,7 @@ public class WhitelistServiceImpl implements WhitelistService {
     }
 
     @Override
-    public void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser) {
+    public void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser, Parking parking) {
         Cars car = rootServicesGetterService.getCarsService().createCar(plateNumber);
 
         Whitelist whitelist = whitelistRepository.findWhiteListByCar(car, group.getParkingId());
@@ -237,6 +238,7 @@ public class WhitelistServiceImpl implements WhitelistService {
                 whitelist.setGroup(group);
             }
         }
+        whitelist.setParking(parking);
         whitelistRepository.save(whitelist);
     }
 

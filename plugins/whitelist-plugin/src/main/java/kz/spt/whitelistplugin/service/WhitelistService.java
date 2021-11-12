@@ -2,6 +2,7 @@ package kz.spt.whitelistplugin.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import kz.spt.lib.model.Parking;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,7 +24,7 @@ public interface WhitelistService {
 
     void deleteById(Long id);
 
-    void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser);
+    void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser, Parking parking);
 
     ArrayNode getList(Long parkingId, String plateNumber) throws JsonProcessingException;
 

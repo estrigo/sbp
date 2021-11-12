@@ -61,10 +61,8 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
             whitelistGroups.setAccess_start(null);
             whitelistGroups.setAccess_end(null);
         }
-        if(whitelistGroups.getParkingId() != null){
-            Parking parking = rootServicesGetterService.getParkingService().findById(whitelistGroups.getParkingId());
-            whitelistGroups.setParking(parking);
-        }
+        Parking parking = rootServicesGetterService.getParkingService().findById(whitelistGroups.getParkingId());
+        whitelistGroups.setParking(parking);
         whitelistGroups.setUpdatedUser(currentUser);
         WhitelistGroups updatedWhitelistGroups = whitelistGroupsRepository.save(whitelistGroups);
 
@@ -79,7 +77,7 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
         }
 
         for (String updatedPlateNumber : updatedPlateNumbers) {
-            whitelistService.saveWhitelistFromGroup(updatedPlateNumber, updatedWhitelistGroups, currentUser);
+            whitelistService.saveWhitelistFromGroup(updatedPlateNumber, updatedWhitelistGroups, currentUser, parking);
         }
         return updatedWhitelistGroups;
     }
