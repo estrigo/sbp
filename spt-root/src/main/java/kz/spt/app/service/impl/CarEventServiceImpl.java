@@ -199,6 +199,7 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     private Boolean openGateBarrier(Camera camera, Map<String, Object> properties) throws IOException, ParseException, InterruptedException {
+        log.info("Called to open barrier on gate " + camera.getGate().getName());
         Barrier barrier = camera.getGate().getBarrier();
         return barrierService.openBarrier(barrier, properties);
     }

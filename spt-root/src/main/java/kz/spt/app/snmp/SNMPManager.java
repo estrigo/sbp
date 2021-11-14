@@ -44,7 +44,9 @@ public class SNMPManager {
             pdu.add(new VariableBinding(oid));
         }
         pdu.setType(PDU.GET);
-        ResponseEvent event = snmp.send(pdu, getTarget(), null);if(event != null && event.getResponse()!=null && event.getResponse().get(0)!=null && event.getResponse().get(0).getVariable()!=null){
+        ResponseEvent event = snmp.send(pdu, getTarget(), null);
+        log.info("getCurrentValue event response: " + event.getResponse());
+        if(event != null && event.getResponse()!=null && event.getResponse().get(0)!=null && event.getResponse().get(0).getVariable()!=null){
             return event.getResponse().get(0).getVariable().toString();
         }
         return null;
@@ -59,6 +61,7 @@ public class SNMPManager {
         }
         pdu.setType(PDU.SET);
         ResponseEvent event = snmp.send(pdu, getTarget(), null);
+        log.info("set event: " + event.getResponse());
         if(event != null && event.getResponse()!=null && event.getResponse().get(0)!=null && event.getResponse().get(0).getVariable()!=null){
             return String.valueOf(value).equals(event.getResponse().get(0).getVariable().toString());
         }

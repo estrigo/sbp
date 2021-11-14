@@ -91,15 +91,24 @@ public class BarrierServiceImpl implements BarrierService {
     }
 
     private Boolean openSnmp(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException {
+        log.info("method openSnmp started");
         Boolean result = true;
+        log.info("disableOpen: "  +  disableOpen);
         if(!disableOpen){
             SNMPManager barrierClient = new SNMPManager("udp:" + barrier.getIp() + "/161", barrier.getPassword(), barrier.getSnmpVersion());
             barrierClient.start();
-            if(!"1".equals(barrierClient.getCurrentValue(barrier.getOpenOid()))){
+            String currentValue = barrierClient.getCurrentValue(barrier.getOpenOid());
+            log.info("currentValue of barrier open channel: " + currentValue);
+            if(!"1".equals(currentValue)){
                 Boolean isOpenValueChanged = barrierClient.changeValue(barrier.getOpenOid(), 1);
+                log.info("isOpenValueChanged: " + isOpenValueChanged);
                 if(!isOpenValueChanged){
                     for(int i=0; i < 3; i++){
                         isOpenValueChanged = barrierClient.changeValue(barrier.getOpenOid(), 1);
+                        log.info("isOpenValueChanged 2: " + isOpenValueChanged);
+                        if(isOpenValueChanged){
+                            break;
+                        }
                     }
                     if(!isOpenValueChanged){
                         result = false;
@@ -107,11 +116,18 @@ public class BarrierServiceImpl implements BarrierService {
                     }
                 } else {
                     Thread.sleep(1000);
-                    if(!"0".equals(barrierClient.getCurrentValue(barrier.getOpenOid()))){
+                    String currentValue2 = barrierClient.getCurrentValue(barrier.getOpenOid());
+                    log.info("currentValue2: " + currentValue2);
+                    if(!"0".equals(currentValue2)){
                         Boolean isReturnValueChanged = barrierClient.changeValue(barrier.getOpenOid(), 0);
+                        log.info("isReturnValueChanged: " + isReturnValueChanged);
                         if(!isReturnValueChanged) {
                             for (int i = 0; i < 3; i++) {
                                 isReturnValueChanged = barrierClient.changeValue(barrier.getOpenOid(), 0);
+                                log.info("isReturnValueChanged: " + isReturnValueChanged);
+                                if(isReturnValueChanged){
+                                    break;
+                                }
                             }
                             if (!isReturnValueChanged) {
                                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
@@ -119,6 +135,8 @@ public class BarrierServiceImpl implements BarrierService {
                         }
                     }
                 }
+            } else {
+                log.info("barrier connection started");
             }
             barrierClient.close();
         }
@@ -127,18 +145,29 @@ public class BarrierServiceImpl implements BarrierService {
 
     private Boolean closeSnmp(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException {
         Boolean result = true;
+        log.info("method closeSnmp started");
 
+        log.info("disableOpen: "  +  disableOpen);
         if(!disableOpen){
             boolean checkNoObstruction = checkNoObstruction(barrier);
+            log.info("checkNoObstruction: " + checkNoObstruction);
 
             if(checkNoObstruction){
                 SNMPManager client = new SNMPManager("udp:" + barrier.getIp() + "/161", barrier.getPassword(), barrier.getSnmpVersion());
                 client.start();
-                if(!"1".equals(client.getCurrentValue(barrier.getCloseOid()))){
+
+                String test = client.getCurrentValue(barrier.getCloseOid());
+                log.info("checkNoObstruction: " + checkNoObstruction);
+                if(!"1".equals(test)){
                     Boolean isCloseValueChanged =client.changeValue(barrier.getCloseOid(), 1);
+                    log.info("isCloseValueChanged: " + isCloseValueChanged);
                     if(!isCloseValueChanged){
                         for(int i=0; i<3; i++){
                             isCloseValueChanged =client.changeValue(barrier.getCloseOid(), 1);
+                            log.info("isCloseValueChanged 2: " + isCloseValueChanged);
+                            if(isCloseValueChanged){
+                                break;
+                            }
                         }
                         if(!isCloseValueChanged){
                             result = false;
@@ -148,9 +177,14 @@ public class BarrierServiceImpl implements BarrierService {
                         Thread.sleep(1000);
                         if(!"0".equals(client.getCurrentValue(barrier.getCloseOid()))){
                             Boolean isReturnValueChanged =client.changeValue(barrier.getCloseOid(), 0);
+                            log.info("isReturnValueChanged: " + isReturnValueChanged);
                             if(!isReturnValueChanged) {
                                 for (int i = 0; i < 3; i++) {
                                     isReturnValueChanged = client.changeValue(barrier.getCloseOid(), 0);
+                                    log.info("isReturnValueChanged 2: " + isReturnValueChanged);
+                                    if(isReturnValueChanged){
+                                        break;
+                                    }
                                 }
                                 if (!isReturnValueChanged) {
                                     eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
@@ -176,7 +210,9 @@ public class BarrierServiceImpl implements BarrierService {
 
         while(!carLeftAfterDetect && System.currentTimeMillis() - currMillis < 20000){ // если больше 20 сек не уехала машина значить что то случилась
             Thread.sleep(1000);
-            if(barrier.getLoopDefaultValue().toString().equals(loopClient.getCurrentValue(barrier.getLoopOid()))){
+            String obstructionValue = loopClient.getCurrentValue(barrier.getLoopOid());
+            log.info("obstructionValue: " + obstructionValue);
+            if(barrier.getLoopDefaultValue().toString().equals(obstructionValue)){
                 carLeftAfterDetect = true;
             }
         }

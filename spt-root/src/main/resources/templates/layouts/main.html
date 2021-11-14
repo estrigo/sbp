@@ -135,5 +135,11 @@
 <script th:src="@{/assets/js/jquery.core.js}"></script>
 <script th:src="@{/assets/js/jquery.app.js}"></script>
 
+<script lang="javascript">
+    function changeLanguage(lang){
+        window.location.href = window.location.protocol + '//' + window.location.host + '/?lang=' + lang;
+    }
+</script>
+
 </body>
 </html>

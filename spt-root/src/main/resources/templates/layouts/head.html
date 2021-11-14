@@ -16,6 +16,19 @@
     </ul>
 
     <ul class="list-inline float-right mb-0">
+        <li class="list-inline-item dropdown notification-list">
+            <a class="nav-link dropdown-toggle waves-effect waves-light" data-toggle="dropdown" href="#"
+               role="button" aria-haspopup="false" aria-expanded="false" th:text="#{${'lang.' + #locale.language}}">
+            </a>
+            <div class="dropdown-menu dropdown-menu-right profile-dropdown" aria-labelledby="Preview">
+                <a th:if="${#locale.language != 'en'}" href="javascript:changeLanguage('en')" class="dropdown-item notify-item">
+                    <i class="mdi mdi-web"></i> <span th:text="#{lang.en}"></span>
+                </a>
+                <a th:if="${#locale.language != 'ru'}" href="javascript:changeLanguage('ru')" class="dropdown-item notify-item">
+                    <i class="mdi mdi-web"></i> <span th:text="#{lang.ru}"></span>
+                </a>
+            </div>
+        </li>
 
         <li sec:authorize="isAuthenticated()" class="list-inline-item dropdown notification-list">
             <a class="nav-link dropdown-toggle waves-effect waves-light nav-user" data-toggle="dropdown" href="#"
