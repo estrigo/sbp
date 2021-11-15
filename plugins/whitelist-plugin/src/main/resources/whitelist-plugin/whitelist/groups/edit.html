@@ -10,10 +10,10 @@
                 <div class="card">
                     <div class="card-header" th:text="#{whitelist.groupeditform}"></div>
                     <div class="card-body">
-                        <form th:action="@{|/whitelist/group/edit/${whitelistGroup.id}|}" th:object="${whitelistGroup}" method="post">
+                        <form th:action="@{|/whitelist/group/edit/${whitelistGroups.id}|}" th:object="${whitelistGroups}" method="post">
                             <div class="form-group row" th:if="${#fields.hasAnyErrors()}">
                                 <label class="col-2 col-form-label">Errors</label>
-                                <label class="col-2 col-form-label">
+                                <label class="col-10 col-form-label">
                                     <ul>
                                         <li th:each="err : ${#fields.allErrors()}" th:text="${err}" />
                                     </ul>
@@ -43,7 +43,7 @@
                                 <label class="col-2 col-form-label" th:text="#{whitelist.carsList}"></label>
                                 <div class="col-10">
                                     <select class="form-control" multiple data-role="tagsinput" th:field="*{plateNumbers}" placeholder="Add car numbers">
-                                        <option th:each="pn : ${whitelistGroup.plateNumbers}" th:text="${pn}" th:value="${pn}">
+                                        <option th:each="pn : ${whitelistGroups.plateNumbers}" th:text="${pn}" th:value="${pn}">
                                     </select>
                                 </div>
                             </div>

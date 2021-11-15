@@ -6,6 +6,7 @@ import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import kz.spt.whitelistplugin.service.WhitelistGroupsService;
 import kz.spt.whitelistplugin.service.WhitelistService;
+import lombok.extern.java.Log;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -18,8 +19,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
+@Log
 @Controller
 @RequestMapping("/whitelist")
 public class WhitelistController {
@@ -81,13 +84,14 @@ public class WhitelistController {
 
     @GetMapping("/groups/add")
     public String showFormAddGroup(Model model) {
-        model.addAttribute("whitelistGroup", new WhitelistGroups());
+        model.addAttribute("whitelistGroups", new WhitelistGroups());
         model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
         return "whitelist/groups/add";
     }
 
     @PostMapping("/groups/add")
     public String processRequestAddGroup(Model model, @Valid WhitelistGroups whitelistGroups, BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+
         if(whitelistGroups.getName() == null || "".equals(whitelistGroups.getName())){
             ObjectError error = new ObjectError("emptyGroupName", "Пожалуйста заполните название группы");
             bindingResult.addError(error);
@@ -96,6 +100,12 @@ public class WhitelistController {
             ObjectError error = new ObjectError("emptyCarList", "Пожалуйста заполните гос. номеры");
             bindingResult.addError(error);
         } else {
+            List<String> plateNumbers = new ArrayList<>();
+            for (String plateNumber : whitelistGroups.getPlateNumbers()) {
+                plateNumbers.add(plateNumber.toUpperCase());
+            }
+            whitelistGroups.setPlateNumbers(plateNumbers);
+
             List<String> platenumbers = whitelistService.getExistingPlatenumbers(whitelistGroups.getPlateNumbers(), whitelistGroups.getParkingId());
             if(platenumbers.size() > 0){
                 StringBuilder text = null;
@@ -181,7 +191,7 @@ public class WhitelistController {
 
     @GetMapping("/group/edit/{id}")
     public String showFormEditWhiteListGroup(Model model, @PathVariable Long id) {
-        model.addAttribute("whitelistGroup", whitelistGroupsService.prepareById(id));
+        model.addAttribute("whitelistGroups", whitelistGroupsService.prepareById(id));
         model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
         return "whitelist/groups/edit";
     }
@@ -196,6 +206,26 @@ public class WhitelistController {
         if(whitelistGroups.getPlateNumbers() == null || whitelistGroups.getPlateNumbers().size() == 0){
             ObjectError error = new ObjectError("emptyCarList", "Пожалуйста заполните гос. номеры");
             bindingResult.addError(error);
+        } else {
+            List<String> plateNumbers = new ArrayList<>();
+            for (String plateNumber : whitelistGroups.getPlateNumbers()) {
+                plateNumbers.add(plateNumber.toUpperCase());
+            }
+            whitelistGroups.setPlateNumbers(plateNumbers);
+
+            List<String> platenumbers = whitelistService.getExistingPlatenumbers(whitelistGroups.getPlateNumbers(), whitelistGroups.getParkingId(), whitelistGroups.getId());
+            if (platenumbers.size() > 0) {
+                StringBuilder text = null;
+                for (String platenumber : platenumbers) {
+                    if (text == null) {
+                        text = new StringBuilder(platenumber);
+                    } else {
+                        text.append("," + platenumber);
+                    }
+                }
+                ObjectError error = new ObjectError("someCarsExist", "Для следующих номеров уже существует записи в текущем паркинге: " + text);
+                bindingResult.addError(error);
+            }
         }
         if(Whitelist.Type.PERIOD.equals(whitelistGroups.getType()) && whitelistGroups.getAccessEndString() == null){
             ObjectError error = new ObjectError("fillDateEndIsRequired", "Заполнение даты окончания обязательно");

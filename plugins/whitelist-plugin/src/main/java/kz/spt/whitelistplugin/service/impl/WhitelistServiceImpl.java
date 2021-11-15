@@ -225,7 +225,7 @@ public class WhitelistServiceImpl implements WhitelistService {
     public void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser, Parking parking) {
         Cars car = rootServicesGetterService.getCarsService().createCar(plateNumber);
 
-        Whitelist whitelist = whitelistRepository.findWhiteListByCar(car, group.getParkingId());
+        Whitelist whitelist = whitelistRepository.findWhiteListByCar(car, parking.getId());
 
         if (whitelist == null) {
             whitelist = new Whitelist();
@@ -300,6 +300,11 @@ public class WhitelistServiceImpl implements WhitelistService {
     @Override
     public List<String> getExistingPlatenumbers(List<String> platenumbers, Long parkingId) {
         return whitelistRepository.getExistingPlatenumbers(platenumbers, parkingId);
+    }
+
+    @Override
+    public List<String> getExistingPlatenumbers(List<String> platenumbers, Long parkingId, Long groupId) {
+        return whitelistRepository.getExistingPlatenumbers(platenumbers, parkingId, groupId);
     }
 
     public static String formConditionDetails(AbstractWhitelist w, String name) throws JsonProcessingException {

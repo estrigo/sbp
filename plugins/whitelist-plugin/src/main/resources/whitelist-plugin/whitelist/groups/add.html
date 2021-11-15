@@ -10,10 +10,10 @@
                 <div class="card">
                     <div class="card-header" th:text="#{whitelist.groupaddform}"></div>
                     <div class="card-body">
-                        <form th:action="@{|/whitelist/groups/add|}" th:object="${whitelistGroup}" method="post">
+                        <form th:action="@{|/whitelist/groups/add|}" th:object="${whitelistGroups}" method="post">
                             <div class="form-group row" th:if="${#fields.hasAnyErrors()}">
                                 <label class="col-2 col-form-label" th:text="#{crm.errors}"></label>
-                                <label class="col-2 col-form-label">
+                                <label class="col-10 col-form-label">
                                     <ul>
                                         <li th:each="err : ${#fields.allErrors()}" th:text="${err}" />
                                     </ul>

@@ -26,14 +26,6 @@
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-2 col-form-label" th:text="#{whitelist.parking}"></label>
-                                <div class="col-10">
-                                    <select id="parkingId" th:field="*{parkingId}" class="form-control">
-                                        <option th:each="parking : ${parkingList}" th:text="${parking.name}" th:value="${parking.id}"></option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group row">
                                 <label class="col-2 col-form-label" th:text="#{whitelist.groupName}"></label>
                                 <div class="col-10">
                                     <select id="groupId" th:field="*{groupId}" class="form-control" onchange="checkSelectedGroups(value)">
@@ -43,6 +35,14 @@
                                 </div>
                             </div>
                             <div id="conditionsBlock">
+                                <div class="form-group row">
+                                    <label class="col-2 col-form-label" th:text="#{whitelist.parking}"></label>
+                                    <div class="col-10">
+                                        <select id="parkingId" th:field="*{parkingId}" class="form-control">
+                                            <option th:each="parking : ${parkingList}" th:text="${parking.name}" th:value="${parking.id}"></option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label" th:text="#{whitelist.type}"></label>
                                     <div class="col-10">

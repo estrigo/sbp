@@ -31,4 +31,6 @@ public interface WhitelistService {
     Whitelist findByPlatenumber(String platenumber, Long parkingId);
 
     List<String> getExistingPlatenumbers(List<String> platenumbers, Long parkingId);
+
+    List<String> getExistingPlatenumbers(List<String> platenumbers, Long parkingId, Long groupId);
 }
