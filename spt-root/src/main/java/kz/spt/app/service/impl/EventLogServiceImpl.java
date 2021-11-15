@@ -9,6 +9,7 @@ import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.EventLogRepository;
+import org.apache.poi.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -70,11 +71,17 @@ public class EventLogServiceImpl implements EventLogService {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         Specification<EventLog> specification = null;
 
-        if (eventFilterDto.dateFromString != null && eventFilterDto.dateToString != null) {
-            specification = EventLogSpecification.between(format.parse(eventFilterDto.dateFromString), format.parse(eventFilterDto.dateToString));
+        if (eventFilterDto.dateToString != null && !"".equals(eventFilterDto.dateToString)) {
+            specification = EventLogSpecification.lessDate(format.parse(eventFilterDto.dateToString));
         }
-        if (eventFilterDto.plateNumber != null) {
-            specification = specification == null ? EventLogSpecification.equalPlateNumber(eventFilterDto.plateNumber) : specification.and(EventLogSpecification.equalPlateNumber(eventFilterDto.plateNumber));
+        if (eventFilterDto.dateFromString != null && !"".equals(eventFilterDto.dateFromString)) {
+            specification = specification == null ? EventLogSpecification.greaterDate(format.parse(eventFilterDto.dateFromString)) : specification.and(EventLogSpecification.greaterDate(format.parse(eventFilterDto.dateFromString)));
+        }
+        if (eventFilterDto.plateNumber != null && !"".equals(eventFilterDto.plateNumber)) {
+            specification = specification == null ? EventLogSpecification.likePlateNumber(eventFilterDto.plateNumber) : specification.and(EventLogSpecification.likePlateNumber(eventFilterDto.plateNumber));
+        }
+        if (eventFilterDto.description != null && !"".equals(eventFilterDto.description)) {
+            specification = specification == null ? EventLogSpecification.likeDescription(eventFilterDto.description) : specification.and(EventLogSpecification.likeDescription(eventFilterDto.description));
         }
         if (specification != null) {
             specification = specification.and(EventLogSpecification.orderById());

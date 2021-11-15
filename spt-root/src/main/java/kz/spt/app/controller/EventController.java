@@ -31,33 +31,33 @@ public class EventController {
 
     @GetMapping("/list")
     public String showAllEvents(Model model) throws ParseException {
-        EventFilterDto eventFilter = null;
-        if(!model.containsAttribute("eventFilter")){
+        EventFilterDto eventFilterDto = null;
+        if(!model.containsAttribute("eventFilterDto")){
             SimpleDateFormat format = new SimpleDateFormat(dateformat);
-            eventFilter = new EventFilterDto();
+            eventFilterDto = new EventFilterDto();
 
             Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MINUTE, 1);
             Date dateTo = calendar.getTime();
-            eventFilter.dateToString = format.format(dateTo);
+            eventFilterDto.dateToString = format.format(dateTo);
 
             calendar.add(Calendar.MONTH, -1);
             Date dateFrom = calendar.getTime();
-            eventFilter.dateFromString = format.format(dateFrom);
-            model.addAttribute("eventFilter", eventFilter);
+            eventFilterDto.dateFromString = format.format(dateFrom);
+            model.addAttribute("eventFilterDto", eventFilterDto);
         } else {
-            eventFilter = (EventFilterDto) model.getAttribute("eventFilter");
+            eventFilterDto = (EventFilterDto) model.getAttribute("eventFilterDto");
+            model.addAttribute("eventFilterDto", eventFilterDto);
         }
-        model.addAttribute("events", eventLogService.listByFilters(eventFilter));
+        model.addAttribute("events", eventLogService.listByFilters(eventFilterDto));
         return "events/list";
     }
 
     @PostMapping("/list")
-    public String processRequestSearch(Model model, @Valid @ModelAttribute("eventFilter") EventFilterDto eventFilter, BindingResult bindingResult) throws ParseException {
-        if (bindingResult.hasErrors()) {
-            return "events/list";
-        } else {
-            model.addAttribute("events", eventLogService.listByFilters(eventFilter));
-            return "events/list";
+    public String processRequestSearch(Model model, @Valid @ModelAttribute("eventFilterDto") EventFilterDto eventFilterDto, BindingResult bindingResult) throws ParseException {
+        if (!bindingResult.hasErrors()) {
+            model.addAttribute("eventFilterDto", eventFilterDto);
         }
+        return "events/list";
     }
 }

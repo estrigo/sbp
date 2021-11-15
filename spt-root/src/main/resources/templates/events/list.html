@@ -12,51 +12,27 @@
                 <div class="card table-responsive">
                     <div class="card-header" th:text="#{events.events}"></div>
                     <div class="card-body">
-                        <form th:action="@{|/events/list|}" th:object="${eventFilter}" method="post">
+                        <form th:action="@{|/events/list|}" th:object="${eventFilterDto}" method="post">
                             <div class="row">
                                 <div class="col-3">
-                                    <input type="datetime-local" class="form-control" th:field="*{dateToString}"
+                                    <input type="datetime-local" class="form-control" th:field="*{dateToString}" th:value="*{dateToString}"
                                            placeholder="#{events.dateTo}">
                                 </div>
                                 <div class="col-3">
-                                    <input type="datetime-local" class="form-control" th:field="*{dateFromString}"
+                                    <input type="datetime-local" class="form-control" th:field="*{dateFromString}" th:value="*{dateFromString}"
                                            th:placeholder="#{events.dateFrom}">
                                 </div>
                                 <div class="col-3">
-                                    <input type="text" class="form-control" th:placeholder="#{car.platenumber}">
-                                </div>
-                                <div class="col-3">
-                                    <input type="text" class="form-control" th:placeholder="#{events.description}">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-3">
-                                    <select class="form-control">
-                                        <option value="" th:text="#{crm.notSelected}"></option>
-                                        <option value="0">0</option>
-                                        <option value="1">1</option>
-                                        <option value="3">3</option>
-                                    </select>
-                                </div>
-                                <div class="col-3">
-                                    <select class="form-control">
-                                        <option value="" th:text="#{crm.notSelected}"></option>
-                                        <option value="0">0</option>
-                                        <option value="1">1</option>
-                                        <option value="3">3</option>
-                                    </select>
-                                </div>
-                                <div class="col-3">
-                                    <select class="form-control">
-                                        <option value="" th:text="#{crm.notSelected}"></option>
-                                        <option value="0">0</option>
-                                        <option value="1">1</option>
-                                        <option value="3">3</option>
-                                    </select>
+                                    <input type="text" class="form-control" th:field="*{plateNumber}" th:value="*{plateNumber}" th:placeholder="#{car.platenumber}">
                                 </div>
                                 <div class="col-3">
                                     <button type="submit" class="btn btn-success" th:text="#{crm.search}"></button>
                                     <button type="submit" class="btn btn-secondary" th:text="#{crm.clear}"></button>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="text" class="form-control" th:field="*{description}" th:value="*{description}" th:placeholder="#{events.description}">
                                 </div>
                             </div>
                         </form>
@@ -105,7 +81,7 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            "url": "/rest/events?dateFromString="+$('#dateFromString').val()+"&dateToString="+$('#dateToString').val(),
+            "url": "/rest/events?dateFromString="+$('#dateFromString').val()+"&dateToString="+$('#dateToString').val()+"&plateNumber="+$('#plateNumber').val()+"&description="+$('#description').val(),
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",
@@ -138,10 +114,10 @@
         "order": [ //[[ in thymeleaf is inline script
             [1, "desc" ]
         ],
-        buttons: ['copy', 'excel', 'pdf', 'csv'],
-           language: {
-               url: '/plugins/datatables/json/ru.json'
-           }
+        language: {
+           url: '/plugins/datatables/json/ru.json'
+        },
+        searching: false
     });
 
 

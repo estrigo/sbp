@@ -21,10 +21,13 @@ public class EventRestController {
     }
 
     @PostMapping
-    public Page<EventLog> list(@RequestBody PagingRequest pagingRequest, @RequestParam String dateFromString, @RequestParam String dateToString) throws ParseException {
+    public Page<EventLog> list(@RequestBody PagingRequest pagingRequest, @RequestParam String dateFromString, @RequestParam String dateToString,
+                               @RequestParam String plateNumber, @RequestParam String description) throws ParseException {
         EventFilterDto eventFilterDto = new EventFilterDto();
         eventFilterDto.setDateFromString(dateFromString);
         eventFilterDto.setDateToString(dateToString);
+        eventFilterDto.setPlateNumber(plateNumber);
+        eventFilterDto.setDescription(description);
         return eventLogService.getEventLogs(pagingRequest,eventFilterDto);
 
     }
