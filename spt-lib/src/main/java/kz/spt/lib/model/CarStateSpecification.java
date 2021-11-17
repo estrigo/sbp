@@ -20,7 +20,14 @@ public class CarStateSpecification {
     }
 
     public static Specification<CarState> equalAmount(BigDecimal amount) {
-        return (root, query, builder) -> builder.equal(root.get(CarState_.amount), amount);
+        if(!amount.equals(BigDecimal.ZERO)){
+            return (root, query, builder) -> builder.equal(root.get(CarState_.amount), amount);
+        } else {
+            return (root, query, builder) -> {
+                builder.equal(root.get(CarState_.amount), amount);
+                return builder.or(builder.isNull(root.get(CarState_.amount)));
+            };
+        }
     }
 
     public static Specification<CarState> equalInGateId(Long inGateId) {

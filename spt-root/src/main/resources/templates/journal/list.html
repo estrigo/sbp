@@ -32,18 +32,18 @@
                     <div class="row">
                         <div class="col-3">
                             <input type="number" class="form-control" id="amount" min="0" max="1000000"
-                                   th:field="*{amount}" th:placeholder="#{journal.paymentAmount}">
+                                   th:field="*{amount}" th:placeholder="#{carState.payment}">
                         </div>
                         <div class="col-3">
                             <select class="form-control select2" id="inGateId" th:field="*{inGateId}">
-                                <option value="" th:text="#{journal.inGate}"></option>
+                                <option value="" th:text="#{carState.inGate}"></option>
                                 <option th:each="r : ${allInGates}" th:value="${r.id}" th:text="${r.name}">
                                 </option>
                             </select>
                         </div>
                         <div class="col-3">
                             <select class="form-control select2" id="outGateId" th:field="*{outGateId}">
-                                <option value="" th:text="#{journal.outGate}"></option>
+                                <option value="" th:text="#{carState.outGate}"></option>
                                 <option th:each="r : ${allOutGates}" th:value="${r.id}" th:text="${r.name}">
                             </select>
                         </div>
