@@ -21,12 +21,14 @@ public class CarStateDto {
     public Date outTimestamp;
     public String inTimestampString;
     public String outTimestampString;
-    private Boolean paid;
-    private BigDecimal payment;
-    private String duration;
-    private String whitelistJson;
-    private String paymentJson;
-    private BigDecimal rateAmount;
+    public Boolean paid;
+    public BigDecimal payment;
+    public String duration;
+    public String whitelistJson;
+    public String paymentJson;
+    public BigDecimal rateAmount;
+    public String inGate;
+    public String outGate;
 
     public Date getNullSafeInTimestamp(){
         return this.inTimestamp == null ? new Date() : this.inTimestamp;
@@ -56,6 +58,12 @@ public class CarStateDto {
         dto.rateAmount = carState.getRateAmount();
         dto.paid = carState.getPaid()!=null && carState.getPaid();
         dto.payment = carState.getAmount() == null ? BigDecimal.ZERO : carState.getAmount();
+        if(carState.getInGate()!=null){
+            dto.inGate = carState.getInGate().getName();
+        }
+        if(carState.getOutGate()!=null){
+            dto.outGate = carState.getOutGate().getName();
+        }
 
         StringBuilder durationBuilder = new StringBuilder("");
         if(carState.getInTimestamp() != null){

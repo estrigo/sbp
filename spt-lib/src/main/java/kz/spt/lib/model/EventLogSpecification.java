@@ -2,7 +2,6 @@ package kz.spt.lib.model;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 public class EventLogSpecification {

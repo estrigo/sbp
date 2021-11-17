@@ -20,6 +20,11 @@ public class GateServiceImpl implements GateService {
     }
 
     @Override
+    public Iterable<Gate> listGatesByType(Gate.GateType type) {
+        return gateRepository.findByGateType(type);
+    }
+
+    @Override
     public Gate getById(Long id) {
         return gateRepository.getOne(id);
     }

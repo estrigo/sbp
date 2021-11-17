@@ -8,4 +8,7 @@ public class CarStateFilterDto {
     public String dateFromString;
     public String dateToString;
     public String plateNumber;
+    public Integer amount;
+    public Long inGateId;
+    public Long outGateId;
 }

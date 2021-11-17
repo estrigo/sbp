@@ -6,6 +6,7 @@ import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.dto.CarStateDto;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -21,7 +22,8 @@ public interface CarStateService {
 
     Iterable<CarState> getAllNotLeft();
 
-    Page<CarStateDto> getAll(PagingRequest pagingRequest, String plateNumber, String dateFromString, String dateToString);
+    Page<CarStateDto> getAll(PagingRequest pagingRequest, String plateNumber, String dateFromString, String dateToString,
+                             Long inGateId, Long outGateId, Integer amount) throws ParseException;
 
     CarState save(CarState carState);
 

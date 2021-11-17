@@ -10,7 +10,7 @@
         <div class="card table-responsive">
             <div class="card-header" th:text="#{carstate.journal}"></div>
             <div class="card-body">
-                <form th:action="@{|/journal/list|}" th:object="${carStateDtoFilter}" method="post">
+                <form th:action="@{|/journal/list|}" th:object="${carStateFilterDto}" method="post">
                     <div class="row">
                         <div class="col-3">
                             <input type="datetime-local" class="form-control" id="dateFromString"
@@ -29,6 +29,25 @@
                             <button type="button" class="btn btn-secondary" th:text="#{crm.clear}"></button>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <input type="number" class="form-control" id="amount" min="0" max="1000000"
+                                   th:field="*{amount}" th:placeholder="#{journal.paymentAmount}">
+                        </div>
+                        <div class="col-3">
+                            <select class="form-control select2" id="inGateId" th:field="*{inGateId}">
+                                <option value="" th:text="#{journal.inGate}"></option>
+                                <option th:each="r : ${allInGates}" th:value="${r.id}" th:text="${r.name}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-3">
+                            <select class="form-control select2" id="outGateId" th:field="*{outGateId}">
+                                <option value="" th:text="#{journal.outGate}"></option>
+                                <option th:each="r : ${allOutGates}" th:value="${r.id}" th:text="${r.name}">
+                            </select>
+                        </div>
+                    </div>
                 </form>
                 <div class="mb-5"></div>
 
@@ -37,10 +56,11 @@
                         <table id="carStateTable" class="table table-bordered">
                             <thead>
                             <tr>
-                                <th><a th:text="#{crm.id}"></a></th>
                                 <th><a th:text="#{car.platenumber}"></a></th>
                                 <th><a th:text="#{carState.inTimestamp}"></a></th>
+                                <th><a th:text="#{carState.inGate}"></a></th>
                                 <th><a th:text="#{carState.outTimestamp}"></a></th>
+                                <th><a th:text="#{carState.outGate}"></a></th>
                                 <th><a th:text="#{carState.duration}"></a></th>
                                 <th><a th:text="#{carState.rate}"></a></th>
                                 <th><a th:text="#{carState.payment}"></a></th>
@@ -75,7 +95,9 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            "url": "/rest/carstate?plateNumber=" + $('#plateNumber').val() +"&dateFromString=&dateToString=",
+            "url": "/rest/carstate?plateNumber=" + $('#plateNumber').val() + "&dateFromString=" + $('#dateFromString').val() +
+                "&dateToString=" + $('#dateToString').val() + "&amount=" + $('#amount').val() + "&inGateId=" + $('#inGateId').val()
+                + "&outGateId=" + $('#outGateId').val(),
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",
@@ -88,12 +110,13 @@
             "targets": "_all"
         }],
         "columns": [
-            {"data": "id", "width" : "5%"},
             {"data": "carNumber", "width" : "10%"},
             {"data": "inTimestampString", "width": "15%"},
+            {"data": "inGate", "width": "10%"},
             {"data": "outTimestampString", "width" : "15%"},
+            {"data": "outGate", "width" : "10%"},
             {"data": "duration", "width" : "15%"},
-            {"data": "rateAmount", "width" : "15%"},
+            {"data": "rateAmount", "width" : "5%"},
             {"data": function (carState)
                 {
                     if(!carState.paid && carState.whitelistJson){
@@ -116,16 +139,16 @@
                     } else {
                         return carState.payment;
                     }
-                }, "width" : "35%"
+                }, "width" : "30%"
             }
         ],
         "order": [ //[[ in thymeleaf is inline script
             [ 0, "desc" ]
         ],
-        buttons: ['copy', 'excel', 'pdf', 'csv'],
-           language: {
-               url: '/plugins/datatables/json/ru.json'
-           }
+        language: {
+            url: '/plugins/datatables/json/ru.json'
+        },
+        searching: false
     });
 
    var interval = null;

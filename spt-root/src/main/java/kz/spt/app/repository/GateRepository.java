@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface GateRepository extends JpaRepository<Gate, Long> {
 
+    Iterable<Gate> findByGateType(Gate.GateType type);
 }

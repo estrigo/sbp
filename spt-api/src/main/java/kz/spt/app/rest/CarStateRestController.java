@@ -7,6 +7,8 @@ import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.service.CarStateService;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
+
 @RestController
 @RequestMapping(value = "/rest/carstate")
 public class CarStateRestController {
@@ -19,7 +21,8 @@ public class CarStateRestController {
 
     @PostMapping
     public Page<CarStateDto> list(@RequestBody PagingRequest pagingRequest, @RequestParam String plateNumber,
-                                  @RequestParam String dateFromString, @RequestParam String dateToString){
-        return carStateService.getAll(pagingRequest, plateNumber, dateFromString, dateToString);
+                                  @RequestParam String dateFromString, @RequestParam String dateToString,
+                                  @RequestParam Long inGateId, @RequestParam Long outGateId, @RequestParam Integer amount) throws ParseException {
+        return carStateService.getAll(pagingRequest, plateNumber, dateFromString, dateToString, inGateId, outGateId, amount);
     }
 }

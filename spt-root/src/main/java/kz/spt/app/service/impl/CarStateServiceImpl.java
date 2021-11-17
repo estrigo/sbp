@@ -1,17 +1,19 @@
 package kz.spt.app.service.impl;
 
 import kz.spt.lib.bootstrap.datatable.*;
-import kz.spt.lib.model.Camera;
-import kz.spt.lib.model.CarState;
+import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarStateDto;
+import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.app.repository.CarStateRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -73,17 +75,49 @@ public class CarStateServiceImpl implements CarStateService {
     public Iterable<CarState> getAllNotLeft() {
         return carStateRepository.getAllCarStateNotLeft();
     }
-    
-    public List<CarState> listByFilters(String plateNumber){
-        if(plateNumber != null && !"".equals(plateNumber)){
-            return carStateRepository.getAllByPlateNumber(plateNumber);
+
+    public Iterable<CarState> listByFilters(CarStateFilterDto filterDto) throws ParseException {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+        Specification<CarState> specification = null;
+
+        if(!StringUtils.isEmpty(filterDto.plateNumber)){
+            specification = CarStateSpecification.likePlateNumber(filterDto.plateNumber);
         }
-        return carStateRepository.findAll();
+        if(!StringUtils.isEmpty(filterDto.dateFromString)){
+            specification = specification != null? specification.and(CarStateSpecification.greaterDate(format.parse(filterDto.dateFromString))) : CarStateSpecification.greaterDate(format.parse(filterDto.dateFromString));
+        }
+        if(!StringUtils.isEmpty(filterDto.dateToString)){
+            specification = specification != null? specification.and(CarStateSpecification.lessDate(format.parse(filterDto.dateToString))) : CarStateSpecification.lessDate(format.parse(filterDto.dateToString));
+        }
+        if(filterDto.amount != null){
+            specification = specification != null? specification.and(CarStateSpecification.equalAmount(BigDecimal.valueOf(filterDto.amount))) : CarStateSpecification.equalAmount(BigDecimal.valueOf(filterDto.amount));
+        }
+        if(filterDto.inGateId != null){
+            specification = specification != null? specification.and(CarStateSpecification.equalInGateId(filterDto.inGateId)) : CarStateSpecification.equalInGateId(filterDto.inGateId);
+        }
+        if(filterDto.outGateId != null){
+            specification = specification != null? specification.and(CarStateSpecification.equalOutGateId(filterDto.outGateId)) : CarStateSpecification.equalOutGateId(filterDto.outGateId);
+        }
+        if (specification != null) {
+            specification = specification.and(CarStateSpecification.orderById());
+            return carStateRepository.findAll(specification);
+        } else {
+            return carStateRepository.findAll();
+        }
     }
 
     @Override
-    public Page<CarStateDto> getAll(PagingRequest pagingRequest, String plateNumber, String dateFromString, String dateToString) {
-        List<CarState> carStates = this.listByFilters(plateNumber);
+    public Page<CarStateDto> getAll(PagingRequest pagingRequest, String plateNumber, String dateFromString, String dateToString, Long inGateId, Long outGateId, Integer amount) throws ParseException {
+
+        CarStateFilterDto filterDto = new CarStateFilterDto();
+        filterDto.dateToString = dateToString;
+        filterDto.dateFromString = dateFromString;
+        filterDto.plateNumber = plateNumber;
+        filterDto.amount = amount;
+        filterDto.inGateId = inGateId;
+        filterDto.outGateId = outGateId;
+
+        List<CarState> carStates = (List<CarState>) this.listByFilters(filterDto);
         List<CarStateDto> carStateDtos = CarStateDto.fromCarStates(carStates);
         return getPage(carStateDtos, pagingRequest);
     }
