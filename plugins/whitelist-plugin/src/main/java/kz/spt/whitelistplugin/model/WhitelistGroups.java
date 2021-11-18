@@ -28,4 +28,7 @@ public class WhitelistGroups extends AbstractWhitelist {
 
     @Transient
     List<String> plateNumbers;
+
+    @Transient
+    Boolean forceUpdate = false;
 }

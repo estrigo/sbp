@@ -68,6 +68,7 @@ public class CarEventServiceImpl implements CarEventService {
 
         if(camera!=null){
             properties.put("gateName", camera.getGate().getName());
+            properties.put("gateId", camera.getGate().getId());
             properties.put("gateDescription", camera.getGate().getDescription());
             properties.put("gateType", camera.getGate().getGateType().toString());
 

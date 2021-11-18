@@ -9,4 +9,5 @@ public class EventFilterDto {
     public String dateToString;
     public String plateNumber;
     public String description;
+    public Long gateId;
 }

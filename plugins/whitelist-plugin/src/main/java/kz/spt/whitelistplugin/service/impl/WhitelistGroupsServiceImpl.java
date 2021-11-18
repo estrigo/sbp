@@ -67,8 +67,29 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
         WhitelistGroups updatedWhitelistGroups = whitelistGroupsRepository.save(whitelistGroups);
 
         Set<String> updatedPlateNumbers = whitelistGroups.getPlateNumbers().stream().collect(Collectors.toSet());
-        List<Whitelist> groupWhitelists = whitelistService.listByGroupId(whitelistGroups.getId());
-        if (groupWhitelists != null) {
+        if(whitelistGroups.getId() == null){
+            for (String updatedPlateNumber : updatedPlateNumbers) {
+                Whitelist whitelist = whitelistService.findByPlatenumber(updatedPlateNumber, whitelistGroups.getParkingId());
+                if(whitelist != null && whitelistGroups.getForceUpdate()){
+                    whitelistService.deleteById(whitelist.getId());
+                }
+            }
+        } else {
+            List<Whitelist> groupWhitelists = whitelistService.listByGroupId(whitelistGroups.getId());
+            List<String> groupWhitelistPlateNumbers = new ArrayList<>();
+            for (Whitelist w : groupWhitelists) {
+                groupWhitelistPlateNumbers.add(w.getCar().getPlatenumber());
+            }
+
+            for (String updatedPlateNumber : updatedPlateNumbers) {
+                if(!groupWhitelistPlateNumbers.contains(updatedPlateNumber)){
+                    Whitelist whitelist = whitelistService.findByPlatenumber(updatedPlateNumber, whitelistGroups.getParkingId());
+                    if(whitelist != null && whitelistGroups.getForceUpdate()){
+                        whitelistService.deleteById(whitelist.getId());
+                    }
+                }
+            }
+
             for (Whitelist w : groupWhitelists) {
                 if (!updatedPlateNumbers.contains(w.getCar().getPlatenumber())) {
                     whitelistService.deleteById(w.getId());

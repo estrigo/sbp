@@ -31,8 +31,15 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-6">
+                                <div class="col-3">
                                     <input type="text" class="form-control" th:field="*{description}" th:value="*{description}" th:placeholder="#{events.description}">
+                                </div>
+                                <div class="col-3">
+                                    <select class="form-control select2" id="gateId" th:field="*{gateId}">
+                                        <option value="" th:text="#{events.gate}"></option>
+                                        <option th:each="r : ${allGates}" th:value="${r.id}" th:text="${r.name}">
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                         </form>
@@ -81,7 +88,8 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            "url": "/rest/events?dateFromString="+$('#dateFromString').val()+"&dateToString="+$('#dateToString').val()+"&plateNumber="+$('#plateNumber').val()+"&description="+$('#description').val(),
+            "url": "/rest/events?dateFromString="+$('#dateFromString').val()+"&dateToString="+$('#dateToString').val()+
+                "&plateNumber="+$('#plateNumber').val()+"&description="+$('#description').val()+"&gateId="+$('#gateId').val(),
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",

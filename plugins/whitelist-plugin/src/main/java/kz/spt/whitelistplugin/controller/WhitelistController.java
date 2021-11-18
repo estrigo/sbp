@@ -106,18 +106,20 @@ public class WhitelistController {
             }
             whitelistGroups.setPlateNumbers(plateNumbers);
 
-            List<String> platenumbers = whitelistService.getExistingPlatenumbers(whitelistGroups.getPlateNumbers(), whitelistGroups.getParkingId());
-            if(platenumbers.size() > 0){
-                StringBuilder text = null;
-                for(String platenumber:platenumbers){
-                    if(text == null){
-                        text = new StringBuilder(platenumber);
-                    } else {
-                        text.append("," + platenumber);
+            if(!whitelistGroups.getForceUpdate()){
+                List<String> platenumbers = whitelistService.getExistingPlatenumbers(whitelistGroups.getPlateNumbers(), whitelistGroups.getParkingId());
+                if(platenumbers.size() > 0){
+                    StringBuilder text = null;
+                    for(String platenumber:platenumbers){
+                        if(text == null){
+                            text = new StringBuilder(platenumber);
+                        } else {
+                            text.append("," + platenumber);
+                        }
                     }
+                    ObjectError error = new ObjectError("someCarsExist", "Для следующих номеров уже существует записи в текущем паркинге: " + text);
+                    bindingResult.addError(error);
                 }
-                ObjectError error = new ObjectError("someCarsExist", "Для следующих номеров уже существует записи в текущем паркинге: " + text);
-                bindingResult.addError(error);
             }
         }
         if(Whitelist.Type.PERIOD.equals(whitelistGroups.getType()) && whitelistGroups.getAccessEndString() == null){
@@ -129,6 +131,7 @@ public class WhitelistController {
             bindingResult.addError(error);
         }
         if (bindingResult.hasErrors()) {
+            model.addAttribute("whitelistGroups", whitelistGroups);
             model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
             return "whitelist/groups/add";
         } else {
@@ -213,18 +216,20 @@ public class WhitelistController {
             }
             whitelistGroups.setPlateNumbers(plateNumbers);
 
-            List<String> platenumbers = whitelistService.getExistingPlatenumbers(whitelistGroups.getPlateNumbers(), whitelistGroups.getParkingId(), whitelistGroups.getId());
-            if (platenumbers.size() > 0) {
-                StringBuilder text = null;
-                for (String platenumber : platenumbers) {
-                    if (text == null) {
-                        text = new StringBuilder(platenumber);
-                    } else {
-                        text.append("," + platenumber);
+            if(!whitelistGroups.getForceUpdate()) {
+                List<String> platenumbers = whitelistService.getExistingPlatenumbers(whitelistGroups.getPlateNumbers(), whitelistGroups.getParkingId(), whitelistGroups.getId());
+                if (platenumbers.size() > 0) {
+                    StringBuilder text = null;
+                    for (String platenumber : platenumbers) {
+                        if (text == null) {
+                            text = new StringBuilder(platenumber);
+                        } else {
+                            text.append("," + platenumber);
+                        }
                     }
+                    ObjectError error = new ObjectError("someCarsExist", "Для следующих номеров уже существует записи в текущем паркинге: " + text);
+                    bindingResult.addError(error);
                 }
-                ObjectError error = new ObjectError("someCarsExist", "Для следующих номеров уже существует записи в текущем паркинге: " + text);
-                bindingResult.addError(error);
             }
         }
         if(Whitelist.Type.PERIOD.equals(whitelistGroups.getType()) && whitelistGroups.getAccessEndString() == null){
@@ -236,7 +241,7 @@ public class WhitelistController {
             bindingResult.addError(error);
         }
         if (bindingResult.hasErrors()) {
-            model.addAttribute("whitelistGroup", whitelistGroupsService.prepareById(id));
+            model.addAttribute("whitelistGroups", whitelistGroups);
             model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
             return "whitelist/groups/edit";
         } else {

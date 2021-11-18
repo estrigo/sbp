@@ -1,5 +1,7 @@
 package kz.spt.app.controller;
 
+import kz.spt.app.service.GateService;
+import kz.spt.lib.model.Gate;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.model.dto.EventFilterDto;
 import lombok.extern.java.Log;
@@ -24,9 +26,11 @@ public class EventController {
 
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
     private EventLogService eventLogService;
+    private GateService gateService;
 
-    public EventController(EventLogService eventLogService){
+    public EventController(EventLogService eventLogService, GateService gateService){
         this.eventLogService = eventLogService;
+        this.gateService = gateService;
     }
 
     @GetMapping("/list")
@@ -50,6 +54,7 @@ public class EventController {
             model.addAttribute("eventFilterDto", eventFilterDto);
         }
         model.addAttribute("events", eventLogService.listByFilters(eventFilterDto));
+        model.addAttribute("allGates", gateService.listAllGates());
         return "events/list";
     }
 
@@ -58,6 +63,7 @@ public class EventController {
         if (!bindingResult.hasErrors()) {
             model.addAttribute("eventFilterDto", eventFilterDto);
         }
+        model.addAttribute("allGates", gateService.listAllGates());
         return "events/list";
     }
 }

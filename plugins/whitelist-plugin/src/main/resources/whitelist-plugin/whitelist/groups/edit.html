@@ -42,9 +42,29 @@
                             <div class="form-group row" id="carsList">
                                 <label class="col-2 col-form-label" th:text="#{whitelist.carsList}"></label>
                                 <div class="col-10">
-                                    <select class="form-control" multiple data-role="tagsinput" th:field="*{plateNumbers}" placeholder="Add car numbers">
-                                        <option th:each="pn : ${whitelistGroups.plateNumbers}" th:text="${pn}" th:value="${pn}">
-                                    </select>
+                                    <div class="input-group">
+                                        <select class="form-control" multiple data-role="tagsinput" th:field="*{plateNumbers}" placeholder="Add car numbers">
+                                            <option th:each="pn : ${whitelistGroups.plateNumbers}" th:text="${pn}" th:value="${pn}">
+                                        </select>
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn waves-effect waves-light btn-primary" th:text="#{crm.clear}" onclick="clearCarList()"></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row" id="carsListExcel">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.carsListExcel}"></label>
+                                <div class="col-10">
+                                    <input type="file" accept=".xlsx" class="form-control" id="my_file_input" />
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label"></label>
+                                <div class="col-10">
+                                    <div>
+                                        <input type="checkbox" id="forceUpdate" th:field="*{forceUpdate}">
+                                        <label for="forceUpdate" th:text="#{whitelist.forceUpdate}"></label>
+                                    </div>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -93,6 +113,7 @@
 
 <script th:src="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js}"></script>
 <script th:src="@{/assets/js/week-hours-picker.js}"></script>
+<script th:src="@{/assets/js/xlsx.js}"></script>
 <script type="text/javascript">
     function checkSelectedTypes(value){
         if(value == 'PERIOD'){
@@ -160,6 +181,27 @@
             handleStateChange, // optional
             options, // optional
         )
+
+        function handleFile(e) {
+            var files = e.target.files, f = files[0];
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var workbook = XLSX.read(e.target.result);
+                var first_sheet_name = workbook.SheetNames[0];
+                let list = XLSX.utils.sheet_to_csv(workbook.Sheets[first_sheet_name]).split(/\r?\n/);
+                for(let i=0; i<list.length;i++){
+                    $('#plateNumbers').tagsinput('add', list[i]);
+                }
+                $('#my_file_input').val(null);
+            };
+            reader.readAsArrayBuffer(f);
+        }
+        document.getElementById('my_file_input').addEventListener('change', handleFile, false);
+        $('.bootstrap-tagsinput').css("height","100%");
     });
+
+    function clearCarList(){
+        $('#plateNumbers').tagsinput('removeAll');
+    }
 </script>
 </html>

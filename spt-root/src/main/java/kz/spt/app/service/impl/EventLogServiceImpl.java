@@ -99,7 +99,18 @@ public class EventLogServiceImpl implements EventLogService {
     @Override
     public Page<EventLog> getEventLogs(PagingRequest pagingRequest, EventFilterDto eventFilterDto) throws ParseException {
         List<EventLog> events = (List<EventLog>) this.listByFilters(eventFilterDto);
-        return getPage(events, pagingRequest);
+        List<EventLog> filteredEvents  = new ArrayList<>();
+        for(EventLog eventLog : events){
+            Map<String, Object> properties = eventLog.getProperties();
+            if(eventFilterDto.gateId != null){
+                if(properties.containsKey("gateId") && eventFilterDto.gateId.equals(properties.get("gateId"))){
+                    filteredEvents.add(eventLog);
+                }
+            } else {
+                filteredEvents.add(eventLog);
+            }
+        }
+        return getPage(filteredEvents, pagingRequest);
     }
 
     private Page<EventLog> getPage(List<EventLog> events, PagingRequest pagingRequest) {
