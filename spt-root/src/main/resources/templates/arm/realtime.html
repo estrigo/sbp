@@ -105,8 +105,8 @@
     function checkBalance(cameraId){
         var plateNumber = $("#plateNumber" + cameraId).val();
         if(plateNumber && plateNumber.length > 2 && plateNumber.length < 17){
-            $.get("/rest/plugin/check/balance/" + plateNumber, function (data) {
-
+            $.get("/rest/balance/check/" + plateNumber, function (data) {
+                alert("Баланс равен " + data);
             });
         } else {
             alert("Invalid plate number!");

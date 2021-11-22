@@ -9,12 +9,14 @@ import kz.spt.lib.model.Parking;
 import kz.spt.lib.plugin.CustomPlugin;
 import kz.spt.lib.service.ParkingService;
 import kz.spt.lib.service.PluginService;
+import kz.spt.lib.utils.StaticValues;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +68,7 @@ public class PluginServiceImpl implements PluginService {
 
     @Override
     public ArrayNode getWhitelist(Long parkingId, String platenumber) throws Exception {
-        PluginRegister whitelistPluginRegister = getPluginRegister("whitelist-plugin");
+        PluginRegister whitelistPluginRegister = getPluginRegister(StaticValues.whitelistPlugin);
         if(whitelistPluginRegister != null) {
             Parking parking = parkingService.findById(parkingId);
             if (parking != null && (Parking.ParkingType.WHITELIST.equals(parking.getParkingType()) || Parking.ParkingType.WHITELIST_PAYMENT.equals(parking.getParkingType()))) {
@@ -76,6 +78,20 @@ public class PluginServiceImpl implements PluginService {
                 node.put("car_number", platenumber);
                 whitelistCheckResult = whitelistPluginRegister.execute(node);
             }
+        }
+        return null;
+    }
+
+    @Override
+    public BigDecimal checkBalance(String platenumber) throws Exception {
+        PluginRegister billingPluginRegister = getPluginRegister(StaticValues.billingPlugin);
+        if(billingPluginRegister != null){
+            ObjectNode node = this.objectMapper.createObjectNode();
+            JsonNode balanceCheckResult = null;
+            node.put("command", "getCurrentBalance");
+            node.put("plateNumber", platenumber);
+            balanceCheckResult = billingPluginRegister.execute(node);
+            return balanceCheckResult.get("currentBalance").decimalValue().setScale(2);
         }
         return null;
     }

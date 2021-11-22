@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.extension.PluginRegister;
+import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -49,7 +50,7 @@ public class AuthorizationServer extends AuthorizationServerConfigurerAdapter {
                 details.setScope(Arrays.asList("payment"));
                 details.setAccessTokenValiditySeconds(10800);
 
-                PluginRegister billingPluginRegister = pluginService.getPluginRegister("billing-plugin");
+                PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                 if(billingPluginRegister != null){
                     ObjectMapper objectMapper = new ObjectMapper();
                     ObjectNode node = objectMapper.createObjectNode();

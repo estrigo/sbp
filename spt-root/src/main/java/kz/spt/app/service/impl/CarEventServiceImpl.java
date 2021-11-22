@@ -189,7 +189,7 @@ public class CarEventServiceImpl implements CarEventService {
         node.put("car_number", car_number);
         node.put("event_time", format.format(event_time));
 
-        PluginRegister whitelistPluginRegister = pluginService.getPluginRegister("whitelist-plugin");
+        PluginRegister whitelistPluginRegister = pluginService.getPluginRegister(StaticValues.whitelistPlugin);
         if(whitelistPluginRegister != null){
             JsonNode result = whitelistPluginRegister.execute(node);
             whitelistCheckResult = result.get("whitelistCheckResult");
@@ -246,7 +246,7 @@ public class CarEventServiceImpl implements CarEventService {
             }
 
             if(!isWhitelistCar){
-                PluginRegister ratePluginRegister = pluginService.getPluginRegister("rate-plugin");
+                PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
                 if(ratePluginRegister != null){
                     ObjectNode node = this.objectMapper.createObjectNode();
                     node.put("parkingId", camera.getGate().getParking().getId());
@@ -258,7 +258,7 @@ public class CarEventServiceImpl implements CarEventService {
                     BigDecimal rateResult = result.get("rateResult").decimalValue().setScale(2);
 
                     BigDecimal balance = BigDecimal.ZERO;
-                    PluginRegister billingPluginRegister = pluginService.getPluginRegister("billing-plugin");
+                    PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                     if(billingPluginRegister != null){
                         ObjectNode billinNode = this.objectMapper.createObjectNode();
                         billinNode.put("command", "getCurrentBalance");

@@ -78,7 +78,7 @@ public class PaymentServiceImpl implements PaymentService {
                     dto.txn_id = commandDto.txn_id;
                     return dto;
                 } else {
-                    PluginRegister billingPluginRegister = pluginService.getPluginRegister("billing-plugin");
+                    PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                     if (billingPluginRegister != null) {
                         ObjectNode node = this.objectMapper.createObjectNode();
                         node.put("command", "savePayment");
@@ -98,7 +98,7 @@ public class PaymentServiceImpl implements PaymentService {
                             node.put("customerId", cars.getCustomer().getId());
                         }
 
-                        PluginRegister ratePluginRegister = pluginService.getPluginRegister("rate-plugin");
+                        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
                         if (ratePluginRegister != null) {
                             ObjectNode rateRequestNode = this.objectMapper.createObjectNode();
                             rateRequestNode.put("parkingId", carState.getParking().getId());
@@ -135,7 +135,7 @@ public class PaymentServiceImpl implements PaymentService {
     public BigDecimal getRateValue(RateQueryDto rateQueryDto) throws Exception {
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
 
-        PluginRegister ratePluginRegister = pluginService.getPluginRegister("rate-plugin");
+        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
         if (ratePluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("parkingId", rateQueryDto.parkingId);
@@ -153,7 +153,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private BillingInfoSuccessDto fillPayment(CarState carState, SimpleDateFormat format) throws Exception {
         BillingInfoSuccessDto dto = null;
-        PluginRegister ratePluginRegister = pluginService.getPluginRegister("rate-plugin");
+        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
         if (ratePluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("parkingId", carState.getParking().getId());
@@ -170,7 +170,7 @@ public class PaymentServiceImpl implements PaymentService {
             dto.result = 0;
             dto.left_free_time_minutes = result.get("rateFreeMinutes").intValue();
         }
-        PluginRegister billingPluginRegister = pluginService.getPluginRegister("billing-plugin");
+        PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
         if (billingPluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("command", "getCurrentBalance");

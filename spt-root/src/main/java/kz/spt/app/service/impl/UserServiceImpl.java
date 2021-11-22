@@ -112,7 +112,6 @@ public class UserServiceImpl implements UserService {
     public Page<User> getUsers(PagingRequest pagingRequest) {
         List<User> users = userRepository.findAll();
         return getPage(users, pagingRequest);
-
     }
 
     private Page<User> getPage(List<User> users, PagingRequest pagingRequest) {
