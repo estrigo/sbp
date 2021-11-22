@@ -81,8 +81,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void editUser(User user) {
-        String password = user.getPassword();
-        user.setPassword(passwordEncoder.encode(password));
         Role userRole = roleRepository.findByName("ROLE_USER");
         List<Role> roles = new ArrayList<>();
         roles.add(userRole);

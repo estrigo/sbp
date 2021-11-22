@@ -40,27 +40,6 @@ public class User {
 
     private int enabled;
 
-    @Column(name = "main_server_port")
-    private String mainServerPort;
-
-    @Column(name = "online_server_port")
-    private String onlineServerIpPort;
-
-    @Column(name = "parking_server_port")
-    private String parkingServerIpPort;
-
-    @Column(name = "telegram_channel")
-    private String telegramChannel;
-
-    @Column(name = "web_kassa_id")
-    private String webKassaId;
-
-    @Column(name = "web_kassa_login")
-    private String webKassaLogin;
-
-    @Column(name = "web_kassa_password")
-    private String webKassaPassword;
-
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "user_role", schema = "crm",
             joinColumns = @JoinColumn(name = "user_id"),
