@@ -90,18 +90,18 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     @Override
-    public void handleTempCarEvent(MultipartFile file, String body) throws Exception {
+    public void handleTempCarEvent(MultipartFile file, String json) throws Exception {
         Map<String,String> camerasIpMap = new HashMap<>();
         camerasIpMap.put("camera-1", "10.66.22.20");
         camerasIpMap.put("camera-2","10.66.22.23");
 
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = objectMapper.readTree(body);
+        JsonNode jsonNode = objectMapper.readTree(json);
 
-        String ip_address = camerasIpMap.get(jsonNode.get("json").get("data").get("camera_id").asText());
-        log.info(jsonNode.get("json").get("data").get("camera_id").asText()  + " " + camerasIpMap.get(jsonNode.get("json").get("data").get("camera_id").asText()));
+        String ip_address = camerasIpMap.get(jsonNode.get("data").get("camera_id").asText());
+        log.info(jsonNode.get("data").get("camera_id").asText()  + " " + camerasIpMap.get(jsonNode.get("data").get("camera_id").asText()));
 
-        String car_number = ((ArrayNode) jsonNode.get("json").get("data").get("results")).get(0).get("plate").asText().toUpperCase();
+        String car_number = ((ArrayNode) jsonNode.get("data").get("results")).get(0).get("plate").asText().toUpperCase();
 
         String base64 = null;
         try {

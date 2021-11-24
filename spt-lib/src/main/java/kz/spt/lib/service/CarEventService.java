@@ -9,5 +9,5 @@ public interface CarEventService {
 
     void saveCarEvent(CarEventDto eventDto) throws Exception;
 
-    void handleTempCarEvent(MultipartFile file, String body) throws Exception;
+    void handleTempCarEvent(MultipartFile file, String json) throws Exception;
 }
