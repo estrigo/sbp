@@ -4,6 +4,7 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.dto.CarEventDto;
+import kz.spt.lib.model.dto.temp.CarTempEventDto;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.CarEventService;
 import org.springframework.http.HttpStatus;
@@ -35,5 +36,13 @@ public class CarsRestController {
     @PostMapping
     public Page<Cars> list(@RequestBody PagingRequest pagingRequest) {
         return carsService.getCars(pagingRequest);
+    }
+
+    @RequestMapping(value = "/temp/event", method = RequestMethod.POST, consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
+    @Transactional
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void addCarEvent(@Valid @RequestBody CarTempEventDto carTempEventDto) throws Exception{
+        carEventService.handleTempCarEvent(carTempEventDto);
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.lib.model.dto.temp.CarTempEventDto;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.extension.PluginRegister;
@@ -20,8 +21,11 @@ import kz.spt.lib.service.CarImageService;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 
+import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -82,6 +86,32 @@ public class CarEventServiceImpl implements CarEventService {
         } else {
             eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address);
         }
+    }
+
+    @Override
+    public void handleTempCarEvent(CarTempEventDto req) throws Exception {
+        Map<String,String> camerasIpMap = new HashMap<>();
+        camerasIpMap.put("camera-1", "10.66.22.20");
+        camerasIpMap.put("camera-2","10.66.22.23");
+
+        String ip_address = camerasIpMap.get(req.body.json.data.camera_id);
+        log.info(req.body.json.data.camera_id  + " " + camerasIpMap.get(req.body.json.data.camera_id));
+
+        String car_number = req.body.json.data.results[0].plate.toUpperCase();
+
+        String base64 = null;
+        try {
+            base64 = DatatypeConverter.printBase64Binary(Files.readAllBytes(Paths.get(req.file.path)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        CarEventDto eventDto = new CarEventDto();
+        eventDto.car_number = car_number;
+        eventDto.event_time = new Date();
+        eventDto.ip_address = ip_address;
+        eventDto.car_picture = base64;
+        saveCarEvent(eventDto);
     }
 
     private void handleCarInEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format, String carImageUrl) throws Exception{
