@@ -4,12 +4,13 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.dto.CarEventDto;
-import kz.spt.lib.model.dto.temp.CarTempEventDto;
+import kz.spt.lib.model.dto.temp.CarTempReqBodyJsonDto;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.CarEventService;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 
@@ -38,11 +39,12 @@ public class CarsRestController {
         return carsService.getCars(pagingRequest);
     }
 
-    @RequestMapping(value = "/temp/event", method = RequestMethod.POST, consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "/temp/event", method = RequestMethod.POST, consumes = "multipart/form-data")
     @Transactional
     @ResponseBody
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void addCarEvent(@Valid @RequestBody CarTempEventDto carTempEventDto) throws Exception{
-        carEventService.handleTempCarEvent(carTempEventDto);
+    public void addCarEvent(@RequestParam("file") MultipartFile file, @RequestParam("json") String body) throws Exception{
+        System.out.println(body);
+        carEventService.handleTempCarEvent(file, body);
     }
 }

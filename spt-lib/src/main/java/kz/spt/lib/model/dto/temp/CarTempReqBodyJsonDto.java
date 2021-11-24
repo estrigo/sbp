@@ -5,5 +5,5 @@ import javax.validation.constraints.NotNull;
 public class CarTempReqBodyJsonDto {
 
     @NotNull
-    public CarTempReqBodyJsonDataDto data;
+    public String data;
 }

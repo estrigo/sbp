@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import kz.spt.lib.model.dto.temp.CarTempEventDto;
+import kz.spt.lib.model.dto.temp.CarTempReqBodyJsonDto;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.extension.PluginRegister;
@@ -19,13 +19,14 @@ import kz.spt.lib.service.CarEventService;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.CarImageService;
 import lombok.extern.java.Log;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
-import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -89,19 +90,22 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     @Override
-    public void handleTempCarEvent(CarTempEventDto req) throws Exception {
+    public void handleTempCarEvent(MultipartFile file, String body) throws Exception {
         Map<String,String> camerasIpMap = new HashMap<>();
         camerasIpMap.put("camera-1", "10.66.22.20");
         camerasIpMap.put("camera-2","10.66.22.23");
 
-        String ip_address = camerasIpMap.get(req.body.json.data.camera_id);
-        log.info(req.body.json.data.camera_id  + " " + camerasIpMap.get(req.body.json.data.camera_id));
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(body);
 
-        String car_number = req.body.json.data.results[0].plate.toUpperCase();
+        String ip_address = camerasIpMap.get(jsonNode.get("json").get("data").get("camera_id").asText());
+        log.info(jsonNode.get("json").get("data").get("camera_id").asText()  + " " + camerasIpMap.get(jsonNode.get("json").get("data").get("camera_id").asText()));
+
+        String car_number = ((ArrayNode) jsonNode.get("json").get("data").get("results")).get(0).get("plate").asText().toUpperCase();
 
         String base64 = null;
         try {
-            base64 = DatatypeConverter.printBase64Binary(Files.readAllBytes(Paths.get(req.file.path)));
+            base64 = StringUtils.newStringUtf8(Base64.encodeBase64(file.getInputStream().readAllBytes(), false));
         } catch (IOException e) {
             e.printStackTrace();
         }
