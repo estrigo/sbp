@@ -9,6 +9,7 @@ import kz.spt.app.snmp.SNMPManager;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.util.StringUtils;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -203,20 +204,23 @@ public class BarrierServiceImpl implements BarrierService {
     }
 
     private Boolean checkNoObstruction(Barrier barrier) throws InterruptedException, IOException, ParseException {
-        Boolean carLeftAfterDetect = false;
-        Long currMillis = System.currentTimeMillis();
-        SNMPManager loopClient = new SNMPManager("udp:" + barrier.getLoopIp()+ "/161", barrier.getLoopPassword(), barrier.getLoopSnmpVersion());
-        loopClient.start();
+        if(!StringUtils.isEmpty(barrier.getLoopIp()) && !StringUtils.isEmpty(barrier.getLoopPassword())  && !StringUtils.isEmpty(barrier.getLoopOid())) {
+            Boolean carLeftAfterDetect = false;
+            Long currMillis = System.currentTimeMillis();
+            SNMPManager loopClient = new SNMPManager("udp:" + barrier.getLoopIp() + "/161", barrier.getLoopPassword(), barrier.getLoopSnmpVersion());
+            loopClient.start();
 
-        while(!carLeftAfterDetect && System.currentTimeMillis() - currMillis < 20000){ // если больше 20 сек не уехала машина значить что то случилась
-            Thread.sleep(1000);
-            String obstructionValue = loopClient.getCurrentValue(barrier.getLoopOid());
-            log.info("obstructionValue: " + obstructionValue);
-            if(barrier.getLoopDefaultValue().toString().equals(obstructionValue)){
-                carLeftAfterDetect = true;
+            while (!carLeftAfterDetect && System.currentTimeMillis() - currMillis < 20000) { // если больше 20 сек не уехала машина значить что то случилась
+                Thread.sleep(1000);
+                String obstructionValue = loopClient.getCurrentValue(barrier.getLoopOid());
+                log.info("obstructionValue: " + obstructionValue);
+                if (barrier.getLoopDefaultValue().toString().equals(obstructionValue)) {
+                    carLeftAfterDetect = true;
+                }
             }
+            loopClient.close();
+            return carLeftAfterDetect;
         }
-        loopClient.close();
-        return carLeftAfterDetect;
+        return true;
     }
 }
