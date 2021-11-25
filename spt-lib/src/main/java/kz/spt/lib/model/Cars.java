@@ -27,7 +27,7 @@ public class Cars {
     private Long id;
 
     @Column(unique = true)
-    @Size(min = 3, max = 16)
+    @Size(min = 1, max = 16)
     private String platenumber;
 
     private String color;
