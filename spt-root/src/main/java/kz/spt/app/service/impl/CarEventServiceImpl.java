@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Log
 @Service
@@ -46,6 +47,8 @@ public class CarEventServiceImpl implements CarEventService {
     private final BarrierService barrierService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final PluginService pluginService;
+
+    private static Map<String, Long> concurrentHashMap = new ConcurrentHashMap<>();
 
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                CarStateService carStateService, CarImageService carImageService,
@@ -61,6 +64,7 @@ public class CarEventServiceImpl implements CarEventService {
 
     @Override
     public void saveCarEvent(CarEventDto eventDto) throws Exception {
+
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
         eventDto.car_number = eventDto.car_number.toUpperCase();
 
@@ -72,6 +76,16 @@ public class CarEventServiceImpl implements CarEventService {
         properties.put("cameraIp", eventDto.ip_address);
 
         if(camera!=null){
+            if(concurrentHashMap.containsKey(eventDto.ip_address)){
+                Long timeDiffInMillis = System.currentTimeMillis() - concurrentHashMap.get(eventDto.ip_address);
+                if(timeDiffInMillis < (camera.getTimeout() == null ? 0 : camera.getTimeout()*1000)){ // If interval smaller than timeout then ignore
+                    log.info("Ignored event from camera: " + eventDto.ip_address  + " time: " +  timeDiffInMillis);
+                    return;
+                }
+            } else {
+                concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
+            }
+
             properties.put("gateName", camera.getGate().getName());
             properties.put("gateId", camera.getGate().getId());
             properties.put("gateDescription", camera.getGate().getDescription());

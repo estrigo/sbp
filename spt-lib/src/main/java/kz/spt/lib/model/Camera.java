@@ -35,6 +35,8 @@ public class Camera {
 
     private String description;
 
+    private Integer timeout;
+
     @Column(unique=true)
     private String ip;
 
