@@ -78,13 +78,17 @@ public class CarEventServiceImpl implements CarEventService {
         if(camera!=null){
             if(concurrentHashMap.containsKey(eventDto.ip_address)){
                 Long timeDiffInMillis = System.currentTimeMillis() - concurrentHashMap.get(eventDto.ip_address);
-                if(timeDiffInMillis < (camera.getTimeout() == null ? 0 : camera.getTimeout()*1000)){ // If interval smaller than timeout then ignore
+                if(timeDiffInMillis < (camera.getTimeout() == null ? 0 : camera.getTimeout()*1000)){ // If interval smaller than timeout then ignore else proceed
                     log.info("Ignored event from camera: " + eventDto.ip_address  + " time: " +  timeDiffInMillis);
                     return;
+                } else {
+                    concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
                 }
             } else {
                 concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
             }
+
+            log.info("handling event from camera: " + eventDto.ip_address);
 
             properties.put("gateName", camera.getGate().getName());
             properties.put("gateId", camera.getGate().getId());
