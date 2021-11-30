@@ -9,6 +9,7 @@ import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.EventLogRepository;
+import lombok.extern.java.Log;
 import org.apache.poi.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -22,6 +23,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Log
 @Service
 public class EventLogServiceImpl implements EventLogService {
 
@@ -103,7 +105,7 @@ public class EventLogServiceImpl implements EventLogService {
         for(EventLog eventLog : events){
             Map<String, Object> properties = eventLog.getProperties();
             if(eventFilterDto.gateId != null){
-                if(properties.containsKey("gateId") && eventFilterDto.gateId.equals(properties.get("gateId"))){
+                if(properties.containsKey("gateId") && properties.get("gateId") != null && ((Integer)properties.get("gateId")).equals(eventFilterDto.gateId.intValue())){
                     filteredEvents.add(eventLog);
                 }
             } else {
