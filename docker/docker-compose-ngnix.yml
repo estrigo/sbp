@@ -1,0 +1,11 @@
+services:
+  nginx:
+      image: nginx:1.21.4
+      restart: always
+      ports:
+          - "9991:80"
+      volumes:
+        - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      links:
+        - spt-app
+version: '2.1'
