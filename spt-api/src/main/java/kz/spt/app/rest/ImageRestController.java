@@ -18,4 +18,10 @@ public class ImageRestController {
     public byte[] getImageContent(@PathVariable("eventId") Long eventId) throws Exception{
         return carImageService.getImage(eventId);
     }
+
+    @RequestMapping(value = "/value/small/{eventId}", method = RequestMethod.GET)
+    @ResponseBody
+    public byte[] getSmallImageContent(@PathVariable("eventId") Long eventId) throws Exception{
+        return carImageService.getSmallImage(eventId);
+    }
 }

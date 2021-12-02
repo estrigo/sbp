@@ -96,11 +96,13 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("gateType", camera.getGate().getGateType().toString());
 
             String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
+            properties.put("carImageUrl", carImageUrl);
+            properties.put("carSmallImageUrl", carImageUrl.replace(CarImageServiceImpl.fileExtension, "") + CarImageServiceImpl.fileSmallAddon + CarImageServiceImpl.fileExtension);
 
             if(Gate.GateType.IN.equals(camera.getGate().getGateType())){
-                handleCarInEvent(eventDto, camera, properties, format, carImageUrl);
+                handleCarInEvent(eventDto, camera, properties, format);
             } else if(Gate.GateType.OUT.equals(camera.getGate().getGateType())){
-                handleCarOutEvent(eventDto, camera, properties, format, carImageUrl);
+                handleCarOutEvent(eventDto, camera, properties, format);
             }
         } else {
             eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address);
@@ -136,11 +138,10 @@ public class CarEventServiceImpl implements CarEventService {
         saveCarEvent(eventDto);
     }
 
-    private void handleCarInEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format, String carImageUrl) throws Exception{
+    private void handleCarInEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format) throws Exception{
         eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
 
         if(!carStateService.checkIsLastEnteredNotLeft(eventDto.car_number)){
-            properties.put("carImageUrl", carImageUrl);
             eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
             eventLogService.createEventLog(Camera.class.getSimpleName(), camera.getId(), properties, "Зафиксирован новый номер авто " + eventDto.car_number);
 
@@ -267,9 +268,7 @@ public class CarEventServiceImpl implements CarEventService {
         return barrierService.checkCarPassed(barrier, properties);
     }
 
-    private void handleCarOutEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format, String carImageUrl) throws Exception {
-
-        properties.put("carImageUrl", carImageUrl);
+    private void handleCarOutEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format) throws Exception {
         eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
 
         CarState carState = carStateService.getLastNotLeft(eventDto.car_number);

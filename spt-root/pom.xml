@@ -131,6 +131,11 @@
             <artifactId>snmp4j</artifactId>
             <version>3.5.1</version>
         </dependency>
+        <dependency>
+            <groupId>net.coobird</groupId>
+            <artifactId>thumbnailator</artifactId>
+            <version>0.4.11</version>
+        </dependency>
     </dependencies>
 
     <build>

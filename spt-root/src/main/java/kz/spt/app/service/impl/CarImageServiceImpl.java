@@ -3,6 +3,7 @@ package kz.spt.app.service.impl;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.CarImageService;
+import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,8 @@ public class CarImageServiceImpl implements CarImageService {
 
     private String imagePath;
     private EventLogService eventLogService;
+    public static String fileExtension = ".jpeg";
+    public static String fileSmallAddon = "_resize_w_200_h_100";
 
     public CarImageServiceImpl(@Value("${images.file.path}") String imagePath, EventLogService eventLogService){
         this.imagePath = imagePath;
@@ -39,7 +42,7 @@ public class CarImageServiceImpl implements CarImageService {
         int month = calendar.get(Calendar.MONTH) + 1;
         int day = calendar.get(Calendar.DATE);
 
-        String fileName = carNumber + "_" + format.format(calendar.getTime()) + ".jpeg";
+        String fileName = carNumber + "_" + format.format(calendar.getTime());
         String path = imagePath + "/" + year + "/" + month + "/" + day + "/";
         File theDir = new File(path);
         if (!theDir.exists()){
@@ -58,10 +61,19 @@ public class CarImageServiceImpl implements CarImageService {
         String base64Raw = base64;
         byte[] imageBytes = Base64.decodeBase64(base64Raw);
 
-        String fullPath = path + fileName;
+        String fullPath = path + fileName + fileExtension;
         Files.write(Path.of(fullPath), imageBytes);
 
-        return fullPath;
+        String resizedFileName = fileName + fileSmallAddon;
+        String resizedfullPath = path + resizedFileName + fileExtension;
+
+        Thumbnails.of(fullPath)
+                .size(200, 100)
+                .outputFormat("JPEG")
+                .outputQuality(1)
+                .toFile(resizedfullPath);
+
+        return fullPath.replace(imagePath,"");
     }
 
     @Override
@@ -70,7 +82,21 @@ public class CarImageServiceImpl implements CarImageService {
         EventLog eventLog = eventLogService.getById(eventId);
 
         if(eventLog!=null && eventLog.getProperties()!=null && eventLog.getProperties().containsKey("carImageUrl")) {
-            File thePath = new File((String) eventLog.getProperties().get("carImageUrl"));
+            File thePath = new File(imagePath + eventLog.getProperties().get("carImageUrl"));
+            if (thePath.exists()) {
+                return Files.readAllBytes(thePath.toPath());
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] getSmallImage(Long eventId) throws IOException {
+
+        EventLog eventLog = eventLogService.getById(eventId);
+
+        if(eventLog!=null && eventLog.getProperties()!=null && eventLog.getProperties().containsKey("carSmallImageUrl")) {
+            File thePath = new File(imagePath + eventLog.getProperties().get("carSmallImageUrl"));
             if (thePath.exists()) {
                 return Files.readAllBytes(thePath.toPath());
             }

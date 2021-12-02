@@ -109,9 +109,13 @@
             {"data": "properties",
             "render" : function (data, type, event)
              {
-             if(event.properties  && event.properties['carImageUrl']){
-                return   '<img class="thumb-img" alt src="/rest/image/value/' + event.id + '">';
-                    return data;
+             if(event.properties){
+                 if(event.properties['carSmallImageUrl']){
+                     return '<img class="thumb-img" alt src="/rest/image/value/small/' + event.id + '">';
+                 } else if(event.properties['carImageUrl']){
+                     return '<img class="thumb-img" alt src="/rest/image/value/' + event.id + '">';
+                 }
+                 return '';
              } else {
                  return '';
              }

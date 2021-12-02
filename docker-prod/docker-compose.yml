@@ -2,6 +2,8 @@ services:
   spt-app:
     image: spt-app:latest
     restart: always
+    ports:
+      - "8888:8080"
     environment:
       - "TZ=Asia/Almaty"
     volumes:
@@ -11,18 +13,21 @@ services:
         max-size: 50m
     networks:
       - parking-net
-  nginx:
-    image: nginx:1.21.4
-    restart: always
-    ports:
-      - "8888:80"
-    volumes:
-      - "./nginx:/etc/nginx/conf.d"
-      - "/var/www/parking/storage/new_parking:/files"
-    links:
-      - spt-app
-    networks:
-      - parking-net
+#  nginx:
+#    image: nginx:1.21.4
+#    restart: always
+      #    ports:
+    #      - "8080:80"
+      #volumes:
+      #- "./nginx:/etc/nginx/conf.d"
+      #- "/var/www/parking/storage/new_parking:/files"
+      #links:
+      #- spt-app
+      #logging:
+      #    options:
+      #      max-size: 50m
+    #networks:
+    #- parking-net
 networks:
   parking-net:
     external: true
