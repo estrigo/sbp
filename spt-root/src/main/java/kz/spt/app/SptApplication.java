@@ -47,6 +47,8 @@ public class SptApplication {
     public void configureJackson(ObjectMapper objectMapper) {
         objectMapper.setTimeZone(TimeZone.getDefault());
 
+        log.info("Timezone : " + TimeZone.getDefault().getDisplayName());
+
         int mb = 1024 * 1024;
         MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
         long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
