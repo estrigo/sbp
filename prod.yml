@@ -15,7 +15,7 @@ spring:
     plugin-properties:
       spring:
         datasource:
-          url: jdbc:mysql://10.66.16.100:3306/new_parking?allowPublicKeyRetrieval=true&useSSL=false
+          url: jdbc:mysql://db/new_parking?allowPublicKeyRetrieval=true&useSSL=false
           username: root
           password: root
         jpa:
@@ -26,7 +26,7 @@ spring:
             hibernate:
               dialect: org.hibernate.dialect.MySQL55Dialect
   datasource:
-    url: jdbc:mysql://10.66.16.100:3306/parking?allowPublicKeyRetrieval=true&useSSL=false
+    url: jdbc:mysql://db/new_parking?allowPublicKeyRetrieval=true&useSSL=false
     username: root
     password: root
   jpa:
@@ -51,7 +51,7 @@ org:
   hibernate:
     envers:
       audit_table_suffix: _audit
-      default_schema: parking
+      default_schema: new_parking
 
 images:
   file:
