@@ -21,6 +21,8 @@ services:
       - "/var/www/parking/storage/new_parking:/files"
     links:
       - spt-app
+    networks:
+      - parking-net
 networks:
   parking-net:
     external: true
