@@ -12,6 +12,7 @@ import kz.spt.app.repository.EventLogRepository;
 import lombok.extern.java.Log;
 import org.apache.poi.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
@@ -68,6 +69,11 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
+    public Iterable<EventLog> listAllLogsDesc() {
+        return eventLogRepository.listAllEvents();
+    }
+
+    @Override
     public Iterable<EventLog> listByFilters(EventFilterDto eventFilterDto) throws ParseException {
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
@@ -113,6 +119,11 @@ public class EventLogServiceImpl implements EventLogService {
             }
         }
         return getPage(filteredEvents, pagingRequest);
+    }
+
+    @Override
+    public void save(EventLog eventLog) {
+        eventLogRepository.save(eventLog);
     }
 
     private Page<EventLog> getPage(List<EventLog> events, PagingRequest pagingRequest) {
