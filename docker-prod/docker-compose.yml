@@ -11,6 +11,14 @@ services:
         max-size: 50m
     networks:
       - parking-net
+  nginx:
+    image: nginx:1.21.4
+    restart: always
+    ports:
+      - "8888:80"
+    volumes:
+      - "./nginx:/etc/nginx/conf.d"
+      - "/var/www/parking/storage/new_parking:/files"
 networks:
   parking-net:
     external: true
