@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import kz.spt.lib.model.dto.temp.CarTempReqBodyJsonDto;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.extension.PluginRegister;
@@ -22,7 +21,6 @@ import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -97,7 +95,7 @@ public class CarEventServiceImpl implements CarEventService {
 
             String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
             properties.put("carImageUrl", carImageUrl);
-            properties.put("carSmallImageUrl", carImageUrl.replace(CarImageServiceImpl.fileExtension, "") + CarImageServiceImpl.fileSmallAddon + CarImageServiceImpl.fileExtension);
+            properties.put("carSmallImageUrl", carImageUrl.replace(StaticValues.fileExtension, "") + StaticValues.fileSmallAddon + StaticValues.fileExtension);
 
             if(Gate.GateType.IN.equals(camera.getGate().getGateType())){
                 handleCarInEvent(eventDto, camera, properties, format);

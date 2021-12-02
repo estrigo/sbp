@@ -3,6 +3,7 @@ package kz.spt.app.service.impl;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.CarImageService;
+import kz.spt.lib.utils.StaticValues;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,8 +24,6 @@ public class CarImageServiceImpl implements CarImageService {
 
     private String imagePath;
     private EventLogService eventLogService;
-    public static String fileExtension = ".jpeg";
-    public static String fileSmallAddon = "_resize_w_200_h_100";
 
     public CarImageServiceImpl(@Value("${images.file.path}") String imagePath, EventLogService eventLogService){
         this.imagePath = imagePath;
@@ -61,11 +60,11 @@ public class CarImageServiceImpl implements CarImageService {
         String base64Raw = base64;
         byte[] imageBytes = Base64.decodeBase64(base64Raw);
 
-        String fullPath = path + fileName + fileExtension;
+        String fullPath = path + fileName + StaticValues.fileExtension;
         Files.write(Path.of(fullPath), imageBytes);
 
-        String resizedFileName = fileName + fileSmallAddon;
-        String resizedfullPath = path + resizedFileName + fileExtension;
+        String resizedFileName = fileName + StaticValues.fileSmallAddon;
+        String resizedfullPath = path + resizedFileName + StaticValues.fileExtension;
 
         Thumbnails.of(fullPath)
                 .size(200, 100)
