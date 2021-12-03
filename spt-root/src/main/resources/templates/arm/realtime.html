@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{})">
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})">
+
+<link th:href="@{/assets/css/fancybox.css}" rel="stylesheet" type="text/css"/>
 
 <div class="content">
     <div class="container">
@@ -11,7 +13,9 @@
                         <h5 class="mt-0 card-title" th:text="${camera.name}"></h5>
                         <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
                     </div>
-                    <img th:id="${'image' + camera.id}" class="img-fluid m-b-10" th:src="@{/assets/images/no_photo.jpeg}" alt="Card image cap">
+                    <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event" th:data-src="@{/assets/images/no_photo.jpeg}" data-caption="No data">
+                        <img th:id="${'image' + camera.id}" class="img-fluid m-b-10" th:src="@{/assets/images/no_photo.jpeg}" alt="Card image cap">
+                    </a>
                     <table class="w-100">
                         <tbody>
                             <tr>
@@ -48,6 +52,8 @@
 
 <script th:src="@{/assets/js/sockjs.js}"></script>
 <script th:src="@{/assets/js/stomp.js}"></script>
+<script th:src="@{/assets/js/fancybox.umd.js}"></script>
+
 <script type="text/javascript">
     function connect() {
         var socket = new WebSocket('ws://' + window.location.host + '/greeting');
@@ -67,8 +73,10 @@
     function showGreeting(messageBody) {
         if(messageBody.eventType == 'Photo'){
             $("#image" + messageBody.id).attr("src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message);
+            $("#fancyImage" + messageBody.id).attr("data-src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message);
         } else if(messageBody.eventType == 'CarEvent') {
             $("#logs" + messageBody.id).prepend('[' + messageBody.plateNumber + ']' + messageBody.message + "\n");
+            $("#fancyImage" + messageBody.id).attr("data-caption", messageBody.plateNumber);
         } else {
             console.log('Unknown event type ' + messageBody);
         }
