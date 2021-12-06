@@ -7,7 +7,7 @@
 
 <div class="content">
     <div class="container">
-        <div class="card table-responsive">
+        <div class="card table-responsive table-striped">
             <div class="card-header" th:text="#{carstate.journal}"></div>
             <div class="card-body">
                 <form th:action="@{|/journal/list|}" th:object="${carStateFilterDto}" method="post">

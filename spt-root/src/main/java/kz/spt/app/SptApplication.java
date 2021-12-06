@@ -1,6 +1,7 @@
 package kz.spt.app;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.java.Log;
 import org.laxture.spring.util.ApplicationContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -11,8 +12,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.util.TimeZone;
 
+@Log
 @SpringBootApplication
 @EntityScan(basePackages = {"kz.spt.lib.model", "kz.spt.app.model"})
 public class SptApplication {
@@ -42,5 +46,14 @@ public class SptApplication {
     @Autowired
     public void configureJackson(ObjectMapper objectMapper) {
         objectMapper.setTimeZone(TimeZone.getDefault());
+
+        log.info("Timezone : " + TimeZone.getDefault().getDisplayName());
+
+        int mb = 1024 * 1024;
+        MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+        long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
+        long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
+        log.info("Initial Memory (xmx) : " + xmx + "mb");
+        log.info("Initial Memory (xms) : " + xms + "mb");
     }
 }

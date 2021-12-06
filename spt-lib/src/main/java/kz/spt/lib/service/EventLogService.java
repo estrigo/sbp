@@ -22,9 +22,13 @@ public interface EventLogService {
 
     Iterable<EventLog> listAllLogs();
 
+    Iterable<EventLog> listAllLogsDesc();
+
     Iterable<EventLog> listByFilters(EventFilterDto eventFilterDo) throws ParseException;
 
     EventLog getById(Long id);
 
     Page<EventLog> getEventLogs(PagingRequest pagingRequest, EventFilterDto eventFilterDto) throws ParseException;
+
+    void save(EventLog eventLog);
 }

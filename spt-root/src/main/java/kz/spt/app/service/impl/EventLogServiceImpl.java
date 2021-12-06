@@ -9,8 +9,10 @@ import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.EventLogRepository;
+import lombok.extern.java.Log;
 import org.apache.poi.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Log
 @Service
 public class EventLogServiceImpl implements EventLogService {
 
@@ -66,6 +69,11 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
+    public Iterable<EventLog> listAllLogsDesc() {
+        return eventLogRepository.listAllEvents();
+    }
+
+    @Override
     public Iterable<EventLog> listByFilters(EventFilterDto eventFilterDto) throws ParseException {
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
@@ -103,7 +111,7 @@ public class EventLogServiceImpl implements EventLogService {
         for(EventLog eventLog : events){
             Map<String, Object> properties = eventLog.getProperties();
             if(eventFilterDto.gateId != null){
-                if(properties.containsKey("gateId") && eventFilterDto.gateId.equals(properties.get("gateId"))){
+                if(properties.containsKey("gateId") && properties.get("gateId") != null && ((Integer)properties.get("gateId")).equals(eventFilterDto.gateId.intValue())){
                     filteredEvents.add(eventLog);
                 }
             } else {
@@ -111,6 +119,11 @@ public class EventLogServiceImpl implements EventLogService {
             }
         }
         return getPage(filteredEvents, pagingRequest);
+    }
+
+    @Override
+    public void save(EventLog eventLog) {
+        eventLogRepository.save(eventLog);
     }
 
     private Page<EventLog> getPage(List<EventLog> events, PagingRequest pagingRequest) {

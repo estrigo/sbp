@@ -4,6 +4,7 @@
 <link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
 <link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
 <link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/assets/css/fancybox.css}" rel="stylesheet" type="text/css"/>
 
 <div class="content">
     <div class="container">
@@ -48,7 +49,7 @@
 
                         <div class="row">
                             <div class="table-responsive" data-pattern="priority-columns">
-                                <table id="eventTable" class="table table-bordered">
+                                <table id="eventTable" class="table table-bordered table-striped">
                                     <thead>
                                     <tr>
                                         <th><a th:text="#{car.platenumber}"></a></th>
@@ -83,6 +84,8 @@
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
+<script th:src="@{/assets/js/fancybox.umd.js}"></script>
+
 <script type="text/javascript">
        const table = $('#eventTable').DataTable({
         "processing": true,
@@ -107,11 +110,16 @@
             {"data": "created", "width": "25%"},
             {"data": "description", "width" : "25%"},
             {"data": "properties",
-            "render" : function (data, type, event)
-             {
-             if(event.properties  && event.properties['carImageUrl']){
-                return   '<img class="thumb-img" alt src="/rest/image/value/' + event.id + '">';
-                    return data;
+            "render" : function (data, type, event) {
+             if(event.properties){
+                 if(event.properties['carSmallImageUrl']){
+                     return '<a class="col col--4" data-fancybox="event" data-src="/rest/image/value/' + event.id + '" data-caption="' + event.plateNumber + '">' +
+                     '<img class="thumb-img" alt src="/rest/image/value/small/' + event.id + '"></a>';
+                 } else if(event.properties['carImageUrl']){
+                     return '<a class="col col--4" data-fancybox="event" data-src="/rest/image/value/' + event.id + '" data-caption="' + event.plateNumber + '">' +
+                         '<img class="thumb-img" alt src="/rest/image/value/' + event.id + '"></a>';
+                 }
+                 return '';
              } else {
                  return '';
              }
@@ -126,8 +134,7 @@
            url: '/plugins/datatables/json/ru.json'
         },
         searching: false
-    });
-
+   });
 
    var interval = null;
    $(document).on('ready',function(){
