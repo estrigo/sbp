@@ -5,8 +5,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.lib.bootstrap.datatable.Column;
+import kz.spt.lib.bootstrap.datatable.Order;
+import kz.spt.lib.bootstrap.datatable.Page;
+import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.Parking;
+import kz.spt.whitelistplugin.bootstrap.datatable.WhiteListComparators;
 import kz.spt.whitelistplugin.model.AbstractWhitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
@@ -14,6 +19,8 @@ import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.repository.WhitelistRepository;
 import kz.spt.whitelistplugin.service.WhitelistService;
+import kz.spt.whitelistplugin.viewmodel.WhiteListDto;
+import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.pf4j.util.StringUtils;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Log
@@ -44,6 +52,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         put("5", "Суббота");
         put("6", "Воскресенье");
     }};
+    private static final Comparator<WhiteListDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     public WhitelistServiceImpl(WhitelistRepository whitelistRepository, WhitelistGroupsRepository whitelistGroupsRepository,
                                 RootServicesGetterService rootServicesGetterService) {
@@ -91,19 +100,33 @@ public class WhitelistServiceImpl implements WhitelistService {
         } else {
             whitelist.setCreatedUser(currentUser.getUsername());
         }
-        if(whitelist.getParkingId() != null){
+        if (whitelist.getParkingId() != null) {
             whitelist.setParking(rootServicesGetterService.getParkingService().findById(whitelist.getParkingId()));
         }
         whitelistRepository.save(whitelist);
     }
 
     @Override
-    public Iterable<Whitelist> listAllWhitelist() throws JsonProcessingException {
+    public List<Whitelist> listAllWhitelist() {
         List<Whitelist> whitelistLists = whitelistRepository.findAll();
-        for(Whitelist w: whitelistLists){
+        for (Whitelist w : whitelistLists) {
             w.setConditionDetail(formConditionDetails(w, w.getCar().getPlatenumber()));
         }
         return whitelistLists;
+    }
+
+    @Override
+    public Page<WhiteListDto> listByPage(PagingRequest pagingRequest) {
+        var list = listAllWhitelist().stream()
+                .map(m -> WhiteListDto.builder()
+                        .id(m.getId())
+                        .plateNumber(m.getCar().getPlatenumber())
+                        .parkingName(m.getParking().getName())
+                        .groupName(m.getGroup().getName())
+                        .conditionDetail(m.getConditionDetail())
+                        .build())
+                .collect(Collectors.toList());
+        return getPage(list, pagingRequest);
     }
 
     @Override
@@ -120,51 +143,51 @@ public class WhitelistServiceImpl implements WhitelistService {
         if (car != null) {
             List<Whitelist> whitelists = whitelistRepository.findValidWhiteListByCar(car, date, parkingId);
             List<Whitelist> groupWhitelists = whitelistRepository.findValidWhiteListGroupByCar(car, date, parkingId);
-            SimpleDateFormat format =  new SimpleDateFormat(datePrettyFormat);
+            SimpleDateFormat format = new SimpleDateFormat(datePrettyFormat);
 
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(date);
             LocalDate localDate = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
-            int day = localDate.getDayOfWeek().getValue()-1;
+            int day = localDate.getDayOfWeek().getValue() - 1;
             int hour = calendar.get(Calendar.HOUR_OF_DAY);
 
-            for(Whitelist whitelist : whitelists){
+            for (Whitelist whitelist : whitelists) {
                 boolean valid = isCustomValid(day, hour, whitelist);
 
-                if(valid){
+                if (valid) {
                     ObjectNode objectNode = objectMapper.createObjectNode();
                     objectNode.put("id", whitelist.getId());
                     objectNode.put("plateNumber", whitelist.getCar().getPlatenumber());
                     objectNode.put("type", whitelist.getType().toString());
-                    if(AbstractWhitelist.Type.PERIOD.equals(whitelist.getType())){
-                        if(whitelist.getAccess_start() != null){
+                    if (AbstractWhitelist.Type.PERIOD.equals(whitelist.getType())) {
+                        if (whitelist.getAccess_start() != null) {
                             objectNode.put("accessStart", format.format(whitelist.getAccess_start()));
                         }
-                        if(whitelist.getAccess_end() != null){
+                        if (whitelist.getAccess_end() != null) {
                             objectNode.put("accessEnd", format.format(whitelist.getAccess_end()));
                         }
                     }
-                    if(Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null){
+                    if (Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null) {
                         objectNode.set("customJson", objectMapper.readTree(whitelist.getCustomJson()));
                     }
                     objectNode.put("conditionDetails", formConditionDetails(whitelist, whitelist.getCar().getPlatenumber()));
                     arrayNode.add(objectNode);
                 }
             }
-            for(Whitelist whitelist : groupWhitelists){
+            for (Whitelist whitelist : groupWhitelists) {
                 Boolean valid = isCustomValid(day, hour, whitelist.getGroup());
 
-                if(valid) {
+                if (valid) {
                     ObjectNode objectNode = objectMapper.createObjectNode();
-                    if(whitelist.getGroup().getSize() != null && whitelist.getGroup().getSize() >  0){
+                    if (whitelist.getGroup().getSize() != null && whitelist.getGroup().getSize() > 0) {
                         objectNode.put("exceedPlaceLimit", false);
                         int size = whitelist.getGroup().getSize();
                         List<String> groupPlateNumberList = whitelist.getGroup().getWhitelists().stream().map(Whitelist::getCar).map(Cars::getPlatenumber).collect(Collectors.toList());
                         List<String> enteredCarsFromGroup = rootServicesGetterService.getCarStateService().getInButNotPaidFromList(groupPlateNumberList);
-                        if(enteredCarsFromGroup.size() >= size){
+                        if (enteredCarsFromGroup.size() >= size) {
                             objectNode.put("exceedPlaceLimit", true);
                             ArrayNode list = objectMapper.createArrayNode();
-                            for(String carNumber : enteredCarsFromGroup){
+                            for (String carNumber : enteredCarsFromGroup) {
                                 list.add(carNumber);
                             }
                             objectNode.set("placeOccupiedCars", list);
@@ -184,7 +207,7 @@ public class WhitelistServiceImpl implements WhitelistService {
                             objectNode.put("accessEnd", format.format(whitelist.getGroup().getAccess_end()));
                         }
                     }
-                    if(Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null){
+                    if (Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null) {
                         objectNode.set("customJson", objectMapper.readTree(whitelist.getCustomJson()));
                     }
                     objectNode.put("conditionDetails", formConditionDetails(whitelist.getGroup(), whitelist.getGroup().getName()));
@@ -210,7 +233,7 @@ public class WhitelistServiceImpl implements WhitelistService {
             }
             whitelist.setAccessEndString(format.format(whitelist.getAccess_end()));
         }
-        if(whitelist.getParking() != null){
+        if (whitelist.getParking() != null) {
             whitelist.setParkingId(whitelist.getParking().getId());
         }
         return whitelist;
@@ -233,7 +256,7 @@ public class WhitelistServiceImpl implements WhitelistService {
             whitelist.setUpdatedUser(currentUser);
             whitelist.setCar(car);
         } else {
-            if(!group.getId().equals(whitelist.getGroupId())) {
+            if (!group.getId().equals(whitelist.getGroupId())) {
                 // alert
                 whitelist.setGroup(group);
             }
@@ -249,22 +272,22 @@ public class WhitelistServiceImpl implements WhitelistService {
         Cars car = rootServicesGetterService.getCarsService().findByPlatenumber(plateNumber);
         if (car != null) {
             Whitelist whitelist = whitelistRepository.findWhiteListByCar(car, parkingId);
-            SimpleDateFormat format =  new SimpleDateFormat(datePrettyFormat);
+            SimpleDateFormat format = new SimpleDateFormat(datePrettyFormat);
             ObjectNode objectNode = objectMapper.createObjectNode();
 
-            if(whitelist.getGroup() == null){
+            if (whitelist.getGroup() == null) {
                 objectNode.put("id", whitelist.getId());
                 objectNode.put("plateNumber", whitelist.getCar().getPlatenumber());
                 objectNode.put("type", whitelist.getType().toString());
-                if(AbstractWhitelist.Type.PERIOD.equals(whitelist.getType())){
-                    if(whitelist.getAccess_start() != null){
+                if (AbstractWhitelist.Type.PERIOD.equals(whitelist.getType())) {
+                    if (whitelist.getAccess_start() != null) {
                         objectNode.put("accessStart", format.format(whitelist.getAccess_start()));
                     }
-                    if(whitelist.getAccess_end() != null){
+                    if (whitelist.getAccess_end() != null) {
                         objectNode.put("accessEnd", format.format(whitelist.getAccess_end()));
                     }
                 }
-                if(Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null){
+                if (Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null) {
                     objectNode.set("customJson", objectMapper.readTree(whitelist.getCustomJson()));
                 }
                 arrayNode.add(objectNode);
@@ -282,7 +305,7 @@ public class WhitelistServiceImpl implements WhitelistService {
                         objectNode.put("accessEnd", format.format(whitelist.getGroup().getAccess_end()));
                     }
                 }
-                if(Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null){
+                if (Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null) {
                     objectNode.set("customJson", objectMapper.readTree(whitelist.getCustomJson()));
                 }
                 arrayNode.add(objectNode);
@@ -307,7 +330,8 @@ public class WhitelistServiceImpl implements WhitelistService {
         return whitelistRepository.getExistingPlatenumbers(platenumbers, parkingId, groupId);
     }
 
-    public static String formConditionDetails(AbstractWhitelist w, String name) throws JsonProcessingException {
+    @SneakyThrows
+    public static String formConditionDetails(AbstractWhitelist w, String name) {
         String result = "";
         SimpleDateFormat format = new SimpleDateFormat(datePrettyFormat);
 
@@ -315,24 +339,25 @@ public class WhitelistServiceImpl implements WhitelistService {
         String customJson;
         String resultStart = "";
 
-        if(w instanceof Whitelist){
+        if (w instanceof Whitelist) {
             Whitelist wl = (Whitelist) w;
-            if(wl.getGroup() != null){
+            if (wl.getGroup() != null) {
                 w = wl.getGroup();
             }
             resultStart = "Авто с гос. номером " + name + " может посещать объект";
-        } if(w instanceof WhitelistGroups){
+        }
+        if (w instanceof WhitelistGroups) {
             resultStart = "Группа с названием " + name + " может посещать объект";
         }
         customJson = w.getCustomJson();
         type = w.getType();
 
-        if(Whitelist.Type.CUSTOM.equals(type)){
-            if(w.getCustomJson() != null){
+        if (Whitelist.Type.CUSTOM.equals(type)) {
+            if (w.getCustomJson() != null) {
                 JsonNode values = objectMapper.readTree(customJson);
                 StringBuilder details = new StringBuilder(resultStart + " в следующие дни:");
-                for(int day = 0; day < 7; day++){
-                    if(values.has("" + day)){
+                for (int day = 0; day < 7; day++) {
+                    if (values.has("" + day)) {
                         details.append(dayValues.get(day + "") + ":");
 
                         TreeSet<Integer> sortedHours = new TreeSet<>();
@@ -340,14 +365,14 @@ public class WhitelistServiceImpl implements WhitelistService {
                             sortedHours.add(hour.intValue());
                         }
                         int prev = -1, count = 0, size = sortedHours.size();
-                        for(int i : sortedHours){
-                            if(count == 0){
+                        for (int i : sortedHours) {
+                            if (count == 0) {
                                 details.append("С " + i + ":00 до ");
-                            } else if(i-1 > prev){
+                            } else if (i - 1 > prev) {
                                 details.append((prev + 1) + ":00. " + " С " + i + ":00 до ");
                             }
                             prev = i;
-                            if(count == size-1){
+                            if (count == size - 1) {
                                 details.append((i + 1) + ":00. ");
                             }
                             count++;
@@ -356,25 +381,26 @@ public class WhitelistServiceImpl implements WhitelistService {
                 }
                 result = details.toString();
             }
-        } else if(Whitelist.Type.PERIOD.equals(type)){
+        } else if (Whitelist.Type.PERIOD.equals(type)) {
             result = resultStart + (w.getAccess_start() != null && w.getAccess_start().after(new Date()) ? " с даты " + format.format(w.getAccess_start()) : "в любое время") + ". Сроком до " + format.format(w.getAccess_end());
-        } else if(Whitelist.Type.UNLIMITED.equals(type)){
+        } else if (Whitelist.Type.UNLIMITED.equals(type)) {
             result = resultStart + " в любое время.";
-        };
+        }
+        ;
 
         return result;
     }
 
     private boolean isCustomValid(int day, int hour, AbstractWhitelist abstractWhitelist) throws JsonProcessingException {
         boolean valid = true;
-        if(Whitelist.Type.CUSTOM.equals(abstractWhitelist.getType()) && abstractWhitelist.getCustomJson() != null){
+        if (Whitelist.Type.CUSTOM.equals(abstractWhitelist.getType()) && abstractWhitelist.getCustomJson() != null) {
             JsonNode node = objectMapper.readTree(abstractWhitelist.getCustomJson());
-            if(node.has(day+"")){
+            if (node.has(day + "")) {
                 TreeSet<Integer> sortedHours = new TreeSet<>();
                 for (final JsonNode h : node.get("" + day)) {
                     sortedHours.add(h.intValue());
                 }
-                if(!sortedHours.contains(hour)){
+                if (!sortedHours.contains(hour)) {
                     valid = false;
                 }
             } else {
@@ -382,5 +408,57 @@ public class WhitelistServiceImpl implements WhitelistService {
             }
         }
         return valid;
+    }
+
+    private Page<WhiteListDto> getPage(List<WhiteListDto> list, PagingRequest pagingRequest) {
+        var filtered = list.stream()
+                .sorted(sort(pagingRequest))
+                .filter(filter(pagingRequest))
+                .skip(pagingRequest.getStart())
+                .limit(pagingRequest.getLength())
+                .collect(Collectors.toList());
+        var count = list.stream()
+                .filter(filter(pagingRequest))
+                .count();
+
+        var page = new Page<>(filtered);
+        page.setRecordsFiltered((int) count);
+        page.setRecordsTotal((int) count);
+        page.setDraw(pagingRequest.getDraw());
+        return page;
+    }
+
+    private Predicate<WhiteListDto> filter(PagingRequest pagingRequest) {
+        if (pagingRequest.getSearch() == null || StringUtils.isNullOrEmpty(pagingRequest.getSearch()
+                .getValue())) {
+            return model -> true;
+        }
+
+        String value = pagingRequest.getSearch().getValue();
+
+        return model -> (model.getPlateNumber() !=  null && model.getPlateNumber().toLowerCase().contains(value.toLowerCase())
+                || (model.getParkingName() != null && model.getParkingName().toLowerCase().contains(value.toLowerCase()))
+                || (model.getGroupName() != null && model.getGroupName().toLowerCase().contains(value.toLowerCase())));
+    }
+
+    private Comparator<WhiteListDto> sort(PagingRequest pagingRequest){
+        if (pagingRequest.getOrder() == null) {
+            return EMPTY_COMPARATOR;
+        }
+
+        try {
+            Order order = pagingRequest.getOrder().get(0);
+
+            int columnIndex = order.getColumn();
+            Column column = pagingRequest.getColumns().get(columnIndex);
+
+            Comparator<WhiteListDto> comparator = WhiteListComparators.getComparator(column.getData(), order.getDir());
+            return Objects.requireNonNullElse(comparator, EMPTY_COMPARATOR);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return EMPTY_COMPARATOR;
     }
 }

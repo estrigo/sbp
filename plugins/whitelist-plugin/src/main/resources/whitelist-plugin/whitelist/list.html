@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html"
+      xmlns:sec="http://www.w3.org/1999/xhtml">
 
-<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
 
 <div class="content">
     <div class="container-fluid">
@@ -11,11 +12,12 @@
             <div class="col-12">
 
                 <div class="card">
-                    <div class="card-header"th:text="#{whitelist.title}"></div>
+                    <div class="card-header" th:text="#{whitelist.title}"></div>
                     <div class="card-body">
                         <ul class="nav nav-tabs">
                             <li class="nav-item">
-                                <a href="#whitelist" data-toggle="tab" aria-expanded="true" class="nav-link active">Белый лист</a>
+                                <a href="#whitelist" data-toggle="tab" aria-expanded="true" class="nav-link active">Белый
+                                    лист</a>
                             </li>
                             <li class="nav-item">
                                 <a href="#groups" data-toggle="tab" aria-expanded="false" class="nav-link">Группы</a>
@@ -26,44 +28,27 @@
                                 <table id="datatable-buttons" class="table table-bordered table-bordered">
                                     <thead>
                                     <tr>
-                                        <th><a th:text="#{ordinal.number}"></a></th>
                                         <th><a th:text="#{car.platenumber}"></a></th>
                                         <th><a th:text="#{whitelist.parking}"></a></th>
                                         <th><a th:text="#{whitelist.groupName}"></a></th>
                                         <th><a th:text="#{whitelist.condition}"></a></th>
-                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
-                                        <th></th>
-                                        </p>
-                                        <p sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN')">
-                                        <th></th>
-                                        </p>
+                                        <th:block sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
+                                            <th></th>
+                                        </th:block>
+                                        <th:block sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN')">
+                                            <th></th>
+                                        </th:block>
                                     </tr>
                                     </thead>
-                                    <tbody>
-                                    <tr th:each="w, iterStat : ${whitelist}">
-                                        <td th:text="${iterStat.count}"></td>
-                                        <td><span th:text="${w.car.platenumber}"></span></td>
-                                        <td>
-                                            <span th:if="${w.parking != null}" th:text="${w.parking.name}"></span>
-                                        </td>
-                                        <td>
-                                            <span th:if="${w.group != null}" th:text="${w.group.name}"></span>
-                                        </td>
-                                        <td th:text="${w.conditionDetail}"></td>
-                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
-                                        <td><a th:href="@{|/whitelist/edit/${w.id}|}" th:text="#{crm.edit}"></a></td>
-                                        </p>
-                                        <p sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')">
-                                        <td><a th:href="@{|/whitelist/delete/${w.id}|}" th:text="#{crm.delete}"></a></td>
-                                        </p>
-                                    </tr>
-                                    </tbody>
                                 </table>
                                 <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
                                 <div class="form-group row">
                                     <div class="col-12">
-                                        <a th:href="@{|/whitelist/add|}" class="btn btn-danger waves-effect waves-light" th:text="#{whitelist.addNew}"></a>
-                                        <a th:href="@{|/whitelist/groups/add|}" class="btn btn-danger waves-effect waves-light" th:text="#{whitelist.addNewGroup}"></a>
+                                        <a th:href="@{|/whitelist/add|}" class="btn btn-danger waves-effect waves-light"
+                                           th:text="#{whitelist.addNew}"></a>
+                                        <a th:href="@{|/whitelist/groups/add|}"
+                                           class="btn btn-danger waves-effect waves-light"
+                                           th:text="#{whitelist.addNewGroup}"></a>
                                     </div>
                                 </div>
                                 </p>
@@ -95,10 +80,12 @@
                                         <td th:text="${w.size}"></td>
                                         <td th:text="${w.conditionDetail}"></td>
                                         <p sec:authorize="hasAnyRole('ROLE_MANAGER','ROLE_ADMIN' , 'ROLE_SUPERADMIN')">
-                                        <td><a th:href="@{|/whitelist/group/edit/${w.id}|}" th:text="#{crm.edit}"></a></td>
+                                        <td><a th:href="@{|/whitelist/group/edit/${w.id}|}" th:text="#{crm.edit}"></a>
+                                        </td>
                                         </p>
                                         <p sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')">
-                                        <td><a th:href="@{|/whitelist/group/delete/${w.id}|}" th:text="#{crm.delete}"></a></td>
+                                        <td><a th:href="@{|/whitelist/group/delete/${w.id}|}"
+                                               th:text="#{crm.delete}"></a></td>
                                         </p>
                                     </tr>
                                     </tbody>
@@ -106,7 +93,9 @@
                                 <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                                 <div class="form-group row">
                                     <div class="col-12">
-                                        <a th:href="@{|/whitelist/groups/add|}" class="btn btn-danger waves-effect waves-light" th:text="#{whitelist.addNewGroup}"></a>
+                                        <a th:href="@{|/whitelist/groups/add|}"
+                                           class="btn btn-danger waves-effect waves-light"
+                                           th:text="#{whitelist.addNewGroup}"></a>
                                     </div>
                                 </div>
                                 </p>
@@ -137,7 +126,37 @@
 
 <script type="text/javascript">
     var table = $('#datatable-buttons').DataTable({
-        lengthChange: false,
+        processing: true,
+        serverSide: true,
+        ajax: {
+            "url": "/rest/whitelist",
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+                return JSON.stringify(d);
+            }
+        },
+        columns: [
+            {"data": "plateNumber"},
+            {"data": "parkingName"},
+            {"data": "groupName"},
+            {"data": "conditionDetail", "orderable": false,},
+            {
+                "data": "id",
+                "orderable": false,
+                "render": function (data, type) {
+                    return '<a href="' + location.host + '/whitelist/edit/' + data + '">Редактировать</a>';
+                }
+            },
+            {
+                "data": "id",
+                "orderable": false,
+                "render": function (data, type) {
+                    return '<a href="' + location.host + '/whitelist/delete/' + data + '">Удалить</a>';
+                }
+            },
+        ],
         buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: '/plugins/datatables/json/ru.json'
@@ -158,8 +177,8 @@
     table1.buttons().container()
         .appendTo('#datatable-buttons1_wrapper .col-md-6:eq(0)');
 
-    function groupModalContent(groupId){
-        if(groupId){
+    function groupModalContent(groupId) {
+        if (groupId) {
             $.get("/whitelist/group/" + groupId, function (data) {
                 $('#group-close-modal').find('#groupModalBody').html(data);
             });

@@ -2,9 +2,12 @@ package kz.spt.whitelistplugin.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import kz.spt.lib.bootstrap.datatable.Page;
+import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Parking;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
+import kz.spt.whitelistplugin.viewmodel.WhiteListDto;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Date;
@@ -15,6 +18,8 @@ public interface WhitelistService {
     void saveWhitelist(Whitelist whitelist, UserDetails currentUser) throws Exception;
 
     Iterable<Whitelist> listAllWhitelist() throws JsonProcessingException;
+
+    Page<WhiteListDto> listByPage(PagingRequest pagingRequest);
 
     List<Whitelist> listByGroupId(Long groupId);
 
