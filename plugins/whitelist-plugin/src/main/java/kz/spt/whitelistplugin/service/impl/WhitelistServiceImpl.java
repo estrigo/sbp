@@ -107,7 +107,7 @@ public class WhitelistServiceImpl implements WhitelistService {
     }
 
     @Override
-    public List<Whitelist> listAllWhitelist() {
+    public List<Whitelist> listAllWhitelist() throws JsonProcessingException{
         List<Whitelist> whitelistLists = whitelistRepository.findAll();
         for (Whitelist w : whitelistLists) {
             w.setConditionDetail(formConditionDetails(w, w.getCar().getPlatenumber()));
@@ -115,6 +115,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         return whitelistLists;
     }
 
+    @SneakyThrows
     @Override
     public Page<WhiteListDto> listByPage(PagingRequest pagingRequest) {
         var list = listAllWhitelist().stream()
@@ -330,8 +331,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         return whitelistRepository.getExistingPlatenumbers(platenumbers, parkingId, groupId);
     }
 
-    @SneakyThrows
-    public static String formConditionDetails(AbstractWhitelist w, String name) {
+    public static String formConditionDetails(AbstractWhitelist w, String name) throws JsonProcessingException {
         String result = "";
         SimpleDateFormat format = new SimpleDateFormat(datePrettyFormat);
 
