@@ -123,7 +123,7 @@ public class WhitelistServiceImpl implements WhitelistService {
                         .id(m.getId())
                         .plateNumber(m.getCar().getPlatenumber())
                         .parkingName(m.getParking().getName())
-                        .groupName(m.getGroup().getName())
+                        .groupName(m.getGroup() != null ? m.getGroup().getName() : "")
                         .conditionDetail(m.getConditionDetail())
                         .build())
                 .collect(Collectors.toList());
