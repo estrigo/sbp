@@ -38,4 +38,9 @@ public class GateServiceImpl implements GateService {
     public void deleteGate(Gate gate) {
         gateRepository.delete(gate);
     }
+
+    @Override
+    public Iterable<Gate> listAllGatesWithDependents() {
+        return gateRepository.findByGatesByDependents();
+    }
 }

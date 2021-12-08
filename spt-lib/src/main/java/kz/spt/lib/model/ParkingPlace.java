@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Data
@@ -26,4 +27,12 @@ public class ParkingPlace {
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;
+
+    @ManyToMany(cascade = { CascadeType.ALL })
+    @JoinTable(
+            name = "parking_place_cars",
+            joinColumns = { @JoinColumn(name = "parking_place_id") },
+            inverseJoinColumns = { @JoinColumn(name = "car_id") }
+    )
+    private Set<Cars> cars;
 }

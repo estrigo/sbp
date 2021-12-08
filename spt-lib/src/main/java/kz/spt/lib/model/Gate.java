@@ -26,7 +26,7 @@ public class Gate {
         OUT,
         REVERSE;
 
-        public static final Gate.GateType[] ALL = {IN, OUT};
+        public static final Gate.GateType[] ALL = {IN, OUT, REVERSE};
     }
 
     @Id

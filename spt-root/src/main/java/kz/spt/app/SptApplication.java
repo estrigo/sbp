@@ -10,6 +10,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 @Log
 @SpringBootApplication
 @EntityScan(basePackages = {"kz.spt.lib.model", "kz.spt.app.model"})
+@EnableScheduling
 public class SptApplication {
 
     public static void main(String[] args) {

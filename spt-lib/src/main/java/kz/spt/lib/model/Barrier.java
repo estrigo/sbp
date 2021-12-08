@@ -55,24 +55,9 @@ public class Barrier {
     @JoinColumn(name = "gate")
     private Gate gate;
 
-    // --- Данные петли для проверки присуствия машины  (До шлагбаума)
+    // --- Данные петли для проверки присуствия машины  (После шлагбаума)
     @Enumerated(EnumType.STRING)
     @Column(name = "before_loop_type")
-    private Barrier.BarrierType beforeLoopType;
-
-    private String beforeLoopIp;
-
-    private String beforeLoopPassword;
-
-    private String beforeLoopOid;
-
-    private Integer beforeLoopSnmpVersion;
-
-    private Integer beforeLoopDefaultValue;
-
-    // --- Данные петли для проверки присуствия машины (После шлагбаума)
-    @Enumerated(EnumType.STRING)
-    @Column(name = "loop_type")
     private Barrier.BarrierType loopType;
 
     private String loopIp;
@@ -83,8 +68,18 @@ public class Barrier {
 
     private Integer loopSnmpVersion;
 
-    private Integer loopDefaultValue;
+    // --- Данные фотоэлемента для проверки присуствия машины (До шлагбаума)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "loop_type")
+    private Barrier.BarrierType photoElementType;
 
+    private String photoElementIp;
+
+    private String photoElementPassword;
+
+    private String photoElementOid;
+
+    private Integer photoElementSnmpVersion;
 
     @CreationTimestamp
     private Date created;
