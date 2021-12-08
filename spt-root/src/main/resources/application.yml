@@ -53,3 +53,6 @@ images:
 barrier:
   open:
     disabled: true
+status:
+  check:
+    fixedDelay: 2500

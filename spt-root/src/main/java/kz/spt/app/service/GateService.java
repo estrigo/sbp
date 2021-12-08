@@ -13,4 +13,6 @@ public interface GateService {
     void saveGate(Gate gate);
 
     void deleteGate(Gate gate);
+
+    Iterable<Gate> listAllGatesWithDependents();
 }

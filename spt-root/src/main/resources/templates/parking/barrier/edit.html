@@ -76,7 +76,7 @@
         <div class="col-md-6">
             <div class="form-group">
                 <label for="loopIpAddress" class="control-label" th:text="#{barrier.ipAddress}"></label>
-                <input type="text" class="form-control" th:field="*{loopIp}" th:value="*{ip}" id="loopIpAddress" placeholder="1.1.1.1">
+                <input type="text" class="form-control" th:field="*{loopIp}" th:value="*{loopIp}" id="loopIpAddress" placeholder="1.1.1.1">
             </div>
         </div>
         <div class="col-md-6">
@@ -115,12 +115,51 @@
                 </select>
             </div>
         </div>
+    </div>
+
+
+    <hr />
+    <h4 th:text="#{barrier.photoElementSettings}"></h4>
+    <div class="row">
         <div class="col-md-6">
             <div class="form-group">
-                <label for="loopDefaultValue" class="control-label" th:text="#{barrier.defaultValue}"></label>
-                <select th:field="*{loopDefaultValue}" th:value="*{loopDefaultValue}" class="form-control" id="loopDefaultValue">
+                <label for="photoElementIpAddress" class="control-label" th:text="#{barrier.ipAddress}"></label>
+                <input type="text" class="form-control" th:field="*{photoElementIp}" th:value="*{photoElementIp}" id="photoElementIpAddress" placeholder="1.1.1.1">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="photoElementPassword" class="control-label" th:text="#{barrier.password}"></label>
+                <input type="text" class="form-control" id="photoElementPassword" th:field="*{photoElementPassword}" th:value="*{photoElementPassword}">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="type" class="control-label" th:text="#{barrier.type}"></label>
+                <select th:field="*{photoElementType}" th:value="*{photoElementType}" class="form-control" id="photoElementType">
+                    <option th:each="barrierType : ${T(kz.spt.lib.model.Barrier.BarrierType).ALL}"
+                            th:value="${barrierType}" th:text="#{'barrier.barrierType.' + ${barrierType}}">
+                    </option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="form-group">
+                <label for="photoElementOid" class="control-label" th:text="#{barrier.loopOid}"></label>
+                <input type="text" class="form-control" id="photoElementOid" th:field="*{photoElementOid}" th:value="*{photoElementOid}">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="loopSnmpVersion" class="control-label" th:text="#{barrier.snmpVersion}"></label>
+                <select th:field="*{photoElementSnmpVersion}" th:value="*{photoElementSnmpVersion}" class="form-control" id="photoElementSnmpVersion">
                     <option value="0">0</option>
                     <option value="1">1</option>
+                    <option value="3">3</option>
                 </select>
             </div>
         </div>

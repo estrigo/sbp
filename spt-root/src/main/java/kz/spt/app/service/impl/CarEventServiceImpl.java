@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.app.job.StatusCheckJob;
+import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.extension.PluginRegister;
@@ -96,10 +98,44 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put(StaticValues.carImagePropertyName, carImageUrl);
             properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
 
-            if(Gate.GateType.IN.equals(camera.getGate().getGateType())){
-                handleCarInEvent(eventDto, camera, properties, format);
-            } else if(Gate.GateType.OUT.equals(camera.getGate().getGateType())){
-                handleCarOutEvent(eventDto, camera, properties, format);
+            for(GateStatusDto gate: StatusCheckJob.globalGateDtos){
+                if(gate.gateId == camera.getGate().getId()){
+                    if(gate.frontCamera.id == camera.getId()){
+                        gate.frontCamera.carEventDto = eventDto;
+                        gate.frontCamera.properties  = properties;
+                    }
+                    if(gate.backCamera.id == camera.getId()){
+                        gate.backCamera.carEventDto = eventDto;
+                        gate.backCamera.properties  = properties;
+                    }
+                    if(Gate.GateType.REVERSE.equals(camera.getGate().getGateType())){
+                        if(gate.lastClosedTime == null || System.currentTimeMillis() - gate.lastClosedTime > 5500){ //если последний раз закрыли больше 6 секунды
+                            boolean hasAccess = checkSimpleWhiteList(eventDto, camera, properties, format);
+                            if(hasAccess){
+                                boolean openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+                                if(openResult){
+                                    gate.gateStatus = GateStatusDto.GateStatus.Open;
+                                    gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
+                                    gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
+                                    gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
+                                    gate.lastTriggeredTime = System.currentTimeMillis();
+                                }
+                            }
+                        }
+                    } else {
+                        boolean hasAccess = checkSimpleWhiteList(eventDto, camera, properties, format);
+                        if(hasAccess){
+                            boolean openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+                            if(openResult){
+                                gate.gateStatus = GateStatusDto.GateStatus.Open;
+                                gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
+                                gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
+                                gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
+                                gate.lastTriggeredTime = System.currentTimeMillis();
+                            }
+                        }
+                    }
+                }
             }
         } else {
             properties.put("type", EventLogService.EventType.Success);
@@ -245,6 +281,39 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("type", EventLogService.EventType.Deny);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number);
         }
+    }
+
+    private boolean checkSimpleWhiteList(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format) throws Exception{
+        boolean hasAccess = false;
+        JsonNode whitelistCheckResults = getWhiteLists(camera.getGate().getParking().getId(), eventDto.car_number, eventDto.event_time, format, properties);
+        if(whitelistCheckResults != null){
+            ArrayNode whitelistCheckResultArray = (ArrayNode) whitelistCheckResults;
+            JsonNode customDetails = null;
+            Iterator<JsonNode> iterator = whitelistCheckResultArray.iterator();
+            while (iterator.hasNext()){
+                JsonNode node = iterator.next();
+                if("CUSTOM".equals(node.get("type").asText())){
+                    if(!node.has("exceedPlaceLimit") || (node.has("exceedPlaceLimit") && !node.get("exceedPlaceLimit").booleanValue())){
+                        hasAccess = true;
+                    } else {
+                        customDetails = node;
+                    }
+                } else {
+                    hasAccess = true;
+                }
+            }
+            if(hasAccess){
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом листе.");
+            } else {
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "В проезде отказано: Все места в для группы " + customDetails.get("groupName").textValue() + " заняты следующим списком " + customDetails.get("placeOccupiedCars").toString() + ". Авто "  + eventDto.car_number);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "В проезде отказано: Все места в для группы " + customDetails.get("groupName").textValue() + " заняты следующим списком " + customDetails.get("placeOccupiedCars").toString() + ". Авто "  + eventDto.car_number);
+            }
+        } else {
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number);
+        }
+        return hasAccess;
     }
 
     private JsonNode getWhiteLists(Long parkingId, String car_number, Date event_time, SimpleDateFormat format, Map<String, Object> properties) throws Exception {
