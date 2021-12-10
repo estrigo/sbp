@@ -100,11 +100,11 @@ public class CarEventServiceImpl implements CarEventService {
 
             for(GateStatusDto gate: StatusCheckJob.globalGateDtos){
                 if(gate.gateId == camera.getGate().getId()){
-                    if(gate.frontCamera.id == camera.getId()){
+                    if(gate.frontCamera != null && gate.frontCamera.id == camera.getId()){
                         gate.frontCamera.carEventDto = eventDto;
                         gate.frontCamera.properties  = properties;
                     }
-                    if(gate.backCamera.id == camera.getId()){
+                    if(gate.backCamera != null && gate.backCamera.id == camera.getId()){
                         gate.backCamera.carEventDto = eventDto;
                         gate.backCamera.properties  = properties;
                     }
@@ -175,10 +175,9 @@ public class CarEventServiceImpl implements CarEventService {
 
     private void handleCarInEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format) throws Exception{
         eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
+        properties.put("type", EventLogService.EventType.Success);
 
         if(!carStateService.checkIsLastEnteredNotLeft(eventDto.car_number)){
-            eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
-            properties.put("type", EventLogService.EventType.Success);
             eventLogService.createEventLog(Camera.class.getSimpleName(), camera.getId(), properties, "Зафиксирован новый номер авто " + eventDto.car_number);
 
             carsService.createCar(eventDto.car_number);
@@ -284,6 +283,11 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     private boolean checkSimpleWhiteList(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format) throws Exception{
+
+        eventLogService.sendSocketMessage(ArmEventType.Photo, camera.getId(), eventDto.car_number, eventDto.car_picture);
+        eventLogService.createEventLog(Camera.class.getSimpleName(), camera.getId(), properties, "Зафиксирован новый номер авто " + eventDto.car_number);
+        carsService.createCar(eventDto.car_number);
+
         boolean hasAccess = false;
         JsonNode whitelistCheckResults = getWhiteLists(camera.getGate().getParking().getId(), eventDto.car_number, eventDto.event_time, format, properties);
         if(whitelistCheckResults != null){

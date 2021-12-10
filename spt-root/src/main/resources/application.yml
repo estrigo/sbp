@@ -55,4 +55,7 @@ barrier:
     disabled: true
 status:
   check:
-    fixedDelay: 2500
+    fixedDelay: 250
+car:
+  movement:
+    simulate: false

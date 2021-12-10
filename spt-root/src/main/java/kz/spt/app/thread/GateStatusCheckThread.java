@@ -25,8 +25,6 @@ public class GateStatusCheckThread extends Thread {
     }
 
     public void run() {
-        log.info("Thread for - " + gateStatusDto.gateId);
-
         BarrierStatusDto barrier = gateStatusDto.barrier;
         CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
         if(barrier != null && cameraStatusDto != null){ // Данные шлагбаума и камеры заполнены
@@ -62,7 +60,6 @@ public class GateStatusCheckThread extends Thread {
                             log.info("Gate opened with ip magnetic loop: " + gateStatusDto.gateId);
                         }
                     }
-                    log.info("WAITING REVERSE MODE or TRIGGER FROM CVT");
                 }
 
                 if(GateStatusDto.DirectionStatus.FORWARD.equals(gateStatusDto.directionStatus)){
@@ -103,6 +100,7 @@ public class GateStatusCheckThread extends Thread {
                                 if(result){
                                     gateStatusDto.gateStatus  = GateStatusDto.GateStatus.Closed;
                                     gateStatusDto.directionStatus = GateStatusDto.DirectionStatus.QUIT;
+                                    gateStatusDto.lastClosedTime = System.currentTimeMillis();
                                 }
                             } catch (IOException | ParseException | InterruptedException e) {
                                 e.printStackTrace();
@@ -112,22 +110,26 @@ public class GateStatusCheckThread extends Thread {
                 } else if(GateStatusDto.DirectionStatus.REVERSE.equals(gateStatusDto.directionStatus)){
                     if(GateStatusDto.SensorStatus.Triggerred.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.WAIT.equals(gateStatusDto.sensor2)){
                         if(getSensorStatus(gateStatusDto.photoElement) == 1) {
+                            log.info("CAR ON ML AND PHE triggerred");
                             gateStatusDto.sensor2 = GateStatusDto.SensorStatus.ON;
                             gateStatusDto.lastTriggeredTime = System.currentTimeMillis();
                         }
                     } else if(GateStatusDto.SensorStatus.Triggerred.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.ON.equals(gateStatusDto.sensor2)){
                         if(getSensorStatus(gateStatusDto.photoElement) == 0 && getSensorStatus(gateStatusDto.loop) == 0){
+                            log.info("CAR leaved ML AND PHE not triggered");
                             gateStatusDto.sensor2 = GateStatusDto.SensorStatus.PASSED;
                             gateStatusDto.sensor1 = GateStatusDto.SensorStatus.Quit;
                         } else if(getSensorStatus(gateStatusDto.photoElement) == 1 || getSensorStatus(gateStatusDto.loop) == 1){
+                            log.info("CAR on ML AND/or on PHE");
                             gateStatusDto.lastTriggeredTime = System.currentTimeMillis();
                         }
                     } else if(GateStatusDto.SensorStatus.Quit.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.PASSED.equals(gateStatusDto.sensor2)) {
                         if(getSensorStatus(gateStatusDto.photoElement) == 0 && getSensorStatus(gateStatusDto.loop) == 0){
-                            log.info("We close the gate: " + gateStatusDto.gateId);
+                            log.info("Start closing the gate: " + gateStatusDto.gateId);
                             try {
                                 boolean result = barrierService.closeBarrier(gateStatusDto.gateType, null, gateStatusDto.barrier);
                                 if(result){
+                                    log.info("We closed the gate: " + gateStatusDto.gateId);
                                     gateStatusDto.gateStatus  = GateStatusDto.GateStatus.Closed;
                                     gateStatusDto.directionStatus = GateStatusDto.DirectionStatus.QUIT;
                                     gateStatusDto.sensorsForward();
