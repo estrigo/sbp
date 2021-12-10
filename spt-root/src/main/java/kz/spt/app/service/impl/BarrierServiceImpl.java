@@ -1,5 +1,6 @@
 package kz.spt.app.service.impl;
 
+import kz.spt.app.job.CarSimulateJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.SensorStatusDto;
 import kz.spt.lib.model.Barrier;
@@ -64,7 +65,13 @@ public class BarrierServiceImpl implements BarrierService {
             } else {
                 return -1;
             }
-        } else {
+        } else { // for test
+            if("loop".equals(sensor.sensorName) && CarSimulateJob.magneticLoopMap.containsKey(sensor.barrierId)){
+                return CarSimulateJob.magneticLoopMap.get(sensor.barrierId) ? 1 : 0;
+            }
+            if("photoElement".equals(sensor.sensorName) && CarSimulateJob.photoElementLoopMap.containsKey(sensor.barrierId)){
+                return CarSimulateJob.photoElementLoopMap.get(sensor.barrierId) ? 1 : 0;
+            }
             return -1;
         }
     }

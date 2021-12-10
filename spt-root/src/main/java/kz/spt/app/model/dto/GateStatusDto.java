@@ -62,19 +62,24 @@ public class GateStatusDto {
             }
             if(barrier.getLoopIp() != null && barrier.getLoopPassword() != null && barrier.getLoopOid() != null && barrier.getLoopType() != null){
                 gateStatusDto.loop = new SensorStatusDto();
+                gateStatusDto.loop.barrierId = barrier.getId();
                 gateStatusDto.loop.ip = barrier.getLoopIp();
                 gateStatusDto.loop.password = barrier.getLoopPassword();
                 gateStatusDto.loop.oid = barrier.getLoopOid();
                 gateStatusDto.loop.snmpVersion = barrier.getLoopSnmpVersion();
                 gateStatusDto.loop.type = barrier.getLoopType();
+                gateStatusDto.loop.sensorName = "loop";
             }
             if(barrier.getPhotoElementIp() != null && barrier.getPhotoElementPassword() != null && barrier.getPhotoElementOid() != null && barrier.getPhotoElementType() != null){
                 gateStatusDto.photoElement = new SensorStatusDto();
+                gateStatusDto.photoElement.barrierId = barrier.getId();
                 gateStatusDto.photoElement.ip = barrier.getPhotoElementIp();
                 gateStatusDto.photoElement.password = barrier.getPhotoElementPassword();
                 gateStatusDto.photoElement.oid = barrier.getPhotoElementOid();
                 gateStatusDto.photoElement.snmpVersion = barrier.getPhotoElementSnmpVersion();
                 gateStatusDto.photoElement.type = barrier.getPhotoElementType();
+                gateStatusDto.photoElement.sensorName = "photoElement";
+
             }
         }
         List<Camera> cameraList = gate.getCameraList();
@@ -90,7 +95,7 @@ public class GateStatusDto {
                 }
             }
         }
-        gateStatusDto.isSimpleWhitelist = (Gate.GateType.REVERSE.equals(gate.getGateType()) && gateStatusDto.frontCamera != null && gateStatusDto.backCamera != null) || (Gate.GateType.OUT.equals(gate.getGateType()) && gateStatusDto.frontCamera != null);
+        gateStatusDto.isSimpleWhitelist = (Gate.GateType.REVERSE.equals(gate.getGateType()) && gateStatusDto.backCamera == null) || (Gate.GateType.OUT.equals(gate.getGateType()) && gateStatusDto.frontCamera == null);
 
         return gateStatusDto;
     }

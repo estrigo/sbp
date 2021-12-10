@@ -38,13 +38,10 @@ public class StatusCheckJob {
         if(globalGateDtos.isEmpty()){
             refreshGlobalGateIds();
         }
-
-        log.info("Fixed delay task - " + System.currentTimeMillis() / 1000);
-
         for (GateStatusDto gateStatusDto : globalGateDtos) {
             if(!isGatesProcessing.containsKey(gateStatusDto.gateId) || !isGatesProcessing.get(gateStatusDto.gateId)){
                 isGatesProcessing.put(gateStatusDto.gateId, true);
-                new GateStatusCheckThread(gateStatusDto, barrierService, carEventService).start();
+                new GateStatusCheckThread(gateStatusDto, barrierService).start();
             }
         }
     }
