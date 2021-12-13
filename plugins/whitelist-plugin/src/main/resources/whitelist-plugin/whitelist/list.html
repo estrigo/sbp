@@ -16,11 +16,10 @@
                     <div class="card-body">
                         <ul class="nav nav-tabs">
                             <li class="nav-item">
-                                <a href="#whitelist" data-toggle="tab" aria-expanded="true" class="nav-link active">Белый
-                                    лист</a>
+                                <a href="#whitelist" data-toggle="tab" aria-expanded="true" class="nav-link active" th:text="#{whitelist.title}"></a>
                             </li>
                             <li class="nav-item">
-                                <a href="#groups" data-toggle="tab" aria-expanded="false" class="nav-link">Группы</a>
+                                <a href="#groups" data-toggle="tab" aria-expanded="false" class="nav-link" th:text="#{whitelist.groups}"></a>
                             </li>
                         </ul>
                         <div class="tab-content">
@@ -124,7 +123,16 @@
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
-<script type="text/javascript">
+<script th:inline="javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    var edit = 'Редактировать';
+    var del = 'Удалить';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+        edit = "Edit";
+        del = "Delete";
+    }
     var table = $('#datatable-buttons').DataTable({
         processing: true,
         serverSide: true,
@@ -146,20 +154,20 @@
                 "data": "id",
                 "orderable": false,
                 "render": function (data, type) {
-                    return '<a href="' + location.host + '/whitelist/edit/' + data + '">Редактировать</a>';
+                    return '<a href="edit/' + data + '">'+ edit + '</a>';
                 }
             },
             {
                 "data": "id",
                 "orderable": false,
                 "render": function (data, type) {
-                    return '<a href="' + location.host + '/whitelist/delete/' + data + '">Удалить</a>';
+                    return '<a href="delete/' + data + '">'+ del + '</a>';
                 }
             },
         ],
         buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
-            url: '/plugins/datatables/json/ru.json'
+            url: address
         }
     });
 
@@ -167,7 +175,7 @@
         lengthChange: false,
         buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
-            url: '/plugins/datatables/json/ru.json'
+            url: address
         }
     });
 

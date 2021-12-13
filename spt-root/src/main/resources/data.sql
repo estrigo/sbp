@@ -2,7 +2,7 @@ insert into role (role_id, role, plugin) values (1, 'ROLE_ADMIN', null),
                                                 (2, 'ROLE_USER', null),
                                                 (3, 'ROLE_MANAGER', null),
                                                 (4, 'ROLE_OWNER', null),
-                                                (4, 'PLUGIN_ROLE_TEST', 'test-plugin');
+                                                (5, 'PLUGIN_ROLE_TEST', 'test-plugin');
 
 INSERT INTO users (id, email, enabled, first_name, last_name, password, username)
 VALUES ('1', 'a@u', '1', 'AFN', 'ALN', '$2a$10$iPgnenFIoM67cYL9let/iOLBphbDaEkAz3BmiXOCmWq5A4M2TkXAG', 'admin'),

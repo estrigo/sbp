@@ -13,17 +13,17 @@
                         <h5 class="mt-0 card-title" th:text="${camera.name}"></h5>
                         <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
                     </div>
-                    <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event" th:data-src="@{/assets/images/no_photo.jpeg}" data-caption="No data">
-                        <img th:id="${'image' + camera.id}" class="img-fluid m-b-10" th:src="@{/assets/images/no_photo.jpeg}" alt="Card image cap">
+                    <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event" th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}">
+                        <img th:id="${'image' + camera.id}" class="img-fluid m-b-10" th:src="@{#{arm.noImageLink}}" alt="Card image cap">
                     </a>
                     <table class="w-100">
                         <tbody>
                             <tr>
                                 <td class="w-50">
-                                    <button type="button" class="btn btn-outline-success w-100" th:cameraId="${camera.id}" th:onclick="openGate(this.getAttribute('cameraId'))">Открыть</button>
+                                    <button type="button" class="btn btn-outline-success w-100" th:cameraId="${camera.id}" th:onclick="openGate(this.getAttribute('cameraId'))" th:text="#{arm.open}"></button>
                                 </td>
                                 <td class="w-50">
-                                    <button type="button" class="btn btn-outline-warning w-100" th:cameraId="${camera.id}" th:onclick="closeGate(this.getAttribute('cameraId'))">Закрыть</button>
+                                    <button type="button" class="btn btn-outline-warning w-100" th:cameraId="${camera.id}" th:onclick="closeGate(this.getAttribute('cameraId'))" th:text="#{arm.close}"></button>
                                 </td>
                             </tr>
                         </tbody>
@@ -32,7 +32,7 @@
                         <tbody>
                             <tr>
                                 <td class="w-50">
-                                    <input type="text" th:id="${'plateNumber' + camera.id}" placeholder="Гос.номер" class="form-control w-100">
+                                    <input type="text" th:id="${'plateNumber' + camera.id}" th:placeholder="#{arm.licensePlate}" class="form-control w-100">
                                 </td>
                                 <td class="w-25">
                                     <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}" th:onclick="passCar(this.getAttribute('cameraId'))" th:text="#{crm.letIn}"></button>
@@ -54,7 +54,7 @@
 <script th:src="@{/assets/js/stomp.js}"></script>
 <script th:src="@{/assets/js/fancybox.umd.js}"></script>
 
-<script type="text/javascript">
+<script th:inline="javascript">
     function connect() {
         var socket = new WebSocket('ws://' + window.location.host + '/greeting');
         ws = Stomp.over(socket);

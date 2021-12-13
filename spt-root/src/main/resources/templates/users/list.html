@@ -8,9 +8,8 @@
 <div class="content">
     <div class="container">
         <div class="row">
+
             <div class="col-12">
-
-
                 <div class="card table-responsive">
                     <div class="card-header" th:text="#{user.users}"></div>
                     <div class="card-body">
@@ -41,7 +40,6 @@
                         <div sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')" id = "edit">
 
                         </div>
-
                         </p>
                     </div>
                 </div>
@@ -66,7 +64,16 @@
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
-<script type="text/javascript">
+<script th:inline="javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    var edit = 'Редактировать';
+    var del = 'Удалить';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+        edit = "Edit";
+        del = "Delete";
+    }
     const table = $('#userTable').DataTable({
         "processing": true,
         "serverSide": true,
@@ -91,7 +98,7 @@
             "render" : function(id){
                  if($('#edit').length)
                 {
-                return '<a href = "edit/' + id+'">Редактировать<a>';
+                return '<a href = "edit/' + id+'">' + edit +'<a>';
                 }
                 return '';
             }},
@@ -99,7 +106,7 @@
             "render" : function(id){
                  if($('#delete').length)
                 {
-                    return '<a href = "delete/' + id+'">Удалить<a>';
+                    return '<a href = "delete/' + id+'">'+ del + '<a>';
                 }
                 else
                 {
@@ -109,7 +116,7 @@
         ],
         "buttons": ['copy', 'excel', 'pdf', 'csv'],
         language: {
-            url: '/plugins/datatables/json/ru.json'
+            url: address
         }
     });
 
@@ -117,6 +124,16 @@
     $(document).on('ready',function(){
         interval = setInterval(showButtons,1000);
     });
+
+   /* function getCookie(cname) {
+        const cookies = Object.fromEntries(
+            document.cookie.split(/; /).map(c => {
+                const [key, v] = c.split('=', 2);
+                return [key, decodeURIComponent(v)];
+            }),
+        );
+        return cookies[cname] || '';
+    }*/
 
     function showButtons(){
         if(table.buttons().container().length > 0){

@@ -86,7 +86,16 @@
 
 <script th:src="@{/assets/js/fancybox.umd.js}"></script>
 
-<script type="text/javascript">
+<script th:inline="javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    var edit = 'Редактировать';
+    var del = 'Удалить';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+        edit = "Edit";
+        del = "Delete";
+    }
        const table = $('#eventTable').DataTable({
         "processing": true,
         "serverSide": true,
@@ -131,7 +140,7 @@
             [1, "desc" ]
         ],
         language: {
-           url: '/plugins/datatables/json/ru.json'
+           url: address
         },
         searching: false
    });

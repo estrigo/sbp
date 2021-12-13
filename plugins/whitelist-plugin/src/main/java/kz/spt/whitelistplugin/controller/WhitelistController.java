@@ -160,7 +160,7 @@ public class WhitelistController {
         }
         if(whitelist.getPlatenumber()!=null){
             Whitelist existingWhiteList = whitelistService.findByPlatenumber(whitelist.getPlatenumber(), whitelist.getParkingId());
-            if(!id.equals(existingWhiteList.getId())){
+            if(existingWhiteList!= null && !id.equals(existingWhiteList.getId())){
                 ObjectError error = new ObjectError("plateNumberExist", "Запись с гос. номером уже существует в текущем паркинге");
                 bindingResult.addError(error);
             }
