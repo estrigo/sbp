@@ -29,6 +29,7 @@ public class CarStateDto {
     public BigDecimal rateAmount;
     public String inGate;
     public String outGate;
+    public String parking;
 
     public Date getNullSafeInTimestamp(){
         return this.inTimestamp == null ? new Date() : this.inTimestamp;
@@ -59,10 +60,10 @@ public class CarStateDto {
         dto.paid = carState.getPaid()!=null && carState.getPaid();
         dto.payment = carState.getAmount() == null ? BigDecimal.ZERO : carState.getAmount();
         if(carState.getInGate()!=null){
-            dto.inGate = carState.getInGate().getName();
+            dto.inGate = carState.getInGate().getName() + ", " + carState.getParking().getName();
         }
         if(carState.getOutGate()!=null){
-            dto.outGate = carState.getOutGate().getName();
+            dto.outGate = carState.getOutGate().getName() + ", " + carState.getParking().getName();
         }
 
         StringBuilder durationBuilder = new StringBuilder("");

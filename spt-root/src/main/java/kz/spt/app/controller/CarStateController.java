@@ -16,6 +16,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 @Controller
 @RequestMapping("/journal")
@@ -46,8 +47,16 @@ public class CarStateController {
             carStateFilterDto.dateFromString = format.format(dateFrom);
             model.addAttribute("carStateFilterDto", carStateFilterDto);
         }
-        model.addAttribute("allInGates", gateService.listGatesByType(Gate.GateType.IN));
-        model.addAttribute("allOutGates", gateService.listGatesByType(Gate.GateType.OUT));
+
+        List<Gate> allReverseGates = (List<Gate>) gateService.listGatesByType(Gate.GateType.REVERSE);
+        List<Gate> allInGates = (List<Gate>) gateService.listGatesByType(Gate.GateType.IN);
+        List<Gate> allOutGates = (List<Gate>) gateService.listGatesByType(Gate.GateType.OUT);
+        if(allReverseGates.size() > 0){
+            allInGates.addAll(allReverseGates);
+            allOutGates.addAll(allReverseGates);
+        }
+        model.addAttribute("allInGates", allInGates);
+        model.addAttribute("allOutGates", allOutGates);
         return "journal/list";
     }
 
@@ -56,8 +65,15 @@ public class CarStateController {
         if(carStateFilterDto != null){
             model.addAttribute("carStateFilterDto", carStateFilterDto);
         }
-        model.addAttribute("allInGates", gateService.listGatesByType(Gate.GateType.IN));
-        model.addAttribute("allOutGates", gateService.listGatesByType(Gate.GateType.OUT));
+        List<Gate> allReverseGates = (List<Gate>) gateService.listGatesByType(Gate.GateType.REVERSE);
+        List<Gate> allInGates = (List<Gate>) gateService.listGatesByType(Gate.GateType.IN);
+        List<Gate> allOutGates = (List<Gate>) gateService.listGatesByType(Gate.GateType.OUT);
+        if(allReverseGates.size() > 0){
+            allInGates.addAll(allReverseGates);
+            allOutGates.addAll(allReverseGates);
+        }
+        model.addAttribute("allInGates", allInGates);
+        model.addAttribute("allOutGates", allOutGates);
         return "journal/list";
     }
 }
