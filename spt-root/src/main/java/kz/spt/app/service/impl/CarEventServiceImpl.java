@@ -20,6 +20,7 @@ import kz.spt.lib.service.CarImageService;
 import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,10 +28,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Log
@@ -47,7 +45,8 @@ public class CarEventServiceImpl implements CarEventService {
     private final PluginService pluginService;
 
     private static Map<String, Long> concurrentHashMap = new ConcurrentHashMap<>();
-
+    private ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(LocaleContextHolder.getLocale().toString().substring(0,2)));
+//
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                CarStateService carStateService, CarImageService carImageService,
                                BarrierService barrierService, PluginService pluginService){
@@ -103,12 +102,13 @@ public class CarEventServiceImpl implements CarEventService {
                 handleCarOutEvent(eventDto, camera, properties, format);
             }
         } else {
-            eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address);
+            eventLogService.createEventLog(null, null, properties, bundle.getString("events.newLicensePlateIdentified") + " " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address);
         }
     }
 
     @Override
     public void handleTempCarEvent(MultipartFile file, String json) throws Exception {
+
         Map<String,String> camerasIpMap = new HashMap<>();
         camerasIpMap.put("camera-1", "10.66.22.20");
         camerasIpMap.put("camera-2","10.66.22.23");

@@ -53,13 +53,18 @@
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
-<script type="text/javascript">
+<script th:inline="javascript">
     //Buttons examples
+    var address = '/plugins/datatables/json/ru.json';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+    }
     var table = $('#datatable-buttons').DataTable({
         lengthChange: false,
         buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
-            url: '/plugins/datatables/json/ru.json'
+            url: address
         }
     });
 

@@ -91,6 +91,15 @@
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
 <script type="text/javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    var edit = 'Редактировать';
+    var del = 'Удалить';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+        edit = "Edit";
+        del = "Delete";
+    }
        const table = $('#carStateTable').DataTable({
         "processing": true,
         "serverSide": true,
@@ -146,7 +155,7 @@
             [ 0, "desc" ]
         ],
         language: {
-            url: '/plugins/datatables/json/ru.json'
+            url: address
         },
         searching: false
     });

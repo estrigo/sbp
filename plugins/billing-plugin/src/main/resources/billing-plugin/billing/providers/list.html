@@ -10,18 +10,18 @@
         <div class="row">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header">Провайдеры</div>
+                    <div class="card-header" th:text="#{billing.providers}"></div>
                     <div class="card-body">
                         <hr>
                         <table  class="table table-striped table-bordered" style="width:100%" id="providers">
                             <thead>
                             <tr>
                                 <th>№</th>
-                                <th>Провайдер</th>
-                                <th>Название</th>
-                                <th>Id клиента</th>
-                                <th>Разрешен</th>
-                                <th>Безналичная оплата</th>
+                                <th th:text="#{billing.provider}"></th>
+                                <th th:text="#{billing.name}"></th>
+                                <th th:text="#{billing.clientId}"></th>
+                                <th th:text="#{billing.allowed}"></th>
+                                <th th:test="#{billing.paymentType}"></th>
                                 <th></th>
                             </tr>
                             </thead>
@@ -69,7 +69,16 @@
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
-<script type="text/javascript">
+<script th:inline="javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    var edit = 'Редактировать';
+    var del = 'Удалить';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+        edit = "Edit";
+        del = "Delete";
+    }
     $(document).ready(function() {
         var table = $('#providers').DataTable({
             "processing": true,
@@ -87,11 +96,11 @@
                 { "data": "cashlessPayment" },
                 {"data": "id",
                  "render" : function(id){
-                    return '<a href="#" data-toggle="modal" data-target="#provider-close-modal" providerid="' + id + '" onClick="providerModalContent(this.getAttribute(\'providerid\'))">Редактировать </a>';
+                    return '<a href="#" data-toggle="modal" data-target="#provider-close-modal" providerid="' + id + '" onClick="providerModalContent(this.getAttribute(\'providerid\'))">'+ edit + ' </a>';
                 }}
             ],
             language: {
-                url: '/plugins/datatables/json/ru.json'
+                url: address
             }
         } );
 

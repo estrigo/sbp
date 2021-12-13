@@ -63,7 +63,14 @@
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
-<script type="text/javascript">
+<script th:inline="javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    //C:\Users\ordaz\Documents\Parking\smartparking-server\spt-root\src\main\resources\static\plugins\datatables\json\ru.json
+    console.log(address);
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+    }
     function rateModalContent(rateId, parkingId){
         if(rateId){
             $.get("/rate/" + rateId, function (data) {
@@ -81,7 +88,7 @@
         lengthChange: false,
         buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
-            url: '/plugins/datatables/json/ru.json'
+            url: address
         }
     });
 

@@ -62,7 +62,16 @@
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
-<script type="text/javascript">
+<script  th:inline="javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    var edit = 'Редактировать';
+    var del = 'Удалить';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+        edit = "Edit";
+        del = "Delete";
+    }
     const table = $('#customerTable').DataTable({
         "processing": true,
         "serverSide": true,
@@ -86,7 +95,7 @@
             "render" : function(id){
                 if($('#edit').length)
                 {
-                return '<a href = "edit/' + id+'">Редактировать<a>';
+                return '<a href = "edit/' + id+'">' + edit + '<a>';
                 }
                 return '';
             }},
@@ -94,7 +103,7 @@
             "render" : function(id){
                 if($('#delete').length)
                 {
-                    return '<a href = "delete/' + id+'">Удалить<a>';
+                    return '<a href = "delete/' + id+'">'+ del + '<a>';
                 }
                 else
                 {
@@ -102,7 +111,10 @@
                 }
             }}
         ],
-        "buttons": ['copy', 'excel', 'pdf', 'csv']
+        "buttons": ['copy', 'excel', 'pdf', 'csv'],
+        language: {
+            url: address
+        }
     });
 
     var interval = null;

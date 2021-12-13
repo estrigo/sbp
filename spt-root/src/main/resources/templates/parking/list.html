@@ -13,51 +13,52 @@
                     <div class="card-header" th:text="#{parking.parkings}"></div>
                     <div class="card-body">
 
-          <table id="datatable-buttons" class="table table-bordered">
-            <thead>
-            <tr>
-              <th><a th:text="#{ordinal.number}"></a></th>
-              <th><a th:text="#{parking.name}"></a></th>
-              <th><a th:text="#{parking.description}"></a></th>
-              <th><a th:text="#{parking.type}"></a></th>
-              <th><a th:text="#{parking.parkingSpaceNumber}"></a></th>
-              <th><a th:text="#{parking.gateSize}"></a></th>
-              <th></th>
-              <th></th>
-              <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="parking, iterStat : ${parkings}">
-              <td th:text="${iterStat.count}"></td>
-              <td th:text="${parking.name}"></td>
-              <td th:text="${parking.description}"></td>
-              <td th:text="#{'parking.parkingType.' + ${parking.parkingType}}"></td>
-              <td th:text="${parking.parkingSpaceNumber}"></td>
-              <td th:text="${parking.gateList.size()}"></td>
-              <td>
-                <a th:href="@{|/parking/details/${parking.id}|}" th:text="#{parking.settings}"></a>
-              </td>
-              <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_SUPERADMIN', 'ROLE_ADMIN')">
-              <td><a th:href="@{|/parking/edit/${parking.id}|}" th:text="#{crm.edit}"></a></td>
-              </p>
-              <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
-                <td><a th:href="@{|/parking/delete/${parking.id}|}" th:text="#{crm.delete}"></a></td>
-              </p>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-        <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
-        <div class="form-group row">
-          <div class="col-12">
-            <a th:href="@{|/parking/add|}" class="btn btn-danger waves-effect waves-light" th:text="#{crm.add}"></a>
-          </div>
-        </div>
-        </p>
-      </div>
-    </div>
-  </div>
+                      <table id="datatable-buttons" class="table table-bordered">
+                        <thead>
+                        <tr>
+                          <th><a th:text="#{ordinal.number}"></a></th>
+                          <th><a th:text="#{parking.name}"></a></th>
+                          <th><a th:text="#{parking.description}"></a></th>
+                          <th><a th:text="#{parking.type}"></a></th>
+                          <th><a th:text="#{parking.parkingSpaceNumber}"></a></th>
+                          <th><a th:text="#{parking.gateSize}"></a></th>
+                          <th></th>
+                          <th></th>
+                          <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="parking, iterStat : ${parkings}">
+                          <td th:text="${iterStat.count}"></td>
+                          <td th:text="${parking.name}"></td>
+                          <td th:text="${parking.description}"></td>
+                          <td th:text="#{'parking.parkingType.' + ${parking.parkingType}}"></td>
+                          <td th:text="${parking.parkingSpaceNumber}"></td>
+                          <td th:text="${parking.gateList.size()}"></td>
+                          <td>
+                            <a th:href="@{|/parking/details/${parking.id}|}" th:text="#{parking.settings}"></a>
+                          </td>
+                          <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                          <td><a th:href="@{|/parking/edit/${parking.id}|}" th:text="#{crm.edit}"></a></td>
+                          </p>
+                          <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                            <td><a th:href="@{|/parking/delete/${parking.id}|}" th:text="#{crm.delete}"></a></td>
+                          </p>
+                        </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                    <div class="form-group row">
+                      <div class="col-12">
+                        <a th:href="@{|/parking/add|}" class="btn btn-danger waves-effect waves-light" th:text="#{crm.add}"></a>
+                      </div>
+                    </div>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
 </div>
 
 <!-- Required datatable js -->
@@ -77,12 +78,17 @@
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
 <script type="text/javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+    }
   //Buttons examples
   var table = $('#datatable-buttons').DataTable({
     lengthChange: false,
     buttons: ['copy', 'excel', 'pdf', 'csv'],
     language: {
-      url: '/plugins/datatables/json/ru.json'
+      url: address
     }
   });
 
