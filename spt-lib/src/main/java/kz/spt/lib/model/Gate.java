@@ -23,8 +23,8 @@ public class Gate {
 
     public enum GateType {
         IN,
-        OUT
-//        REVERSE
+        OUT,
+        REVERSE
         ;
 
         public static final Gate.GateType[] ALL = {IN, OUT};
