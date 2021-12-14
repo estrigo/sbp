@@ -101,33 +101,4 @@ public class CarImageServiceImpl implements CarImageService {
         }
         return null;
     }
-
-    @Override
-    public void fixSmall() throws IOException {
-        List<EventLog> eventLogs = (List<EventLog>) eventLogService.listAllLogs();
-        for(EventLog eventLog:eventLogs){
-            Map<String, Object> props = eventLog.getProperties();
-            if(props != null && props.containsKey(StaticValues.carImagePropertyName)) {
-                String carImageUrl = (String) props.get(StaticValues.carImagePropertyName);
-                if(carImageUrl.contains(imagePath)){
-                    carImageUrl = carImageUrl.replace(imagePath, "");
-                    props.put(StaticValues.carImagePropertyName, carImageUrl);
-                }
-                if(!props.containsKey(StaticValues.carSmallImagePropertyName)){
-                    String fullPath = imagePath + carImageUrl;
-                    String resizedfullPath = imagePath + carImageUrl.replace(StaticValues.carImageExtension,"") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension;
-                    Thumbnails.of(fullPath)
-                            .size(200, 100)
-                            .outputFormat("JPEG")
-                            .outputQuality(1)
-                            .toFile(resizedfullPath);
-                    props.put(StaticValues.carSmallImagePropertyName, resizedfullPath.replace(imagePath, ""));
-                    eventLog.setProperties(props);
-                    eventLogService.save(eventLog);
-                    log.info("saving event log: "  + eventLog.getId() + " " + StaticValues.carImagePropertyName
-                            + ": " + props.get(StaticValues.carImagePropertyName) + " " + StaticValues.carSmallImagePropertyName + ": " + props.get(StaticValues.carSmallImagePropertyName));
-                }
-            }
-        }
-    }
 }

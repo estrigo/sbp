@@ -10,6 +10,4 @@ public interface CarImageService {
     byte[] getImage(Long eventId) throws IOException;
 
     byte[] getSmallImage(Long eventId) throws IOException;
-
-    void fixSmall() throws IOException;
 }

@@ -36,6 +36,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL55Dialect
+#    open-in-view: false TODO: enable in production to reduce database connect on every web page call
   thymeleaf:
     mode: HTML
     cache: false
@@ -47,12 +48,14 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+server:
+  tomcat:
+    protocol-header: x-forwarded-proto
 org:
   hibernate:
     envers:
       audit_table_suffix: _audit
       default_schema: new_parking
-
 images:
   file:
     path: "/files/pictures"
