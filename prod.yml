@@ -65,3 +65,6 @@ barrier:
 car:
   movement:
     simulate: false
+status:
+  check:
+    fixedDelay: 250
