@@ -55,3 +55,6 @@ images:
 barrier:
   open:
     disabled: false
+car:
+  movement:
+    simulate: false
