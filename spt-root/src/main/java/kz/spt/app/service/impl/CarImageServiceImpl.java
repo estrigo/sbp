@@ -75,29 +75,10 @@ public class CarImageServiceImpl implements CarImageService {
     }
 
     @Override
-    public byte[] getImage(Long eventId) throws IOException {
-
-        EventLog eventLog = eventLogService.getById(eventId);
-
-        if(eventLog!=null && eventLog.getProperties()!=null && eventLog.getProperties().containsKey(StaticValues.carImagePropertyName)) {
-            File thePath = new File(imagePath + eventLog.getProperties().get(StaticValues.carImagePropertyName));
-            if (thePath.exists()) {
-                return Files.readAllBytes(thePath.toPath());
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public byte[] getSmallImage(Long eventId) throws IOException {
-
-        EventLog eventLog = eventLogService.getById(eventId);
-
-        if(eventLog!=null && eventLog.getProperties()!=null && eventLog.getProperties().containsKey(StaticValues.carSmallImagePropertyName)) {
-            File thePath = new File(imagePath + eventLog.getProperties().get(StaticValues.carSmallImagePropertyName));
-            if (thePath.exists()) {
-                return Files.readAllBytes(thePath.toPath());
-            }
+    public byte[] getByUrl(String url) throws IOException {
+        File thePath = new File(imagePath + url);
+        if (thePath.exists()) {
+            return Files.readAllBytes(thePath.toPath());
         }
         return null;
     }

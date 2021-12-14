@@ -1,10 +1,12 @@
 package kz.spt.app.rest;
 
 import kz.spt.lib.service.CarImageService;
+import lombok.extern.java.Log;
 import org.springframework.web.bind.annotation.*;
 
+@Log
 @RestController
-@RequestMapping(value = "/rest/image")
+@RequestMapping(value = "/files")
 public class ImageRestController {
 
     private CarImageService carImageService;
@@ -13,15 +15,9 @@ public class ImageRestController {
         this.carImageService = carImageService;
     }
 
-    @RequestMapping(value = "/value/{eventId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/pictures/{year}/{month}/{day}/{filename}", method = RequestMethod.GET)
     @ResponseBody
-    public byte[] getImageContent(@PathVariable("eventId") Long eventId) throws Exception{
-        return carImageService.getImage(eventId);
-    }
-
-    @RequestMapping(value = "/value/small/{eventId}", method = RequestMethod.GET)
-    @ResponseBody
-    public byte[] getSmallImageContent(@PathVariable("eventId") Long eventId) throws Exception{
-        return carImageService.getSmallImage(eventId);
+    public byte[] getImageContent(@PathVariable("year") String year, @PathVariable("month") String month, @PathVariable("day") String day,@PathVariable("filename") String filename) throws Exception{
+        return carImageService.getByUrl("/" + year + "/" + month + "/" + day  + "/" + filename );
     }
 }
