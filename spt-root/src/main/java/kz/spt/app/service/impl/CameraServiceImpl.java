@@ -1,5 +1,6 @@
 package kz.spt.app.service.impl;
 
+import kz.spt.app.job.StatusCheckJob;
 import kz.spt.lib.model.Camera;
 import kz.spt.app.repository.CameraRepository;
 import kz.spt.app.service.CameraService;
@@ -34,10 +35,12 @@ public class CameraServiceImpl implements CameraService {
     @Override
     public void saveCamera(Camera camera) {
         cameraRepository.save(camera);
+        StatusCheckJob.emptyGlobalGateDtos();
     }
 
     @Override
     public void deleteCamera(Camera camera) {
         cameraRepository.delete(camera);
+        StatusCheckJob.emptyGlobalGateDtos();
     }
 }
