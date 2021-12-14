@@ -46,11 +46,16 @@ public class StatusCheckJob {
         }
     }
 
-    public void refreshGlobalGateIds(){
+    private void refreshGlobalGateIds(){
         globalGateDtos = new ConcurrentLinkedQueue<>();
         List<Gate> allGates = (List<Gate>) gateService.listAllGatesWithDependents();
         for (Gate gate : allGates){
             globalGateDtos.add(GateStatusDto.fromGate(gate));
         }
+    }
+
+    public static void emptyGlobalGateDtos(){
+        isGatesProcessing = new ConcurrentHashMap<>();
+        globalGateDtos = new ConcurrentLinkedQueue<>();
     }
 }

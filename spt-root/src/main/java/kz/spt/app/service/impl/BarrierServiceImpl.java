@@ -1,6 +1,7 @@
 package kz.spt.app.service.impl;
 
 import kz.spt.app.job.CarSimulateJob;
+import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.SensorStatusDto;
 import kz.spt.lib.model.Barrier;
@@ -42,11 +43,13 @@ public class BarrierServiceImpl implements BarrierService {
     @Override
     public void saveBarrier(Barrier barrier) {
         barrierRepository.save(barrier);
+        StatusCheckJob.emptyGlobalGateDtos();
     }
 
     @Override
     public void deleteBarrier(Barrier barrier) {
         barrierRepository.delete(barrier);
+        StatusCheckJob.emptyGlobalGateDtos();
     }
 
     @Override
