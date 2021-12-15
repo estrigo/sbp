@@ -85,17 +85,10 @@
 
 <script th:src="@{/assets/js/fancybox.umd.js}"></script>
 
-<script th:inline="javascript">
-    var address = '/plugins/datatables/json/ru.json';
-    var edit = 'Редактировать';
-    var del = 'Удалить';
-    var locale = [[${#locale}]];
-    if (locale == "en") {
-        address = "";
-        edit = "Edit";
-        del = "Delete";
-    }
-       const table = $('#eventTable').DataTable({
+<script type="text/javascript">
+    var locale = '[[${#locale}]]';
+
+    const table = $('#eventTable').DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
@@ -122,21 +115,22 @@
                 "data": "imgUrl",
                 "orderable": false,
                 "render": function (data, type, event) {
-                    if (!data || data === "" || data.length === 0) {
+                    console.log(data,event);
+                    if (data === "" || data.length === 0) {
                         return ''
                     }
 
                     return '<a class="col col--4" data-fancybox="event" data-src="/rest/image/value/' + event.id + '" data-caption="' + event.plateNumber + '">' +
-                        '<img class="thumb-img" alt src="'+ data +''+ event.id + '"></a>';
+                        '<img class="thumb-img" alt src="' + data + '' + event.id + '"></a>';
                 },
-                "width" : "20%"
+                "width": "20%"
             }
         ],
         "order": [ //[[ in thymeleaf is inline script
             [1, "desc"]
         ],
         language: {
-           url: address
+            url: locale === "en" ? "" : "/plugins/datatables/json/ru.json"
         },
     });
 
