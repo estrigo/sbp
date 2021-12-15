@@ -43,7 +43,7 @@
                                 <label class="col-2 col-form-label" th:text="#{whitelist.carsList}"></label>
                                 <div class="col-10">
                                     <div class="input-group">
-                                        <select multiple class="form-control" data-role="tagsinput" th:field="*{plateNumbers}" id = "plateNumbers" placeholder="Add car numbers">
+                                        <select multiple class="form-control" data-role="tagsinput" th:field="*{plateNumbers}" id = "plateNumbers" th:placeholder="#{whitelist.addCarNumbers}">
                                         </select>
                                         <span class="input-group-btn">
                                             <button type="button" class="btn waves-effect waves-light btn-primary" th:text="#{crm.clear}" onclick="clearCarList()"></button>

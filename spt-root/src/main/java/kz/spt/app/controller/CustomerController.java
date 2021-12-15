@@ -2,6 +2,7 @@ package kz.spt.app.controller;
 
 import kz.spt.lib.model.Customer;
 import kz.spt.lib.service.CustomerService;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 @Controller
 @RequestMapping("/customers")
@@ -64,23 +67,30 @@ public class CustomerController {
 
     @PostMapping("/add")
     public String processRequestAddParking(Model model, @Valid Customer customer, BindingResult bindingResult) {
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru-RU";
+        }
+
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
         if (bindingResult.hasErrors()) {
             return "customers/add";
         } else {
             if (customer.getFirstName() == null || "".equals(customer.getFirstName())) {
-                ObjectError error = new ObjectError("emptyFirstName", "Please fill first name");
+                ObjectError error = new ObjectError("emptyFirstName", bundle.getString("user.firstNameIsNull"));
                 bindingResult.addError(error);
             }
             if (customer.getLastName() == null || "".equals(customer.getLastName())) {
-                ObjectError error = new ObjectError("emptyLastName", "Please fill last name");
+                ObjectError error = new ObjectError("emptyLastName", bundle.getString("user.lastNameIsNull"));
                 bindingResult.addError(error);
             }
             if (customer.getPhoneNumber() == null || "".equals(customer.getPhoneNumber())) {
-                ObjectError error = new ObjectError("emptyPhoneNumber", "Please fill phone number");
+                ObjectError error = new ObjectError("emptyPhoneNumber", bundle.getString("customer.emptyPhoneNumber"));
                 bindingResult.addError(error);
             }
             if (customer.getPlateNumbers() == null || customer.getPlateNumbers().size() == 0) {
-                ObjectError error = new ObjectError("emptyCarList", "Please fill car plate numbers");
+                ObjectError error = new ObjectError("emptyCarList", "Please, fill car plate numbers");
                 bindingResult.addError(error);
             }
 

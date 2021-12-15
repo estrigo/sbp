@@ -7,6 +7,7 @@ import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import kz.spt.whitelistplugin.service.WhitelistGroupsService;
 import kz.spt.whitelistplugin.service.WhitelistService;
 import lombok.extern.java.Log;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 @Log
 @Controller
@@ -52,20 +55,27 @@ public class WhitelistController {
 
     @PostMapping("/add")
     public String processRequestAddWhitelist(Model model, @Valid Whitelist whitelist, BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru-RU";
+        }
+
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
         if(whitelist.getPlatenumber()==null || whitelist.getPlatenumber().length() < 3  || whitelist.getPlatenumber().length() > 16){
-            ObjectError error = new ObjectError("invalidPlateNumber", "Не правильный гос. номер");
+            ObjectError error = new ObjectError("invalidPlateNumber", bundle.getString("whitelist.notCorrectLicensePlace"));
             bindingResult.addError(error);
         }
         if(whitelist.getPlatenumber() != null && whitelistService.findByPlatenumber(whitelist.getPlatenumber(), whitelist.getParkingId())!=null){
-            ObjectError error = new ObjectError("plateNumberExist", "Запись с таким гос. номером уже существует в текущем паркинге");
+            ObjectError error = new ObjectError("plateNumberExist", bundle.getString("whitelist.plateNumberExists"));
             bindingResult.addError(error);
         }
         if(Whitelist.Type.PERIOD.equals(whitelist.getType()) && whitelist.getAccessEndString() == null){
-            ObjectError error = new ObjectError("fillDateEndIsRequired", "Заполнение даты окончания обязательно");
+            ObjectError error = new ObjectError("fillDateEndIsRequired", bundle.getString("whitelist.fillEndDateIsRequired"));
             bindingResult.addError(error);
         }
         if(Whitelist.Type.CUSTOM.equals(whitelist.getType()) && (whitelist.getCustomJson() == null || whitelist.getCustomJson().length() < 4)){
-            ObjectError error = new ObjectError("selectHourAndDays", "Выбор дней и часов обязательно");
+            ObjectError error = new ObjectError("selectHourAndDays", bundle.getString("whitelist.selectHourAndDays"));
             bindingResult.addError(error);
         }
 
@@ -88,13 +98,19 @@ public class WhitelistController {
 
     @PostMapping("/groups/add")
     public String processRequestAddGroup(Model model, @Valid WhitelistGroups whitelistGroups, BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru-RU";
+        }
 
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
         if(whitelistGroups.getName() == null || "".equals(whitelistGroups.getName())){
-            ObjectError error = new ObjectError("emptyGroupName", "Пожалуйста заполните название группы");
+            ObjectError error = new ObjectError("emptyGroupName", bundle.getString("whitelist.fillTheGroupName"));
             bindingResult.addError(error);
         }
         if(whitelistGroups.getPlateNumbers() == null || whitelistGroups.getPlateNumbers().size() == 0){
-            ObjectError error = new ObjectError("emptyCarList", "Пожалуйста заполните гос. номеры");
+            ObjectError error = new ObjectError("emptyCarList", bundle.getString("whitelist.fillTheLicensePlate"));
             bindingResult.addError(error);
         } else {
             List<String> plateNumbers = new ArrayList<>();
@@ -114,17 +130,17 @@ public class WhitelistController {
                             text.append("," + platenumber);
                         }
                     }
-                    ObjectError error = new ObjectError("someCarsExist", "Для следующих номеров уже существует записи в текущем паркинге: " + text);
+                    ObjectError error = new ObjectError("someCarsExist", bundle.getString("whitelist.someCarsExist") + text);
                     bindingResult.addError(error);
                 }
             }
         }
         if(Whitelist.Type.PERIOD.equals(whitelistGroups.getType()) && whitelistGroups.getAccessEndString() == null){
-            ObjectError error = new ObjectError("fillDateEndIsRequired", "Заполнение даты окончания обязательно");
+            ObjectError error = new ObjectError("fillDateEndIsRequired", bundle.getString("whitelist.fillEndDateIsRequired"));
             bindingResult.addError(error);
         }
         if(Whitelist.Type.CUSTOM.equals(whitelistGroups.getType()) && (whitelistGroups.getCustomJson() == null || whitelistGroups.getCustomJson().length() < 4)){
-            ObjectError error = new ObjectError("selectHourAndDays", "Выбор дней и часов обязательно");
+            ObjectError error = new ObjectError("selectHourAndDays", bundle.getString("whitelist.selectHourAndDays"));
             bindingResult.addError(error);
         }
         if (bindingResult.hasErrors()) {
@@ -154,23 +170,31 @@ public class WhitelistController {
     @PostMapping("/edit/{id}")
     public String processRequestEditWhitelist(Model model, @PathVariable Long id, @Valid Whitelist whitelist,
                                         BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru-RU";
+        }
+
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
+
         if(whitelist.getPlatenumber()==null || whitelist.getPlatenumber().length() < 3 || whitelist.getPlatenumber().length() > 16){
-            ObjectError error = new ObjectError("invalidPlateNumber", "Не правильный гос. номер");
+            ObjectError error = new ObjectError("invalidPlateNumber", bundle.getString("whitelist.invalidLicensePlate"));
             bindingResult.addError(error);
         }
         if(whitelist.getPlatenumber()!=null){
             Whitelist existingWhiteList = whitelistService.findByPlatenumber(whitelist.getPlatenumber(), whitelist.getParkingId());
             if(existingWhiteList!= null && !id.equals(existingWhiteList.getId())){
-                ObjectError error = new ObjectError("plateNumberExist", "Запись с гос. номером уже существует в текущем паркинге");
+                ObjectError error = new ObjectError("plateNumberExist", bundle.getString("whitelist.plateNumberExist"));
                 bindingResult.addError(error);
             }
         }
         if(Whitelist.Type.PERIOD.equals(whitelist.getType()) && whitelist.getAccessEndString() == null){
-            ObjectError error = new ObjectError("fillDateEndIsRequired", "Заполнение даты окончания обязательно");
+            ObjectError error = new ObjectError("fillDateEndIsRequired", bundle.getString("whitelist.fillEndDateIsRequired"));
             bindingResult.addError(error);
         }
         if(Whitelist.Type.CUSTOM.equals(whitelist.getType()) && (whitelist.getCustomJson() == null || whitelist.getCustomJson().length() < 4)){
-            ObjectError error = new ObjectError("selectHourAndDays", "Выбор дней и часов обязательно");
+            ObjectError error = new ObjectError("selectHourAndDays", bundle.getString("whitelist.selectHourAndDays"));
             bindingResult.addError(error);
         }
         if (bindingResult.hasErrors()) {
@@ -199,12 +223,19 @@ public class WhitelistController {
     @PostMapping("/group/edit/{id}")
     public String processRequestEditWhitelist(Model model, @PathVariable Long id, @Valid WhitelistGroups whitelistGroups,
                                               BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru-RU";
+        }
+
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
         if(whitelistGroups.getName() == null || "".equals(whitelistGroups.getName())){
-            ObjectError error = new ObjectError("emptyGroupName", "Пожалуйста заполните название группы");
+            ObjectError error = new ObjectError("emptyGroupName", bundle.getString("whitelist.fillTheGroupName"));
             bindingResult.addError(error);
         }
         if(whitelistGroups.getPlateNumbers() == null || whitelistGroups.getPlateNumbers().size() == 0){
-            ObjectError error = new ObjectError("emptyCarList", "Пожалуйста заполните гос. номеры");
+            ObjectError error = new ObjectError("emptyCarList", bundle.getString("whitelist.fillTheLicensePlate"));
             bindingResult.addError(error);
         } else {
             List<String> plateNumbers = new ArrayList<>();
@@ -224,17 +255,17 @@ public class WhitelistController {
                             text.append("," + platenumber);
                         }
                     }
-                    ObjectError error = new ObjectError("someCarsExist", "Для следующих номеров уже существует записи в текущем паркинге: " + text);
+                    ObjectError error = new ObjectError("someCarsExist", bundle.getString("whitelist.someCarsExist") + text);
                     bindingResult.addError(error);
                 }
             }
         }
         if(Whitelist.Type.PERIOD.equals(whitelistGroups.getType()) && whitelistGroups.getAccessEndString() == null){
-            ObjectError error = new ObjectError("fillDateEndIsRequired", "Заполнение даты окончания обязательно");
+            ObjectError error = new ObjectError("fillDateEndIsRequired", bundle.getString("whitelist.fillEndDateIsRequired"));
             bindingResult.addError(error);
         }
         if(Whitelist.Type.CUSTOM.equals(whitelistGroups.getType()) && (whitelistGroups.getCustomJson() == null || whitelistGroups.getCustomJson().length() < 4)){
-            ObjectError error = new ObjectError("selectHourAndDays", "Выбор дней и часов обязательно");
+            ObjectError error = new ObjectError("selectHourAndDays", bundle.getString("whitelist.selectHourAndDays"));
             bindingResult.addError(error);
         }
         if (bindingResult.hasErrors()) {
