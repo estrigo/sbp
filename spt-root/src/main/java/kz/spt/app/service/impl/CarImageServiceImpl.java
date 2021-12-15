@@ -75,59 +75,11 @@ public class CarImageServiceImpl implements CarImageService {
     }
 
     @Override
-    public byte[] getImage(Long eventId) throws IOException {
-
-        EventLog eventLog = eventLogService.getById(eventId);
-
-        if(eventLog!=null && eventLog.getProperties()!=null && eventLog.getProperties().containsKey(StaticValues.carImagePropertyName)) {
-            File thePath = new File(imagePath + eventLog.getProperties().get(StaticValues.carImagePropertyName));
-            if (thePath.exists()) {
-                return Files.readAllBytes(thePath.toPath());
-            }
+    public byte[] getByUrl(String url) throws IOException {
+        File thePath = new File(imagePath + url);
+        if (thePath.exists()) {
+            return Files.readAllBytes(thePath.toPath());
         }
         return null;
-    }
-
-    @Override
-    public byte[] getSmallImage(Long eventId) throws IOException {
-
-        EventLog eventLog = eventLogService.getById(eventId);
-
-        if(eventLog!=null && eventLog.getProperties()!=null && eventLog.getProperties().containsKey(StaticValues.carSmallImagePropertyName)) {
-            File thePath = new File(imagePath + eventLog.getProperties().get(StaticValues.carSmallImagePropertyName));
-            if (thePath.exists()) {
-                return Files.readAllBytes(thePath.toPath());
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void fixSmall() throws IOException {
-        List<EventLog> eventLogs = (List<EventLog>) eventLogService.listAllLogs();
-        for(EventLog eventLog:eventLogs){
-            Map<String, Object> props = eventLog.getProperties();
-            if(props != null && props.containsKey(StaticValues.carImagePropertyName)) {
-                String carImageUrl = (String) props.get(StaticValues.carImagePropertyName);
-                if(carImageUrl.contains(imagePath)){
-                    carImageUrl = carImageUrl.replace(imagePath, "");
-                    props.put(StaticValues.carImagePropertyName, carImageUrl);
-                }
-                if(!props.containsKey(StaticValues.carSmallImagePropertyName)){
-                    String fullPath = imagePath + carImageUrl;
-                    String resizedfullPath = imagePath + carImageUrl.replace(StaticValues.carImageExtension,"") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension;
-                    Thumbnails.of(fullPath)
-                            .size(200, 100)
-                            .outputFormat("JPEG")
-                            .outputQuality(1)
-                            .toFile(resizedfullPath);
-                    props.put(StaticValues.carSmallImagePropertyName, resizedfullPath.replace(imagePath, ""));
-                    eventLog.setProperties(props);
-                    eventLogService.save(eventLog);
-                    log.info("saving event log: "  + eventLog.getId() + " " + StaticValues.carImagePropertyName
-                            + ": " + props.get(StaticValues.carImagePropertyName) + " " + StaticValues.carSmallImagePropertyName + ": " + props.get(StaticValues.carSmallImagePropertyName));
-                }
-            }
-        }
     }
 }

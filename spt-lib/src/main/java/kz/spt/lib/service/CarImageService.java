@@ -7,9 +7,5 @@ public interface CarImageService {
 
     String saveImage(String base64, Date eventDate, String carNumber) throws IOException;
 
-    byte[] getImage(Long eventId) throws IOException;
-
-    byte[] getSmallImage(Long eventId) throws IOException;
-
-    void fixSmall() throws IOException;
+    byte[] getByUrl(String url) throws IOException;
 }

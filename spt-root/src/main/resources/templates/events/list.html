@@ -122,11 +122,11 @@
             "render" : function (data, type, event) {
              if(event.properties){
                  if(event.properties['carSmallImageUrl']){
-                     return '<a class="col col--4" data-fancybox="event" data-src="/rest/image/value/' + event.id + '" data-caption="' + event.plateNumber + '">' +
-                     '<img class="thumb-img" alt src="/rest/image/value/small/' + event.id + '"></a>';
+                     return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.properties['carImageUrl'] + '" data-caption="' + event.plateNumber + '">' +
+                     '<img class="thumb-img" alt src="/files/pictures' + event.properties['carSmallImageUrl'] + '"></a>';
                  } else if(event.properties['carImageUrl']){
-                     return '<a class="col col--4" data-fancybox="event" data-src="/rest/image/value/' + event.id + '" data-caption="' + event.plateNumber + '">' +
-                         '<img class="thumb-img" alt src="/rest/image/value/' + event.id + '"></a>';
+                     return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.properties['carImageUrl'] + '" data-caption="' + event.plateNumber + '">' +
+                         '<img class="thumb-img" alt src="/files/pictures' + event.properties['carImageUrl'] + '"></a>';
                  }
                  return '';
              } else {
