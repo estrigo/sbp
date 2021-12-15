@@ -165,20 +165,19 @@
                 }
             },
         ],
-        buttons: ['copy', 'excel', 'pdf', 'csv'],
+        "buttons": ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: address
         }
     });
 
     var table1 = $('#datatable-buttons1').DataTable({
-        lengthChange: false,
-        buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: address
-        }
+        },
+        lengthChange: false,
+        buttons: ['copy', 'excel', 'pdf', 'csv']
     });
-
     table.buttons().container()
         .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
 

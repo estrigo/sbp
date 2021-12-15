@@ -3,6 +3,7 @@ package kz.spt.app.controller;
 import kz.spt.lib.model.User;
 import kz.spt.app.service.RoleService;
 import kz.spt.lib.service.UserService;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.thymeleaf.util.StringUtils;
 
 import javax.validation.Valid;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 @Controller
 @RequestMapping("/users")
@@ -73,22 +76,29 @@ public class UserController {
     @PostMapping("/edit/{id}")
     public String processRequestEditUser(Model model, @PathVariable Long id, @Valid User user,
                                          BindingResult bindingResult) {
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru-RU";
+        }
+
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
         if(StringUtils.isEmpty(user.getUsername())){
-            ObjectError error = new ObjectError("usernameIsNull", "Пользователь не может быть пустым");
+            ObjectError error = new ObjectError("usernameIsNull", bundle.getString("user.usernameIsNull"));
             bindingResult.addError(error);
         } else {
             User userFromDB = userService.findByUsername(user.getUsername());
             if (userFromDB != null && !userFromDB.getId().equals(user.getId())) {
-                ObjectError error = new ObjectError("alreadyRegisteredMessage", "В системе уже существует пользователь");
+                ObjectError error = new ObjectError("alreadyRegisteredMessage", bundle.getString("user.alreadyRegisteredMessage"));
                 bindingResult.addError(error);
             }
         }
         if(StringUtils.isEmpty(user.getFirstName())){
-            ObjectError error = new ObjectError("firstnameIsNull", "Имя не может быть пустым");
+            ObjectError error = new ObjectError("firstnameIsNull", bundle.getString("user.firstNameIsNull"));
             bindingResult.addError(error);
         }
         if(StringUtils.isEmpty(user.getLastName())){
-            ObjectError error = new ObjectError("lastnameIsNull", "Фамилия не может быть пустым");
+            ObjectError error = new ObjectError("lastnameIsNull", bundle.getString("user.lastNameIsNull"));
             bindingResult.addError(error);
         }
 
