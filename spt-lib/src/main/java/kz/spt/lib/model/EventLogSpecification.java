@@ -18,10 +18,6 @@ public class EventLogSpecification {
         return (root, query, builder) -> builder.like(root.get(EventLog_.plateNumber), "%" + plateNumber + "%");
     }
 
-    public static Specification<EventLog> likeDescription(String description) {
-        return (root, query, builder) -> builder.like(root.get(EventLog_.description), "%" + description + "%");
-    }
-
     public static Specification<EventLog> orderById() {
         return (root, query, builder) -> {
             query.orderBy(builder.desc(root.get(EventLog_.id)));

@@ -5,7 +5,6 @@
 <link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
 <link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
 <link th:href="@{/assets/css/fancybox.css}" rel="stylesheet" type="text/css"/>
-
 <div class="content">
     <div class="container">
         <div class="row">
@@ -13,30 +12,29 @@
                 <div class="card table-responsive">
                     <div class="card-header" th:text="#{events.events}"></div>
                     <div class="card-body">
-                        <form th:action="@{|/events/list|}" th:object="${eventFilterDto}" method="post">
+                        <form th:action="@{|/events/list|}" th:object="${eventFilterDto}" method="post" id="search">
                             <div class="row">
-                                <div class="col-3">
-                                    <input type="datetime-local" class="form-control" th:field="*{dateToString}" th:value="*{dateToString}"
-                                           placeholder="#{events.dateTo}">
-                                </div>
-                                <div class="col-3">
-                                    <input type="datetime-local" class="form-control" th:field="*{dateFromString}" th:value="*{dateFromString}"
+                                <div class="col-4">
+                                    <label th:text="#{events.dateFrom}"></label>
+                                    <input type="datetime-local" class="form-control filter"
+                                           th:field="*{dateFromString}"
+                                           th:value="*{dateFromString}"
                                            th:placeholder="#{events.dateFrom}">
                                 </div>
-                                <div class="col-3">
-                                    <input type="text" class="form-control" th:field="*{plateNumber}" th:value="*{plateNumber}" th:placeholder="#{car.platenumber}">
-                                </div>
-                                <div class="col-3">
-                                    <button type="submit" class="btn btn-success" th:text="#{crm.search}"></button>
-                                    <button type="submit" class="btn btn-secondary" th:text="#{crm.clear}"></button>
+                                <div class="col-4">
+                                    <label th:text="#{events.dateTo}"></label>
+                                    <input type="datetime-local" class="form-control filter" th:field="*{dateToString}"
+                                           th:value="*{dateToString}"
+                                           placeholder="#{events.dateTo}">
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-3">
-                                    <input type="text" class="form-control" th:field="*{description}" th:value="*{description}" th:placeholder="#{events.description}">
+                            <div class="row mt-1">
+                                <div class="col-4">
+                                    <input type="text" class="form-control" th:field="*{plateNumber}"
+                                           th:value="*{plateNumber}" th:placeholder="#{car.platenumber}">
                                 </div>
-                                <div class="col-3">
-                                    <select class="form-control select2" id="gateId" th:field="*{gateId}">
+                                <div class="col-4">
+                                    <select class="form-control select2 filter" id="gateId" th:field="*{gateId}">
                                         <option value="" th:text="#{events.gate}"></option>
                                         <option th:each="r : ${allGates}" th:value="${r.id}" th:text="${r.name}">
                                         </option>
@@ -55,6 +53,7 @@
                                         <th><a th:text="#{car.platenumber}"></a></th>
                                         <th><a th:text="#{events.date}"></a></th>
                                         <th><a th:text="#{parking.description}"></a></th>
+                                        <th><a th:text="#{events.type}"></a></th>
                                         <th><a th:text="#{events.photo}"></a></th>
                                     </tr>
                                     </thead>
@@ -87,17 +86,17 @@
 <script th:src="@{/assets/js/fancybox.umd.js}"></script>
 
 <script type="text/javascript">
-       const table = $('#eventTable').DataTable({
+    const table = $('#eventTable').DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
-            "url": "/rest/events?dateFromString="+$('#dateFromString').val()+"&dateToString="+$('#dateToString').val()+
-                "&plateNumber="+$('#plateNumber').val()+"&description="+$('#description').val()+"&gateId="+$('#gateId').val(),
+            "url": "/rest/events?dateFromString=" + $('#dateFromString').val() + "&dateToString=" + $('#dateToString').val() +
+                "&plateNumber=" + $('#plateNumber').val() + "&gateId=" + $('#gateId').val(),
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",
             "data": function (d) {
-            return JSON.stringify(d);
+                return JSON.stringify(d);
             }
 
         },
@@ -106,48 +105,59 @@
             "targets": "_all"
         }],
         "columns": [
-            {"data": "plateNumber", "width" : "15%"},
+            {"data": "plateNumber", "width": "15%"},
             {"data": "created", "width": "25%"},
-            {"data": "description", "width" : "25%"},
-            {"data": "properties",
-            "render" : function (data, type, event) {
-             if(event.properties){
-                 if(event.properties['carSmallImageUrl']){
-                     return '<a class="col col--4" data-fancybox="event" data-src="/rest/image/value/' + event.id + '" data-caption="' + event.plateNumber + '">' +
-                     '<img class="thumb-img" alt src="/rest/image/value/small/' + event.id + '"></a>';
-                 } else if(event.properties['carImageUrl']){
-                     return '<a class="col col--4" data-fancybox="event" data-src="/rest/image/value/' + event.id + '" data-caption="' + event.plateNumber + '">' +
-                         '<img class="thumb-img" alt src="/rest/image/value/' + event.id + '"></a>';
-                 }
-                 return '';
-             } else {
-                 return '';
-             }
-            },
-            "width" : "25%"
-           }
+            {"data": "description", "orderable": false},
+            {"data": "eventType", "orderable": false},
+            {
+                "data": "imgUrl",
+                "orderable": false,
+                "render": function (data, type, event) {
+                    if (!data || data === "" || data.length === 0) {
+                        return ''
+                    }
+
+                    return '<a class="col col--4" data-fancybox="event" data-src="/rest/image/value/' + event.id + '" data-caption="' + event.plateNumber + '">' +
+                        '<img class="thumb-img" alt src="'+ data +''+ event.id + '"></a>';
+                },
+                "width" : "20%"
+            }
         ],
         "order": [ //[[ in thymeleaf is inline script
-            [1, "desc" ]
+            [1, "desc"]
         ],
         language: {
-           url: '/plugins/datatables/json/ru.json'
+            url: '/plugins/datatables/json/ru.json'
         },
-        searching: false
-   });
+    });
 
-   var interval = null;
-   $(document).on('ready',function(){
-       interval = setInterval(showButtons,1000);
-   });
+    var interval = null;
+    $(document).on('ready', function () {
+        interval = setInterval(hideFilter, 10);
+        interval = setInterval(showButtons, 1000);
+    });
 
-   function showButtons(){
-       if(table.buttons().container().length > 0){
-           clearInterval(interval);
-           table.buttons().container().appendTo('#eventTable_wrapper .col-md-6:eq(0)');
-       }
-   }
+    function showButtons() {
+        if (table.buttons().container().length > 0) {
+            clearInterval(interval);
+            table.buttons().container().appendTo('#eventTable_wrapper .col-md-6:eq(0)');
+        }
+    }
 
+    function hideFilter() {
+        if (!$("#eventTable_filter").hasClass("d-none")) {
+            clearInterval(interval);
+            $("#eventTable_filter").addClass("d-none");
+        }
+    }
+
+    $('.filter').on('change', function () {
+        $('#search').submit();
+    })
+
+    $('#plateNumber').on('keyup', function () {
+        table.search(this.value).draw();
+    });
 </script>
 
 </html>

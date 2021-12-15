@@ -43,6 +43,7 @@ public class ArmServiceImpl implements ArmService {
             properties.put("gateName", camera.getGate().getName());
             properties.put("gateDescription", camera.getGate().getDescription());
             properties.put("gateType", camera.getGate().getGateType().toString());
+            properties.put("type", EventLogService.EventType.Allow);
 
             Boolean result = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
             if(result){
@@ -74,6 +75,7 @@ public class ArmServiceImpl implements ArmService {
             properties.put("gateName", camera.getGate().getName());
             properties.put("gateDescription", camera.getGate().getDescription());
             properties.put("gateType", camera.getGate().getGateType().toString());
+            properties.put("type", EventLogService.EventType.Allow);
 
             Boolean result = barrierService.closeBarrier(camera.getGate().getBarrier(), properties);
             if(result){

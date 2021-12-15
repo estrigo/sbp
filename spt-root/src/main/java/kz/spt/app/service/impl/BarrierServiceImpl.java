@@ -113,6 +113,7 @@ public class BarrierServiceImpl implements BarrierService {
                     }
                     if(!isOpenValueChanged){
                         result = false;
+                        properties.put("type", EventLogService.EventType.Error);
                         eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда":"въезда/выезда")) +" не получилась перенести на значение 1 чтобы открыть " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
                     }
                 } else {
@@ -131,6 +132,7 @@ public class BarrierServiceImpl implements BarrierService {
                                 }
                             }
                             if (!isReturnValueChanged) {
+                                properties.put("type", EventLogService.EventType.Error);
                                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
                             }
                         }
@@ -172,6 +174,7 @@ public class BarrierServiceImpl implements BarrierService {
                         }
                         if(!isCloseValueChanged){
                             result = false;
+                            properties.put("type", EventLogService.EventType.Error);
                             eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда":"въезда/выезда")) +" не получилась перенести на значение 1 чтобы закрыть " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
                         }
                     } else {
@@ -188,6 +191,7 @@ public class BarrierServiceImpl implements BarrierService {
                                     }
                                 }
                                 if (!isReturnValueChanged) {
+                                    properties.put("type", EventLogService.EventType.Error);
                                     eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
                                 }
                             }
@@ -196,6 +200,7 @@ public class BarrierServiceImpl implements BarrierService {
                 }
                 client.close();
             } else {
+                properties.put("type", EventLogService.EventType.Success);
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "В течение 20 секунд не возможно закрыть шлагбаум " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " " + (properties.get("carNumber")  != null ? " после проезда автомобиля с номером " + properties.get("carNumber") : ""));
                 result = false;
             }

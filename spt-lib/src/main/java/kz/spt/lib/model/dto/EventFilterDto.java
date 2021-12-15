@@ -8,6 +8,5 @@ public class EventFilterDto {
     public String dateFromString;
     public String dateToString;
     public String plateNumber;
-    public String description;
     public Long gateId;
 }

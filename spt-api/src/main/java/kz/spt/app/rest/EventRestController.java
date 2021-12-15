@@ -4,6 +4,7 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.dto.EventFilterDto;
+import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.EventLogService;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,16 +22,14 @@ public class EventRestController {
     }
 
     @PostMapping
-    public Page<EventLog> list(@RequestBody PagingRequest pagingRequest, @RequestParam String dateFromString, @RequestParam String dateToString,
-                               @RequestParam String plateNumber, @RequestParam String description, @RequestParam Long gateId) throws ParseException {
+    public Page<EventsDto> list(@RequestBody PagingRequest pagingRequest, @RequestParam String dateFromString, @RequestParam String dateToString,
+                                @RequestParam String plateNumber, @RequestParam Long gateId) throws ParseException {
         EventFilterDto eventFilterDto = new EventFilterDto();
         eventFilterDto.setDateFromString(dateFromString);
         eventFilterDto.setDateToString(dateToString);
         eventFilterDto.setPlateNumber(plateNumber);
-        eventFilterDto.setDescription(description);
         eventFilterDto.setGateId(gateId);
         return eventLogService.getEventLogs(pagingRequest,eventFilterDto);
-
     }
 
 

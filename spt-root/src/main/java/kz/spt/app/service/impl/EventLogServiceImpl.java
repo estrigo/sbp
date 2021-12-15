@@ -7,6 +7,7 @@ import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.EventLogSpecification;
 import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.model.dto.EventFilterDto;
+import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.EventLogRepository;
 import lombok.extern.java.Log;
@@ -36,7 +37,7 @@ public class EventLogServiceImpl implements EventLogService {
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
 
-    private static final Comparator<EventLog> EMPTY_COMPARATOR = (e1, e2) -> 0;
+    private static final Comparator<EventsDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     @Override
     public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description) {
@@ -88,9 +89,6 @@ public class EventLogServiceImpl implements EventLogService {
         if (eventFilterDto.plateNumber != null && !"".equals(eventFilterDto.plateNumber)) {
             specification = specification == null ? EventLogSpecification.likePlateNumber(eventFilterDto.plateNumber) : specification.and(EventLogSpecification.likePlateNumber(eventFilterDto.plateNumber));
         }
-        if (eventFilterDto.description != null && !"".equals(eventFilterDto.description)) {
-            specification = specification == null ? EventLogSpecification.likeDescription(eventFilterDto.description) : specification.and(EventLogSpecification.likeDescription(eventFilterDto.description));
-        }
         if (specification != null) {
             specification = specification.and(EventLogSpecification.orderById());
             return eventLogRepository.findAll(specification);
@@ -105,20 +103,32 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
-    public Page<EventLog> getEventLogs(PagingRequest pagingRequest, EventFilterDto eventFilterDto) throws ParseException {
+    public Page<EventsDto> getEventLogs(PagingRequest pagingRequest, EventFilterDto eventFilterDto) throws ParseException {
         List<EventLog> events = (List<EventLog>) this.listByFilters(eventFilterDto);
-        List<EventLog> filteredEvents  = new ArrayList<>();
-        for(EventLog eventLog : events){
+        List<EventLog> filteredEvents = new ArrayList<>();
+        for (EventLog eventLog : events) {
             Map<String, Object> properties = eventLog.getProperties();
-            if(eventFilterDto.gateId != null){
-                if(properties.containsKey("gateId") && properties.get("gateId") != null && ((Integer)properties.get("gateId")).equals(eventFilterDto.gateId.intValue())){
+            if (eventFilterDto.gateId != null) {
+                if (properties.containsKey("gateId") && properties.get("gateId") != null && ((Integer) properties.get("gateId")).equals(eventFilterDto.gateId.intValue())) {
                     filteredEvents.add(eventLog);
                 }
             } else {
                 filteredEvents.add(eventLog);
             }
         }
-        return getPage(filteredEvents, pagingRequest);
+
+        var eventDtos = filteredEvents.stream()
+                .map(m -> EventsDto.builder()
+                        .id(m.getId())
+                        .created(m.getCreated())
+                        .plateNumber(m.getNullSafePlateNumber())
+                        .description(m.getNullSafeDescription())
+                        .eventType(m.getProperties().get("type") != null ? m.getProperties().get("type").toString() : "")
+                        .imgUrl(m.getProperties().get("carSmallImageUrl") != null ? "/rest/image/value/small/" :
+                                m.getProperties().get("carImageUrl") != null ? "/rest/image/value/" : "")
+                        .build())
+                .collect(Collectors.toList());
+        return getPage(eventDtos,pagingRequest);
     }
 
     @Override
@@ -126,8 +136,8 @@ public class EventLogServiceImpl implements EventLogService {
         eventLogRepository.save(eventLog);
     }
 
-    private Page<EventLog> getPage(List<EventLog> events, PagingRequest pagingRequest) {
-        List<EventLog> filtered = events.stream()
+    private Page<EventsDto> getPage(List<EventsDto> events, PagingRequest pagingRequest) {
+        List<EventsDto> filtered = events.stream()
                 .sorted(sortEvents(pagingRequest))
                 .filter(filterEvents(pagingRequest))
                 .skip(pagingRequest.getStart())
@@ -138,7 +148,7 @@ public class EventLogServiceImpl implements EventLogService {
                 .filter(filterEvents(pagingRequest))
                 .count();
 
-        Page<EventLog> page = new Page<>(filtered);
+        Page<EventsDto> page = new Page<>(filtered);
         page.setRecordsFiltered((int) count);
         page.setRecordsTotal((int) count);
         page.setDraw(pagingRequest.getDraw());
@@ -146,7 +156,7 @@ public class EventLogServiceImpl implements EventLogService {
         return page;
     }
 
-    private Predicate<EventLog> filterEvents(PagingRequest pagingRequest) {
+    private Predicate<EventsDto> filterEvents(PagingRequest pagingRequest) {
         if (pagingRequest.getSearch() == null || StringUtils.isEmpty(pagingRequest.getSearch()
                 .getValue())) {
             return events -> true;
@@ -154,11 +164,12 @@ public class EventLogServiceImpl implements EventLogService {
         String value = pagingRequest.getSearch().getValue();
 
         return events -> (events.getCreated() != null && events.getCreated().toString().toLowerCase().contains(value.toLowerCase())
+                || (events.getPlateNumber() != null && events.getPlateNumber().toLowerCase().contains(value.toLowerCase()))
                 || (events.getDescription() != null && events.getDescription().toLowerCase().contains(value.toLowerCase()))
         );
     }
 
-    private Comparator<EventLog> sortEvents(PagingRequest pagingRequest) {
+    private Comparator<EventsDto> sortEvents(PagingRequest pagingRequest) {
         if (pagingRequest.getOrder() == null) {
             return EMPTY_COMPARATOR;
         }
@@ -171,7 +182,7 @@ public class EventLogServiceImpl implements EventLogService {
             Column column = pagingRequest.getColumns()
                     .get(columnIndex);
 
-            Comparator<EventLog> comparator = EventComparator.getComparator(column.getData(), order.getDir());
+            Comparator<EventsDto> comparator = EventComparator.getComparator(column.getData(), order.getDir());
             return Objects.requireNonNullElse(comparator, EMPTY_COMPARATOR);
 
         } catch (Exception e) {

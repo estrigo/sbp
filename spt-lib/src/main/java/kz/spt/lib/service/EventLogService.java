@@ -5,6 +5,7 @@ import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.model.dto.EventFilterDto;
+import kz.spt.lib.model.dto.EventsDto;
 
 import java.text.ParseException;
 import java.util.Map;
@@ -14,6 +15,13 @@ public interface EventLogService {
     enum ArmEventType {
         Photo,
         CarEvent;
+    }
+
+    enum EventType{
+        Allow,
+        Deny,
+        Error,
+        Success
     }
 
     void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description);
@@ -28,7 +36,7 @@ public interface EventLogService {
 
     EventLog getById(Long id);
 
-    Page<EventLog> getEventLogs(PagingRequest pagingRequest, EventFilterDto eventFilterDto) throws ParseException;
+    Page<EventsDto> getEventLogs(PagingRequest pagingRequest, EventFilterDto eventFilterDto) throws ParseException;
 
     void save(EventLog eventLog);
 }

@@ -53,7 +53,6 @@ public class EventController {
             eventFilterDto = (EventFilterDto) model.getAttribute("eventFilterDto");
             model.addAttribute("eventFilterDto", eventFilterDto);
         }
-        model.addAttribute("events", eventLogService.listByFilters(eventFilterDto));
         model.addAttribute("allGates", gateService.listAllGates());
         return "events/list";
     }
