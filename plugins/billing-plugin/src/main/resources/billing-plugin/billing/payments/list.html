@@ -11,23 +11,23 @@
             <div class="col-12">
 
                 <div class="card">
-                    <div class="card-header">Платежи</div>
+                    <div class="card-header" th:text="#{payments.payments}"></div>
                     <div class="card-body">
                         <div class="data-filter">
                         <form method="post">
                             <div class="form-row">
                             <div class="form-group col-md-2">
-                                <label for="dateStart">Дата с</label>
-                                <input id="dateStart" type="datetime-local" class="form-control form-control-sm" placeholder="Дата с ">
+                                <label for="dateStart" th:text="#{payments.startDate}"></label>
+                                <input id="dateStart" type="datetime-local" class="form-control form-control-sm" th:placeholder="#{payments.startDate}">
                             </div>
 
                                 <div class="form-group col-md-2">
-                                    <label for="dateEnd">Дата по</label>
-                                    <input id="dateEnd" type="datetime-local" class="form-control form-control-sm" placeholder="Дата по">
+                                    <label for="dateEnd" th:text="#{payments.endDate}"></label>
+                                    <input id="dateEnd" type="datetime-local" class="form-control form-control-sm" th:placeholder="#{payments.endDate}">
                                 </div>
 
                                 <div class="form-group col-md-2">
-                                    <label for="provider">Провайдер</label>
+                                    <label for="provider" th:text="#{billing.provider}"></label>
                                     <select class="form-control form-control-sm" id="provider">
                                         <option value="" th:text="#{crm.notSelected}"></option>
                                         <option value="0">0</option>
@@ -37,17 +37,17 @@
                                 </div>
 
                                 <div class="form-group col-md-2">
-                                    <label for="car_number">Номер авто</label>
-                                    <input type="text" class="form-control form-control-sm" id="car_number" placeholder="Номер авто">
+                                    <label for="car_number" th:text="#{payments.carNumber}"></label>
+                                    <input type="text" class="form-control form-control-sm" id="car_number" th:placeholder="#{payments.carNumber}">
                                 </div>
                                 <div class="form-group col-md-2">
-                                    <label for="sum">Сумма</label>
-                                    <input type="number" id="sum" class="form-control form-control-sm" placeholder="Сумма">
+                                    <label for="sum" th:text="#{payments.total}"></label>
+                                    <input type="number" id="sum" class="form-control form-control-sm" th:placeholder="#{payments.total}">
                                 </div>
                                 <div class="form-group col-md-2">
                                     <label for="sum"></label>
-                                    <button type="button" class="btn btn-success btn-sm">Найти</button>
-                                    <button type="button" class="btn btn-secondary btn-sm">Очистить</button>
+                                    <button type="button" class="btn btn-success btn-sm" th:text="#{payments.find}"></button>
+                                    <button type="button" class="btn btn-secondary btn-sm" th:text="#{payments.clear}"></button>
                                 </div>
                             </div>
 
@@ -59,15 +59,15 @@
                             <thead>
                             <tr>
                                 <th>№</th>
-                                <th>Номер</th>
-                                <th>Паркинг</th>
-                                <th>Дата заезда</th>
-                                <th>Дата выезда</th>
-                                <th>Дата оплаты</th>
-                                <th>Тариф</th>
-                                <th>Сумма</th>
-                                <th>Провайдер</th>
-                                <th>Транзакция</th>
+                                <th th:text="#{payments.number}"></th>
+                                <th th:text="#{payments.parking}"></th>
+                                <th th:text="#{payments.checkIn}"></th>
+                                <th th:text="#{payments.checkOut}"></th>
+                                <th th:text="#{payments.paymentDate}"></th>
+                                <th th:text="#{payments.fare}"></th>
+                                <th th:text="#{payments.total}"></th>
+                                <th th:text="#{payments.provider}"></th>
+                                <th th:text="#{payments.transaction}"></th>
                             </tr>
                             </thead>
 
@@ -96,7 +96,12 @@
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
-<script type="text/javascript">
+<script th:inline="javascript">
+    var localizationAddress = '/plugins/datatables/json/ru.json';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        localizationAddress = "";
+    }
     $(document).ready(function() {
         $('#payments').DataTable( {
             "processing": true,
@@ -127,7 +132,7 @@
                 { "data": "transaction" },
             ],
             language: {
-                url: '/plugins/datatables/json/ru.json'
+                url: localizationAddress
             }
         } );
     });
@@ -135,7 +140,10 @@
     //Buttons examples
     var table = $('#datatable-buttons').DataTable({
         lengthChange: false,
-        buttons: ['copy', 'excel', 'pdf', 'csv']
+        buttons: ['copy', 'excel', 'pdf', 'csv'],
+        language: {
+            url: localizationAddress
+        }
     });
 
     table.buttons().container()

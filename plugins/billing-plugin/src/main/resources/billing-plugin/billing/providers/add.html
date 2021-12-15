@@ -3,13 +3,13 @@
     <div class="row">
         <div class="col-md-6">
             <div class="form-group">
-                <label for="provider" class="control-label">Провайдер</label>
+                <label for="provider" class="control-label" th:text="#{billing.provider}"></label>
                 <input type="text" class="form-control" th:field="*{provider}" th:value="*{provider}" id="provider">
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                <label for="name" class="control-label">Название</label>
+                <label for="name" class="control-label" th:text="#{billing.name}"></label>
                 <input type="text" class="form-control" id="name" th:field="*{name}" th:value="*{name}">
             </div>
         </div>
@@ -17,13 +17,13 @@
     <div class="row">
         <div class="col-md-6">
             <div class="form-group">
-                <label for="clientId" class="control-label">Id клиента</label>
+                <label for="clientId" class="control-label" th:text="#{billing.clientId}"></label>
                 <input type="text" class="form-control" id="clientId" th:field="*{clientId}" th:value="*{clientId}">
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                <label for="password" class="control-label">Пароль</label>
+                <label for="password" class="control-label" th:text="#{billing.password}"></label>
                 <input type="password" class="form-control" id="password" th:field="*{password}" th:value="*{password}">
             </div>
         </div>
@@ -31,7 +31,7 @@
     <div>
         <div class="col-md-6">
             <div class="form-group">
-                <label for="checkbox3" class="control-label">Разрешен</label>
+                <label for="checkbox3" class="control-label" th:text="#{billing.allowed}"></label>
                 <div class="checkbox-primary">
                     <input id="checkbox3" type="checkbox" th:field="*{enabled}" th:value="*{enabled}">
                 </div>
@@ -39,7 +39,7 @@
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                <label for="checkbox3" class="control-label">Без наличная оплата</label>
+                <label for="checkbox3" class="control-label" th:text="#{billing.paymentType}"></label>
                 <div class="checkbox-primary">
                     <input id="checkbox4" type="checkbox" th:field="*{cashlessPayment}" th:value="*{cashlessPayment}">
                 </div>

@@ -26,8 +26,6 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     private RoleRepository roleRepository;
     private BCryptPasswordEncoder passwordEncoder;
-    private AuthenticationManager authenticationManager;
-    private SpringDataUserDetailsService springDataUserDetailsService;
 
     private static final Comparator<User> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
@@ -44,16 +42,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     public void setPasswordEncoder(BCryptPasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
-    }
-
-    @Autowired
-    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
-
-    @Autowired
-    public void setSpringDataUserDetailsService(SpringDataUserDetailsService springDataUserDetailsService) {
-        this.springDataUserDetailsService = springDataUserDetailsService;
     }
 
     @Override

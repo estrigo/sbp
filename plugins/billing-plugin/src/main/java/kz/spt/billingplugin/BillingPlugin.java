@@ -6,6 +6,7 @@ import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.modelmapper.ModelMapper;
 import org.pf4j.PluginWrapper;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.*;
 
@@ -28,11 +29,17 @@ public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
 
     @Override
     public List<Map<String, Object>> getLinks(){
-        ResourceBundle bundle = ResourceBundle.getBundle("billing-plugin", Locale.forLanguageTag("ru-RU"));
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru-RU";
+        }
+
+        ResourceBundle bundle = ResourceBundle.getBundle("billing-plugin", Locale.forLanguageTag(language));
         List<Map<String, Object>> list = new ArrayList<>();
 
         Map<String, Object> mainMenu = new HashMap<>();
-        mainMenu.put("label",bundle.getString("menu.billing.title"));
+        mainMenu.put("label",bundle.getString("billing.title"));
         mainMenu.put("cssClass", "fa fa-money");
         mainMenu.put("role", "MANAGER");
 
