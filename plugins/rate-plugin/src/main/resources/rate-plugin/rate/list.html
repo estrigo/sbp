@@ -65,8 +65,6 @@
 
 <script th:inline="javascript">
     var address = '/plugins/datatables/json/ru.json';
-    console.log(address);
-    console.log(location.hostname);
     var locale = [[${#locale}]];
     if (locale == "en") {
         address = "";
