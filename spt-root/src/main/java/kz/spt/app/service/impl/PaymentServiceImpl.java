@@ -110,6 +110,14 @@ public class PaymentServiceImpl implements PaymentService {
                         }
 
                         JsonNode result = billingPluginRegister.execute(node);
+                        if (result.has("paymentError")){
+                            BillingInfoErrorDto dto = new BillingInfoErrorDto();
+                            dto.result = -2;
+                            dto.message = result.get("paymentError").textValue();
+                            dto.txn_id = commandDto.txn_id;
+                            dto.sum = commandDto.sum;
+                            return dto;
+                        }
                         Long paymentId = result.get("paymentId").longValue();
 
                         carState.setAmount(carState.getAmount() != null ? carState.getAmount().add(commandDto.sum) : commandDto.sum); // if he paid early we should add this amount
@@ -139,10 +147,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (ratePluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("parkingId", rateQueryDto.parkingId);
-            log.info("format.format(rateQueryDto.inDate): " + format.format(rateQueryDto.inDate));
             node.put("inDate", format.format(rateQueryDto.inDate));
-            log.info("format.format(rateQueryDto.outDate): " + format.format(rateQueryDto.outDate));
-            log.info("current time: " + (new Date()));
             node.put("outDate", format.format(rateQueryDto.outDate));
             node.put("cashlessPayment", rateQueryDto.cashlessPayment);
             JsonNode result = ratePluginRegister.execute(node);

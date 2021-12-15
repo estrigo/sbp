@@ -3,6 +3,7 @@ package kz.spt.billingplugin.service.impl;
 import kz.spt.billingplugin.bootstrap.datatable.PaymentDtoComparators;
 import kz.spt.billingplugin.dto.PaymentLogDTO;
 import kz.spt.billingplugin.model.Payment;
+import kz.spt.billingplugin.model.PaymentProvider;
 import kz.spt.billingplugin.repository.PaymentRepository;
 import kz.spt.billingplugin.service.PaymentService;
 import kz.spt.lib.bootstrap.datatable.*;
@@ -55,6 +56,11 @@ public class PaymentServiceImpl implements PaymentService {
     public Page<PaymentLogDTO> getPaymentDtoList(PagingRequest pagingRequest) {
         List<Payment> allPayments = (List<Payment>) this.listAllPayments();
         return getPage(PaymentLogDTO.convertToDto(allPayments), pagingRequest);
+    }
+
+    @Override
+    public List<Payment> findByTransactionAndProvider(String transaction, PaymentProvider paymentProvider) {
+        return paymentRepository.findByTransactionAndProvider(transaction, paymentProvider);
     }
 
     private Page<PaymentLogDTO> getPage(List<PaymentLogDTO> paymentLogDTOList, PagingRequest pagingRequest) {

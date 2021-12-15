@@ -2,6 +2,7 @@ package kz.spt.billingplugin.service;
 
 import kz.spt.billingplugin.dto.PaymentLogDTO;
 import kz.spt.billingplugin.model.Payment;
+import kz.spt.billingplugin.model.PaymentProvider;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.EventLog;
@@ -22,4 +23,6 @@ public interface PaymentService {
     void updateOutTimestamp(Long carStateId, Date outTimestamp);
 
     Page<PaymentLogDTO> getPaymentDtoList(PagingRequest pagingRequest) throws ParseException;
+
+    List<Payment> findByTransactionAndProvider(String transaction, PaymentProvider paymentProvider);
 }

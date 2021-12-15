@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 public class BillingInfoSuccessDto {
 
-    public String txn_id;              // уникальны номер транзакции бил-ой системы Halyk
+    public String txn_id;              // уникальны номер транзакции бил-ой системы
     public int result;                 // 0 успешно завершено.
     public BigDecimal current_balance; // 0 текущий баланс клиента
     public BigDecimal sum;             // 200 - Сумма к оплате.

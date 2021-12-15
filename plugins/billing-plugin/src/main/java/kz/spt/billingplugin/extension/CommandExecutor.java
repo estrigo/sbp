@@ -48,6 +48,13 @@ public class CommandExecutor implements PluginRegister {
                     }
                 }
             } else if("savePayment".equals(command.get("command").textValue())){
+                PaymentProvider provider = paymentProviderService.getProviderByClientId(command.get("clientId").textValue());
+                List<Payment> oldPayments = paymentService.findByTransactionAndProvider(command.get("transaction").textValue(), provider);
+                if(oldPayments.size() > 0){
+                    node.put("paymentError", "Transaction already registered");
+                    return node;
+                }
+
                 Payment payment = new Payment();
                 payment.setCarNumber(command.get("carNumber").textValue());
                 payment.setPrice(command.get("sum").decimalValue());
