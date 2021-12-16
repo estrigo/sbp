@@ -124,8 +124,8 @@ public class EventLogServiceImpl implements EventLogService {
                         .plateNumber(m.getNullSafePlateNumber())
                         .description(m.getNullSafeDescription())
                         .eventType(m.getProperties().get("type") != null ? m.getProperties().get("type").toString() : "")
-                        .imgUrl(m.getProperties().get("carSmallImageUrl") != null ? "/rest/image/value/small/" :
-                                m.getProperties().get("carImageUrl") != null ? "/rest/image/value/" : "")
+                        .smallImgUrl(m.getProperties().get("carSmallImageUrl") != null ? (String) m.getProperties().get("carSmallImageUrl") : "")
+                        .bigImgUrl(m.getProperties().get("carImageUrl") != null ? (String) m.getProperties().get("carImageUrl") : "")
                         .build())
                 .collect(Collectors.toList());
         return getPage(eventDtos,pagingRequest);

@@ -133,12 +133,14 @@
                 "data": "imgUrl",
                 "orderable": false,
                 "render": function (data, type, event) {
-                    if (data === "" || data.length === 0) {
-                        return ''
+                    if(event.smallImgUrl){
+                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigImgUrl + '" data-caption="' + event.plateNumber + '">' +
+                            '<img class="thumb-img" alt src="/files/pictures' + event.smallImgUrl + '"></a>';
+                    } else if(event.bigImgUrl){
+                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigImgUrl + '" data-caption="' + event.plateNumber + '">' +
+                            '<img class="thumb-img" alt src="/files/pictures' + event.bigImgUrl + '"></a>';
                     }
-
-                    return '<a class="col col--4" data-fancybox="event" data-src="/rest/image/value/' + event.id + '" data-caption="' + event.plateNumber + '">' +
-                        '<img class="thumb-img" alt src="' + data + '' + event.id + '"></a>';
+                    return '';
                 },
                 "width": "20%"
             }
