@@ -1,5 +1,6 @@
 package kz.spt.lib.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +12,10 @@ import java.util.Date;
 @AllArgsConstructor
 public class EventsDto {
     private Long id;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = JsonFormat.DEFAULT_TIMEZONE)
     private Date created;
+
     private String plateNumber;
     private String description;
     private String eventType;
