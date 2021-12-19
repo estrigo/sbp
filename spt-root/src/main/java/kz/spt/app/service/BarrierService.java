@@ -22,8 +22,6 @@ public interface BarrierService {
 
     Boolean closeBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException;
 
-    Boolean checkCarPassed(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException;
-
     int getSensorStatus(SensorStatusDto sensor) throws IOException, ParseException;
 
     Boolean openBarrier(Gate.GateType gateType, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException;

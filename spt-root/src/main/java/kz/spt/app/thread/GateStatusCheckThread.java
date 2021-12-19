@@ -62,7 +62,6 @@ public class GateStatusCheckThread extends Thread {
                             }
                         }
                     }
-
                     if(GateStatusDto.DirectionStatus.FORWARD.equals(gateStatusDto.directionStatus)){
                         log.info("DIRECTION FORWARD");
                         if(GateStatusDto.SensorStatus.Triggerred.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.WAIT.equals(gateStatusDto.sensor2)){
@@ -97,7 +96,7 @@ public class GateStatusCheckThread extends Thread {
                                 log.info("CVT IN QUIET MODE, CAR FULLY PASSED ML AND ML NOT ACTIVATED");
                                 gateStatusDto.sensor2 = GateStatusDto.SensorStatus.Quit;
                                 try {
-                                    boolean result = barrierService.closeBarrier(gateStatusDto.gateType, null, gateStatusDto.barrier);
+                                    boolean result = barrierService.closeBarrier(gateStatusDto.gateType, gateStatusDto.frontCamera.carEventDto.car_number, gateStatusDto.barrier);
                                     if(result){
                                         gateStatusDto.gateStatus  = GateStatusDto.GateStatus.Closed;
                                         gateStatusDto.directionStatus = GateStatusDto.DirectionStatus.QUIT;

@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CameraRepository extends JpaRepository<Camera, Long> {
 
-    @Query("from Camera c LEFT JOIN FETCH c.gate WHERE c.ip = ?1")
+    @Query("from Camera c LEFT JOIN FETCH c.gate g LEFT JOIN FETCH g.parking WHERE c.ip = ?1")
     Camera findCameraByIp(String ip);
 }

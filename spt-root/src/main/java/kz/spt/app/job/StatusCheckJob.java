@@ -50,7 +50,11 @@ public class StatusCheckJob {
         globalGateDtos = new ConcurrentLinkedQueue<>();
         List<Gate> allGates = (List<Gate>) gateService.listAllGatesWithDependents();
         for (Gate gate : allGates){
-            globalGateDtos.add(GateStatusDto.fromGate(gate));
+            if(!isGatesProcessing.containsKey(gate.getId())){
+                log.info("filling gate: " + gate.getId());
+                globalGateDtos.add(GateStatusDto.fromGate(gate));
+                isGatesProcessing.put(gate.getId(), false);
+            }
         }
     }
 
