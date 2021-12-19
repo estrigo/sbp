@@ -103,29 +103,6 @@ public class BarrierServiceImpl implements BarrierService {
         }
     }
 
-    @Override
-    public Boolean checkCarPassed(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException {
-        if(!disableOpen){
-            if(barrier.getLoopOid() !=null && barrier.getLoopPassword() != null && barrier.getLoopType()!= null && barrier.getLoopSnmpVersion()!= null){
-                SNMPManager loopClient = new SNMPManager("udp:" + barrier.getLoopIp()+ "/161", barrier.getLoopPassword(), barrier.getLoopSnmpVersion());
-                loopClient.start();
-
-                boolean carDetected = false;
-                long currMillis = System.currentTimeMillis();
-                while(!carDetected && System.currentTimeMillis() - currMillis < 10000){ // если больше 10 сек не появлялся значить не заехала машина
-                    Thread.sleep(1000);
-                    if(!SENSOR_OFF.equals(loopClient.getCurrentValue(barrier.getLoopOid()))){
-                        carDetected = true;
-                    }
-                }
-                loopClient.close();
-                return carDetected;
-            } else
-                return true;
-        }
-        return true;
-    }
-
     private Boolean openSnmp(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException {
         Boolean result = true;
         if(!disableOpen){

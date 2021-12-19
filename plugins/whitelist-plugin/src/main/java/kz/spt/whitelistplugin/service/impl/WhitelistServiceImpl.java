@@ -183,7 +183,9 @@ public class WhitelistServiceImpl implements WhitelistService {
                     if (whitelist.getGroup().getSize() != null && whitelist.getGroup().getSize() > 0) {
                         objectNode.put("exceedPlaceLimit", false);
                         int size = whitelist.getGroup().getSize();
-                        List<String> groupPlateNumberList = whitelist.getGroup().getWhitelists().stream().map(Whitelist::getCar).map(Cars::getPlatenumber).collect(Collectors.toList());
+                        WhitelistGroups group = whitelist.getGroup();
+
+                        List<String> groupPlateNumberList = whitelistRepository.findByGroupId(group.getId()).stream().map(Whitelist::getCar).map(Cars::getPlatenumber).collect(Collectors.toList());
                         List<String> enteredCarsFromGroup = rootServicesGetterService.getCarStateService().getInButNotPaidFromList(groupPlateNumberList);
                         if (enteredCarsFromGroup.size() >= size) {
                             objectNode.put("exceedPlaceLimit", true);
