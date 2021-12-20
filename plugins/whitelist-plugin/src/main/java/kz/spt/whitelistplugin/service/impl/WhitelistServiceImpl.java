@@ -110,7 +110,7 @@ public class WhitelistServiceImpl implements WhitelistService {
     public List<Whitelist> listAllWhitelist() throws JsonProcessingException{
         List<Whitelist> whitelistLists = whitelistRepository.findAll();
         for (Whitelist w : whitelistLists) {
-            w.setConditionDetail(formConditionDetails(w, w.getCar().getPlatenumber()));
+            w.setConditionDetail(formConditionDetails(w, w.getGroup() != null ? w.getGroup().getName() : w.getCar().getPlatenumber()));
         }
         return whitelistLists;
     }
@@ -182,18 +182,48 @@ public class WhitelistServiceImpl implements WhitelistService {
                     ObjectNode objectNode = objectMapper.createObjectNode();
                     if (whitelist.getGroup().getSize() != null && whitelist.getGroup().getSize() > 0) {
                         objectNode.put("exceedPlaceLimit", false);
-                        int size = whitelist.getGroup().getSize();
                         WhitelistGroups group = whitelist.getGroup();
-
+                        int size = group.getSize();
                         List<String> groupPlateNumberList = whitelistRepository.findByGroupId(group.getId()).stream().map(Whitelist::getCar).map(Cars::getPlatenumber).collect(Collectors.toList());
                         List<String> enteredCarsFromGroup = rootServicesGetterService.getCarStateService().getInButNotPaidFromList(groupPlateNumberList);
-                        if (enteredCarsFromGroup.size() >= size) {
-                            objectNode.put("exceedPlaceLimit", true);
-                            ArrayNode list = objectMapper.createArrayNode();
-                            for (String carNumber : enteredCarsFromGroup) {
-                                list.add(carNumber);
+                        ArrayNode placeOccupiedCars = objectMapper.createArrayNode();
+
+                        if(group.getPlaceCarsJson() == null || "".equals(group.getPlaceCarsJson())){
+                            if (enteredCarsFromGroup.size() >= size) {
+                                objectNode.put("exceedPlaceLimit", true);
+                                for (String carNumber : enteredCarsFromGroup) {
+                                    placeOccupiedCars.add(carNumber);
+                                }
+                                objectNode.set("placeOccupiedCars", placeOccupiedCars);
                             }
-                            objectNode.set("placeOccupiedCars", list);
+                        } else {
+                            JsonNode placeCarsJson = objectMapper.readTree(group.getPlaceCarsJson());
+                            boolean contains = false;
+                            for(int i=0; i<size && !contains; i++){
+                                if(placeCarsJson.has("placeCars" + i) && placeCarsJson.get("placeCars" + i).has("platenumbers")){
+                                    String placeOccupiedCar = null;
+                                    ArrayNode platenumbers = (ArrayNode) placeCarsJson.get("placeCars" + i).get("platenumbers");
+                                    Iterator<JsonNode> iterator = platenumbers.iterator();
+                                    while (iterator.hasNext()){
+                                        String checkingNumber = iterator.next().textValue();
+                                        if(platenumber.equals(checkingNumber)){
+                                            contains = true;
+                                        } else if(enteredCarsFromGroup.contains(checkingNumber)) {
+                                            placeOccupiedCar = checkingNumber;
+                                        }
+                                    }
+                                    if (contains){
+                                        if(placeOccupiedCar != null){
+                                            objectNode.put("exceedPlaceLimit", true);
+                                            placeOccupiedCars.add(placeOccupiedCar);
+                                            objectNode.set("placeOccupiedCars", placeOccupiedCars);
+                                            if(placeCarsJson.get("placeCars" + i).has("name")){
+                                                objectNode.put("placeName", placeCarsJson.get("placeCars" + i).get("name").textValue());
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -395,14 +425,18 @@ public class WhitelistServiceImpl implements WhitelistService {
 
     private boolean isCustomValid(int day, int hour, AbstractWhitelist abstractWhitelist) throws JsonProcessingException {
         boolean valid = true;
-        if (Whitelist.Type.CUSTOM.equals(abstractWhitelist.getType()) && abstractWhitelist.getCustomJson() != null) {
-            JsonNode node = objectMapper.readTree(abstractWhitelist.getCustomJson());
-            if (node.has(day + "")) {
-                TreeSet<Integer> sortedHours = new TreeSet<>();
-                for (final JsonNode h : node.get("" + day)) {
-                    sortedHours.add(h.intValue());
-                }
-                if (!sortedHours.contains(hour)) {
+        if (Whitelist.Type.CUSTOM.equals(abstractWhitelist.getType())) {
+            if(abstractWhitelist.getCustomJson() != null){
+                JsonNode node = objectMapper.readTree(abstractWhitelist.getCustomJson());
+                if (node.has(day + "")) {
+                    TreeSet<Integer> sortedHours = new TreeSet<>();
+                    for (final JsonNode h : node.get("" + day)) {
+                        sortedHours.add(h.intValue());
+                    }
+                    if (!sortedHours.contains(hour)) {
+                        valid = false;
+                    }
+                } else {
                     valid = false;
                 }
             } else {

@@ -2,6 +2,7 @@
 <html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})">
 
 <link th:href="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css}" rel="stylesheet" />
+<link th:href="@{/plugins/multiselect/css/multi-select.css}" rel="stylesheet" type="text/css" />
 
 <div class="content">
     <div class="container-fluid">
@@ -33,39 +34,6 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-group row" id="size">
-                                <label class="col-2 col-form-label" th:text="#{whitelist.groupSize}"></label>
-                                <div class="col-10">
-                                    <input type="number" min="0" step="1" class="form-control" th:field="*{size}" th:placeholder="#{whitelistGroup.sizeComment}">
-                                </div>
-                            </div>
-                            <div class="form-group row" id="carsList">
-                                <label class="col-2 col-form-label" th:text="#{whitelist.carsList}"></label>
-                                <div class="col-10">
-                                    <div class="input-group">
-                                        <select multiple class="form-control" data-role="tagsinput" th:field="*{plateNumbers}" id = "plateNumbers" th:placeholder="#{whitelist.addCarNumbers}">
-                                        </select>
-                                        <span class="input-group-btn">
-                                            <button type="button" class="btn waves-effect waves-light btn-primary" th:text="#{crm.clear}" onclick="clearCarList()"></button>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group row" id="carsListExcel">
-                                <label class="col-2 col-form-label" th:text="#{whitelist.carsListExcel}"></label>
-                                <div class="col-10">
-                                    <input type="file" accept=".xlsx" class="form-control" id="my_file_input" />
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-2 col-form-label"></label>
-                                <div class="col-10">
-                                    <div>
-                                        <input type="checkbox" id="forceUpdate" th:field="*{forceUpdate}">
-                                        <label for="forceUpdate" th:text="#{whitelist.forceUpdate}"></label>
-                                    </div>
-                                </div>
-                            </div>
                             <div class="form-group row">
                                 <label class="col-2 col-form-label" th:text="#{whitelist.type}"></label>
                                 <div class="col-10">
@@ -95,11 +63,47 @@
                                 </div>
                             </div>
                             <input type="hidden" id="customJson" th:field="*{customJson}" th:value="*{customJson}">
+                            <div class="form-group row" id="carsList">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.carsList}"></label>
+                                <div class="col-10">
+                                    <div class="input-group">
+                                        <select multiple class="form-control" data-role="tagsinput" th:field="*{plateNumbers}" id = "plateNumbers" th:placeholder="#{whitelist.addCarNumbers}" onchange="drawParkingPlaceCars()">
+                                        </select>
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn waves-effect waves-light btn-primary" th:text="#{crm.clear}" onclick="clearCarList()"></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row" id="carsListExcel">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.carsListExcel}"></label>
+                                <div class="col-10">
+                                    <input type="file" accept=".xlsx" class="form-control" id="my_file_input" />
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label"></label>
+                                <div class="col-10">
+                                    <div>
+                                        <input type="checkbox" id="forceUpdate" th:field="*{forceUpdate}">
+                                        <label for="forceUpdate" th:text="#{whitelist.forceUpdate}"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row" id="size">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.groupSize}"></label>
+                                <div class="col-10">
+                                    <input id="parkingPlaceSize" type="number" min="0" step="1" class="form-control" th:field="*{size}" th:placeholder="#{whitelistGroup.sizeComment}" onchange="drawParkingPlaceCars()">
+                                </div>
+                            </div>
+                            <div id="placeCarsDetails">
+                            </div>
+                            <input type="hidden" id="placeCarsJson" th:field="*{placeCarsJson}" th:value="*{placeCarsJson}">
                             <div class="form-group row">
                                 <label class="col-2 col-form-label"></label>
                                 <div class="col-10">
                                     <a th:href="@{|/whitelist/list|}" class="btn btn-primary btn-custom waves-effect waves-light w-md" type="button" th:text="#{crm.cancel}"></a>
-                                    <button type="submit" class="btn btn-danger waves-effect waves-light" th:text="#{crm.save}"></button>
+                                    <button type="submit" class="btn btn-danger waves-effect waves-light" th:text="#{crm.save}" on></button>
                                 </div>
                             </div>
                         </form>
@@ -113,6 +117,7 @@
 <script th:src="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js}"></script>
 <script th:src="@{/assets/js/week-hours-picker.js}"></script>
 <script th:src="@{/assets/js/xlsx.js}"></script>
+<script type="text/javascript" th:src="@{/plugins/multiselect/js/jquery.multi-select.js}"></script>
 <script type="text/javascript">
     function checkSelectedTypes(value){
         if(value == 'PERIOD'){
@@ -188,15 +193,86 @@
                     $('#plateNumbers').tagsinput('add', list[i]);
                 }
                 $('#my_file_input').val(null);
+                drawParkingPlaceCars();
             };
             reader.readAsArrayBuffer(f);
         }
         document.getElementById('my_file_input').addEventListener('change', handleFile, false);
         $('.bootstrap-tagsinput').css("height","100%");
+        drawParkingPlaceCars();
     });
 
     function clearCarList(){
         $('#plateNumbers').tagsinput('removeAll');
+    }
+
+    let placeCarsJson = {};
+
+    function drawParkingPlaceCars(){
+        placeCarsJson = {};
+        let parkingPlaceSize = $('#parkingPlaceSize').val();
+        let carList = $("#plateNumbers").val() ? $("#plateNumbers").val().length : 0;
+
+        let html = '<div class="form-group row">' +
+                '<label class="col-2 col-form-label"></label>' +
+                '<label class="col-10 col-form-label">whitelist.placeCarsFunctionalityDescription</label>' +
+                '</div>', labelHtml = '', placeCarsHtml = '';
+        if(parkingPlaceSize > 0){
+            let optionsHtml = '';
+            if(carList > 0){
+                let plateNumbers = $("#plateNumbers").val();
+                for(let opt in plateNumbers){
+                    optionsHtml = optionsHtml + '<option>' + plateNumbers[opt] + '</option>';
+                }
+            }
+
+            for(let i= 0; i < parkingPlaceSize; i++){
+                if(i%2 === 0){
+                    labelHtml = '<div class="form-group row">' +
+                        '<label class="col-2 col-form-label"></label>' +
+                        '<div class="col-5">' +
+                        '<input class="form-control" type="text" id="placeLabel' + i + '" placeholder="Write label to this place" onchange="placeLabelsChanged(' + i + ')">' +
+                        '</div>'
+                    placeCarsHtml = '<div class="form-group row">' +
+                        '<label class="col-2 col-form-label"></label>' +
+                        '<div class="col-5">' +
+                        '<select multiple="multiple" class="multi-select" id="placeCars' + i + '" name="placeCars' + i + '" data-plugin="multiselect" onchange="placeCarsChanged(this)">' + optionsHtml + '</select>' +
+                        '<span class="badge badge-info">Move plate numbers to right box to enable park on this place</span>' +
+                        '</div>'
+                } else {
+                    labelHtml = labelHtml + '<div class="col-5"><input class="form-control" type="text" id="placeLabel' + i + '" placeholder="Write label to this place" onchange="placeLabelsChanged(' + i + ')"></div>';
+                    placeCarsHtml  = placeCarsHtml + '<div class="col-5">' +
+                        '<select multiple="multiple" class="multi-select" id="placeCars' + i + '" name="placeCars' + i + '" data-plugin="multiselect" onchange="placeCarsChanged(this)">' + optionsHtml + '</select>' +
+                        '<span class="badge badge-info">Move plate numbers to right box to enable park on this place</span>' +
+                        '</div>'
+                }
+                if(i%2 === 1 || i+1 == parkingPlaceSize){
+                    labelHtml = labelHtml + '</div>';
+                    placeCarsHtml = placeCarsHtml + '</div>';
+                    html = html + labelHtml + placeCarsHtml;
+                }
+                placeCarsJson['placeCars'+i] = {};
+            }
+            $('#placeCarsDetails').html(html);
+            for(let i= 0; i < parkingPlaceSize; i++){
+                $("#placeCars" + i).multiSelect();
+            }
+        } else {
+            $('#placeCarsDetails').html('');
+        }
+        $("#placeCarsJson").val(JSON.stringify(placeCarsJson));
+    }
+
+    function placeCarsChanged(element){
+        let jElement = $(element);
+        placeCarsJson[jElement.attr("id")]['platenumbers'] = jElement.val();
+        $("#placeCarsJson").val(JSON.stringify(placeCarsJson));
+    }
+
+    function placeLabelsChanged(index){
+        let jElement = $('placeLabel' + index);
+        placeCarsJson['placeCars' + index]['name'] = jElement.val();
+        $("#placeCarsJson").val(JSON.stringify(placeCarsJson));
     }
 </script>
 </html>
