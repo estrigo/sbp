@@ -26,6 +26,9 @@ public class WhitelistGroups extends AbstractWhitelist {
     @OneToMany(mappedBy = "group")
     private List<Whitelist> whitelists;
 
+    @Column(columnDefinition = "text")
+    private String placeCarsJson;
+
     @Transient
     List<String> plateNumbers;
 
