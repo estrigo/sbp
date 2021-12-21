@@ -46,7 +46,7 @@ public class RateController {
     }
 
     @PostMapping("/add/parking/{parkingId}")
-    public String rateEdit(@PathVariable Long parkingId, @Valid ParkingRate rate, BindingResult bindingResult){
+    public String rateEdit(Model model, @PathVariable Long parkingId, @Valid ParkingRate rate, BindingResult bindingResult){
         Locale locale = LocaleContextHolder.getLocale();
         String language = "en";
         if (locale.toString().equals("ru")) {
@@ -54,15 +54,13 @@ public class RateController {
         }
 
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
-        if(ParkingRate.RateType.STANDARD.equals(rate.getRateType()) && (rate.getOnlinePaymentValue() == 0 && rate.getCashPaymentValue() == 0)){
+        if(ParkingRate.RateType.STANDARD.equals(rate.getRateType()) && (rate.getOnlinePaymentValue() < 0 && rate.getCashPaymentValue() < 0)){
             ObjectError error = new ObjectError("fillOnlineOrCash", bundle.getString("rate.fillOnlineOrCash"));
             bindingResult.addError(error);
         } else if(ParkingRate.RateType.PROGRESSIVE.equals(rate.getRateType())){
             if(rate.getProgressiveJson() == null || "".equals(rate.getProgressiveJson())){
                 ObjectError error = new ObjectError("fillProgressiveValues", bundle.getString("rate.fillProgressiveValues"));
                 bindingResult.addError(error);
-            } else {
-                
             }
         } else if(ParkingRate.RateType.INTERVAL.equals(rate.getRateType())){
             if(rate.getIntervalJson() == null || "".equals(rate.getIntervalJson())){
@@ -79,7 +77,16 @@ public class RateController {
             Parking parking = rateService.getParkingById(parkingId);
             rate.setParking(parking);
             rateService.saveRate(rate);
+            return "redirect:/rate/list";
         }
-        return "redirect:/rate/list";
+        ParkingRate parkingRate = rateService.getByParkingId(parkingId);
+        if(parkingRate == null){
+            parkingRate = new ParkingRate();
+            Parking parking = rateService.getParkingById(parkingId);
+            parkingRate.setParking(parking);
+        }
+        model.addAttribute("parkingRate", parkingRate);
+        return "/rate/edit";
+
     }
 }

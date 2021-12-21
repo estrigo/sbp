@@ -56,7 +56,7 @@
 
 <script th:inline="javascript">
     function connect() {
-        var socket = new WebSocket('ws://' + window.location.host + '/greeting');
+        var socket = new WebSocket((window.location.protocol.indexOf('https') !== -1 ? 'wss' : 'ws') + '://' + window.location.host + '/greeting');
         ws = Stomp.over(socket);
 
         ws.connect({}, function(frame) {
