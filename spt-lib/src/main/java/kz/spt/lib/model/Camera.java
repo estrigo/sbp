@@ -40,6 +40,10 @@ public class Camera {
     @Column(unique=true)
     private String ip;
 
+    private String login;
+
+    private String password;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "camera_type")
     private CameraType cameraType;
