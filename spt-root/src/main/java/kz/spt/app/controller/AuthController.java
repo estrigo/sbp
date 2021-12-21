@@ -29,10 +29,6 @@ public class AuthController {
 
     @GetMapping("/change-password")
     public String showRegistrationPage(Model model, Authentication authentication){
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        var user = ChangePasswordDto.builder()
-                .userName(userDetails.getUsername())
-                .build();
         model.addAttribute("user", ChangePasswordDto.builder().build());
         return "change-password";
     }
@@ -53,20 +49,24 @@ public class AuthController {
             ObjectError error = new ObjectError("usernameIsNull", bundle.getString("user.usernameIsNull"));
             bindingResult.addError(error);
         }
-        if(StringUtils.isEmpty(user.getOldPassword())){
+        if(StringUtils.isEmpty(user.getPassword())){
             ObjectError error = new ObjectError("passwordIsNull", bundle.getString("user.notCorrectPassword"));
             bindingResult.addError(error);
         }
-        if(StringUtils.isEmpty(user.getNewPassword())){
+        if(StringUtils.isEmpty(user.getConfirm())){
+            ObjectError error = new ObjectError("passwordIsNull", bundle.getString("user.notCorrectPassword"));
+            bindingResult.addError(error);
+        }
+        if(user.getPassword().equals(user.getConfirm())){
             ObjectError error = new ObjectError("passwordIsNull", bundle.getString("user.notCorrectPassword"));
             bindingResult.addError(error);
         }
 
         if(!bindingResult.hasErrors()) {
-            userFromDB.setPassword(user.getNewPassword());
+            userFromDB.setPassword(user.getPassword());
             userService.saveUser(userFromDB);
-            user.setOldPassword("");
-            user.setNewPassword("");
+            user.setPassword("");
+            user.setConfirm("");
         }
         model.addAttribute("user", user);
         return "change-password";

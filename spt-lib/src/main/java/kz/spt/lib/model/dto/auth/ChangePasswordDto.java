@@ -9,6 +9,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class ChangePasswordDto {
     private String userName;
-    private String oldPassword;
-    private String newPassword;
+    private String password;
+    private String confirm;
 }
