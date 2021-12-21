@@ -181,6 +181,7 @@
         if(barrierId){
             $.get("/parking/barrier/" + barrierId, function (data) {
                 $('#barrier-close-modal').find('#barrierModalBody').html(data);
+                changeSensorsBlock();
             });
         } else if(gateId) {
             $.get("/parking/" + gateId + "/new/barrier/", function (data) {
@@ -208,6 +209,15 @@
             $.get("/parking/" + gateId + "/new/controller/", function (data) {
                 $('#controller-close-modal').find('#controllerModalBody').html(data);
             });
+        }
+    }
+
+    function changeSensorsBlock(){
+        let value = $('#barrier-close-modal').find('#sensorsType').val();
+        if("AUTOMATIC" === value){
+            $('#barrier-close-modal').find('#sensorBlock').hide();
+        } else {
+            $('#barrier-close-modal').find('#sensorBlock').show();
         }
     }
 </script>

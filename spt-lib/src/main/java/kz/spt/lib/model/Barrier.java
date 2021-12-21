@@ -27,6 +27,13 @@ public class Barrier {
         public static final Barrier.BarrierType[] ALL = {SNMP, MODBUS};
     }
 
+    public enum SensorsType {
+        MANUAL,
+        AUTOMATIC;
+
+        public static final Barrier.SensorsType[] ALL = { MANUAL, AUTOMATIC};
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -54,6 +61,11 @@ public class Barrier {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gate")
     private Gate gate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sensors_type")
+    private Barrier.SensorsType sensorsType;
+
 
     // --- Данные петли для проверки присуствия машины  (После шлагбаума)
     @Enumerated(EnumType.STRING)
