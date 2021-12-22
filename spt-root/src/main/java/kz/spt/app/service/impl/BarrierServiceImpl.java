@@ -162,83 +162,50 @@ public class BarrierServiceImpl implements BarrierService {
 
         log.info("disableOpen: "  +  disableOpen);
         if(!disableOpen){
-            boolean checkNoObstruction = checkNoObstruction(barrier);
-            log.info("checkNoObstruction: " + checkNoObstruction);
+            SNMPManager client = new SNMPManager("udp:" + barrier.getIp() + "/161", barrier.getPassword(), barrier.getSnmpVersion());
+            client.start();
 
-            if(checkNoObstruction){
-                SNMPManager client = new SNMPManager("udp:" + barrier.getIp() + "/161", barrier.getPassword(), barrier.getSnmpVersion());
-                client.start();
-
-                String test = client.getCurrentValue(barrier.getCloseOid());
-                log.info("checkNoObstruction: " + checkNoObstruction);
-                if(!"1".equals(test)){
-                    Boolean isCloseValueChanged =client.changeValue(barrier.getCloseOid(), 1);
-                    log.info("isCloseValueChanged: " + isCloseValueChanged);
+            String test = client.getCurrentValue(barrier.getCloseOid());
+            if(!"1".equals(test)){
+                Boolean isCloseValueChanged =client.changeValue(barrier.getCloseOid(), 1);
+                log.info("isCloseValueChanged: " + isCloseValueChanged);
+                if(!isCloseValueChanged){
+                    for(int i=0; i<3; i++){
+                        isCloseValueChanged =client.changeValue(barrier.getCloseOid(), 1);
+                        log.info("isCloseValueChanged 2: " + isCloseValueChanged);
+                        if(isCloseValueChanged){
+                            break;
+                        }
+                    }
                     if(!isCloseValueChanged){
-                        for(int i=0; i<3; i++){
-                            isCloseValueChanged =client.changeValue(barrier.getCloseOid(), 1);
-                            log.info("isCloseValueChanged 2: " + isCloseValueChanged);
-                            if(isCloseValueChanged){
-                                break;
+                        result = false;
+                        properties.put("type", EventLogService.EventType.Error);
+                        eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда":"въезда/выезда")) +" не получилась перенести на значение 1 чтобы закрыть " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
+                    }
+                } else {
+                    Thread.sleep(1000);
+                    if(!"0".equals(client.getCurrentValue(barrier.getCloseOid()))){
+                        Boolean isReturnValueChanged =client.changeValue(barrier.getCloseOid(), 0);
+                        log.info("isReturnValueChanged: " + isReturnValueChanged);
+                        if(!isReturnValueChanged) {
+                            for (int i = 0; i < 3; i++) {
+                                isReturnValueChanged = client.changeValue(barrier.getCloseOid(), 0);
+                                log.info("isReturnValueChanged 2: " + isReturnValueChanged);
+                                if(isReturnValueChanged){
+                                    break;
+                                }
                             }
-                        }
-                        if(!isCloseValueChanged){
-                            result = false;
-                            properties.put("type", EventLogService.EventType.Error);
-                            eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда":"въезда/выезда")) +" не получилась перенести на значение 1 чтобы закрыть " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
-                        }
-                    } else {
-                        Thread.sleep(1000);
-                        if(!"0".equals(client.getCurrentValue(barrier.getCloseOid()))){
-                            Boolean isReturnValueChanged =client.changeValue(barrier.getCloseOid(), 0);
-                            log.info("isReturnValueChanged: " + isReturnValueChanged);
-                            if(!isReturnValueChanged) {
-                                for (int i = 0; i < 3; i++) {
-                                    isReturnValueChanged = client.changeValue(barrier.getCloseOid(), 0);
-                                    log.info("isReturnValueChanged 2: " + isReturnValueChanged);
-                                    if(isReturnValueChanged){
-                                        break;
-                                    }
-                                }
-                                if (!isReturnValueChanged) {
-                                    properties.put("type", EventLogService.EventType.Error);
-                                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
-                                }
+                            if (!isReturnValueChanged) {
+                                properties.put("type", EventLogService.EventType.Error);
+                                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "Контроллер шлагбаума " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 " + (properties.get("carNumber")  != null ? "для номер авто " + properties.get("carNumber") : ""));
                             }
                         }
                     }
                 }
-                client.close();
-            } else {
-                properties.put("type", EventLogService.EventType.Success);
-                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), properties, "В течение 20 секунд не возможно закрыть шлагбаум " + (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (barrier.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда" : "въезда/выезда")) + " " + (properties.get("carNumber")  != null ? " после проезда автомобиля с номером " + properties.get("carNumber") : ""));
-                result = false;
             }
+            client.close();
         }
         return result;
-    }
-
-    private Boolean checkNoObstruction(Barrier barrier) throws InterruptedException, IOException, ParseException {
-        if(!disableOpen){
-            if(!StringUtils.isEmpty(barrier.getLoopIp()) && !StringUtils.isEmpty(barrier.getLoopPassword())  && !StringUtils.isEmpty(barrier.getLoopOid())) {
-                Boolean carLeftAfterDetect = false;
-                Long currMillis = System.currentTimeMillis();
-                SNMPManager loopClient = new SNMPManager("udp:" + barrier.getLoopIp() + "/161", barrier.getLoopPassword(), barrier.getLoopSnmpVersion());
-                loopClient.start();
-
-                while (!carLeftAfterDetect && System.currentTimeMillis() - currMillis < 20000) { // если больше 20 сек не уехала машина значить что то случилась
-                    Thread.sleep(1000);
-                    String obstructionValue = loopClient.getCurrentValue(barrier.getLoopOid());
-                    log.info("obstructionValue: " + obstructionValue);
-                    if (SENSOR_OFF.toString().equals(obstructionValue)) {
-                        carLeftAfterDetect = true;
-                    }
-                }
-                loopClient.close();
-                return carLeftAfterDetect;
-            }
-        }
-        return true;
     }
 
     public Boolean openBarrier(Gate.GateType gateType, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException {
