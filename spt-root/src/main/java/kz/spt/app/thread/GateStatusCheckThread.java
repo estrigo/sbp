@@ -19,6 +19,10 @@ public class GateStatusCheckThread extends Thread {
     private GateStatusDto gateStatusDto;
     private BarrierService barrierService;
 
+    private static int SENSOR_ON = 0;
+    private static int SENSOR_OFF = 1;
+    private static int SENSOR_UNDEFINED = -1;
+
     public GateStatusCheckThread(GateStatusDto gateStatusDto, BarrierService barrierService){
         this.gateStatusDto = gateStatusDto;
         this.barrierService = barrierService;
@@ -32,7 +36,7 @@ public class GateStatusCheckThread extends Thread {
                 SensorStatusDto photoElement = gateStatusDto.photoElement;
                 SensorStatusDto loop = gateStatusDto.loop;
                 if(photoElement != null && loop != null){ // Данные фотоэлемента и петли заполнены
-                    if(triggerPassed() && getSensorStatus(photoElement) == 0 && getSensorStatus(loop) == 0 && gateStatusDto.gateStatus == GateStatusDto.GateStatus.Open){ // Закрыть шлагбаум если сенсоры пусты и шлагбаум открыть
+                    if(triggerPassed() && getSensorStatus(photoElement) == SENSOR_OFF && getSensorStatus(loop) == SENSOR_OFF && gateStatusDto.gateStatus == GateStatusDto.GateStatus.Open){ // Закрыть шлагбаум если сенсоры пусты и шлагбаум открыть
                         gateStatusDto.photoElementStatus = GateStatusDto.SensorStatus.Quit;
                         gateStatusDto.loopStatus = GateStatusDto.SensorStatus.Quit;
                         gateStatusDto.directionStatus = GateStatusDto.DirectionStatus.QUIT;
@@ -50,7 +54,7 @@ public class GateStatusCheckThread extends Thread {
                     if(GateStatusDto.SensorStatus.Quit.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.Quit.equals(gateStatusDto.sensor2)
                             && GateStatusDto.DirectionStatus.QUIT.equals(gateStatusDto.directionStatus) && GateStatusDto.SensorStatus.Quit.equals(gateStatusDto.photoElementStatus)
                             && Gate.GateType.REVERSE.equals(gateStatusDto.gateType)){
-                        if(getSensorStatus(loop) == 1){
+                        if(getSensorStatus(loop) == SENSOR_ON){
                             boolean result = openGateForCarOut(gateStatusDto.backCamera, gateStatusDto, gateStatusDto.isSimpleWhitelist);
                             if(result){
                                 gateStatusDto.lastTriggeredTime = System.currentTimeMillis();
@@ -65,34 +69,34 @@ public class GateStatusCheckThread extends Thread {
                     if(GateStatusDto.DirectionStatus.FORWARD.equals(gateStatusDto.directionStatus)){
                         log.info("DIRECTION FORWARD");
                         if(GateStatusDto.SensorStatus.Triggerred.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.WAIT.equals(gateStatusDto.sensor2)){
-                            if(getSensorStatus(gateStatusDto.loop) == 1){
+                            if(getSensorStatus(gateStatusDto.loop) == SENSOR_ON){
                                 log.info("CAR TRIGGERED CVT, ML TRIGGERED");
                                 gateStatusDto.sensor1 = GateStatusDto.SensorStatus.PASSED;
                                 gateStatusDto.sensor2 = GateStatusDto.SensorStatus.ON;
                                 gateStatusDto.lastTriggeredTime = System.currentTimeMillis();
-                            } else if(getSensorStatus(gateStatusDto.loop) == 0){
+                            } else if(getSensorStatus(gateStatusDto.loop) == SENSOR_OFF){
                                 log.info("CAR TRIGGERED CVT, ML WAITING");
                             }
                         } else if(GateStatusDto.SensorStatus.PASSED.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.ON.equals(gateStatusDto.sensor2)){
-                            if(getSensorStatus(gateStatusDto.loop) == 1){
+                            if(getSensorStatus(gateStatusDto.loop) == SENSOR_ON){
                                 log.info("CAR PASSED CVT, CAR ON ML");
                                 gateStatusDto.sensor1 = GateStatusDto.SensorStatus.Quit;
                                 gateStatusDto.sensor2 = GateStatusDto.SensorStatus.ON;
                                 gateStatusDto.lastTriggeredTime = System.currentTimeMillis();
                             }
                         } else if(GateStatusDto.SensorStatus.Quit.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.ON.equals(gateStatusDto.sensor2)){
-                            if(getSensorStatus(gateStatusDto.loop) == 1){
+                            if(getSensorStatus(gateStatusDto.loop) == SENSOR_ON){
                                 log.info("CVT IN QUIET MODE, CAR ON ML");
                                 gateStatusDto.lastTriggeredTime = System.currentTimeMillis();
-                            } else if(getSensorStatus(gateStatusDto.loop) == 0){
+                            } else if(getSensorStatus(gateStatusDto.loop) == SENSOR_OFF){
                                 log.info("CVT IN QUIET MODE, CAR PASSED ML");
                                 gateStatusDto.sensor1 = GateStatusDto.SensorStatus.Quit;
                                 gateStatusDto.sensor2 = GateStatusDto.SensorStatus.PASSED;
                             }
                         } else if(GateStatusDto.SensorStatus.Quit.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.PASSED.equals(gateStatusDto.sensor2)){
-                            if(getSensorStatus(gateStatusDto.loop) == 1) {
+                            if(getSensorStatus(gateStatusDto.loop) == SENSOR_ON) {
                                 gateStatusDto.lastTriggeredTime = System.currentTimeMillis();
-                            } else if(getSensorStatus(gateStatusDto.loop) == 0){
+                            } else if(getSensorStatus(gateStatusDto.loop) == SENSOR_OFF){
                                 log.info("CVT IN QUIET MODE, CAR FULLY PASSED ML AND ML NOT ACTIVATED");
                                 gateStatusDto.sensor2 = GateStatusDto.SensorStatus.Quit;
                                 try {
@@ -109,22 +113,22 @@ public class GateStatusCheckThread extends Thread {
                         }
                     } else if(GateStatusDto.DirectionStatus.REVERSE.equals(gateStatusDto.directionStatus)){
                         if(GateStatusDto.SensorStatus.Triggerred.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.WAIT.equals(gateStatusDto.sensor2)){
-                            if(getSensorStatus(gateStatusDto.photoElement) == 1) {
+                            if(getSensorStatus(gateStatusDto.photoElement) == SENSOR_ON) {
                                 log.info("CAR ON ML AND PHE triggerred");
                                 gateStatusDto.sensor2 = GateStatusDto.SensorStatus.ON;
                                 gateStatusDto.lastTriggeredTime = System.currentTimeMillis();
                             }
                         } else if(GateStatusDto.SensorStatus.Triggerred.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.ON.equals(gateStatusDto.sensor2)){
-                            if(getSensorStatus(gateStatusDto.photoElement) == 0 && getSensorStatus(gateStatusDto.loop) == 0){
+                            if(getSensorStatus(gateStatusDto.photoElement) == SENSOR_OFF && getSensorStatus(gateStatusDto.loop) == SENSOR_OFF){
                                 log.info("CAR leaved ML AND PHE not triggered");
                                 gateStatusDto.sensor2 = GateStatusDto.SensorStatus.PASSED;
                                 gateStatusDto.sensor1 = GateStatusDto.SensorStatus.Quit;
-                            } else if(getSensorStatus(gateStatusDto.photoElement) == 1 || getSensorStatus(gateStatusDto.loop) == 1){
+                            } else if(getSensorStatus(gateStatusDto.photoElement) == SENSOR_ON || getSensorStatus(gateStatusDto.loop) == SENSOR_ON){
                                 log.info("CAR on ML AND/or on PHE");
                                 gateStatusDto.lastTriggeredTime = System.currentTimeMillis();
                             }
                         } else if(GateStatusDto.SensorStatus.Quit.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.PASSED.equals(gateStatusDto.sensor2)) {
-                            if(getSensorStatus(gateStatusDto.photoElement) == 0 && getSensorStatus(gateStatusDto.loop) == 0){
+                            if(getSensorStatus(gateStatusDto.photoElement) == SENSOR_OFF && getSensorStatus(gateStatusDto.loop) == SENSOR_OFF){
                                 log.info("Start closing the gate: " + gateStatusDto.gateId);
                                 try {
                                     boolean result = barrierService.closeBarrier(gateStatusDto.gateType, null, gateStatusDto.barrier);
@@ -157,7 +161,7 @@ public class GateStatusCheckThread extends Thread {
     }
 
     private int getSensorStatus(SensorStatusDto sensor){
-        int status = -1;
+        int status = SENSOR_UNDEFINED;
         try {
             status = barrierService.getSensorStatus(sensor);
         } catch (IOException | ParseException e) { e.printStackTrace(); }
