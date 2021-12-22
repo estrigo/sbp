@@ -171,34 +171,39 @@ public class CarEventServiceImpl implements CarEventService {
                                     }
 
                                     if(!isWhitelistCar){
-                                        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
-                                        if(ratePluginRegister != null){
-                                            ObjectNode node = this.objectMapper.createObjectNode();
-                                            node.put("parkingId", camera.getGate().getParking().getId());
-                                            node.put("inDate", format.format(carState.getInTimestamp()));
-                                            node.put("outDate", format.format(eventDto.event_time));
-                                            node.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : false);
-
-                                            JsonNode result = ratePluginRegister.execute(node);
-                                            rateResult = result.get("rateResult").decimalValue().setScale(2);
+                                        if(carState == null){
+                                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, camera.getId(), eventDto.car_number, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number);
+                                            properties.put("type", EventLogService.EventType.Deny);
+                                            eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number);
                                         } else {
-                                            properties.put("type", EventLogService.EventType.Error);
-                                            eventLogService.createEventLog("Rate", null, properties, "Плагин вычисления стоимости парковки не найден или не запущен. Авто с гос. номером" + eventDto.car_number);
-                                        }
+                                            PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+                                            if(ratePluginRegister != null){
+                                                ObjectNode node = this.objectMapper.createObjectNode();
+                                                node.put("parkingId", camera.getGate().getParking().getId());
+                                                node.put("inDate", format.format(carState.getInTimestamp()));
+                                                node.put("outDate", format.format(eventDto.event_time));
+                                                node.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : false);
 
-                                        PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
-                                        if(billingPluginRegister != null){
-                                            ObjectNode billinNode = this.objectMapper.createObjectNode();
-                                            billinNode.put("command", "getCurrentBalance");
-                                            billinNode.put("plateNumber", carState.getCarNumber());
-                                            JsonNode billingResult = billingPluginRegister.execute(billinNode);
-                                            balance = billingResult.get("currentBalance").decimalValue().setScale(2);
-                                        } else {
-                                            properties.put("type", EventLogService.EventType.Error);
-                                            eventLogService.createEventLog("Billing", null, properties, "Плагин работы с балансами не найден или не запущен. Авто с гос. номером" + eventDto.car_number);
+                                                JsonNode result = ratePluginRegister.execute(node);
+                                                rateResult = result.get("rateResult").decimalValue().setScale(2);
+                                            } else {
+                                                properties.put("type", EventLogService.EventType.Error);
+                                                eventLogService.createEventLog("Rate", null, properties, "Плагин вычисления стоимости парковки не найден или не запущен. Авто с гос. номером" + eventDto.car_number);
+                                            }
+
+                                            PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+                                            if(billingPluginRegister != null){
+                                                ObjectNode billinNode = this.objectMapper.createObjectNode();
+                                                billinNode.put("command", "getCurrentBalance");
+                                                billinNode.put("plateNumber", carState.getCarNumber());
+                                                JsonNode billingResult = billingPluginRegister.execute(billinNode);
+                                                balance = billingResult.get("currentBalance").decimalValue().setScale(2);
+                                            } else {
+                                                properties.put("type", EventLogService.EventType.Error);
+                                                eventLogService.createEventLog("Billing", null, properties, "Плагин работы с балансами не найден или не запущен. Авто с гос. номером" + eventDto.car_number);
+                                            }
                                         }
                                     }
-
                                 }
                                 hasAccess = handleCarOutEvent(eventDto, camera, properties, format, carState, isWhitelistCar, balance, rateResult);
                             }
