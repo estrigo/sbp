@@ -225,7 +225,7 @@ public class CarEventServiceImpl implements CarEventService {
                 }
             }
         } else {
-            properties.put("type", EventLogService.EventType.Success);
+            properties.put("type", EventLogService.EventType.Error);
             eventLogService.createEventLog(null, null, properties, bundle.getString("events.newLicensePlateIdentified") + " " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address);
         }
     }

@@ -42,7 +42,7 @@ public class GateStatusCheckThread extends Thread {
                         gateStatusDto.directionStatus = GateStatusDto.DirectionStatus.QUIT;
                         gateStatusDto.sensorsForward();
                         try {
-                            boolean result = barrierService.openBarrier(gateStatusDto.gateType, null, gateStatusDto.barrier);
+                            boolean result = barrierService.closeBarrier(gateStatusDto.gateType, null, gateStatusDto.barrier);
                             if(result){
                                 gateStatusDto.gateStatus  = GateStatusDto.GateStatus.Closed;
                                 log.info("Gate auto closed : " + gateStatusDto.gateId);
