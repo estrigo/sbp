@@ -45,6 +45,7 @@ public class GateStatusCheckThread extends Thread {
                             boolean result = barrierService.openBarrier(gateStatusDto.gateType, null, gateStatusDto.barrier);
                             if(result){
                                 gateStatusDto.gateStatus  = GateStatusDto.GateStatus.Closed;
+                                log.info("Gate auto closed : " + gateStatusDto.gateId);
                             }
                         } catch (IOException | ParseException | InterruptedException e) {
                             e.printStackTrace();
