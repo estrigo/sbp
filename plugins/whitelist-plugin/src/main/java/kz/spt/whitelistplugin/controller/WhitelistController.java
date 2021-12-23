@@ -40,7 +40,6 @@ public class WhitelistController {
 
     @GetMapping("/list")
     public String showAllWhitelist(Model model) throws JsonProcessingException {
-        model.addAttribute("whitelist", whitelistService.listAllWhitelist());
         model.addAttribute("whitelistGroups", whitelistGroupsService.listAllWhitelistGroups());
         return "whitelist/list";
     }
@@ -66,8 +65,17 @@ public class WhitelistController {
             ObjectError error = new ObjectError("invalidPlateNumber", bundle.getString("whitelist.notCorrectLicensePlace"));
             bindingResult.addError(error);
         }
-        if(whitelist.getPlatenumber() != null && whitelistService.findByPlatenumber(whitelist.getPlatenumber(), whitelist.getParkingId())!=null){
-            ObjectError error = new ObjectError("plateNumberExist", bundle.getString("whitelist.plateNumberExists"));
+
+        Whitelist exist = whitelistService.findByPlatenumber(whitelist.getPlatenumber(), whitelist.getParkingId());
+        if(whitelist.getPlatenumber() != null && exist!=null){
+            String errorStr = bundle.getString("whitelist.plateNumberExists");
+            if(exist.getGroup() != null){
+                errorStr = errorStr.concat(", ").concat(bundle.getString("whitelist.groups")).concat(" ").concat(exist.getGroup().getName());
+            }
+            if(exist.getParking() != null){
+                errorStr = errorStr.concat(", ").concat(bundle.getString("whitelist.parking")).concat(" ").concat(exist.getParking().getName());
+            }
+            ObjectError error = new ObjectError("plateNumberExist",errorStr);
             bindingResult.addError(error);
         }
         if(Whitelist.Type.PERIOD.equals(whitelist.getType()) && whitelist.getAccessEndString() == null){

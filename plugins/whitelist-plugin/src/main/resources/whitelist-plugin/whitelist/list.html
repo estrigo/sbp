@@ -14,12 +14,26 @@
                 <div class="card">
                     <div class="card-header" th:text="#{whitelist.title}"></div>
                     <div class="card-body">
+                        <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <a th:href="@{|/whitelist/add|}"
+                                       class="btn btn-primary waves-effect waves-light"
+                                       th:text="#{whitelist.addNew}"></a>
+                                    <a th:href="@{|/whitelist/groups/add|}"
+                                       class="btn btn-primary waves-effect waves-light"
+                                       th:text="#{whitelist.addNewGroup}"></a>
+                                </div>
+                            </div>
+                        </th:block>
                         <ul class="nav nav-tabs">
                             <li class="nav-item">
-                                <a href="#whitelist" data-toggle="tab" aria-expanded="true" class="nav-link active" th:text="#{whitelist.title}"></a>
+                                <a href="#whitelist" data-toggle="tab" aria-expanded="true" class="nav-link active"
+                                   th:text="#{whitelist.title}"></a>
                             </li>
                             <li class="nav-item">
-                                <a href="#groups" data-toggle="tab" aria-expanded="false" class="nav-link" th:text="#{whitelist.groups}"></a>
+                                <a href="#groups" data-toggle="tab" aria-expanded="false" class="nav-link"
+                                   th:text="#{whitelist.groups}"></a>
                             </li>
                         </ul>
                         <div class="tab-content">
@@ -27,11 +41,12 @@
                                 <table id="datatable-buttons" class="table table-bordered table-bordered">
                                     <thead>
                                     <tr>
-                                        <th><a th:text="#{car.platenumber}"></a></th>
-                                        <th><a th:text="#{whitelist.parking}"></a></th>
-                                        <th><a th:text="#{whitelist.groupName}"></a></th>
-                                        <th><a th:text="#{whitelist.condition}"></a></th>
-                                        <th:block sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
+                                        <th th:text="#{car.platenumber}"></th>
+                                        <th th:text="#{whitelist.parking}"></th>
+                                        <th th:text="#{whitelist.groupName}"></th>
+                                        <th th:text="#{whitelist.condition}"></th>
+                                        <th:block
+                                                sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
                                             <th></th>
                                         </th:block>
                                         <th:block sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN')">
@@ -40,27 +55,25 @@
                                     </tr>
                                     </thead>
                                 </table>
-                                <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
-                                <div class="form-group row">
-                                    <div class="col-12">
-                                        <a th:href="@{|/whitelist/add|}" class="btn btn-danger waves-effect waves-light"
-                                           th:text="#{whitelist.addNew}"></a>
-                                        <a th:href="@{|/whitelist/groups/add|}"
-                                           class="btn btn-danger waves-effect waves-light"
-                                           th:text="#{whitelist.addNewGroup}"></a>
+                                <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <a th:href="@{|/whitelist/add|}"
+                                               class="btn btn-primary waves-effect waves-light"
+                                               th:text="#{whitelist.addNew}"></a>
+                                        </div>
                                     </div>
-                                </div>
-                                </p>
+                                </th:block>
                             </div>
                             <div class="tab-pane fade" id="groups">
                                 <table id="datatable-buttons1" class="table table-bordered table-bordered">
                                     <thead>
                                     <tr>
-                                        <th><a th:text="#{ordinal.number}"></a></th>
-                                        <th><a th:text="#{whitelist.groupName}"></a></th>
-                                        <th><a th:text="#{whitelist.parking}"></a></th>
-                                        <th><a th:text="#{whitelist.groupSize}"></a></th>
-                                        <th><a th:text="#{whitelist.condition}"></a></th>
+                                        <th th:text="#{ordinal.number}"></th>
+                                        <th th:text="#{whitelist.groupName}"></th>
+                                        <th th:text="#{whitelist.parking}"></th>
+                                        <th th:text="#{whitelist.groupSize}"></th>
+                                        <th th:text="#{whitelist.condition}"></th>
                                         <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
                                         <th></th>
                                         </p>
@@ -89,15 +102,15 @@
                                     </tr>
                                     </tbody>
                                 </table>
-                                <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
-                                <div class="form-group row">
-                                    <div class="col-12">
-                                        <a th:href="@{|/whitelist/groups/add|}"
-                                           class="btn btn-danger waves-effect waves-light"
-                                           th:text="#{whitelist.addNewGroup}"></a>
+                                <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <a th:href="@{|/whitelist/groups/add|}"
+                                               class="btn btn-primary waves-effect waves-light"
+                                               th:text="#{whitelist.addNewGroup}"></a>
+                                        </div>
                                     </div>
-                                </div>
-                                </p>
+                                </th:block>
                             </div>
                         </div>
                     </div>
@@ -133,6 +146,7 @@
         edit = "Edit";
         del = "Delete";
     }
+
     var table = $('#datatable-buttons').DataTable({
         processing: true,
         serverSide: true,
@@ -154,18 +168,19 @@
                 "data": "id",
                 "orderable": false,
                 "render": function (data, type) {
-                    return '<a href="edit/' + data + '">'+ edit + '</a>';
+                    return '<a href="edit/' + data + '">' + edit + '</a>';
                 }
             },
             {
                 "data": "id",
                 "orderable": false,
                 "render": function (data, type) {
-                    return '<a href="delete/' + data + '">'+ del + '</a>';
+                    return '<a href="delete/' + data + '">' + del + '</a>';
                 }
             },
         ],
-        "buttons": ['copy', 'excel', 'pdf', 'csv'],
+        buttons: ['copy', 'excel', 'pdf', 'csv'],
+        fixedHeader: true,
         language: {
             url: address
         }
@@ -176,13 +191,24 @@
             url: address
         },
         lengthChange: false,
-        buttons: ['copy', 'excel', 'pdf', 'csv']
+        buttons: ['copy', 'excel', 'pdf', 'csv'],
     });
-    table.buttons().container()
-        .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
 
-    table1.buttons().container()
-        .appendTo('#datatable-buttons1_wrapper .col-md-6:eq(0)');
+    var interval = null;
+    $(document).on('ready', function () {
+        interval = setInterval(showButtons, 1000);
+    });
+
+    function showButtons() {
+        //$(table.table().header()).addClass('header-fixed');
+        if (table.buttons().container().length > 0) {
+            table.buttons().container().appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+        }
+        if (table1.buttons().container().length > 0) {
+            table1.buttons().container().appendTo('#datatable-buttons1_wrapper .col-md-6:eq(0)');
+        }
+        clearInterval(interval);
+    }
 
     function groupModalContent(groupId) {
         if (groupId) {
