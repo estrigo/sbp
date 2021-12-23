@@ -62,7 +62,11 @@ public class BarrierServiceImpl implements BarrierService {
                 if(sensor.oid !=null && sensor.password != null && sensor.ip!= null && sensor.snmpVersion!= null){
                     SNMPManager client = new SNMPManager("udp:" + sensor.ip+ "/161", sensor.password, sensor.snmpVersion);
                     client.start();
-                    int carDetected = Integer.valueOf(client.getCurrentValue(sensor.oid));
+                    String carDetectedString = client.getCurrentValue(sensor.oid);
+                    int carDetected = -1;
+                    if(carDetectedString != null){
+                        carDetected = Integer.valueOf(carDetectedString);
+                    }
                     client.close();
                     return carDetected;
                 } else {
@@ -268,6 +272,7 @@ public class BarrierServiceImpl implements BarrierService {
                     }
                 }
                 if(Command.Close.equals(command) && isOpenValueChanged) {
+                    Thread.sleep(500);
                     String currentValue2 = barrierClient.getCurrentValue(oid);
                     if (BARRIER_ON.equals(currentValue2)) {
                         Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
@@ -285,16 +290,18 @@ public class BarrierServiceImpl implements BarrierService {
                     }
                 }
             } else {
-                Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
-                if (!isReturnValueChanged) {
-                    for (int i = 0; i < 3; i++) {
-                        isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
-                        if (isReturnValueChanged) {
-                            break;
-                        }
-                    }
+                if(Command.Close.equals(command)){
+                    Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
                     if (!isReturnValueChanged) {
-                        eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gateType) ? "въезда" : (Gate.GateType.OUT.equals(gateType) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""));
+                        for (int i = 0; i < 3; i++) {
+                            isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                            if (isReturnValueChanged) {
+                                break;
+                            }
+                        }
+                        if (!isReturnValueChanged) {
+                            eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gateType) ? "въезда" : (Gate.GateType.OUT.equals(gateType) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""));
+                        }
                     }
                 }
             }
