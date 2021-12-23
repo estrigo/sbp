@@ -49,10 +49,6 @@
                         <a th:href="@{|/users/list|}" class="waves-effect waves-primary"><i
                                 class="ti-user"></i><span th:text=" #{user.users} "></span></a>
                     </li>
-<!--                    <li>-->
-<!--                        <a th:href="@{|/parking/list|}" class="waves-effect waves-primary"><i-->
-<!--                                class="ti-map-alt"></i><span th:text=" #{parking.parkings} "></span></a>-->
-<!--                    </li>-->
                     <li>
                         <a th:href="@{|/customers/list|}" class="waves-effect waves-primary"><i
                                 class="ti-home"></i><span th:text=" #{customer.customers}"></span></a>
@@ -61,10 +57,6 @@
                         <a th:href="@{|/arm/realtime|}" class="waves-effect waves-primary"><i
                                 class="ti-desktop"></i><span th:text=" #{crm.arm} "></span></a>
                     </li>
-                    <!--li>
-                        <a th:href="@{|/cars/list|}" class="waves-effect waves-primary"><i
-                                class="ti-car"></i><span th:text=" #{car.cars} "></span></a>
-                    </li-->
                     <li>
                         <a th:href="@{|/events/list|}" class="waves-effect waves-primary"><i
                                 class="ti-files"></i><span th:text=" #{events.events} "></span></a>
@@ -130,6 +122,10 @@
 <script th:src="@{/assets/js/jquery.scrollTo.min.js}"></script>
 <script th:src="@{/plugins/switchery/switchery.min.js}"></script>
 
+<!-- Notification js -->
+<script th:src="@{/plugins/notifyjs/dist/notify.min.js}"></script>
+<script th:src="@{/plugins/notifications/notify-metro.js}"></script>
+
 <th:block th:replace="${scripts}" />
 
 <script th:src="@{/assets/js/jquery.core.js}"></script>
@@ -139,6 +135,33 @@
     function changeLanguage(lang){
         window.location.href = window.location.protocol + '//' + window.location.host + '/?lang=' + lang;
     }
+    function showWarningModal(){
+        $.Notification.confirm('error', 'top center', '[[#{crm.warning}]]' + '!!!', '[[#{crm.emergencyOpenConfirm}]]', '[[#{crm.yes}]]', '[[#{crm.no}]]');
+    }
+
+    function cancelWarning(){
+        $.get("/rest/arm/emergency/open/false", function (data) {
+            if(data && data === false){
+                $('#warningSet').show();
+                $('#warningMessage').hide();
+            }
+        });
+    }
+
+    $(document).on('click', '.notifyjs-metro-base .yes', function() {
+        $.get("/rest/arm/emergency/open/true", function (data) {
+            if(data){
+                $('#warningSet').hide();
+                $('#warningMessage').show();
+            }
+        });
+    });
+
+    $(document).on('ready', function () {
+        $.get("/rest/arm/emergency/status", function (data) {
+            console.log(data);
+        });
+    });
 </script>
 
 </body>

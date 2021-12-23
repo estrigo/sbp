@@ -19,8 +19,11 @@
                     <table class="w-100">
                         <tbody>
                             <tr>
-                                <td class="w-50">
+                                <td class="w-50" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN')">
                                     <button type="button" class="btn btn-outline-success w-100" th:cameraId="${camera.id}" th:onclick="openGate(this.getAttribute('cameraId'))" th:text="#{arm.open}"></button>
+                                </td>
+                                <td class="w-50" sec:authorize="!hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN')">
+                                    <button type="button" class="btn btn-outline-success w-100" th:cameraId="${camera.id}" th:text="#{arm.open}" disabled="disabled"></button>
                                 </td>
                                 <td class="w-50">
                                     <button type="button" class="btn btn-outline-warning w-100" th:cameraId="${camera.id}" th:onclick="closeGate(this.getAttribute('cameraId'))" th:text="#{arm.close}"></button>

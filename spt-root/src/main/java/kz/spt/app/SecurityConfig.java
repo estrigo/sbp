@@ -48,6 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers("/users/delete/**").hasRole("ADMIN")
+                .antMatchers("/arm/**").fullyAuthenticated()
                 .antMatchers("/pdf-generator", "/search/**", "/customers/list", "/register/**", "/contract/**", "/cars/list", "/parking/list", "/arm/**", "/events/**", "/journal/**", "/customer/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN")
                 .antMatchers("/customer/edit/**", "/users/list",
                         "/cars/edit/**","/parking/edit/**","/parking/details/**").hasAnyRole( "ADMIN", "MANAGER", "SUPERADMIN");
@@ -83,7 +84,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .anyRequest().permitAll()
                 .and()
-                .formLogin().loginPage("/login").permitAll()
+                .formLogin().loginPage("/login").permitAll().defaultSuccessUrl("/arm/realtime", false)
                 .and()
                 .logout().logoutSuccessUrl("/login").permitAll()
                 .and()

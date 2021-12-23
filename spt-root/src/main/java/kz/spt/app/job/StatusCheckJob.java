@@ -27,8 +27,7 @@ public class StatusCheckJob {
     @Autowired
     private BarrierService barrierService;
 
-    @Autowired
-    private CarEventService carEventService;
+    public static Boolean emergencyModeOn = false;
 
     public static Map<Long, Boolean> isGatesProcessing = new ConcurrentHashMap<>();
     public static Queue<GateStatusDto> globalGateDtos = new ConcurrentLinkedQueue<>();
@@ -51,7 +50,6 @@ public class StatusCheckJob {
         List<Gate> allGates = (List<Gate>) gateService.listAllGatesWithDependents();
         for (Gate gate : allGates){
             if(!isGatesProcessing.containsKey(gate.getId())){
-                log.info("filling gate: " + gate.getId());
                 globalGateDtos.add(GateStatusDto.fromGate(gate));
                 isGatesProcessing.put(gate.getId(), false);
             }

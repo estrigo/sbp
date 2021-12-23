@@ -124,7 +124,7 @@ function($) {
         });
     },
     //confirmation notification
-    Notification.prototype.confirm = function(style,position, title) {
+    Notification.prototype.confirm = function(style,position, title, text, yes, no) {
         var icon = "fa fa-adjust";
         if(style == "error"){
             icon = "fa fa-exclamation";
@@ -141,7 +141,7 @@ function($) {
         }
         $.notify({
             title: title,
-            text: 'Are you sure you want to do nothing?<div class="clearfix"></div><br><a class="btn btn-sm btn-white yes">Yes</a> <a class="btn btn-sm btn-danger no">No</a>',
+            text:  text + '<div class="clearfix"></div><br><a class="btn btn-sm btn-white yes">'+yes+'</a> <a class="btn btn-sm btn-danger no">'+no+'</a>',
             image: "<i class='"+icon+"'></i>"
         }, {
             style: 'metro',
@@ -159,8 +159,6 @@ function($) {
           $(this).trigger('notify-hide');
         });
         $(document).on('click', '.notifyjs-metro-base .yes', function() {
-          //show button text
-          alert($(this).text() + " clicked!");
           //hide notification
           $(this).trigger('notify-hide');
         });

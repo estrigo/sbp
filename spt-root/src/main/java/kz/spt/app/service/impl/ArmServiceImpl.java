@@ -1,5 +1,7 @@
 package kz.spt.app.service.impl;
 
+import kz.spt.app.job.StatusCheckJob;
+import kz.spt.app.thread.GateStatusCheckThread;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.Gate;
@@ -7,12 +9,15 @@ import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.ArmService;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -93,5 +98,28 @@ public class ArmServiceImpl implements ArmService {
         }
 
         return false;
+    }
+
+    @Override
+    public Boolean setEmergencyOpen(Boolean value, UserDetails currentUser) {
+        if (currentUser != null) {
+            if(value){
+                StatusCheckJob.emergencyModeOn = value;
+            } else {
+                final Collection<? extends GrantedAuthority> authorities = currentUser.getAuthorities();
+                for (final GrantedAuthority grantedAuthority : authorities) {
+                    String authorityName = grantedAuthority.getAuthority();
+                    if("ROLE_ADMIN".equals(authorityName)) {
+                        StatusCheckJob.emergencyModeOn = value;
+                    }
+                }
+            }
+        }
+        return StatusCheckJob.emergencyModeOn;
+    }
+
+    @Override
+    public Boolean getEmergencyStatus() {
+        return StatusCheckJob.emergencyModeOn;
     }
 }
