@@ -40,7 +40,6 @@ public class WhitelistController {
 
     @GetMapping("/list")
     public String showAllWhitelist(Model model) throws JsonProcessingException {
-        model.addAttribute("whitelistGroups", whitelistGroupsService.listAllWhitelistGroups());
         return "whitelist/list";
     }
 

@@ -130,7 +130,6 @@
     var table = $('#whitelist-table').DataTable({
         processing: true,
         serverSide: true,
-        responsive: true,
         fixedHeader: true,
         ajax: {
             "url": "/rest/whitelist",
@@ -170,14 +169,12 @@
     var table1 = $('#whitelist-group-table').DataTable({
         processing: true,
         serverSide: true,
-        responsive: true,
         ajax: {
             "url": "/rest/whitelist/group",
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",
             "data": function (d) {
-                console.log(d);
                 return JSON.stringify(d);
             }
         },
