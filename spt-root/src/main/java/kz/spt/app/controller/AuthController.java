@@ -57,7 +57,7 @@ public class AuthController {
             ObjectError error = new ObjectError("passwordIsNull", bundle.getString("user.notCorrectPassword"));
             bindingResult.addError(error);
         }
-        if(user.getPassword().equals(user.getConfirm())){
+        if(!user.getPassword().equals(user.getConfirm())){
             ObjectError error = new ObjectError("passwordIsNull", bundle.getString("user.notCorrectPassword"));
             bindingResult.addError(error);
         }
@@ -67,8 +67,12 @@ public class AuthController {
             userService.saveUser(userFromDB);
             user.setPassword("");
             user.setConfirm("");
+
+            model.addAttribute("user", user);
+            return "redirect:";
+        }else{
+            model.addAttribute("user", user);
+            return "change-password";
         }
-        model.addAttribute("user", user);
-        return "change-password";
     }
 }
