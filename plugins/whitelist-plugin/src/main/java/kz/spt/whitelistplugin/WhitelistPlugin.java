@@ -5,8 +5,10 @@ import org.laxture.sbp.SpringBootPlugin;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.util.*;
+
 
 public class WhitelistPlugin extends SpringBootPlugin implements CustomPlugin {
 

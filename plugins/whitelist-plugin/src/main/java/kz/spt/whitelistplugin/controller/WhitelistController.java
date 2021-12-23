@@ -1,12 +1,19 @@
 package kz.spt.whitelistplugin.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import kz.spt.lib.model.Parking;
+import kz.spt.lib.service.ParkingService;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
+import kz.spt.whitelistplugin.service.FileServices;
 import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import kz.spt.whitelistplugin.service.WhitelistGroupsService;
 import kz.spt.whitelistplugin.service.WhitelistService;
+import kz.spt.whitelistplugin.service.impl.RootServicesGetterServiceImpl;
 import lombok.extern.java.Log;
+import org.apache.commons.collections4.IterableUtils;
+import org.apache.commons.collections4.IteratorUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +22,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -31,6 +40,12 @@ public class WhitelistController {
     private WhitelistGroupsService whitelistGroupsService;
     private RootServicesGetterService rootServicesGetterService;
 
+    @Autowired
+    private FileServices fileServices;
+
+    private ParkingService parkingService;
+
+
     public WhitelistController(WhitelistService whitelistService, WhitelistGroupsService whitelistGroupsService,
                                RootServicesGetterService rootServicesGetterService){
         this.whitelistService = whitelistService;
@@ -38,8 +53,37 @@ public class WhitelistController {
         this.rootServicesGetterService = rootServicesGetterService;
     }
 
+    @PostMapping("/list")
+    public String uploadMultipartFile(@RequestParam("uploadfile") MultipartFile file, Model model, RedirectAttributes redirectAttributes, @RequestParam Parking selectedParking, @AuthenticationPrincipal UserDetails currentUser) {
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru-RU";
+        }
+
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
+        try {
+            fileServices.store(file, selectedParking, rootServicesGetterService, currentUser);
+            System.out.println("Success");
+            redirectAttributes.addAttribute("fileUploadResult", bundle.getString("whitelist.uploadSuccess"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addAttribute("fileUploadResult", bundle.getString("whitelist.uploadFail") + " " + file.getOriginalFilename());
+        }
+
+        return "redirect:/whitelist/list";
+    }
+
     @GetMapping("/list")
     public String showAllWhitelist(Model model) throws JsonProcessingException {
+
+        parkingService = rootServicesGetterService.getParkingService();
+        Iterable<Parking> list = parkingService.listAllParking();
+
+        model.addAttribute("whitelist", whitelistService.listAllWhitelist());
+        model.addAttribute("whitelistGroups", whitelistGroupsService.listAllWhitelistGroups());
+        model.addAttribute("parkings", list);
+        
         return "whitelist/list";
     }
 
@@ -64,17 +108,8 @@ public class WhitelistController {
             ObjectError error = new ObjectError("invalidPlateNumber", bundle.getString("whitelist.notCorrectLicensePlace"));
             bindingResult.addError(error);
         }
-
-        Whitelist exist = whitelistService.findByPlatenumber(whitelist.getPlatenumber(), whitelist.getParkingId());
-        if(whitelist.getPlatenumber() != null && exist!=null){
-            String errorStr = bundle.getString("whitelist.plateNumberExists");
-            if(exist.getGroup() != null){
-                errorStr = errorStr.concat(", ").concat(bundle.getString("whitelist.groups")).concat(" ").concat(exist.getGroup().getName());
-            }
-            if(exist.getParking() != null){
-                errorStr = errorStr.concat(", ").concat(bundle.getString("whitelist.parking")).concat(" ").concat(exist.getParking().getName());
-            }
-            ObjectError error = new ObjectError("plateNumberExist",errorStr);
+        if(whitelist.getPlatenumber() != null && whitelistService.findByPlatenumber(whitelist.getPlatenumber(), whitelist.getParkingId())!=null){
+            ObjectError error = new ObjectError("plateNumberExist", bundle.getString("whitelist.plateNumberExists"));
             bindingResult.addError(error);
         }
         if(Whitelist.Type.PERIOD.equals(whitelist.getType()) && whitelist.getAccessEndString() == null){

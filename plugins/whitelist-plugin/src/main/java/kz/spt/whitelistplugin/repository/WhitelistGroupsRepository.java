@@ -11,4 +11,6 @@ public interface WhitelistGroupsRepository extends JpaRepository<WhitelistGroups
 
     @Query("from WhitelistGroups w  where w.id = ?1")
     WhitelistGroups getWhitelistGroup(Long id);
+
+    WhitelistGroups getWhitelistGroupsByName(String groupName);
 }

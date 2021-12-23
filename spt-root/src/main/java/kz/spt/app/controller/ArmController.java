@@ -1,6 +1,8 @@
 package kz.spt.app.controller;
 
+import kz.spt.app.repository.ParkingRepository;
 import kz.spt.app.service.CameraService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
