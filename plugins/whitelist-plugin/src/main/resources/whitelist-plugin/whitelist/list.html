@@ -10,7 +10,6 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-
                 <div class="card">
                     <div class="card-header" th:text="#{whitelist.title}"></div>
                     <div class="card-body">
@@ -38,7 +37,7 @@
                         </ul>
                         <div class="tab-content">
                             <div class="tab-pane fade show active" id="whitelist">
-                                <table id="datatable-buttons" class="table table-bordered table-bordered">
+                                <table id="whitelist-table" class="table table-bordered table-bordered">
                                     <thead>
                                     <tr>
                                         <th th:text="#{car.platenumber}"></th>
@@ -66,41 +65,22 @@
                                 </th:block>
                             </div>
                             <div class="tab-pane fade" id="groups">
-                                <table id="datatable-buttons1" class="table table-bordered table-bordered">
+                                <table id="whitelist-group-table" class="table table-bordered table-bordered" style="width: 100%">
                                     <thead>
                                     <tr>
-                                        <th th:text="#{ordinal.number}"></th>
                                         <th th:text="#{whitelist.groupName}"></th>
                                         <th th:text="#{whitelist.parking}"></th>
                                         <th th:text="#{whitelist.groupSize}"></th>
                                         <th th:text="#{whitelist.condition}"></th>
-                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
-                                        <th></th>
-                                        </p>
-                                        <p sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')">
-                                        <th></th>
-                                        </p>
+                                        <th:block
+                                                sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
+                                            <th></th>
+                                        </th:block>
+                                        <th:block sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN')">
+                                            <th></th>
+                                        </th:block>
                                     </tr>
                                     </thead>
-                                    <tbody>
-                                    <tr th:each="w, iterStat : ${whitelistGroups}">
-                                        <td th:text="${iterStat.count}"></td>
-                                        <td th:text="${w.name}"></td>
-                                        <td>
-                                            <span th:if="${w.parking != null}" th:text="${w.parking.name}"></span>
-                                        </td>
-                                        <td th:text="${w.size}"></td>
-                                        <td th:text="${w.conditionDetail}"></td>
-                                        <p sec:authorize="hasAnyRole('ROLE_MANAGER','ROLE_ADMIN' , 'ROLE_SUPERADMIN')">
-                                        <td><a th:href="@{|/whitelist/group/edit/${w.id}|}" th:text="#{crm.edit}"></a>
-                                        </td>
-                                        </p>
-                                        <p sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')">
-                                        <td><a th:href="@{|/whitelist/group/delete/${w.id}|}"
-                                               th:text="#{crm.delete}"></a></td>
-                                        </p>
-                                    </tr>
-                                    </tbody>
                                 </table>
                                 <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                                     <div class="form-group row">
@@ -147,9 +127,11 @@
         del = "Delete";
     }
 
-    var table = $('#datatable-buttons').DataTable({
+    var table = $('#whitelist-table').DataTable({
         processing: true,
         serverSide: true,
+        responsive: true,
+        fixedHeader: true,
         ajax: {
             "url": "/rest/whitelist",
             "type": "POST",
@@ -180,18 +162,49 @@
             },
         ],
         buttons: ['copy', 'excel', 'pdf', 'csv'],
-        fixedHeader: true,
         language: {
             url: address
         }
     });
 
-    var table1 = $('#datatable-buttons1').DataTable({
+    var table1 = $('#whitelist-group-table').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+        ajax: {
+            "url": "/rest/whitelist/group",
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+                console.log(d);
+                return JSON.stringify(d);
+            }
+        },
+        columns: [
+            {"data": "name"},
+            {"data": "parkingName"},
+            {"data": "size"},
+            {"data": "conditionDetail", "orderable": false,"width":"25%"},
+            {
+                "data": "id",
+                "orderable": false,
+                "render": function (data, type) {
+                    return '<a href="group/edit/' + data + '">' + edit + '</a>';
+                }
+            },
+            {
+                "data": "id",
+                "orderable": false,
+                "render": function (data, type) {
+                    return '<a href="group/delete/' + data + '">' + del + '</a>';
+                }
+            },
+        ],
+        buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: address
-        },
-        lengthChange: false,
-        buttons: ['copy', 'excel', 'pdf', 'csv'],
+        }
     });
 
     var interval = null;
@@ -200,22 +213,13 @@
     });
 
     function showButtons() {
-        //$(table.table().header()).addClass('header-fixed');
         if (table.buttons().container().length > 0) {
-            table.buttons().container().appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+            table.buttons().container().appendTo('#whitelist-table_wrapper .col-md-6:eq(0)');
         }
         if (table1.buttons().container().length > 0) {
-            table1.buttons().container().appendTo('#datatable-buttons1_wrapper .col-md-6:eq(0)');
+            table1.buttons().container().appendTo('#whitelist-group-table_wrapper .col-md-6:eq(0)');
         }
         clearInterval(interval);
-    }
-
-    function groupModalContent(groupId) {
-        if (groupId) {
-            $.get("/whitelist/group/" + groupId, function (data) {
-                $('#group-close-modal').find('#groupModalBody').html(data);
-            });
-        }
     }
 </script>
 

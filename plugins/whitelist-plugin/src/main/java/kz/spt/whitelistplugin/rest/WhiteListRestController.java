@@ -19,9 +19,9 @@ public class WhiteListRestController {
     public WhiteListRestController(WhitelistService whitelistService){
         this.whitelistService = whitelistService;
     }
+
     @PostMapping
     public Page<WhiteListDto> list(@RequestBody PagingRequest pagingRequest) throws ParseException {
-        var list = whitelistService.listByPage(pagingRequest);
-        return list;
+        return whitelistService.listByPage(pagingRequest);
     }
 }

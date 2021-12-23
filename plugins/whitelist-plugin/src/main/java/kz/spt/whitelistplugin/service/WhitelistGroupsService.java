@@ -1,8 +1,12 @@
 package kz.spt.whitelistplugin.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import kz.spt.lib.bootstrap.datatable.Page;
+import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
+import kz.spt.whitelistplugin.viewmodel.WhiteListDto;
+import kz.spt.whitelistplugin.viewmodel.WhiteListGroupDto;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -20,6 +24,8 @@ public interface WhitelistGroupsService {
     void deleteGroup(WhitelistGroups group);
 
     Iterable<WhitelistGroups> listAllWhitelistGroups() throws JsonProcessingException;
+
+    public Page<WhiteListGroupDto> listByPage(PagingRequest pagingRequest);
 
     void deleteById(Long id);
 
