@@ -1,9 +1,12 @@
 package kz.spt.app.job;
 
+import kz.spt.app.model.dto.BarrierStatusDto;
+import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.GateService;
 import kz.spt.app.thread.GateStatusCheckThread;
+import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Gate;
 import kz.spt.lib.service.CarEventService;
 import lombok.extern.java.Log;
@@ -39,8 +42,15 @@ public class StatusCheckJob {
         }
         for (GateStatusDto gateStatusDto : globalGateDtos) {
             if(!isGatesProcessing.containsKey(gateStatusDto.gateId) || !isGatesProcessing.get(gateStatusDto.gateId)){
-                isGatesProcessing.put(gateStatusDto.gateId, true);
-                new GateStatusCheckThread(gateStatusDto, barrierService).start();
+                BarrierStatusDto barrier = gateStatusDto.barrier;
+                CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
+                if(barrier != null && cameraStatusDto != null && Barrier.SensorsType.MANUAL.equals(barrier.sensorsType)) { // Данные шлагбаума и камеры заполнены
+                    isGatesProcessing.put(gateStatusDto.gateId, true);
+                    new GateStatusCheckThread(gateStatusDto, barrierService).start();
+                    log.info("gate: " + gateStatusDto.gateId + " is free and barrier mode is manual");
+                }
+            } else {
+                log.info("gate: " + gateStatusDto.gateId + " is busy");
             }
         }
     }

@@ -221,6 +221,12 @@ public class CarEventServiceImpl implements CarEventService {
                                 }
                             }
                         }
+                    } else {
+                        if(gate.lastClosedTime != null){
+                            log.info("last closed date diff: " + (System.currentTimeMillis() - gate.lastClosedTime > 5500));
+                        } else {
+                            log.info("last closed date is null");
+                        }
                     }
                 }
             }

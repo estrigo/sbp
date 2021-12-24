@@ -1,5 +1,6 @@
 package kz.spt.app.service.impl;
 
+import kz.spt.app.job.StatusCheckJob;
 import kz.spt.lib.model.Gate;
 import kz.spt.app.repository.GateRepository;
 import kz.spt.app.service.GateService;
@@ -32,6 +33,7 @@ public class GateServiceImpl implements GateService {
     @Override
     public void saveGate(Gate gate) {
         gateRepository.save(gate);
+        StatusCheckJob.emptyGlobalGateDtos();
     }
 
     @Override

@@ -51,14 +51,7 @@ public class GateStatusDto {
         Barrier barrier = gate.getBarrier();
         if(barrier != null){
             if(barrier.getIp() != null && barrier.getPassword() != null && barrier.getOpenOid() != null && barrier.getCloseOid() != null){
-                gateStatusDto.barrier = new BarrierStatusDto();
-                gateStatusDto.barrier.id = barrier.getId();
-                gateStatusDto.barrier.type = barrier.getBarrierType();
-                gateStatusDto.barrier.ip = barrier.getIp();
-                gateStatusDto.barrier.closeOid = barrier.getCloseOid();
-                gateStatusDto.barrier.openOid = barrier.getOpenOid();
-                gateStatusDto.barrier.password = barrier.getPassword();
-                gateStatusDto.barrier.snmpVersion = barrier.getSnmpVersion();
+                gateStatusDto.barrier = BarrierStatusDto.fromBarrier(barrier);
             }
             if(barrier.getLoopIp() != null && barrier.getLoopPassword() != null && barrier.getLoopOid() != null && barrier.getLoopType() != null){
                 gateStatusDto.loop = new SensorStatusDto();

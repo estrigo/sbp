@@ -6,6 +6,7 @@ public class BarrierStatusDto {
 
     public Long id;
     public Barrier.BarrierType type;
+    public Barrier.SensorsType sensorsType;
     public String ip;
     public String password;
     public Integer snmpVersion;
@@ -21,6 +22,7 @@ public class BarrierStatusDto {
         barrierStatusDto.snmpVersion = barrier.getSnmpVersion();
         barrierStatusDto.openOid = barrier.getOpenOid();
         barrierStatusDto.closeOid = barrier.getCloseOid();
+        barrierStatusDto.sensorsType = barrier.getSensorsType();
         return barrierStatusDto;
     }
 }
