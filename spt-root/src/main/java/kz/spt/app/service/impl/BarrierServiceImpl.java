@@ -130,7 +130,7 @@ public class BarrierServiceImpl implements BarrierService {
             SNMPManager barrierClient = new SNMPManager("udp:" + barrier.ip + "/161", barrier.password, barrier.snmpVersion);
             barrierClient.start();
 
-            if(Command.Close.equals(command) && Barrier.SensorsType.MANUAL.equals(barrier.type)){
+            if(Command.Close.equals(command) || Barrier.SensorsType.MANUAL.equals(barrier.type)){
                 String openValue = barrierClient.getCurrentValue(barrier.openOid);
                 if (BARRIER_ON.equals(openValue)) {
                     Boolean changed = barrierClient.changeValue(barrier.openOid, Integer.valueOf(BARRIER_OFF));
