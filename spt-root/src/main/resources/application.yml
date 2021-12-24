@@ -59,3 +59,7 @@ status:
 car:
   movement:
     simulate: false
+whitelist:
+  group:
+    show:
+      advanced: false

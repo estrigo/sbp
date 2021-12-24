@@ -140,7 +140,7 @@ public class CarEventServiceImpl implements CarEventService {
                             log.info("hasAccess: " + hasAccess);
                             if(hasAccess){
                                 boolean openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
-                                if(openResult && !Barrier.SensorsType.AUTOMATIC.equals(camera.getGate().getBarrier().getSensorsType())){
+                                if(openResult){
                                     gate.gateStatus = GateStatusDto.GateStatus.Open;
                                     gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
                                     gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
@@ -209,7 +209,7 @@ public class CarEventServiceImpl implements CarEventService {
                             }
                             if(hasAccess){
                                 boolean openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
-                                if(openResult && !Barrier.SensorsType.AUTOMATIC.equals(camera.getGate().getBarrier().getSensorsType())){
+                                if(openResult){
                                     gate.gateStatus = GateStatusDto.GateStatus.Open;
                                     gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
                                     gate.sensor2 = GateStatusDto.SensorStatus.WAIT;

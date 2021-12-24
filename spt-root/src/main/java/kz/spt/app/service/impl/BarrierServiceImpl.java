@@ -130,7 +130,7 @@ public class BarrierServiceImpl implements BarrierService {
             SNMPManager barrierClient = new SNMPManager("udp:" + barrier.ip + "/161", barrier.password, barrier.snmpVersion);
             barrierClient.start();
 
-            if(Command.Close.equals(command) || Barrier.SensorsType.MANUAL.equals(barrier.type)){
+            if(Command.Close.equals(command) && Barrier.SensorsType.MANUAL.equals(barrier.sensorsType)){
                 String openValue = barrierClient.getCurrentValue(barrier.openOid);
                 if (BARRIER_ON.equals(openValue)) {
                     Boolean changed = barrierClient.changeValue(barrier.openOid, Integer.valueOf(BARRIER_OFF));
@@ -154,6 +154,7 @@ public class BarrierServiceImpl implements BarrierService {
 
             if (BARRIER_OFF.equals(currentValue)) {
                 Boolean isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
+                log.info(" isOpenValueChanged: " + isOpenValueChanged);
                 if (!isOpenValueChanged) {
                     for (int i = 0; i < 3; i++) {
                         isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
@@ -166,8 +167,8 @@ public class BarrierServiceImpl implements BarrierService {
                         eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gateType) ? "въезда" : (Gate.GateType.OUT.equals(gateType) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 1 чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""));
                     }
                 }
-                if((Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.type)) && isOpenValueChanged) {
-                    Thread.sleep(1000);
+                if((Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType)) && isOpenValueChanged) {
+                    Thread.sleep(500);
                     String currentValue2 = barrierClient.getCurrentValue(oid);
                     if (BARRIER_ON.equals(currentValue2)) {
                         Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
@@ -184,7 +185,7 @@ public class BarrierServiceImpl implements BarrierService {
                         }
                     }
                 }
-            } else if(Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.type)) {
+            } else if(Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType)) {
                 Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
                 if (!isReturnValueChanged) {
                     for (int i = 0; i < 3; i++) {

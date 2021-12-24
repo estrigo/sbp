@@ -209,70 +209,76 @@
     let placeCarsJson = {};
 
     function drawParkingPlaceCars(){
-        placeCarsJson = {};
-        let parkingPlaceSize = $('#parkingPlaceSize').val();
-        let carList = $("#plateNumbers").val() ? $("#plateNumbers").val().length : 0;
+        if(showAdvanced === 'true'){
+            placeCarsJson = {};
+            let parkingPlaceSize = $('#parkingPlaceSize').val();
+            let carList = $("#plateNumbers").val() ? $("#plateNumbers").val().length : 0;
 
-        let html = '<div class="form-group row">' +
+            let html = '<div class="form-group row">' +
                 '<label class="col-2 col-form-label"></label>' +
                 '<label class="col-10 col-form-label">whitelist.placeCarsFunctionalityDescription</label>' +
                 '</div>', labelHtml = '', placeCarsHtml = '';
-        if(parkingPlaceSize > 0){
-            let optionsHtml = '';
-            if(carList > 0){
-                let plateNumbers = $("#plateNumbers").val();
-                for(let opt in plateNumbers){
-                    optionsHtml = optionsHtml + '<option>' + plateNumbers[opt] + '</option>';
+            if(parkingPlaceSize > 0){
+                let optionsHtml = '';
+                if(carList > 0){
+                    let plateNumbers = $("#plateNumbers").val();
+                    for(let opt in plateNumbers){
+                        optionsHtml = optionsHtml + '<option>' + plateNumbers[opt] + '</option>';
+                    }
                 }
-            }
 
-            for(let i= 0; i < parkingPlaceSize; i++){
-                if(i%2 === 0){
-                    labelHtml = '<div class="form-group row">' +
-                        '<label class="col-2 col-form-label"></label>' +
-                        '<div class="col-5">' +
-                        '<input class="form-control" type="text" id="placeLabel' + i + '" placeholder="Write label to this place" onchange="placeLabelsChanged(' + i + ')">' +
-                        '</div>'
-                    placeCarsHtml = '<div class="form-group row">' +
-                        '<label class="col-2 col-form-label"></label>' +
-                        '<div class="col-5">' +
-                        '<select multiple="multiple" class="multi-select" id="placeCars' + i + '" name="placeCars' + i + '" data-plugin="multiselect" onchange="placeCarsChanged(this)">' + optionsHtml + '</select>' +
-                        '<span class="badge badge-info">Move plate numbers to right box to enable park on this place</span>' +
-                        '</div>'
-                } else {
-                    labelHtml = labelHtml + '<div class="col-5"><input class="form-control" type="text" id="placeLabel' + i + '" placeholder="Write label to this place" onchange="placeLabelsChanged(' + i + ')"></div>';
-                    placeCarsHtml  = placeCarsHtml + '<div class="col-5">' +
-                        '<select multiple="multiple" class="multi-select" id="placeCars' + i + '" name="placeCars' + i + '" data-plugin="multiselect" onchange="placeCarsChanged(this)">' + optionsHtml + '</select>' +
-                        '<span class="badge badge-info">Move plate numbers to right box to enable park on this place</span>' +
-                        '</div>'
+                for(let i= 0; i < parkingPlaceSize; i++){
+                    if(i%2 === 0){
+                        labelHtml = '<div class="form-group row">' +
+                            '<label class="col-2 col-form-label"></label>' +
+                            '<div class="col-5">' +
+                            '<input class="form-control" type="text" id="placeLabel' + i + '" placeholder="Write label to this place" onchange="placeLabelsChanged(' + i + ')">' +
+                            '</div>'
+                        placeCarsHtml = '<div class="form-group row">' +
+                            '<label class="col-2 col-form-label"></label>' +
+                            '<div class="col-5">' +
+                            '<select multiple="multiple" class="multi-select" id="placeCars' + i + '" name="placeCars' + i + '" data-plugin="multiselect" onchange="placeCarsChanged(this)">' + optionsHtml + '</select>' +
+                            '<span class="badge badge-info">Move plate numbers to right box to enable park on this place</span>' +
+                            '</div>'
+                    } else {
+                        labelHtml = labelHtml + '<div class="col-5"><input class="form-control" type="text" id="placeLabel' + i + '" placeholder="Write label to this place" onchange="placeLabelsChanged(' + i + ')"></div>';
+                        placeCarsHtml  = placeCarsHtml + '<div class="col-5">' +
+                            '<select multiple="multiple" class="multi-select" id="placeCars' + i + '" name="placeCars' + i + '" data-plugin="multiselect" onchange="placeCarsChanged(this)">' + optionsHtml + '</select>' +
+                            '<span class="badge badge-info">Move plate numbers to right box to enable park on this place</span>' +
+                            '</div>'
+                    }
+                    if(i%2 === 1 || i+1 == parkingPlaceSize){
+                        labelHtml = labelHtml + '</div>';
+                        placeCarsHtml = placeCarsHtml + '</div>';
+                        html = html + labelHtml + placeCarsHtml;
+                    }
+                    placeCarsJson['placeCars'+i] = {};
                 }
-                if(i%2 === 1 || i+1 == parkingPlaceSize){
-                    labelHtml = labelHtml + '</div>';
-                    placeCarsHtml = placeCarsHtml + '</div>';
-                    html = html + labelHtml + placeCarsHtml;
+                $('#placeCarsDetails').html(html);
+                for(let i= 0; i < parkingPlaceSize; i++){
+                    $("#placeCars" + i).multiSelect();
                 }
-                placeCarsJson['placeCars'+i] = {};
+            } else {
+                $('#placeCarsDetails').html('');
             }
-            $('#placeCarsDetails').html(html);
-            for(let i= 0; i < parkingPlaceSize; i++){
-                $("#placeCars" + i).multiSelect();
-            }
-        } else {
-            $('#placeCarsDetails').html('');
+            $("#placeCarsJson").val('');
         }
-        $("#placeCarsJson").val('');
     }
 
     function placeCarsChanged(element){
-        let jElement = $(element);
-        placeCarsJson[jElement.attr("id")]['platenumbers'] = jElement.val();
-        $("#placeCarsJson").val(JSON.stringify(placeCarsJson));
+        if(showAdvanced === 'true') {
+            let jElement = $(element);
+            placeCarsJson[jElement.attr("id")]['platenumbers'] = jElement.val();
+            $("#placeCarsJson").val(JSON.stringify(placeCarsJson));
+        }
     }
 
     function placeLabelsChanged(index){
-        let jElement = $('placeLabel' + index);
-        placeCarsJson['placeCars' + index]['name'] = jElement.val();
-        $("#placeCarsJson").val(JSON.stringify(placeCarsJson));
+        if(showAdvanced === 'true') {
+            let jElement = $('placeLabel' + index);
+            placeCarsJson['placeCars' + index]['name'] = jElement.val();
+            $("#placeCarsJson").val(JSON.stringify(placeCarsJson));
+        }
     }
 </script>
 </html>

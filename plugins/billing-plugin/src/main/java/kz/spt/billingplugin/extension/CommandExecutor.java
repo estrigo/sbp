@@ -48,8 +48,8 @@ public class CommandExecutor implements PluginRegister {
                     }
                 }
             } else if("savePayment".equals(command.get("command").textValue())){
-                PaymentProvider provider = paymentProviderService.getProviderByClientId(command.get("clientId").textValue());
-                List<Payment> oldPayments = paymentService.findByTransactionAndProvider(command.get("transaction").textValue(), provider);
+                PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue());
+                List<Payment> oldPayments = getPaymentService().findByTransactionAndProvider(command.get("transaction").textValue(), provider);
                 if(oldPayments.size() > 0){
                     node.put("paymentError", "Transaction already registered");
                     return node;
@@ -58,7 +58,7 @@ public class CommandExecutor implements PluginRegister {
                 Payment payment = new Payment();
                 payment.setCarNumber(command.get("carNumber").textValue());
                 payment.setPrice(command.get("sum").decimalValue());
-                payment.setProvider(paymentProviderService.getProviderByClientId(command.get("clientId").textValue()));
+                payment.setProvider(getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue()));
                 payment.setTransaction(command.get("transaction").textValue());
                 if(command.has("parkingId")){
                     Parking parking = getRootServicesGetterService().getParkingService().findById(command.get("parkingId").longValue());
@@ -78,7 +78,7 @@ public class CommandExecutor implements PluginRegister {
 
                 getBalanceService().addBalance(command.get("carNumber").textValue(), command.get("sum").decimalValue());
 
-                List<Payment> carStatePayments = paymentService.getPaymentsByCarStateId(savedPayment.getCarStateId());
+                List<Payment> carStatePayments = getPaymentService().getPaymentsByCarStateId(savedPayment.getCarStateId());
                 ArrayNode paymentArray = PaymentDto.arrayNodeFromPayments(carStatePayments);
                 node.set("paymentArray", paymentArray);
 

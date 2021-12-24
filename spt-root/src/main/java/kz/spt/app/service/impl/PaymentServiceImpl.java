@@ -60,10 +60,10 @@ public class PaymentServiceImpl implements PaymentService {
                     dto.left_free_time_minutes = 15;
 
                     if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())) {
-                        return fillPayment(carState, format);
+                        return fillPayment(carState, format, commandDto);
                     } else if (Parking.ParkingType.WHITELIST_PAYMENT.equals(carState.getParking().getParkingType())) {
                         if(carState.getPaid()){
-                            return fillPayment(carState, format);
+                            return fillPayment(carState, format, commandDto);
                         }
                     }
                     return dto;
@@ -156,7 +156,7 @@ public class PaymentServiceImpl implements PaymentService {
         return null;
     }
 
-    private BillingInfoSuccessDto fillPayment(CarState carState, SimpleDateFormat format) throws Exception {
+    private BillingInfoSuccessDto fillPayment(CarState carState, SimpleDateFormat format, CommandDto commandDto) throws Exception {
         BillingInfoSuccessDto dto = null;
         PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
         if (ratePluginRegister != null) {
@@ -174,6 +174,8 @@ public class PaymentServiceImpl implements PaymentService {
             dto.in_date = format.format(carState.getInTimestamp());
             dto.result = 0;
             dto.left_free_time_minutes = result.get("rateFreeMinutes").intValue();
+            dto.tariff = result.get("rateName") != null ? result.get("rateName").textValue() : "";
+            dto.txn_id = commandDto.txn_id;
         }
         PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
         if (billingPluginRegister != null) {

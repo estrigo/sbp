@@ -68,3 +68,7 @@ car:
 status:
   check:
     fixedDelay: 250
+whitelist:
+  group:
+    show:
+      advanced: false
