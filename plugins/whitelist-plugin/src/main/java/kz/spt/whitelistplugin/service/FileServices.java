@@ -11,6 +11,8 @@ import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
 import kz.spt.whitelistplugin.repository.WhitelistRepository;
 import kz.spt.whitelistplugin.utils.ExcelUtils;
+import lombok.extern.flogger.Flogger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,8 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Service
+@Slf4j
 public class FileServices {
 
     @Autowired
@@ -54,7 +58,7 @@ public class FileServices {
                 try {
                     whitelistService.saveWhitelist(whitelist, currentUser);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                   log.info("the next plate number was not saved: " + whitelist.getPlatenumber());
                 }
             }
 
