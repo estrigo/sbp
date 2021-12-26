@@ -61,3 +61,7 @@ car:
 status:
   check:
     fixedDelay: 250
+parking:
+  cameras:
+    camera-1: 10.66.22.20
+    camera-2: 10.66.22.23
