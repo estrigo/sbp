@@ -48,6 +48,10 @@ public class CommandExecutor implements PluginRegister {
                     }
                 }
             } else if("savePayment".equals(command.get("command").textValue())){
+                if(command.get("sum") == null || BigDecimal.ZERO.compareTo(command.get("sum").decimalValue()) > -1){
+                    node.put("paymentError", "summ has invalid value");
+                    return node;
+                }
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue());
                 List<Payment> oldPayments = getPaymentService().findByTransactionAndProvider(command.get("transaction").textValue(), provider);
                 if(oldPayments.size() > 0){

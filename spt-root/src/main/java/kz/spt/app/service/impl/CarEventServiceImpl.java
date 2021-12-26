@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.app.config.ParkingProperties;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.lib.model.dto.EventsDto;
@@ -23,6 +24,7 @@ import kz.spt.lib.service.CarImageService;
 import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,13 +48,14 @@ public class CarEventServiceImpl implements CarEventService {
     private final BarrierService barrierService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final PluginService pluginService;
+    private final ParkingProperties parkingProperties;
 
     private static Map<String, Long> concurrentHashMap = new ConcurrentHashMap<>();
     private ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(LocaleContextHolder.getLocale().toString().substring(0,2)));
 
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                CarStateService carStateService, CarImageService carImageService,
-                               BarrierService barrierService, PluginService pluginService){
+                               BarrierService barrierService, PluginService pluginService, ParkingProperties parkingProperties){
         this.carsService = carsService;
         this.cameraService = cameraService;
         this.eventLogService = eventLogService;
@@ -60,6 +63,7 @@ public class CarEventServiceImpl implements CarEventService {
         this.carImageService = carImageService;
         this.barrierService = barrierService;
         this.pluginService = pluginService;
+        this.parkingProperties = parkingProperties;
     }
 
     @Override
@@ -215,7 +219,7 @@ public class CarEventServiceImpl implements CarEventService {
                                     gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
                                     gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
                                     gate.lastTriggeredTime = System.currentTimeMillis();
-                                    if(!gate.isSimpleWhitelist){
+                                    if(!gate.isSimpleWhitelist && carState != null){
                                         saveCarOutState(eventDto, camera, carState, properties, isWhitelistCar, balance,  rateResult, format);
                                     }
                                 }
@@ -239,9 +243,7 @@ public class CarEventServiceImpl implements CarEventService {
     @Override
     public void handleTempCarEvent(MultipartFile file, String json) throws Exception {
 
-        Map<String,String> camerasIpMap = new HashMap<>();
-        camerasIpMap.put("camera-1", "10.66.22.20");
-        camerasIpMap.put("camera-2","10.66.22.23");
+        Map<String,String> camerasIpMap = parkingProperties.getCameras();
 
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(json);
