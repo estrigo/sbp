@@ -54,6 +54,7 @@ public class CommandExecutor implements PluginRegister {
                 }
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue());
                 List<Payment> oldPayments = getPaymentService().findByTransactionAndProvider(command.get("transaction").textValue(), provider);
+
                 if(oldPayments.size() > 0){
                     node.put("paymentError", "Transaction already registered");
                     return node;

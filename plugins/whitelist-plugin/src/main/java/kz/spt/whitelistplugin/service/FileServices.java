@@ -54,7 +54,15 @@ public class FileServices {
             for (int i = 0; i < whitelists.size(); i++) {
                 Whitelist whitelist = whitelists.get(i);
                 WhitelistGroups whitelistGroups = whitelistGroupsRepository.getWhitelistGroupsByName(groups.get(i));
-                whitelist.setGroupId(whitelistGroups.getId());
+                if (whitelistGroups == null) {
+                    WhitelistGroups newWhitelistGroups = new WhitelistGroups();
+                    newWhitelistGroups.setName(groups.get(i));
+                    newWhitelistGroups.setParking(parking);
+                    newWhitelistGroups = whitelistGroupsRepository.saveAndFlush(newWhitelistGroups);
+                    whitelist.setGroupId(newWhitelistGroups.getId());
+                } else {
+                    whitelist.setGroupId(whitelistGroups.getId());
+                }
                 try {
                     whitelistService.saveWhitelist(whitelist, currentUser);
                 } catch (Exception e) {
