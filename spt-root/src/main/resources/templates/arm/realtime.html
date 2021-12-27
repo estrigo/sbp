@@ -107,7 +107,9 @@
     function passCar(cameraId){
         var plateNumber = $("#plateNumber" + cameraId).val();
         if(plateNumber && plateNumber.length > 2 && plateNumber.length < 17){
-
+            $.get("/rest/arm/pass/" + cameraId + "/platenumber/" + plateNumber, function (data) {
+                console.log(data);
+            });
         } else {
             alert("Invalid plate number!");
         }

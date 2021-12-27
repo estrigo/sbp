@@ -14,4 +14,6 @@ public interface ArmService {
     Boolean setEmergencyOpen(Boolean value, UserDetails currentUser);
 
     Boolean getEmergencyStatus();
+
+    Boolean passCar(Long cameraId, String platenumber) throws Exception;
 }

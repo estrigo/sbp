@@ -5,6 +5,7 @@ import kz.spt.app.thread.GateStatusCheckThread;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.Gate;
+import kz.spt.lib.service.CarEventService;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.ArmService;
 import kz.spt.app.service.BarrierService;
@@ -29,11 +30,14 @@ public class ArmServiceImpl implements ArmService {
     private BarrierService barrierService;
     private EventLogService eventLogService;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
+    private CarEventService carEventService;
 
-    public ArmServiceImpl(CameraService cameraService, BarrierService barrierService, EventLogService eventLogService){
+    public ArmServiceImpl(CameraService cameraService, BarrierService barrierService, EventLogService eventLogService,
+                          CarEventService carEventService){
         this.cameraService = cameraService;
         this.barrierService = barrierService;
         this.eventLogService = eventLogService;
+        this.carEventService = carEventService;
     }
 
     @Override
@@ -121,5 +125,10 @@ public class ArmServiceImpl implements ArmService {
     @Override
     public Boolean getEmergencyStatus() {
         return StatusCheckJob.emergencyModeOn;
+    }
+
+    @Override
+    public Boolean passCar(Long cameraId, String platenumber) throws Exception {
+        return carEventService.passCar(cameraId, platenumber);
     }
 }

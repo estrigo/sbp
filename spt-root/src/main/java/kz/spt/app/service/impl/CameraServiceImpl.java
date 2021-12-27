@@ -23,6 +23,11 @@ public class CameraServiceImpl implements CameraService {
     }
 
     @Override
+    public Camera findCameraById(Long id) {
+        return cameraRepository.findCameraById(id);
+    }
+
+    @Override
     public List<Camera> cameraList() {
         return cameraRepository.findAll();
     }

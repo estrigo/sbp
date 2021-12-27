@@ -29,4 +29,6 @@ public class CarEventDto {
 
     @NotNull
     public String lp_rect;
+
+    public Boolean manualOpen = false;
 }

@@ -8,6 +8,8 @@ public interface CameraService {
 
     Camera findCameraByIp(String ip);
 
+    Camera findCameraById(Long id);
+
     List<Camera> cameraList();
 
     Camera getCameraById(Long id);

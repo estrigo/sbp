@@ -40,4 +40,9 @@ public class ArmRestController {
     public Boolean emergencyOpen(){
         return armService.getEmergencyStatus();
     }
+
+    @GetMapping(value = "/pass/{cameraId}/platenumber/{platenumber}")
+    public Boolean passCar(@PathVariable("cameraId") Long cameraId, @PathVariable("platenumber") String platenumber) throws Exception {
+        return armService.passCar(cameraId, platenumber);
+    }
 }

@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.config.ParkingProperties;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.GateStatusDto;
-import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.extension.PluginRegister;
@@ -24,7 +23,6 @@ import kz.spt.lib.service.CarImageService;
 import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,6 +64,55 @@ public class CarEventServiceImpl implements CarEventService {
         this.parkingProperties = parkingProperties;
     }
 
+
+    @Override
+    public void handleTempCarEvent(MultipartFile file, String json) throws Exception {
+
+        Map<String,String> camerasIpMap = parkingProperties.getCameras();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(json);
+
+        String ip_address = camerasIpMap.get(jsonNode.get("data").get("camera_id").asText());
+        log.info(jsonNode.get("data").get("camera_id").asText()  + " " + camerasIpMap.get(jsonNode.get("data").get("camera_id").asText()));
+
+        String car_number = ((ArrayNode) jsonNode.get("data").get("results")).get(0).get("plate").asText().toUpperCase();
+
+        String base64 = null;
+        try {
+            base64 = StringUtils.newStringUtf8(Base64.encodeBase64(file.getInputStream().readAllBytes(), false));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        CarEventDto eventDto = new CarEventDto();
+        eventDto.car_number = car_number;
+        eventDto.event_time = new Date();
+        eventDto.ip_address = ip_address;
+        eventDto.car_picture = base64;
+        saveCarEvent(eventDto);
+    }
+
+    @Override
+    public boolean passCar(Long cameraId, String platenumber) throws Exception {
+        Boolean barrierResult = false;
+        if(platenumber != null){
+            Camera camera = cameraService.getCameraById(cameraId);
+
+            CarEventDto eventDto = new CarEventDto();
+            eventDto.event_time = new Date();
+            eventDto.car_number = platenumber;
+            eventDto.ip_address = camera.getIp();
+            eventDto.car_picture = null;
+            eventDto.lp_rect = null;
+            eventDto.lp_picture = null;
+            eventDto.manualOpen = true;
+
+            saveCarEvent(eventDto);
+        }
+        return barrierResult;
+    }
+
     @Override
     public void saveCarEvent(CarEventDto eventDto) throws Exception {
 
@@ -80,16 +127,18 @@ public class CarEventServiceImpl implements CarEventService {
         properties.put("cameraIp", eventDto.ip_address);
 
         if(camera!=null){
-            if(concurrentHashMap.containsKey(eventDto.ip_address)){
-                Long timeDiffInMillis = System.currentTimeMillis() - concurrentHashMap.get(eventDto.ip_address);
-                if(timeDiffInMillis < (camera.getTimeout() == null ? 0 : camera.getTimeout()*1000)){ // If interval smaller than timeout then ignore else proceed
-                    log.info("Ignored event from camera: " + eventDto.ip_address  + " time: " +  timeDiffInMillis);
-                    return;
+            if(!eventDto.manualOpen){
+                if(concurrentHashMap.containsKey(eventDto.ip_address)){
+                    Long timeDiffInMillis = System.currentTimeMillis() - concurrentHashMap.get(eventDto.ip_address);
+                    if(timeDiffInMillis < (camera.getTimeout() == null ? 0 : camera.getTimeout()*1000)){ // If interval smaller than timeout then ignore else proceed
+                        log.info("Ignored event from camera: " + eventDto.ip_address  + " time: " +  timeDiffInMillis);
+                        return;
+                    } else {
+                        concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
+                    }
                 } else {
                     concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
                 }
-            } else {
-                concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
             }
 
             log.info("handling event from camera: " + eventDto.ip_address);
@@ -99,9 +148,11 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("gateDescription", camera.getGate().getDescription());
             properties.put("gateType", camera.getGate().getGateType().toString());
 
-            String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
-            properties.put(StaticValues.carImagePropertyName, carImageUrl);
-            properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
+            if(!eventDto.manualOpen) {
+                String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
+                properties.put(StaticValues.carImagePropertyName, carImageUrl);
+                properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
+            }
 
             for(GateStatusDto gate: StatusCheckJob.globalGateDtos){
                 if(gate.gateId == camera.getGate().getId()){
@@ -113,7 +164,7 @@ public class CarEventServiceImpl implements CarEventService {
                         gate.backCamera.carEventDto = eventDto;
                         gate.backCamera.properties  = properties;
                     }
-                    if(gate.lastClosedTime == null || System.currentTimeMillis() - gate.lastClosedTime > 5500){ //если последний раз закрыли больше 6 секунды
+                    if(eventDto.manualOpen || gate.lastClosedTime == null || System.currentTimeMillis() - gate.lastClosedTime > 5500){ //если последний раз закрыли больше 6 секунды
                         if(Gate.GateType.REVERSE.equals(camera.getGate().getGateType())){
                             JsonNode whitelistCheckResults = getWhiteLists(camera.getGate().getParking().getId(), eventDto.car_number, eventDto.event_time, format, properties);
                             boolean hasAccess = checkSimpleWhiteList(eventDto, camera, properties, whitelistCheckResults);
@@ -238,34 +289,6 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("type", EventLogService.EventType.Error);
             eventLogService.createEventLog(null, null, properties, bundle.getString("events.newLicensePlateIdentified") + " " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address);
         }
-    }
-
-    @Override
-    public void handleTempCarEvent(MultipartFile file, String json) throws Exception {
-
-        Map<String,String> camerasIpMap = parkingProperties.getCameras();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = objectMapper.readTree(json);
-
-        String ip_address = camerasIpMap.get(jsonNode.get("data").get("camera_id").asText());
-        log.info(jsonNode.get("data").get("camera_id").asText()  + " " + camerasIpMap.get(jsonNode.get("data").get("camera_id").asText()));
-
-        String car_number = ((ArrayNode) jsonNode.get("data").get("results")).get(0).get("plate").asText().toUpperCase();
-
-        String base64 = null;
-        try {
-            base64 = StringUtils.newStringUtf8(Base64.encodeBase64(file.getInputStream().readAllBytes(), false));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        CarEventDto eventDto = new CarEventDto();
-        eventDto.car_number = car_number;
-        eventDto.event_time = new Date();
-        eventDto.ip_address = ip_address;
-        eventDto.car_picture = base64;
-        saveCarEvent(eventDto);
     }
 
     private boolean handleCarInEvent(CarEventDto eventDto, Camera camera, Map<String, Object> properties, SimpleDateFormat format, JsonNode whitelistCheckResults) throws Exception{
