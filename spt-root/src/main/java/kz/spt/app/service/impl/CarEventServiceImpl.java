@@ -24,6 +24,7 @@ import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -47,6 +48,7 @@ public class CarEventServiceImpl implements CarEventService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final PluginService pluginService;
     private final ParkingProperties parkingProperties;
+    private String dateFormat = "yyyy-MM-dd'T'HH:mm";
 
     private static Map<String, Long> concurrentHashMap = new ConcurrentHashMap<>();
     private ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(LocaleContextHolder.getLocale().toString().substring(0,2)));
@@ -98,17 +100,39 @@ public class CarEventServiceImpl implements CarEventService {
         Boolean barrierResult = false;
         if(platenumber != null){
             Camera camera = cameraService.getCameraById(cameraId);
+            if(camera != null){
+                String username = "";
+                if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+                    CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                    if(currentUser!=null){
+                        username = currentUser.getUsername();
+                    }
+                }
 
-            CarEventDto eventDto = new CarEventDto();
-            eventDto.event_time = new Date();
-            eventDto.car_number = platenumber;
-            eventDto.ip_address = camera.getIp();
-            eventDto.car_picture = null;
-            eventDto.lp_rect = null;
-            eventDto.lp_picture = null;
-            eventDto.manualOpen = true;
+                SimpleDateFormat format = new SimpleDateFormat(dateFormat);
 
-            saveCarEvent(eventDto);
+                Map<String, Object> properties = new HashMap<>();
+                properties.put("eventTime", format.format(new Date()));
+                properties.put("cameraIp", camera.getIp());
+                properties.put("gateName", camera.getGate().getName());
+                properties.put("gateDescription", camera.getGate().getDescription());
+                properties.put("gateType", camera.getGate().getGateType().toString());
+                properties.put("type", EventLogService.EventType.Allow);
+
+                eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, camera.getId(), "", "Ручной поропуск Авто с гос. номером " + platenumber + ". Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда":"въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName());
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Ручной поропуск Авто с гос. номером " + platenumber + ". Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "выезда":"въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName());
+                
+                CarEventDto eventDto = new CarEventDto();
+                eventDto.event_time = new Date();
+                eventDto.car_number = platenumber;
+                eventDto.ip_address = camera.getIp();
+                eventDto.car_picture = null;
+                eventDto.lp_rect = null;
+                eventDto.lp_picture = null;
+                eventDto.manualOpen = true;
+
+                saveCarEvent(eventDto);
+            }
         }
         return barrierResult;
     }
