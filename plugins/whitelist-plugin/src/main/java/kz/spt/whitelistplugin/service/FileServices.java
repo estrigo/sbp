@@ -58,6 +58,7 @@ public class FileServices {
                     WhitelistGroups newWhitelistGroups = new WhitelistGroups();
                     newWhitelistGroups.setName(groups.get(i));
                     newWhitelistGroups.setParking(parking);
+                    newWhitelistGroups.setType(AbstractWhitelist.Type.UNLIMITED);
                     newWhitelistGroups = whitelistGroupsRepository.saveAndFlush(newWhitelistGroups);
                     whitelist.setGroupId(newWhitelistGroups.getId());
                 } else {
