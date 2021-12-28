@@ -47,7 +47,6 @@ public class StatusCheckJob {
                 if(barrier != null && cameraStatusDto != null && Barrier.SensorsType.MANUAL.equals(barrier.sensorsType)) { // Данные шлагбаума и камеры заполнены
                     isGatesProcessing.put(gateStatusDto.gateId, true);
                     new GateStatusCheckThread(gateStatusDto, barrierService).start();
-                    log.info("gate: " + gateStatusDto.gateId + " is free and barrier mode is manual");
                 }
             } else {
                 log.info("gate: " + gateStatusDto.gateId + " is busy");

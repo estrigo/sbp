@@ -50,7 +50,7 @@ public class GateStatusDto {
 
         Barrier barrier = gate.getBarrier();
         if(barrier != null){
-            if(barrier.getIp() != null && barrier.getPassword() != null && barrier.getOpenOid() != null && barrier.getCloseOid() != null){
+            if(Barrier.SensorsType.AUTOMATIC.equals(barrier.getSensorsType()) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) &&  barrier.getIp() != null && barrier.getPassword() != null && barrier.getOpenOid() != null && barrier.getCloseOid() != null)){
                 gateStatusDto.barrier = BarrierStatusDto.fromBarrier(barrier);
             }
             if(barrier.getLoopIp() != null && barrier.getLoopPassword() != null && barrier.getLoopOid() != null && barrier.getLoopType() != null){
