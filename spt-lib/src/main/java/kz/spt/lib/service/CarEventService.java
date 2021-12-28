@@ -12,7 +12,7 @@ public interface CarEventService {
 
     void saveCarEvent(CarEventDto eventDto) throws Exception;
 
-    void handleTempCarEvent(MultipartFile file, String json) throws Exception;
+    void handleTempCarEvent(MultipartFile file, MultipartFile file2, String json) throws Exception;
 
     boolean passCar(Long cameraId, String platenumber) throws Exception;
 }

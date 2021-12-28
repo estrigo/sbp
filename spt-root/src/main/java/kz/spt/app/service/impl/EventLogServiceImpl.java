@@ -11,9 +11,7 @@ import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.EventLogRepository;
 import lombok.extern.java.Log;
-import org.apache.poi.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
@@ -51,7 +49,7 @@ public class EventLogServiceImpl implements EventLogService {
         eventLogRepository.save(eventLog);
     }
 
-    public void sendSocketMessage(ArmEventType eventType, Long id, String plateNumber, String message) {
+    public void sendSocketMessage(ArmEventType eventType, EventType eventStatus, Long id, String plateNumber, String message) {
 
         if(ArmEventType.Photo.equals(eventType) && message == null){
             return;
@@ -63,6 +61,7 @@ public class EventLogServiceImpl implements EventLogService {
         node.put("plateNumber", plateNumber);
         node.put("id", id);
         node.put("eventType", eventType.toString());
+        node.put("eventStatus", eventStatus.toString());
 
         messagingTemplate.convertAndSend("/topic", node.toString());
     }
@@ -131,7 +130,7 @@ public class EventLogServiceImpl implements EventLogService {
                         .bigImgUrl(m.getProperties().get("carImageUrl") != null ? (String) m.getProperties().get("carImageUrl") : "")
                         .build())
                 .collect(Collectors.toList());
-        return getPage(eventDtos,pagingRequest);
+        return getPage(eventDtos, pagingRequest);
     }
 
     @Override

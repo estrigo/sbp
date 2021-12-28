@@ -2,52 +2,82 @@
 <html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})">
 
 <link th:href="@{/assets/css/fancybox.css}" rel="stylesheet" type="text/css"/>
-
 <div class="content">
     <div class="container">
         <div class="row">
-            <div class="col-sm-4 col-lg-4 col-xs-12" th:each="camera, iterStat : ${cameras}">
-                <div class="card m-b-10">
-                    <div class="card-block">
-                        <span class="badge" th:class="${'IN'.equals(camera.gate.gateType.toString()) ? 'badge badge-primary' : 'badge badge-success'}" th:text="${camera.gate.gateType}"></span>
-                        <h5 class="mt-0 card-title" th:text="${camera.name}"></h5>
-                        <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
-                    </div>
-                    <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event" th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}">
-                        <img th:id="${'image' + camera.id}" class="img-fluid m-b-10" th:src="@{#{arm.noImageLink}}" alt="Card image cap">
-                    </a>
-                    <table class="w-100">
-                        <tbody>
+            <div class="col-md-12">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-secondary" onclick="move()">
+                        <span> <i class="mdi mdi-arrow-left"></i></span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="move()">
+                        <span><i class="mdi mdi-arrow-right"></i></span>
+                    </button>
+                </div>
+            </div>
+            <div class="row move">
+                <div class="col-sm-4 col-lg-4 col-xs-12 item" th:each="camera, iterStat : ${cameras}">
+                    <div class="card m-b-10">
+                        <div class="card-block">
+                        <span class="badge"
+                              th:class="${'IN'.equals(camera.gate.gateType.toString()) ? 'badge badge-primary' : 'badge badge-success'}"
+                              th:text="${camera.gate.gateType}"></span>
+                            <h5 class="mt-0 card-title" th:text="${camera.name}"></h5>
+                            <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
+                        </div>
+                        <div class="row" style="position: relative">
+                            <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event" style="max-height: 250px !important;"
+                               th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}">
+                                <img th:id="${'image' + camera.id}" class="img-fluid m-b-10" th:src="@{#{arm.noImageLink}}" style="max-height: 250px !important;"
+                                     alt="Card image cap">
+                            </a>
+                            <div class="align-content-center p-1" style="background-color: rgba(74, 82, 95, .5); position: absolute; bottom: 0;right: 10px; display: none">
+                                <img th:id="${'lp' + camera.id}" style="height: 20px; width: 150px;" th:src="@{#{arm.noLp}}"/>
+                            </div>
+                        </div>
+                        <table class="w-100">
+                            <tbody>
                             <tr>
                                 <td class="w-50" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN')">
-                                    <button type="button" class="btn btn-outline-success w-100" th:cameraId="${camera.id}" th:onclick="openGate(this.getAttribute('cameraId'))" th:text="#{arm.open}"></button>
+                                    <button type="button" class="btn btn-outline-success w-100" th:cameraId="${camera.id}"
+                                            th:onclick="openGate(this.getAttribute('cameraId'))"
+                                            th:text="#{arm.open}"></button>
                                 </td>
                                 <td class="w-50" sec:authorize="!hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN')">
-                                    <button type="button" class="btn btn-outline-success w-100" th:cameraId="${camera.id}" th:text="#{arm.open}" disabled="disabled"></button>
+                                    <button type="button" class="btn btn-outline-success w-100" th:cameraId="${camera.id}"
+                                            th:text="#{arm.open}" disabled="disabled"></button>
                                 </td>
                                 <td class="w-50">
-                                    <button type="button" class="btn btn-outline-warning w-100" th:cameraId="${camera.id}" th:onclick="closeGate(this.getAttribute('cameraId'))" th:text="#{arm.close}"></button>
+                                    <button type="button" class="btn btn-outline-warning w-100" th:cameraId="${camera.id}"
+                                            th:onclick="closeGate(this.getAttribute('cameraId'))"
+                                            th:text="#{arm.close}"></button>
                                 </td>
                             </tr>
-                        </tbody>
-                    </table>
-                    <table class="w-100">
-                        <tbody>
+                            </tbody>
+                        </table>
+                        <table class="w-100">
+                            <tbody>
                             <tr>
                                 <td class="w-50">
-                                    <input type="text" th:id="${'plateNumber' + camera.id}" th:placeholder="#{arm.licensePlate}" class="form-control w-100">
+                                    <input type="text" th:id="${'plateNumber' + camera.id}"
+                                           th:placeholder="#{arm.licensePlate}" class="form-control w-100">
                                 </td>
                                 <td class="w-25">
-                                    <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}" th:onclick="passCar(this.getAttribute('cameraId'))" th:text="#{crm.letIn}"></button>
+                                    <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
+                                            th:onclick="passCar(this.getAttribute('cameraId'))"
+                                            th:text="#{crm.letIn}"></button>
                                 </td>
                                 <td class="w-25">
-                                    <button type="button" class="btn btn-outline-primary w-100" th:cameraId="${camera.id}" th:onclick="checkBalance(this.getAttribute('cameraId'))" th:text="#{crm.balance}"></button>
+                                    <button type="button" class="btn btn-outline-primary w-100" th:cameraId="${camera.id}"
+                                            th:onclick="checkBalance(this.getAttribute('cameraId'))"
+                                            th:text="#{crm.balance}"></button>
                                 </td>
                             </tr>
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
+                    <textarea class="m-b-10 border border-dark" style="width: 100%" rows="3" th:id="${'logs' + camera.id}"></textarea>
                 </div>
-                <textarea class="m-b-10" style="width: 100%" rows="3" th:id="${'logs' + camera.id}"></textarea>
             </div>
         </div>
     </div>
@@ -58,55 +88,81 @@
 <script th:src="@{/assets/js/fancybox.umd.js}"></script>
 
 <script th:inline="javascript">
+    function move(){
+        const parent = $(".move");
+        const wrapper = parent.children().first();
+        wrapper.insertAfter(wrapper.next());
+    }
+
     function connect() {
         var socket = new WebSocket((window.location.protocol.indexOf('https') !== -1 ? 'wss' : 'ws') + '://' + window.location.host + '/greeting');
         ws = Stomp.over(socket);
 
-        ws.connect({}, function(frame) {
-            ws.subscribe("/topic", function(message) {
+        ws.connect({}, function (frame) {
+            ws.subscribe("/topic", function (message) {
                 console.log(message);
                 const messageBody = JSON.parse(message.body);
                 showGreeting(messageBody);
             });
-        }, function(error) {
+        }, function (error) {
             console.log("STOMP error " + error);
         });
     }
 
     function showGreeting(messageBody) {
-        if(messageBody.eventType == 'Photo'){
+        if (messageBody.eventType == 'Photo') {
             $("#image" + messageBody.id).attr("src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message);
             $("#fancyImage" + messageBody.id).attr("data-src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message);
-        } else if(messageBody.eventType == 'CarEvent') {
+        } else if (messageBody.eventType == 'CarEvent') {
             $("#logs" + messageBody.id).prepend('[' + messageBody.plateNumber + ']' + messageBody.message + "\n");
             $("#fancyImage" + messageBody.id).attr("data-caption", messageBody.plateNumber);
-        } else {
+        } else if(messageBody.eventType == 'Lp'){
+            $("#lp" + messageBody.id).parent().show();
+            $("#lp" + messageBody.id).attr("src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message);
+        }else {
             console.log('Unknown event type ' + messageBody);
+        }
+
+        switch (messageBody.eventStatus){
+            case "Allow":
+            case "Success":
+                $("#logs" + messageBody.id)
+                    .removeClass("border-dark")
+                    .removeClass("border-danger")
+                    .addClass("border-success");
+                break;
+            case "Deny":
+            case "Error":
+                $("#logs" + messageBody.id)
+                    .removeClass("border-dark")
+                    .removeClass("border-success")
+                    .addClass("border-danger");
+                break;
         }
     }
 
-    $(function() {
-        $("form").on('submit', function(e) {
+    $(function () {
+        $("form").on('submit', function (e) {
             e.preventDefault();
         });
         connect();
     });
 
-    function openGate(cameraId){
+    function openGate(cameraId) {
         $.get("/rest/arm/open/" + cameraId, function (data) {
             console.log(data);
         });
     }
 
-    function closeGate(cameraId){
+    function closeGate(cameraId) {
         $.get("/rest/arm/close/" + cameraId, function (data) {
             console.log(data);
         });
     }
 
-    function passCar(cameraId){
+    function passCar(cameraId) {
         var plateNumber = $("#plateNumber" + cameraId).val();
-        if(plateNumber && plateNumber.length > 2 && plateNumber.length < 17){
+        if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
             $.get("/rest/arm/pass/" + cameraId + "/platenumber/" + plateNumber, function (data) {
                 console.log(data);
             });
@@ -115,15 +171,36 @@
         }
     }
 
-    function checkBalance(cameraId){
+    function checkBalance(cameraId) {
         var plateNumber = $("#plateNumber" + cameraId).val();
-        if(plateNumber && plateNumber.length > 2 && plateNumber.length < 17){
+        if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
             $.get("/rest/balance/check/" + plateNumber, function (data) {
                 alert("Баланс равен " + data);
             });
         } else {
             alert("Invalid plate number!");
         }
+    }
+
+    $(document).on('ready', function () {
+        const camera = {
+            id: "1",
+            login: "admin",
+            password: "campas123",
+            ip: "10.66.13.22"
+        };
+        //snapshot(camera);
+    });
+    function snapshot(camera){
+        $.ajax
+        ({
+            type: "POST",
+            url: "/arm/snapshot",
+            data: JSON.stringify(camera),
+            contentType: "application/json",
+            success: function (img){
+            }
+        });
     }
 </script>
 </html>

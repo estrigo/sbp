@@ -14,7 +14,8 @@ public interface EventLogService {
 
     enum ArmEventType {
         Photo,
-        CarEvent;
+        CarEvent,
+        Lp
     }
 
     enum EventType{
@@ -26,7 +27,7 @@ public interface EventLogService {
 
     void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description);
 
-    void sendSocketMessage(ArmEventType eventType, Long gateId, String plateNumber, String message);
+    void sendSocketMessage(ArmEventType eventType, EventType eventStatus, Long gateId, String plateNumber, String message);
 
     Iterable<EventLog> listAllLogs();
 
