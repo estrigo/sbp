@@ -46,7 +46,10 @@ org:
     envers:
       audit_table_suffix=_audit
       default_schema=crm
-
+server:
+  servlet:
+    session:
+      timeout: 18000 # 5 hours lasts session
 images:
   file:
     path: "/Users/ordaz/Documents/photo"

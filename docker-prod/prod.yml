@@ -51,6 +51,9 @@ spring:
 server:
   tomcat:
     protocol-header: x-forwarded-proto
+  servlet:
+    session:
+      timeout: 18000 # 5 hours lasts session
 org:
   hibernate:
     envers:
