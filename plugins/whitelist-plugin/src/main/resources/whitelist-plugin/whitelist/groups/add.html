@@ -119,6 +119,8 @@
 <script th:src="@{/assets/js/xlsx.js}"></script>
 <script type="text/javascript" th:src="@{/plugins/multiselect/js/jquery.multi-select.js}"></script>
 <script type="text/javascript">
+    let showAdvanced = '[[${@environment.getProperty("whitelist.group.show.advanced")}]]';
+
     function checkSelectedTypes(value){
         if(value == 'PERIOD'){
             $('#beginDate').show();
