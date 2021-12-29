@@ -90,9 +90,9 @@
                                         <table class="table table-bordered">
                                             <thead>
                                             <tr>
-                                                <th>Время</th>
-                                                <th>Сумма онлайн</th>
-                                                <th>Сумма паркомат</th>
+                                                <th th:text="#{rate.time}"></th>
+                                                <th th:text="#{rate.sumOnline}"></th>
+                                                <th th:text="#{rate.sumParkomat}"></th>
                                                 <th></th>
                                             </tr>
                                             </thead>
@@ -100,7 +100,7 @@
                                             </tbody>
                                             <tbody id="progressiveInputs">
                                             <tr>
-                                                <td id="progressiveIndex">За 1-й час</td>
+                                                <td id="progressiveIndex" th:text="#{rate.firstHour}"></td>
                                                 <td>
                                                     <input id="progressiveOnlineCurrentHour" class="form-control" type="number" min="0" step="1" max="1000000">
                                                 </td>
@@ -112,7 +112,7 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td>За каждый последующий час</td>
+                                                <td th:text="#{rate.followingHour}"></td>
                                                 <td>
                                                     <input id="progressiveOnlineNextHours" class="form-control" type="number" min="0" step="1" max="1000000">
                                                 </td>
@@ -136,8 +136,8 @@
                                         <table class="table table-bordered">
                                             <thead>
                                             <tr>
-                                                <th>Интервал от</th>
-                                                <th>Интервал до</th>
+                                                <th th:text="#{rate.intervalFrom}"></th>
+                                                <th th:text="#{rate.intervalUntil}"></th>
                                                 <th></th>
                                             </tr>
                                             </thead>
@@ -176,19 +176,19 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="inDate" class="control-label">Дата заезда</label>
+                                    <label for="inDate" class="control-label" th:text="#{carState.inTimestamp}"></label>
                                     <input type="datetime-local" class="form-control" id="inDate">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="outDate" class="control-label">Дата выезда</label>
+                                    <label for="outDate" class="control-label" th:text="#{carState.outTimestamp}"></label>
                                     <input type="datetime-local" class="form-control" id="outDate">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="cashlessPayment" class="control-label">Безналичный расчет</label>
+                                    <label for="cashlessPayment" class="control-label" th:text="#{rate.casslessPayment}"></label>
                                     <input type="checkbox" class="form-control" id="cashlessPayment">
                                 </div>
                             </div>

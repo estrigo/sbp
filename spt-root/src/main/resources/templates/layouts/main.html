@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html th:fragment="main(body_content, scripts, links)" xmlns:th="http://www.thymeleaf.org">
+<html th:fragment="main(body_content, scripts, links)" xmlns:th="http://www.thymeleaf.org"
+      xmlns:security="http://www.w3.org/1999/xhtml">
 
 <head>
     <meta charset="UTF-8"/>
@@ -45,15 +46,15 @@
             <div id="sidebar-menu">
                 <ul sec:authorize="isAuthenticated()">
                     <li class="menu-title" th:text="#{crm.main}"></li>
-                    <li>
+                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
                         <a th:href="@{|/users/list|}" class="waves-effect waves-primary"><i
                                 class="ti-user"></i><span th:text=" #{user.users} "></span></a>
-                    </li>
-                    <li>
+                    </li >
+                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
                         <a th:href="@{|/customers/list|}" class="waves-effect waves-primary"><i
                                 class="ti-home"></i><span th:text=" #{customer.customers}"></span></a>
                     </li>
-                    <li>
+                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
                         <a th:href="@{|/arm/realtime|}" class="waves-effect waves-primary"><i
                                 class="ti-desktop"></i><span th:text=" #{crm.arm} "></span></a>
                     </li>
