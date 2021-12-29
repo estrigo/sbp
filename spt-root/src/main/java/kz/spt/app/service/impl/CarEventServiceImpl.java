@@ -484,12 +484,15 @@ public class CarEventServiceImpl implements CarEventService {
 
         if(carState == null){
             if(!carStateService.checkIsLastLeft(eventDto.car_number, eventDto.ip_address)){
-                properties.put("type", EventLogService.EventType.Deny);
-                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number);
-                eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number);
                 if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())){
+                    properties.put("type", EventLogService.EventType.Allow);
+                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.");
+                    eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.");
                     return true;
                 } else {
+                    properties.put("type", EventLogService.EventType.Deny);
+                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number + ". Проезд запрещен.");
+                    eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о вьезде. Авто с гос. номером " + eventDto.car_number + ". Проезд запрещен.");
                     return false;
                 }
             }

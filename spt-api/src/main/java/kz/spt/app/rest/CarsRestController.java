@@ -46,7 +46,6 @@ public class CarsRestController {
     @ResponseBody
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addCarEvent(@RequestParam("upload") MultipartFile upload,@RequestParam("upload2") MultipartFile upload2, @RequestParam("json") String json) throws Exception{
-        System.out.println(json);
         carEventService.handleTempCarEvent(upload, upload2, json);
     }
 }
