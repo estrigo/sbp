@@ -16,30 +16,39 @@
                         <!-------------------->
                         <span th:if="${fileUploadResult != null}" th:text="${fileUploadResult}"></span>
                         <div style="margin-bottom: 2%;">
-                        <form method="POST" data-th-action="@{list}" enctype="multipart/form-data" id="fileUploadForm">
-                            <div class="row">
-                                <div class="col">
-                                <label class="control-label" for="uploadfile" th:text="#{whitelist.uploadExcelFile}"></label>
-                                <input type="file" class="form-control" id="uploadfile"th:placeholder="#{whitelist.uploadExcelFile}" name="uploadfile" th:required="required">
+                            <form method="POST" data-th-action="@{list}" enctype="multipart/form-data"
+                                  id="fileUploadForm">
+                                <div class="row">
+                                    <div class="col">
+                                        <label class="control-label" for="uploadfile"
+                                               th:text="#{whitelist.uploadExcelFile}"></label>
+                                        <input type="file" class="form-control" id="uploadfile"
+                                               th:placeholder="#{whitelist.uploadExcelFile}" name="uploadfile"
+                                               th:required="required">
+                                    </div>
+                                    <div class="col">
+                                        <label class="control-label" th:text="#{whitelist.chooseParking}"></label>
+                                        <select class="form-control" id="dropParking" name="selectedParking"
+                                                th:required="required">
+                                            <option value="" th:text="#{whitelist.chooseParking}"></option>
+                                            <option th:each="parking : ${parkings}" th:value="${parking.id}"
+                                                    th:text="${parking.name}"></option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="col">
-                                    <label class="control-label" th:text="#{whitelist.chooseParking}"></label>
-                                <select class="form-control"  id="dropParking" name="selectedParking" th:required="required">
-                                    <option value="" th:text="#{whitelist.chooseParking}"></option>
-                                    <option th:each="parking : ${parkings}" th:value="${parking.id}" th:text="${parking.name}"></option>
-                                </select>
-                            </div>
-                            </div>
-                            <button type="submit" style="margin-top: 1%;" class="btn btn-success" id="btnSubmit" th:text="#{whitelist.upload}"></button>
-                        </form>
+                                <button type="submit" style="margin-top: 1%;" class="btn btn-success" id="btnSubmit"
+                                        th:text="#{whitelist.upload}"></button>
+                            </form>
                         </div>
                         <!-------------------->
                         <ul class="nav nav-tabs">
                             <li class="nav-item">
-                                <a href="#whitelist" data-toggle="tab" aria-expanded="true" class="nav-link active" th:text="#{whitelist.title}"></a>
+                                <a href="#whitelist" data-toggle="tab" aria-expanded="true" class="nav-link active"
+                                   th:text="#{whitelist.title}"></a>
                             </li>
                             <li class="nav-item">
-                                <a href="#groups" data-toggle="tab" aria-expanded="false" class="nav-link" th:text="#{whitelist.groups}"></a>
+                                <a href="#groups" data-toggle="tab" aria-expanded="false" class="nav-link"
+                                   th:text="#{whitelist.groups}"></a>
                             </li>
                         </ul>
                         <div class="tab-content">
@@ -51,7 +60,8 @@
                                         <th><a th:text="#{whitelist.parking}"></a></th>
                                         <th><a th:text="#{whitelist.groupName}"></a></th>
                                         <th><a th:text="#{whitelist.condition}"></a></th>
-                                        <th:block sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
+                                        <th:block
+                                                sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
                                             <th></th>
                                         </th:block>
                                         <th:block sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN')">
@@ -60,20 +70,22 @@
                                     </tr>
                                     </thead>
                                 </table>
-                                <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
-                                <div class="form-group row">
-                                    <div class="col-12">
-                                        <a th:href="@{|/whitelist/add|}" class="btn btn-danger waves-effect waves-light"
-                                           th:text="#{whitelist.addNew}"></a>
-                                        <a th:href="@{|/whitelist/groups/add|}"
-                                           class="btn btn-danger waves-effect waves-light"
-                                           th:text="#{whitelist.addNewGroup}"></a>
+                                <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <a th:href="@{|/whitelist/add|}"
+                                               class="btn btn-success waves-effect waves-light"
+                                               th:text="#{whitelist.addNew}"></a>
+                                            <a th:href="@{|/whitelist/groups/add|}"
+                                               class="btn btn-success waves-effect waves-light"
+                                               th:text="#{whitelist.addNewGroup}"></a>
+                                        </div>
                                     </div>
-                                </div>
-                                </p>
+                                </th:block>
                             </div>
                             <div class="tab-pane fade" id="groups">
-                                <table id="whitelist-group-table" class="table table-bordered table-bordered" style="width: 100%">
+                                <table id="whitelist-group-table" class="table table-bordered table-bordered"
+                                       style="width: 100%">
                                     <thead>
                                     <tr>
                                         <th th:text="#{whitelist.groupName}"></th>
@@ -90,15 +102,15 @@
                                     </tr>
                                     </thead>
                                 </table>
-                                <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
-                                <div class="form-group row">
-                                    <div class="col-12">
-                                        <a th:href="@{|/whitelist/groups/add|}"
-                                           class="btn btn-danger waves-effect waves-light"
-                                           th:text="#{whitelist.addNewGroup}"></a>
+                                <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <a th:href="@{|/whitelist/groups/add|}"
+                                               class="btn btn-success waves-effect waves-light"
+                                               th:text="#{whitelist.addNewGroup}"></a>
+                                        </div>
                                     </div>
-                                </div>
-                                </p>
+                                </th:block>
                             </div>
                         </div>
                     </div>
@@ -157,14 +169,14 @@
                 "data": "id",
                 "orderable": false,
                 "render": function (data, type) {
-                    return '<a href="edit/' + data + '">'+ edit + '</a>';
+                    return '<a href="edit/' + data + '">' + edit + '</a>';
                 }
             },
             {
                 "data": "id",
                 "orderable": false,
                 "render": function (data, type) {
-                    return '<a href="delete/' + data + '">'+ del + '</a>';
+                    return '<a href="delete/' + data + '">' + del + '</a>';
                 }
             },
         ],
@@ -191,7 +203,7 @@
             {"data": "name"},
             {"data": "parkingName"},
             {"data": "size"},
-            {"data": "conditionDetail", "orderable": false,"width":"25%"},
+            {"data": "conditionDetail", "orderable": false, "width": "25%"},
             {
                 "data": "id",
                 "orderable": false,
@@ -213,8 +225,6 @@
         }
 
     });
-    table.buttons().container()
-        .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
 
     var interval = null;
     $(document).on('ready', function () {

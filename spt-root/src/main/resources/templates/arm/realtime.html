@@ -5,23 +5,26 @@
 <div class="content">
     <div class="container">
         <div class="row">
-            <div class="col-md-12">
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-secondary" onclick="move()">
-                        <span> <i class="mdi mdi-arrow-left"></i></span>
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="move()">
-                        <span><i class="mdi mdi-arrow-right"></i></span>
-                    </button>
-                </div>
-            </div>
-            <div class="row move">
-                <div class="col-sm-4 col-lg-4 col-xs-12 item" th:each="camera, iterStat : ${cameras}">
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-xs-12 item" th:each="camera, iterStat : ${cameras}" th:id="${'item' + camera.id}">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-secondary move-left">
+                                    <span> <i class="mdi mdi-arrow-left"></i></span>
+                                </button>
+                                <button type="button" class="btn btn-secondary move-right">
+                                    <span><i class="mdi mdi-arrow-right"></i></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="card m-b-10">
                         <div class="card-block">
-                        <span class="badge"
-                              th:class="${'IN'.equals(camera.gate.gateType.toString()) ? 'badge badge-primary' : 'badge badge-success'}"
-                              th:text="${camera.gate.gateType}"></span>
+                            <span class="badge"
+                                  th:class="${'IN'.equals(camera.gate.gateType.toString()) ? 'badge badge-primary' : 'badge badge-success'}"
+                                  th:text="${camera.gate.gateType}">
+                            </span>
                             <h5 class="mt-0 card-title" th:text="${camera.name}"></h5>
                             <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
                         </div>
@@ -88,11 +91,15 @@
 <script th:src="@{/assets/js/fancybox.umd.js}"></script>
 
 <script th:inline="javascript">
-    function move(){
-        const parent = $(".move");
-        const wrapper = parent.children().first();
-        wrapper.insertAfter(wrapper.next());
-    }
+    jQuery('.move-left').click(function (e){
+        var $div = $(this).closest('.item');
+        $div.prev('.item').before($div);
+    })
+
+    jQuery('.move-right').click(function (e){
+        var $div = $(this).closest('.item');
+        $div.next('.item').after($div);
+    })
 
     function connect() {
         var socket = new WebSocket((window.location.protocol.indexOf('https') !== -1 ? 'wss' : 'ws') + '://' + window.location.host + '/greeting');
@@ -189,15 +196,18 @@
             password: "campas123",
             ip: "10.66.13.22"
         };
-        //snapshot(camera);
+        snapshot(camera);
     });
     function snapshot(camera){
         $.ajax
         ({
-            type: "POST",
-            url: "/arm/snapshot",
-            data: JSON.stringify(camera),
-            contentType: "application/json",
+            type: "GET",
+            url: "https://"+camera.ip+"/cgi-bin/snapshot.cgi?channel=1",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader ("Authorization", "Basic " + btoa(camera.login + ":" + camera.password));
+            },
+            //data: JSON.stringify(camera),
+            contentType: "image/jpeg",
             success: function (img){
             }
         });
