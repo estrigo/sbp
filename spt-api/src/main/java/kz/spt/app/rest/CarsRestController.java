@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.util.Date;
 
 @RestController
 @RequestMapping(value = "/rest/cars")
@@ -31,6 +32,7 @@ public class CarsRestController {
     @ResponseBody
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addCarEvent(@Valid @RequestBody CarEventDto carEventDto) throws Exception{
+        carEventDto.event_time = new Date(); // Не можем пологаться на время камеры
         carEventService.saveCarEvent(carEventDto);
     }
 
