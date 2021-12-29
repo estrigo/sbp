@@ -1,5 +1,6 @@
 package kz.spt.app;
 
+import kz.spt.app.auth.DefaultUrlAuthenticationSuccessHandler;
 import kz.spt.lib.plugin.CustomPlugin;
 import kz.spt.app.service.SpringDataUserDetailsService;
 import org.pf4j.PluginManager;
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.util.List;
 import java.util.Map;
@@ -84,7 +86,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .anyRequest().permitAll()
                 .and()
-                .formLogin().loginPage("/login").permitAll().defaultSuccessUrl("/arm/realtime", false)
+                .formLogin().loginPage("/login").successHandler(defaultAuthenticationSuccessHandler())
                 .and()
                 .logout().logoutSuccessUrl("/login").permitAll()
                 .and()
@@ -97,5 +99,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler defaultAuthenticationSuccessHandler(){
+        return new DefaultUrlAuthenticationSuccessHandler();
     }
 }
