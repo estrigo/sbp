@@ -64,13 +64,13 @@
                                                 sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
                                             <th></th>
                                         </th:block>
-                                        <th:block sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN')">
+                                        <th:block sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN', 'ROLE_MANAGER')">
                                             <th></th>
                                         </th:block>
                                     </tr>
                                     </thead>
                                 </table>
-                                <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                                <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                                     <div class="form-group row">
                                         <div class="col-12">
                                             <a th:href="@{|/whitelist/add|}"
@@ -96,7 +96,7 @@
                                                 sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
                                             <th></th>
                                         </th:block>
-                                        <th:block sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN')">
+                                        <th:block sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN', 'ROLE_MANAGER')">
                                             <th></th>
                                         </th:block>
                                     </tr>
