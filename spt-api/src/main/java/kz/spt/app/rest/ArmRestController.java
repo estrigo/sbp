@@ -51,9 +51,4 @@ public class ArmRestController {
     public Boolean passCar(@PathVariable("cameraId") Long cameraId, @PathVariable("platenumber") String platenumber) throws Exception {
         return armService.passCar(cameraId, platenumber);
     }
-
-    @PostMapping("/snapshot")
-    public void getSnapshot(@RequestBody Camera camera){
-        armService.snapshot(camera);
-    }
 }

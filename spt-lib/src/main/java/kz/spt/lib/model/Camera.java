@@ -57,4 +57,6 @@ public class Camera {
 
     @UpdateTimestamp
     private Date updated;
+
+    private String snapshotUrl;
 }

@@ -166,7 +166,8 @@ public class ArmServiceImpl implements ArmService {
         StringBuilder url = new StringBuilder();
         url.append("http://");
         url.append(camera.getIp());
-        url.append("/cgi-bin/snapshot.cgi");
+        url.append(camera.getSnapshotUrl());
+        //url.append("/cgi-bin/snapshot.cgi");
 
         HttpEntity entity = new HttpEntity(headers);
         byte[] img = restTemplate.getForObject(url.toString(), byte[].class, entity);

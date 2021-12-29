@@ -20,7 +20,7 @@ public class CameraSnapshotJob {
     @Scheduled(fixedDelay = 3000)
     public void clean() {
         cameraService.cameraList().stream()
-                .filter(m -> !StringUtils.isEmpty(m.getLogin()) && !StringUtils.isEmpty(m.getPassword()))
+                .filter(m -> !StringUtils.isEmpty(m.getLogin()) && !StringUtils.isEmpty(m.getPassword()) && !StringUtils.isEmpty(m.getSnapshotUrl()))
                 .forEach(m -> {
                     try{
                         armService.snapshot(m);
