@@ -1,5 +1,6 @@
 package kz.spt.lib.service;
 
+import kz.spt.lib.model.Camera;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.IOException;
@@ -16,4 +17,6 @@ public interface ArmService {
     Boolean getEmergencyStatus();
 
     Boolean passCar(Long cameraId, String platenumber) throws Exception;
+
+    void snapshot(Camera camera);
 }

@@ -1,6 +1,11 @@
 package kz.spt.app.rest;
 
+import kz.spt.lib.model.Camera;
 import kz.spt.lib.service.ArmService;
+import kz.spt.lib.service.EventLogService;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,6 +19,7 @@ import java.text.ParseException;
 public class ArmRestController {
 
     private ArmService armService;
+    private EventLogService eventLogService;
 
     public ArmRestController(ArmService armService){
         this.armService = armService;
@@ -44,5 +50,10 @@ public class ArmRestController {
     @GetMapping(value = "/pass/{cameraId}/platenumber/{platenumber}")
     public Boolean passCar(@PathVariable("cameraId") Long cameraId, @PathVariable("platenumber") String platenumber) throws Exception {
         return armService.passCar(cameraId, platenumber);
+    }
+
+    @PostMapping("/snapshot")
+    public void getSnapshot(@RequestBody Camera camera){
+        armService.snapshot(camera);
     }
 }

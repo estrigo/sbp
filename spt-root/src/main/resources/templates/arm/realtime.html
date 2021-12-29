@@ -29,9 +29,9 @@
                             <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
                         </div>
                         <div class="row" style="position: relative">
-                            <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event" style="max-height: 250px !important;"
+                            <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event" style="height: 250px!important;"
                                th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}">
-                                <img th:id="${'image' + camera.id}" class="img-fluid m-b-10" th:src="@{#{arm.noImageLink}}" style="max-height: 250px !important;"
+                                <img th:id="${'image' + camera.id}" class="img-fluid m-b-10" th:src="@{#{arm.noImageLink}}" style="height: 250px !important;"
                                      alt="Card image cap">
                             </a>
                             <div class="align-content-center p-1" style="background-color: rgba(74, 82, 95, .5); position: absolute; bottom: 0;right: 10px; display: none">
@@ -187,30 +187,6 @@
         } else {
             alert("Invalid plate number!");
         }
-    }
-
-    $(document).on('ready', function () {
-        const camera = {
-            id: "1",
-            login: "admin",
-            password: "campas123",
-            ip: "10.66.13.22"
-        };
-        //snapshot(camera);
-    });
-    function snapshot(camera){
-        $.ajax
-        ({
-            type: "GET",
-            url: "https://"+camera.ip+"/cgi-bin/snapshot.cgi?channel=1",
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader ("Authorization", "Basic " + btoa(camera.login + ":" + camera.password));
-            },
-            //data: JSON.stringify(camera),
-            contentType: "image/jpeg",
-            success: function (img){
-            }
-        });
     }
 </script>
 </html>
