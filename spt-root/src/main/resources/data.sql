@@ -1,32 +1,11 @@
-insert into role (role_id, role, plugin) values (1, 'ROLE_ADMIN', null),
-                                                (2, 'ROLE_USER', null),
-                                                (3, 'ROLE_MANAGER', null),
-                                                (4, 'ROLE_OWNER', null),
-                                                (5, 'PLUGIN_ROLE_TEST', 'test-plugin');
+insert into role (role_id, role, plugin, name_en, name_ru) values (1, 'ROLE_ADMIN', null ,'Administrator','Администратор'),
+                                                (2, 'ROLE_USER', null,'User','Пользователь'),
+                                                (3, 'ROLE_MANAGER', null,'Manager','Менеджер'),
+                                                (4, 'ROLE_OWNER', null,'Owner','Владелец'),
+                                                (5, 'PLUGIN_ROLE_TEST', 'test-plugin','Test user','Тестовая роль');
 
 INSERT INTO users (id, email, enabled, first_name, last_name, password, username)
-VALUES ('1', 'a@u', '1', 'AFN', 'ALN', '$2a$10$iPgnenFIoM67cYL9let/iOLBphbDaEkAz3BmiXOCmWq5A4M2TkXAG', 'admin'),
-  ('2', 'u@m', '1', 'UFN', 'ULN', '$2a$10$Ad.n7DA3e9QT.a8hXymxI.JKnAYTLR4nD4stJtfMiCLcr7FiZ/st.', 'user'),
-  ('3', 'm@m', '1', 'MFN', 'MLN', '$2a$10$iQy1MYc97kkXBwrCJ5I9gO/QcRT.rdY6UDKriBvG.iyX29miDaKDe', 'manager'),
-  ('4', 'o@m', '1', 'OFN', 'OLN', '$2a$10$VVH6bnOWLMczmH12BY99c.T6JMzMErt/gZKRCPfYlXcq7JMFoqkWW', 'owner');
+VALUES ('1', 'a@u', '1', 'AFN', 'ALN', '$2a$10$iPgnenFIoM67cYL9let/iOLBphbDaEkAz3BmiXOCmWq5A4M2TkXAG', 'admin');
 # admin - pass = admin
-# user - pass = user
-# manager - pass = manager
-# owner - pass = owner
 INSERT INTO user_role (user_id, role_id) VALUES (1, 1);
 INSERT INTO user_role (user_id, role_id) VALUES (1, 2);
-INSERT INTO user_role (user_id, role_id) VALUES (2, 2);
-INSERT INTO user_role (user_id, role_id) VALUES (3, 3);
-INSERT INTO user_role (user_id, role_id) VALUES (4, 4);
-
-SET FOREIGN_KEY_CHECKS=0;
-
-INSERT INTO customer (id, address, city, email, enabled, first_name, last_name, name, phone)
-VALUES ('1', 'Small Street', 'Smallville', 'smallmail@mail.com', '1', 'SmallFN', 'SmallLN', 'Small INC', '123'),
-  ('2', 'Medium Street', 'Midtown', 'midmail@mail.com', '1', 'MidFN', 'MidLN', 'Mid INC', '456'),
-  ('3', 'Big Street', 'Big City', 'bigmail@mail.com', '1', 'BigFN', 'BigLN', 'Big INC', '789');
-
-INSERT INTO contract (id, begin_date, content, end_date, name, status, value, customer_id, user_id)
-VALUES ('1', '2018-02-24 00:00:00', 'contract content', '2018-02-25 00:00:00', 'ContractName', 'PROPOSED', '100000.00', '2', '2');
-
-SET FOREIGN_KEY_CHECKS=1;

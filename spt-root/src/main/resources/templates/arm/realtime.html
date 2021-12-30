@@ -107,7 +107,6 @@
 
         ws.connect({}, function (frame) {
             ws.subscribe("/topic", function (message) {
-                console.log(message);
                 const messageBody = JSON.parse(message.body);
                 showGreeting(messageBody);
             });
