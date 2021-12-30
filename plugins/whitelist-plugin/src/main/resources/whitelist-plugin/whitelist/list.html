@@ -110,13 +110,6 @@
     </div>
 </div>
 
-<sec:authorize access="hasAnyRole('ROLE_SUPERADMIN','ROLE_ADMIN','ROLE_MANAGER')">
-    <input type="hidden" id="canEdit" value="true"/>
-</sec:authorize>
-<sec:authorize access="hasAnyRole('ROLE_SUPERADMIN','ROLE_ADMIN')">
-    <input type="hidden" id="canDelete" value="true"/>
-</sec:authorize>
-
 <!-- Required datatable js -->
 <script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
 <script th:src="@{/plugins/datatables/dataTables.bootstrap4.min.js}"></script>
