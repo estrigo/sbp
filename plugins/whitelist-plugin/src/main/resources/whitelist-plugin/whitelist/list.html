@@ -60,13 +60,8 @@
                                         <th><a th:text="#{whitelist.parking}"></a></th>
                                         <th><a th:text="#{whitelist.groupName}"></a></th>
                                         <th><a th:text="#{whitelist.condition}"></a></th>
-                                        <th:block
-                                                sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
-                                            <th></th>
-                                        </th:block>
-                                        <th:block sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN', 'ROLE_MANAGER')">
-                                            <th></th>
-                                        </th:block>
+                                        <th></th>
+                                        <th></th>
                                     </tr>
                                     </thead>
                                 </table>
@@ -92,13 +87,8 @@
                                         <th th:text="#{whitelist.parking}"></th>
                                         <th th:text="#{whitelist.groupSize}"></th>
                                         <th th:text="#{whitelist.condition}"></th>
-                                        <th:block
-                                                sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_SUPERADMIN')">
-                                            <th></th>
-                                        </th:block>
-                                        <th:block sec:authorize="hasAnyRole('ROLE_ADMIN, ROLE_SUPERADMIN', 'ROLE_MANAGER')">
-                                            <th></th>
-                                        </th:block>
+                                        <th></th>
+                                        <th></th>
                                     </tr>
                                     </thead>
                                 </table>
@@ -119,6 +109,13 @@
         </div>
     </div>
 </div>
+
+<sec:authorize access="hasAnyRole('ROLE_SUPERADMIN','ROLE_ADMIN','ROLE_MANAGER')">
+    <input type="hidden" id="canEdit" value="true"/>
+</sec:authorize>
+<sec:authorize access="hasAnyRole('ROLE_SUPERADMIN','ROLE_ADMIN')">
+    <input type="hidden" id="canDelete" value="true"/>
+</sec:authorize>
 
 <!-- Required datatable js -->
 <script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
@@ -167,6 +164,7 @@
             {"data": "conditionDetail", "orderable": false,},
             {
                 "data": "id",
+                "visible": [[${canEdit}]],
                 "orderable": false,
                 "render": function (data, type) {
                     return '<a href="edit/' + data + '">' + edit + '</a>';
@@ -174,6 +172,7 @@
             },
             {
                 "data": "id",
+                "visible": [[${canDelete}]],
                 "orderable": false,
                 "render": function (data, type) {
                     return '<a href="delete/' + data + '">' + del + '</a>';
@@ -181,7 +180,6 @@
             },
         ],
         buttons: ['copy', 'excel', 'pdf', 'csv'],
-
         language: {
             url: address
         }
@@ -206,6 +204,7 @@
             {"data": "conditionDetail", "orderable": false, "width": "25%"},
             {
                 "data": "id",
+                "visible": [[${canEdit}]],
                 "orderable": false,
                 "render": function (data, type) {
                     return '<a href="group/edit/' + data + '">' + edit + '</a>';
@@ -213,6 +212,7 @@
             },
             {
                 "data": "id",
+                "visible": [[${canDelete}]],
                 "orderable": false,
                 "render": function (data, type) {
                     return '<a href="group/delete/' + data + '">' + del + '</a>';
@@ -223,7 +223,6 @@
         language: {
             url: address
         }
-
     });
 
     var interval = null;
@@ -240,7 +239,5 @@
         }
         clearInterval(interval);
     }
-
 </script>
-
 </html>

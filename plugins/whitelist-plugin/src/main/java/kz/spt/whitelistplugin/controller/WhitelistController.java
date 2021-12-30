@@ -26,10 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
 
 @Log
 @Controller
@@ -75,14 +72,11 @@ public class WhitelistController {
     }
 
     @GetMapping("/list")
-    public String showAllWhitelist(Model model) throws JsonProcessingException {
-
+    public String showAllWhitelist(Model model,@AuthenticationPrincipal UserDetails currentUser) {
         parkingService = rootServicesGetterService.getParkingService();
-        Iterable<Parking> list = parkingService.listAllParking();
-
-        model.addAttribute("whitelist", whitelistService.listAllWhitelist());
-        model.addAttribute("whitelistGroups", whitelistGroupsService.listAllWhitelistGroups());
-        model.addAttribute("parkings", list);
+        model.addAttribute("parkings", parkingService.listAllParking());
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
+        model.addAttribute("canDelete", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN").contains(m.getAuthority())));
         
         return "whitelist/list";
     }
