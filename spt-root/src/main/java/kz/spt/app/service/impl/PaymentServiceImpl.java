@@ -69,6 +69,22 @@ public class PaymentServiceImpl implements PaymentService {
                     return dto;
                 }
             } else if ("pay".equals(commandDto.command)) {
+                if(commandDto.txn_id == null || "".equals(commandDto.txn_id)){
+                    BillingInfoErrorDto dto = new BillingInfoErrorDto();
+                    dto.message = "Пустое значение для поля txn_id";
+                    dto.result = 2;
+                    dto.sum = commandDto.sum;
+                    dto.txn_id = commandDto.txn_id;
+                    return dto;
+                }
+                if(commandDto.sum == null || BigDecimal.ZERO.compareTo(commandDto.sum) > -1){
+                    BillingInfoErrorDto dto = new BillingInfoErrorDto();
+                    dto.message = "Некорректное значение для sum";
+                    dto.result = 3;
+                    dto.sum = commandDto.sum;
+                    dto.txn_id = commandDto.txn_id;
+                    return dto;
+                }
                 CarState carState = carStateService.getLastNotLeft(commandDto.account);
                 if (carState == null) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
@@ -112,7 +128,7 @@ public class PaymentServiceImpl implements PaymentService {
                         JsonNode result = billingPluginRegister.execute(node);
                         if (result.has("paymentError")){
                             BillingInfoErrorDto dto = new BillingInfoErrorDto();
-                            dto.result = -2;
+                            dto.result = result.get("paymentErrorCode").intValue();
                             dto.message = result.get("paymentError").textValue();
                             dto.txn_id = commandDto.txn_id;
                             dto.sum = commandDto.sum;
