@@ -287,7 +287,7 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     @Override
-    public void handleTempCarEvent(MultipartFile file, MultipartFile file2, String json) throws Exception {
+    public void handleTempCarEvent(MultipartFile file, String json) throws Exception {
 
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(json);
@@ -301,7 +301,7 @@ public class CarEventServiceImpl implements CarEventService {
         String base64_lp = null;
         try {
             base64 = StringUtils.newStringUtf8(Base64.encodeBase64(file.getInputStream().readAllBytes(), false));
-            base64_lp = StringUtils.newStringUtf8(Base64.encodeBase64(file2.getInputStream().readAllBytes(), false));
+            //base64_lp = StringUtils.newStringUtf8(Base64.encodeBase64(file2.getInputStream().readAllBytes(), false));
         } catch (IOException e) {
             e.printStackTrace();
         }
