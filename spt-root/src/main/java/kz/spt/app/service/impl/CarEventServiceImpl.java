@@ -289,13 +289,11 @@ public class CarEventServiceImpl implements CarEventService {
     @Override
     public void handleTempCarEvent(MultipartFile file, MultipartFile file2, String json) throws Exception {
 
-        Map<String,String> camerasIpMap = parkingProperties.getCameras();
-
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(json);
 
-        String ip_address = camerasIpMap.get(jsonNode.get("data").get("camera_id").asText());
-        log.info(jsonNode.get("data").get("camera_id").asText()  + " " + camerasIpMap.get(jsonNode.get("data").get("camera_id").asText()));
+        String ip_address = jsonNode.get("data").get("camera_id").asText();
+        log.info(jsonNode.get("data").get("camera_id").asText()  + " " + jsonNode.get("data").get("camera_id").asText());
 
         String car_number = ((ArrayNode) jsonNode.get("data").get("results")).get(0).get("plate").asText().toUpperCase();
 
