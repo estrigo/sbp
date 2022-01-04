@@ -122,10 +122,10 @@
         } else if (messageBody.eventType == 'CarEvent') {
             $("#logs" + messageBody.id).prepend('[' + messageBody.plateNumber + ']' + messageBody.message + "\n");
             $("#fancyImage" + messageBody.id).attr("data-caption", messageBody.plateNumber);
-        } else if(messageBody.eventType == 'Lp'){
+        } else if(messageBody.eventType == 'Lp' && messageBody.message){
             $("#lp" + messageBody.id).parent().show();
             $("#lp" + messageBody.id).attr("src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message);
-        }else {
+        } else {
             console.log('Unknown event type ' + messageBody);
         }
 

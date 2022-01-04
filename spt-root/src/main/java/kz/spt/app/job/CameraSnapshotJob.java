@@ -17,7 +17,7 @@ public class CameraSnapshotJob {
     private final CameraService cameraService;
     private final ArmService armService;
 
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 1000)
     public void clean() {
         cameraService.cameraList().stream()
                 .filter(m -> !StringUtils.isEmpty(m.getLogin()) && !StringUtils.isEmpty(m.getPassword()) && !StringUtils.isEmpty(m.getSnapshotUrl()))
