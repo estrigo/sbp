@@ -13,6 +13,7 @@ import kz.spt.whitelistplugin.repository.WhitelistRepository;
 import kz.spt.whitelistplugin.utils.ExcelUtils;
 import lombok.extern.flogger.Flogger;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.math3.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -48,15 +49,14 @@ public class FileServices {
         carsService = rootServicesGetterService.getCarsService();
 
         try {
-            List<Whitelist> whitelists = ExcelUtils.parseExcelFileWhiteList(file.getInputStream(), parking);
-            List<String> groups = ExcelUtils.parseExcelFileWhiteListGroups(file.getInputStream(), parking);
+            List<Pair<Whitelist, String>> whitelists = ExcelUtils.parseExcelFileWhiteList(file.getInputStream(), parking);
 
             for (int i = 0; i < whitelists.size(); i++) {
-                Whitelist whitelist = whitelists.get(i);
-                WhitelistGroups whitelistGroups = whitelistGroupsRepository.getWhitelistGroupsByName(groups.get(i));
+                Whitelist whitelist = whitelists.get(i).getFirst();
+                WhitelistGroups whitelistGroups = whitelistGroupsRepository.getWhitelistGroupsByName(whitelists.get(i).getSecond());
                 if (whitelistGroups == null) {
                     WhitelistGroups newWhitelistGroups = new WhitelistGroups();
-                    newWhitelistGroups.setName(groups.get(i));
+                    newWhitelistGroups.setName(whitelists.get(i).getSecond());
                     newWhitelistGroups.setParking(parking);
                     newWhitelistGroups.setType(AbstractWhitelist.Type.UNLIMITED);
                     newWhitelistGroups = whitelistGroupsRepository.saveAndFlush(newWhitelistGroups);
