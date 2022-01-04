@@ -15,14 +15,7 @@ import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.whitelistplugin.repository.WhitelistGroupsRepository;
 import lombok.experimental.UtilityClass;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -32,6 +25,7 @@ public class ExcelUtils {
 
     public static List<Whitelist> parseExcelFileWhiteList(InputStream is, Parking parking) {
 
+        DataFormatter formatter = new DataFormatter();
         try {
             Workbook workbook = new XSSFWorkbook(is);
 
@@ -60,7 +54,7 @@ public class ExcelUtils {
                     while (cellsInRow.hasNext()) {
                         Cell currentCell = cellsInRow.next();
                         if (cellIndex == 0) { // plate number
-                            cars.setPlatenumber(currentCell.getStringCellValue());
+                            cars.setPlatenumber(formatter.formatCellValue(currentCell));
                             whitelist.setPlatenumber(cars.getPlatenumber());
                         }
 
@@ -84,6 +78,7 @@ public class ExcelUtils {
 
     public static List<String> parseExcelFileWhiteListGroups(InputStream is, Parking parking) {
 
+        DataFormatter formatter = new DataFormatter();
         try {
             Workbook workbook = new XSSFWorkbook(is);
 
@@ -111,7 +106,7 @@ public class ExcelUtils {
                         Cell currentCell = cellsInRow.next();
 
                          if(cellIndex==1) { // group name
-                            groupName = currentCell.getStringCellValue();
+                            groupName = formatter.formatCellValue(currentCell);
                         }
 
                         cellIndex++;
