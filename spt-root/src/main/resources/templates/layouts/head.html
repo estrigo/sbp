@@ -5,12 +5,18 @@
 
 <nav th:fragment="head_nav" class="navbar-custom" style="display: flex; align-items: center; justify-content: space-between;">
 
-    <ul class="list-inline menu-left center mb-0">
-
+    <ul class="list-inline menu-left mb-0">
+        <li class="float-left">
+            <button class="button-menu-mobile open-left waves-light waves-effect">
+                <i class="mdi mdi-menu"></i>
+            </button>
+        </li>
+    </ul>
+    <ul class="list-inline menu-left mb-0">
         <li sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN')" class="hide-phone">
             <a th:href="@{|/parking/list|}" style="color: white; border-color: white;" class="btn">
                 <i class="ti-settings"></i>
-                <span style="display: inline-block; margin-right: 8px;" th:text="#{parking.settings}"></span>
+                <span th:text="#{parking.settings}"></span>
             </a>
         </li>
     </ul>
