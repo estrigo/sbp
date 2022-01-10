@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
-@Table(name = "customers", schema = "crm")
+@Table(name = "customers")
 public class Customer {
 
     @Id

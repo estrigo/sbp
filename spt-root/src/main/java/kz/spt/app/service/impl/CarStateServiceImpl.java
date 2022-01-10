@@ -98,12 +98,8 @@ public class CarStateServiceImpl implements CarStateService {
         if(filterDto.outGateId != null){
             specification = specification != null? specification.and(CarStateSpecification.equalOutGateId(filterDto.outGateId)) : CarStateSpecification.equalOutGateId(filterDto.outGateId);
         }
-        if (specification != null) {
-            specification = specification.and(CarStateSpecification.orderById());
-            return carStateRepository.findAll(specification);
-        } else {
-            return carStateRepository.findAll();
-        }
+        specification = specification != null? specification.and(CarStateSpecification.orderById()) : CarStateSpecification.orderById();
+        return carStateRepository.findAll(specification);
     }
 
     @Override

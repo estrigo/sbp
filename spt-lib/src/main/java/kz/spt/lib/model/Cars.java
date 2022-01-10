@@ -19,7 +19,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
-@Table(name = "cars", schema = "crm")
+@Table(name = "cars")
 public class Cars {
 
     @Id

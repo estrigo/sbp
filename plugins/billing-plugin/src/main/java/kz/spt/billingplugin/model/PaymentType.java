@@ -14,7 +14,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
-@Table(name = "payment_type", schema = "crm")
+@Table(name = "payment_type")
 public class PaymentType {
 
     @Id

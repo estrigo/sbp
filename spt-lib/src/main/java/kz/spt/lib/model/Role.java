@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 @Entity
 @Data
-@Table(name = "role", schema = "crm")
+@Table(name = "role")
 public class Role implements Comparable<Role>{
 
     @Id

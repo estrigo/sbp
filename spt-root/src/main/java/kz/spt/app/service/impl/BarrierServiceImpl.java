@@ -1,5 +1,9 @@
 package kz.spt.app.service.impl;
 
+import com.intelligt.modbus.jlibmodbus.Modbus;
+import com.intelligt.modbus.jlibmodbus.master.ModbusMaster;
+import com.intelligt.modbus.jlibmodbus.master.ModbusMasterRTU;
+import com.intelligt.modbus.jlibmodbus.serial.SerialParameters;
 import kz.spt.app.job.CarSimulateJob;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
@@ -113,6 +117,8 @@ public class BarrierServiceImpl implements BarrierService {
     public Boolean openBarrier(Gate.GateType gateType, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException {
         if(Barrier.BarrierType.SNMP.equals(barrier.type)){
             return snmpChangeValue(gateType, carNumber, barrier, Command.Open);
+        } else if(Barrier.BarrierType.MODBUS.equals(barrier.type)) {
+            return modbusChangeValue(gateType, carNumber, barrier, Command.Open);
         }
         return true;
     }
@@ -202,5 +208,16 @@ public class BarrierServiceImpl implements BarrierService {
             barrierClient.close();
         }
         return result;
+    }
+
+    private Boolean modbusChangeValue(Gate.GateType gateType, String carNumber, BarrierStatusDto barrier, Command command) {
+        Boolean result = true;
+        if(!disableOpen) {
+            SerialParameters parameters = new SerialParameters();
+//            parameters.set
+//            ModbusMaster modbusMaster = new ModbusMasterRTU(parameters);
+//            modbusMaster.connect();
+        }
+        return true;
     }
 }

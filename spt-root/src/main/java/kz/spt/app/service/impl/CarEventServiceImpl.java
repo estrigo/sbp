@@ -533,6 +533,7 @@ public class CarEventServiceImpl implements CarEventService {
                     billingSubtractNode.put("command", "decreaseCurrentBalance");
                     billingSubtractNode.put("amount", rateResult);
                     billingSubtractNode.put("plateNumber", carState.getCarNumber());
+                    billingSubtractNode.put("parkingName", carState.getParking().getName());
                     subtractResult = billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
                 }
                 subtractResult = subtractResult.setScale(2);

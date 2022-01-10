@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
-@Table(name = "balance", schema = "crm")
+@Table(name = "balance")
 public class Balance {
 
     @Id

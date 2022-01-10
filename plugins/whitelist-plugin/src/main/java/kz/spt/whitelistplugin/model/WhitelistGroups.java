@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "whitelist_group", schema = "crm")
+@Table(name = "whitelist_group")
 public class WhitelistGroups extends AbstractWhitelist {
 
     private String name;

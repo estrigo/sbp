@@ -23,7 +23,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 //@Audited
-@Table(name = "parking_rate", schema = "crm")
+@Table(name = "parking_rate")
 public class ParkingRate {
 
     public enum RateType {

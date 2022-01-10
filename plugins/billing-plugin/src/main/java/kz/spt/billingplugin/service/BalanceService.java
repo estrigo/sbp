@@ -9,9 +9,9 @@ import java.util.List;
 
 public interface BalanceService {
 
-    BigDecimal addBalance(String plateNumber, BigDecimal value);
+    BigDecimal addBalance(String plateNumber, BigDecimal value, String description, String descriptionRu);
 
-    BigDecimal subtractBalance(String plateNumber, BigDecimal value);
+    BigDecimal subtractBalance(String plateNumber, BigDecimal value, String description, String descriptionRu);
 
     BigDecimal getBalance(String plateNumber);
 

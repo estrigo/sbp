@@ -78,7 +78,7 @@ public class CommandExecutor implements PluginRegister {
                 node.put("paymentId", savedPayment.getId());
                 node.put("cashlessPayment", payment.getProvider().getCashlessPayment() != null ? payment.getProvider().getCashlessPayment() : false);
 
-                getBalanceService().addBalance(command.get("carNumber").textValue(), command.get("sum").decimalValue());
+                getBalanceService().addBalance(command.get("carNumber").textValue(), command.get("sum").decimalValue(), "Received payment from " + payment.getProvider().getName(),  "Получен платеж от " + payment.getProvider().getName());
 
                 List<Payment> carStatePayments = getPaymentService().getPaymentsByCarStateId(savedPayment.getCarStateId());
                 ArrayNode paymentArray = PaymentDto.arrayNodeFromPayments(carStatePayments);
@@ -91,8 +91,8 @@ public class CommandExecutor implements PluginRegister {
                     node.put("currentBalance", new BigDecimal(0));
                 }
             } else if("decreaseCurrentBalance".equals(command.get("command").textValue())){
-                if(command.has("plateNumber") && command.has("amount")){
-                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue()));
+                if(command.has("plateNumber") && command.has("amount") && command.has("parkingName")){
+                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), "Payment for parking " + command.get("parkingName").textValue(),  "Оплата паркинга " + command.get("parkingName").textValue()));
                 } else {
                     node.put("currentBalance", new BigDecimal(0));
                 }

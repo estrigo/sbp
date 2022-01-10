@@ -2,7 +2,9 @@ package kz.spt.billingplugin.service.impl;
 
 import kz.spt.billingplugin.bootstrap.datatable.BalanceComparators;
 import kz.spt.billingplugin.model.Balance;
+import kz.spt.billingplugin.model.Transaction;
 import kz.spt.billingplugin.repository.BalanceRepository;
+import kz.spt.billingplugin.repository.TransactionRepository;
 import kz.spt.billingplugin.service.BalanceService;
 import kz.spt.lib.bootstrap.datatable.Column;
 import kz.spt.lib.bootstrap.datatable.Order;
@@ -23,15 +25,17 @@ import java.util.stream.Collectors;
 public class BalanceServiceImpl implements BalanceService {
 
     private BalanceRepository balanceRepository;
+    private TransactionRepository transactionRepository;
 
-    public BalanceServiceImpl(BalanceRepository balanceRepository){
+    public BalanceServiceImpl(BalanceRepository balanceRepository, TransactionRepository transactionRepository){
         this.balanceRepository = balanceRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     private static final Comparator<Balance> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     @Override
-    public BigDecimal addBalance(String plateNumber, BigDecimal value) {
+    public BigDecimal addBalance(String plateNumber, BigDecimal value, String description, String descriptionRu) {
         Balance balance;
         Optional<Balance> optionalBalance = balanceRepository.findById(plateNumber);
         if(optionalBalance.isPresent()){
@@ -43,12 +47,16 @@ public class BalanceServiceImpl implements BalanceService {
             balance.setBalance(value);
         };
         Balance savedBalance = balanceRepository.save(balance);
+
+        Transaction transaction = new Transaction(plateNumber, value, description, descriptionRu);
+        transactionRepository.save(transaction);
+
         return savedBalance.getBalance();
     }
 
     @Override
-    public BigDecimal subtractBalance(String plateNumber, BigDecimal value) {
-       return addBalance(plateNumber, value.multiply(new BigDecimal(-1)));
+    public BigDecimal subtractBalance(String plateNumber, BigDecimal value, String description, String descriptionRu) {
+       return addBalance(plateNumber, BigDecimal.ZERO.compareTo(value) > 0 ? value : value.multiply(new BigDecimal(-1)), description, descriptionRu);
     }
 
     @Override
