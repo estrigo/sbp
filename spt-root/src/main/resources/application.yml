@@ -18,6 +18,8 @@ spring:
       - "target/classes"
     controller:
       base-path: "/sbp/admin"
+    disabled-plugins:
+      - "booking-plugin"
   datasource:
     url: jdbc:mysql://localhost:3306/crm?allowPublicKeyRetrieval=true&useSSL=false
     username: root
