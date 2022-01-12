@@ -92,13 +92,11 @@
 
 <script th:inline="javascript">
     var address = '/plugins/datatables/json/ru.json';
-    var edit = 'Редактировать';
-    var del = 'Удалить';
+    var edit = [[#{crm.edit}]];
+    var del = [[#{crm.delete}]];
     var locale = [[${#locale}]];
     if (locale == "en") {
         address = "";
-        edit = "Edit";
-        del = "Delete";
     }
        const table = $('#carStateTable').DataTable({
         "processing": true,
@@ -132,7 +130,7 @@
                         const whitelists = JSON.parse(carState.whitelistJson);
                         let text = '';
                         for(const w of whitelists){
-                            text = text + '<span>' + (w.groupName ? w.groupName : 'Индивидуальный') + ' (Белый лист)</><br/>';
+                            text = text + '<span>' + (w.groupName ? w.groupName : [[#{carstate.individual}]]) + ' ([[#{whitelist.title}]])</><br/>';
                             if(w.conditionDetails){
                                 text = text + '<small class="text-muted">' + w.conditionDetails + '</small><br/>';
                             }
@@ -142,7 +140,7 @@
                         const payments = JSON.parse(carState.paymentJson);
                         let text = '<span>' + carState.payment + '</span>';
                         for(const p of payments){
-                            text = text + '<br/><small class="text-muted">Сумма ' + p.price + 'тг. Провайдер: ' + p.providerPaymentName + '. Дата ' + p.created + '</small>';
+                            text = text + '<br/><small class="text-muted">[[#{rate.sum}]] ' + p.price + ' [[#{billing.provider}]] ' + p.providerPaymentName + '. [[#{rate.date}]] ' + p.created + '</small>';
                         }
                         return text;
                     } else {

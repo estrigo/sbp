@@ -71,13 +71,9 @@
 
 <script th:inline="javascript">
     var address = '/plugins/datatables/json/ru.json';
-    var edit = 'Редактировать';
-    var del = 'Удалить';
     var locale = [[${#locale}]];
     if (locale == "en") {
         address = "";
-        edit = "Edit";
-        del = "Delete";
     }
     $(document).ready(function() {
         var table = $('#providers').DataTable({
@@ -96,7 +92,7 @@
                 { "data": "cashlessPayment" },
                 {"data": "id",
                  "render" : function(id){
-                    return '<a href="#" data-toggle="modal" data-target="#provider-close-modal" providerid="' + id + '" onClick="providerModalContent(this.getAttribute(\'providerid\'))">'+ edit + ' </a>';
+                    return '<a href="#" data-toggle="modal" data-target="#provider-close-modal" providerid="' + id + '" onClick="providerModalContent(this.getAttribute(\'providerid\'))">'+ [[#{crm.edit}]] + ' </a>';
                 }}
             ],
             language: {

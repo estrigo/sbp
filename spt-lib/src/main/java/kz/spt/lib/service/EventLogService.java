@@ -25,9 +25,9 @@ public interface EventLogService {
         Success
     }
 
-    void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description);
+    void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn);
 
-    void sendSocketMessage(ArmEventType eventType, EventType eventStatus, Long gateId, String plateNumber, String message);
+    void sendSocketMessage(ArmEventType eventType, EventType eventStatus, Long gateId, String plateNumber, String message, String messageEng);
 
     Iterable<EventLog> listAllLogs();
 

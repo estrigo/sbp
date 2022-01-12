@@ -87,6 +87,7 @@
 
 <script type="text/javascript">
     var locale = '[[${#locale}]]';
+    var descriptionColumn = locale == "en" ? "descriptionEn" : "description";
 
     const table = $('#eventTable').DataTable({
         "processing": true,
@@ -109,7 +110,7 @@
         "columns": [
             {"data": "plateNumber", "width": "15%"},
             {"data": "created", "width": "25%"},
-            {"data": "description", "orderable": false},
+            {"data": descriptionColumn, "orderable": false},
             {"data": "eventType", "orderable": false},
             {
                 "data": "imgUrl",

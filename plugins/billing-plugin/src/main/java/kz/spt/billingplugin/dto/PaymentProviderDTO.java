@@ -21,8 +21,8 @@ public class PaymentProviderDTO {
         paymentProviderDTO.setProvider(paymentProvider.getProvider());
         paymentProviderDTO.setName( paymentProvider.getName());
         paymentProviderDTO.setClientId(paymentProvider.getClientId());
-        paymentProviderDTO.setEnabled(paymentProvider.getEnabled() != null && paymentProvider.getEnabled() ? "Да" : "Нет");
-        paymentProviderDTO.setCashlessPayment(paymentProvider.getCashlessPayment() != null && paymentProvider.getCashlessPayment() ? "Да" : "Нет");
+        paymentProviderDTO.setEnabled(paymentProvider.getEnabled() != null && paymentProvider.getEnabled() ? "Allowed" : "Not Allowed");
+        paymentProviderDTO.setCashlessPayment(paymentProvider.getCashlessPayment() != null && paymentProvider.getCashlessPayment() ? "Allowed" : "Not Allowed");
         return paymentProviderDTO;
     }
 }

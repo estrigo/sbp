@@ -31,6 +31,8 @@ public class EventLog {
 
     private String description;
 
+    private String descriptionEn;
+
     private String plateNumber;
 
     @Column(name = "properties", columnDefinition = "text")
@@ -48,4 +50,9 @@ public class EventLog {
     public String getNullSafeDescription() {
         return getDescription() != null ? this.description : "";
     }
+
+    public String getNullSafeDescriptionEn() {
+        return getDescriptionEn() != null ? this.descriptionEn : "";
+    }
+
 }

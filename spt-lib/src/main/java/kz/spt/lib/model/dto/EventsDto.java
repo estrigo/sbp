@@ -18,6 +18,7 @@ public class EventsDto {
 
     private String plateNumber;
     private String description;
+    private String descriptionEn;
     private String eventType;
     private String smallImgUrl;
     private String bigImgUrl;

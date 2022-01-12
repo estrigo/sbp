@@ -38,26 +38,28 @@ public class EventLogServiceImpl implements EventLogService {
     private static final Comparator<EventsDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     @Override
-    public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description) {
+    public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn) {
         EventLog eventLog = new EventLog();
         eventLog.setObjectClass(objectClass);
         eventLog.setObjectId(objectId);
         eventLog.setPlateNumber((properties != null && properties.containsKey("carNumber")) ? (String) properties.get("carNumber") : "");
         eventLog.setDescription(description);
+        eventLog.setDescriptionEn(descriptionEn);
         eventLog.setCreated(new Date());
         eventLog.setProperties(properties != null ? properties : new HashMap<>());
         eventLogRepository.save(eventLog);
     }
 
-    public void sendSocketMessage(ArmEventType eventType, EventType eventStatus, Long id, String plateNumber, String message) {
+    public void sendSocketMessage(ArmEventType eventType, EventType eventStatus, Long id, String plateNumber, String message, String messageEng) {
 
-        if(ArmEventType.Photo.equals(eventType) && message == null){
+        if(ArmEventType.Photo.equals(eventType) && message == null && messageEng == null){
             return;
         }
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         ObjectNode node = objectMapper.createObjectNode();
         node.put("datetime", format.format(new Date()));
         node.put("message", message);
+        node.put("messageEng", messageEng);
         node.put("plateNumber", plateNumber);
         node.put("id", id);
         node.put("eventType", eventType.toString());
@@ -125,6 +127,7 @@ public class EventLogServiceImpl implements EventLogService {
                         .created(m.getCreated())
                         .plateNumber(m.getNullSafePlateNumber())
                         .description(m.getNullSafeDescription())
+                        .descriptionEn(m.getNullSafeDescriptionEn())
                         .eventType(m.getProperties().get("type") != null ? m.getProperties().get("type").toString() : "")
                         .smallImgUrl(m.getProperties().get("carSmallImageUrl") != null ? (String) m.getProperties().get("carSmallImageUrl") : "")
                         .bigImgUrl(m.getProperties().get("carImageUrl") != null ? (String) m.getProperties().get("carImageUrl") : "")

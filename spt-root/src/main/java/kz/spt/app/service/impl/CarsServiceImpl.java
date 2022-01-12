@@ -59,7 +59,7 @@ public class CarsServiceImpl implements CarsService {
             properties.put("carNumber", platenumber);
 
             properties.put("type", EventLogService.EventType.Success);
-            eventLogService.createEventLog(Cars.class.getSimpleName(), car.getId(), properties, "Новый номер авто " + car.getPlatenumber() + " сохранен в системе ");
+            eventLogService.createEventLog(Cars.class.getSimpleName(), car.getId(), properties, "Новый номер авто " + car.getPlatenumber() + " сохранен в системе ", "New car number " + car.getPlatenumber() + " added to the system ");
         }
         return car;
     }

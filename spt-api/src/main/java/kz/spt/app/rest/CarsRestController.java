@@ -32,7 +32,7 @@ public class CarsRestController {
     @ResponseBody
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addCarEvent(@Valid @RequestBody CarEventDto carEventDto) throws Exception{
-        carEventDto.event_time = new Date(); // Не можем пологаться на время камеры
+        carEventDto.event_time = new Date(); // Не можем полагаться на время камеры
         carEventService.saveCarEvent(carEventDto);
     }
 

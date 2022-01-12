@@ -23,6 +23,7 @@ import kz.spt.whitelistplugin.viewmodel.WhiteListDto;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.pf4j.util.StringUtils;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -364,6 +365,22 @@ public class WhitelistServiceImpl implements WhitelistService {
     }
 
     public static String formConditionDetails(AbstractWhitelist w, String name) throws JsonProcessingException {
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru-RU";
+        } else {
+            dayValues.put("0", "Monday");
+            dayValues.put("1", "Tuesday");
+            dayValues.put("2", "Wednesday");
+            dayValues.put("3", "Thursday");
+            dayValues.put("4", "Friday");
+            dayValues.put("5", "Saturday");
+            dayValues.put("6", "Sunday");
+        }
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
+
+
         String result = "";
         SimpleDateFormat format = new SimpleDateFormat(datePrettyFormat);
 
@@ -376,10 +393,11 @@ public class WhitelistServiceImpl implements WhitelistService {
             if (wl.getGroup() != null) {
                 w = wl.getGroup();
             }
-            resultStart = "Авто с гос. номером " + name + " может посещать объект";
+            //resultStart = "Авто с гос. номером " + name + " может посещать объект";
+            resultStart = bundle.getString("whitelist.carWithLicensePlate") + name + bundle.getString("whitelist.allowedToEnter");
         }
         if (w instanceof WhitelistGroups) {
-            resultStart = "Группа с названием " + name + " может посещать объект";
+            resultStart = bundle.getString("whitelist.groupWithName") + name + bundle.getString("whitelist.allowedToEnter");
         }
         customJson = w.getCustomJson();
         type = w.getType();
@@ -387,7 +405,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         if (Whitelist.Type.CUSTOM.equals(type)) {
             if (w.getCustomJson() != null) {
                 JsonNode values = objectMapper.readTree(customJson);
-                StringBuilder details = new StringBuilder(resultStart + " в следующие дни:");
+                StringBuilder details = new StringBuilder(resultStart + bundle.getString("whitelist.nextDays"));
                 for (int day = 0; day < 7; day++) {
                     if (values.has("" + day)) {
                         details.append(dayValues.get(day + "") + ":");
@@ -399,9 +417,9 @@ public class WhitelistServiceImpl implements WhitelistService {
                         int prev = -1, count = 0, size = sortedHours.size();
                         for (int i : sortedHours) {
                             if (count == 0) {
-                                details.append("С " + i + ":00 до ");
+                                details.append(bundle.getString("whitelist.from") + i + bundle.getString("whitelist.until"));
                             } else if (i - 1 > prev) {
-                                details.append((prev + 1) + ":00. " + " С " + i + ":00 до ");
+                                details.append((prev + 1) + ":00. " + bundle.getString("whitelist.from") + i + bundle.getString("whitelist.until"));
                             }
                             prev = i;
                             if (count == size - 1) {
@@ -414,11 +432,11 @@ public class WhitelistServiceImpl implements WhitelistService {
                 result = details.toString();
             }
         } else if (Whitelist.Type.PERIOD.equals(type)) {
-            result = resultStart + (w.getAccess_start() != null && w.getAccess_start().after(new Date()) ? " с даты " + format.format(w.getAccess_start()) : "в любое время") + ". Сроком до " + format.format(w.getAccess_end());
+            result = resultStart + (w.getAccess_start() != null && w.getAccess_start().after(new Date()) ? bundle.getString("whitelist.fromDate") + format.format(w.getAccess_start()) : bundle.getString("whitelist.anytime")) + bundle.getString("whitelist.untilDate") + format.format(w.getAccess_end());
         } else if (Whitelist.Type.UNLIMITED.equals(type)) {
-            result = resultStart + " в любое время.";
+            result = resultStart + bundle.getString("whitelist.anytime");
         }
-        ;
+
 
         return result;
     }

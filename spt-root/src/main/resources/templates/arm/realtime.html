@@ -91,6 +91,7 @@
 <script th:src="@{/assets/js/fancybox.umd.js}"></script>
 
 <script th:inline="javascript">
+    var locale = [[${#locale}]];
     jQuery('.move-left').click(function (e){
         var $div = $(this).closest('.item');
         $div.prev('.item').before($div);
@@ -116,15 +117,16 @@
     }
 
     function showGreeting(messageBody) {
+        var logMessage = locale == "en" ? messageBody.messageEng : messageBody.message;
         if (messageBody.eventType == 'Photo') {
-            $("#image" + messageBody.id).attr("src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message);
-            $("#fancyImage" + messageBody.id).attr("data-src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message);
+            $("#image" + messageBody.id).attr("src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? logMessage : 'data:image/jpg;base64,' + messageBody.message);
+            $("#fancyImage" + messageBody.id).attr("data-src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? logMessage : 'data:image/jpg;base64,' + messageBody.message);
         } else if (messageBody.eventType == 'CarEvent') {
-            $("#logs" + messageBody.id).prepend('[' + messageBody.plateNumber + ']' + messageBody.message + "\n");
+            $("#logs" + messageBody.id).prepend('[' + messageBody.plateNumber + ']' + logMessage + "\n");
             $("#fancyImage" + messageBody.id).attr("data-caption", messageBody.plateNumber);
         } else if(messageBody.eventType == 'Lp' && messageBody.message){
             $("#lp" + messageBody.id).parent().show();
-            $("#lp" + messageBody.id).attr("src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message);
+            $("#lp" + messageBody.id).attr("src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? logMessage : 'data:image/jpg;base64,' + messageBody.message);
         } else {
             console.log('Unknown event type ' + messageBody);
         }
@@ -173,7 +175,7 @@
                 console.log(data);
             });
         } else {
-            alert("Invalid plate number!");
+            alert([[#{arm.invalidPlateNumber}]]);
         }
     }
 
@@ -181,10 +183,10 @@
         var plateNumber = $("#plateNumber" + cameraId).val();
         if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
             $.get("/rest/balance/check/" + plateNumber, function (data) {
-                alert("Баланс равен " + data);
+                alert([[#{arm.balanceEqual}]] + data);
             });
         } else {
-            alert("Invalid plate number!");
+            alert([[#{arm.invalidPlateNumber}]]);
         }
     }
 </script>
