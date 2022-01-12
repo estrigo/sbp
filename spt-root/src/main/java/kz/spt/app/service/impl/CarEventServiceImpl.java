@@ -23,6 +23,7 @@ import kz.spt.lib.service.CarImageService;
 import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -321,19 +322,22 @@ public class CarEventServiceImpl implements CarEventService {
         eventLogService.sendSocketMessage(ArmEventType.Lp, EventLogService.EventType.Success, camera.getId(), eventDto.car_number, eventDto.lp_picture);
 
         if(!carStateService.checkIsLastEnteredNotLeft(eventDto.car_number)){
-            log.info("not las entered not left");
+            log.info("not last entered not left");
             eventLogService.createEventLog(Camera.class.getSimpleName(), camera.getId(), properties, "Зафиксирован новый номер авто " + eventDto.car_number);
 
             carsService.createCar(eventDto.car_number);
 
             if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())){
-                log.info("las entered not left");
                 return checkWhiteList(eventDto, camera, properties, whitelistCheckResults);
             } else {
                 return true;
             }
         } else {
-            log.info("las entered not left");
+            log.info("last entered not left");
+            if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())){
+                return true;
+                // TODO: Close last entrance and open new one
+            }
         }
         return false;
     }
@@ -397,16 +401,39 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом списке." + (node.has("groupName") ? node.get("groupName").textValue() : ""));
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " присутствует в белом списке." + (node.has("groupName") ? node.get("groupName").textValue() : ""));
                 return true;
+            } else if(checkBooking(eventDto.car_number)){
+                properties.put("type", EventLogService.EventType.Allow);
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.");
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.");
+                return true;
             } else {
                 properties.put("type", EventLogService.EventType.Deny);
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Все места в для группы " + node.get("groupName").textValue() + " заняты следующим списком " + node.get("placeOccupiedCars").toString() + ". Авто "  + eventDto.car_number);
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "В проезде отказано: Все места в для группы " + node.get("groupName").textValue() + " заняты следующим списком " + node.get("placeOccupiedCars").toString() + ". Авто "  + eventDto.car_number);
                 return false;
             }
+        } else if(checkBooking(eventDto.car_number)){
+            properties.put("type", EventLogService.EventType.Allow);
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.");
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.");
+            return true;
         } else {
             properties.put("type", EventLogService.EventType.Deny);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,  "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number);
+            return false;
+        }
+    }
+
+    private boolean checkBooking(String platenumber) throws Exception {
+        PluginRegister bookingPluginRegister = pluginService.getPluginRegister(StaticValues.bookingPlugin);
+        if(bookingPluginRegister != null){
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("platenumber", platenumber);
+            node.put("command", "checkBooking");
+            JsonNode result =  bookingPluginRegister.execute(node);
+            return result.get("bookingResult").booleanValue();
+        } else {
             return false;
         }
     }

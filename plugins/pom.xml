@@ -20,6 +20,7 @@
         <module>whitelist-plugin</module>
         <module>rate-plugin</module>
         <module>billing-plugin</module>
+        <module>booking-plugin</module>
     </modules>
 
     <build>

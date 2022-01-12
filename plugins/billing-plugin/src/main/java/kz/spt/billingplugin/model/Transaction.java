@@ -44,7 +44,6 @@ public class Transaction {
     @Column(name = "description_ru")
     String descriptionRu;
 
-
     @Column(name = "date")
     private Date date;
 }
