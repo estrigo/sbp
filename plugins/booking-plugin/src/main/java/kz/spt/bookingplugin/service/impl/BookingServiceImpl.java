@@ -46,6 +46,9 @@ public class BookingServiceImpl implements BookingService {
         boolean result = false;
 
         if(bookingHalaparkCheck){
+            String desiredFormat = convertToHalaparkFormat(plateNumber);
+            log.info("halapark checking platenumer: " + plateNumber + "by desired format: " + desiredFormat);
+
             CloseableHttpClient halaparkHttpClient = HttpClients.custom().setConnectionTimeToLive(5, TimeUnit.SECONDS).build();
 
             getToken();
@@ -55,7 +58,7 @@ public class BookingServiceImpl implements BookingService {
             halaparkPostNode.put("timestamp", System.currentTimeMillis());
             halaparkPostNode.put("lane_id","1");
             halaparkPostNode.put("site_id","2010"); // Reference id for building its unique and for concord its 2010
-            halaparkPostNode.put("identifier", plateNumber); //  Plate Number (Emirate Code - Plate Code - Plate No)
+            halaparkPostNode.put("identifier", desiredFormat); //  Plate Number (Emirate Code - Plate Code - Plate No)
 
             //{"identifier":"1-22-15788","site_id":"2010","lane_id":"1","medium":"Plate Number","timestamp":"1641798345"}
 
@@ -72,7 +75,7 @@ public class BookingServiceImpl implements BookingService {
             String halaparkPostResponseBodyString = EntityUtils.toString(entity);
             EntityUtils.consume(contentHalaparkPostResponse.getEntity());
 
-            log.info("halapark post response: " + halaparkPostResponseBodyString);
+            log.info("halapark post response: " + halaparkPostResponseBodyString );
 
             JsonNode halaparkResponseNode = objectMapper.readTree(halaparkPostResponseBodyString);
             //{"response":{"status":false,"message":"Token has been expired"}}
@@ -102,5 +105,19 @@ public class BookingServiceImpl implements BookingService {
         EntityUtils.consume(halaparkTokenHttpResponse.getEntity());
         halaparkHttpClient.close();
         lastTokenCheck = System.currentTimeMillis();
+    }
+
+    private String convertToHalaparkFormat(String platenumber){
+        if(platenumber.contains("-")){
+            return platenumber;
+        } else {
+            String copy = platenumber;
+            if(platenumber.length() < 7){
+                copy = "0-" + copy.substring(0, 1) + "-" + copy.substring(1);
+            } else {
+                copy = "0-" + copy.substring(0, 2) + "-" + copy.substring(2);
+            }
+            return copy;
+        }
     }
 }
