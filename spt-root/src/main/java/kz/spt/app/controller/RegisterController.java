@@ -71,7 +71,7 @@ public class RegisterController {
             return "register";
         } else {
             userService.saveUser(user);
-            return "redirect:user/list";
+            return "redirect:users/list";
         }
     }
 

@@ -54,7 +54,7 @@
                         <a th:href="@{|/customers/list|}" class="waves-effect waves-primary"><i
                                 class="ti-home"></i><span th:text=" #{customer.customers}"></span></a>
                     </li>
-                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                         <a th:href="@{|/arm/realtime|}" class="waves-effect waves-primary"><i
                                 class="ti-desktop"></i><span th:text=" #{crm.arm} "></span></a>
                     </li>

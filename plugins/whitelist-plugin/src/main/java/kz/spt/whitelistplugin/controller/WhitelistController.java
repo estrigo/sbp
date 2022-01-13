@@ -72,7 +72,7 @@ public class WhitelistController {
     }
 
     @GetMapping("/list")
-    public String showAllWhitelist(Model model,@AuthenticationPrincipal UserDetails currentUser) {
+    public String showAllWhitelist(Model model, @AuthenticationPrincipal UserDetails currentUser) {
         parkingService = rootServicesGetterService.getParkingService();
         model.addAttribute("parkings", parkingService.listAllParking());
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
