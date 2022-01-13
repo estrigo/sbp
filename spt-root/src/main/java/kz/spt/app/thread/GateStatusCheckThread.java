@@ -145,10 +145,11 @@ public class GateStatusCheckThread extends Thread {
                     }
                 }
             }
-        }  catch (Exception e){
+        }  catch (Throwable e){
             e.printStackTrace();
         }
         StatusCheckJob.isGatesProcessing.put(gateStatusDto.gateId, false);
+        log.info("gate: " + gateStatusDto.gateId + " processing ended");
     }
 
     private boolean triggerPassed(){
