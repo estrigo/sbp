@@ -2,6 +2,7 @@ package kz.spt.app.service;
 
 
 import kz.spt.app.model.dto.BarrierStatusDto;
+import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.SensorStatusDto;
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Gate;
@@ -24,8 +25,8 @@ public interface BarrierService {
 
     int getSensorStatus(SensorStatusDto sensor) throws IOException, ParseException;
 
-    Boolean openBarrier(Gate.GateType gateType, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException;
+    Boolean openBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException;
 
-    Boolean closeBarrier(Gate.GateType gateType, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException;
+    Boolean closeBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException;
 
 }

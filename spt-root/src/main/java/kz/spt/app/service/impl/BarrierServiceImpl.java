@@ -7,6 +7,7 @@ import com.intelligt.modbus.jlibmodbus.serial.SerialParameters;
 import kz.spt.app.job.CarSimulateJob;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
+import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.SensorStatusDto;
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Gate;
@@ -92,132 +93,159 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public Boolean openBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException {
-        if(Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())){
-            return snmpChangeValue(barrier.getGate().getGateType(), (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
-        } else if(Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
-            // TODO: open modbus type
-            return false;
-        } else {
-            throw new RuntimeException("Unable open barrier: unknown barrier type");
+        if(!disableOpen) { //  ignore in development
+            GateStatusDto gate = new GateStatusDto();
+            gate.gateType = barrier.getGate().getGateType();
+            gate.gateName = barrier.getGate().getName();
+            
+            if(barrier.getBarrierType() == null){
+                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + ((String) properties.get("carNumber") != null ? " для номер авто " + (String) properties.get("carNumber") : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""));
+                return false;
+            } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
+                return snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
+            } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
+                // TODO: open modbus type
+                return false;
+            }
         }
+        return true;
     }
 
     @Override
     public Boolean closeBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException {
-        if(Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())){
-            return snmpChangeValue(barrier.getGate().getGateType(), (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Close);
-        } else if(Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
-            // TODO: close modbus type
-            return false;
-        } else {
-            throw new RuntimeException("Unable close barrier: unknown barrier type");
-        }
-    }
+        if(!disableOpen) { //  ignore in development
+            GateStatusDto gate = new GateStatusDto();
+            gate.gateType = barrier.getGate().getGateType();
+            gate.gateName = barrier.getGate().getName();
 
-    public Boolean openBarrier(Gate.GateType gateType, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException {
-        if(Barrier.BarrierType.SNMP.equals(barrier.type)){
-            return snmpChangeValue(gateType, carNumber, barrier, Command.Open);
-        } else if(Barrier.BarrierType.MODBUS.equals(barrier.type)) {
-            return modbusChangeValue(gateType, carNumber, barrier, Command.Open);
-        }
-        return true;
-    }
-
-    public Boolean closeBarrier(Gate.GateType gateType, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException {
-        if(Barrier.BarrierType.SNMP.equals(barrier.type)){
-            return snmpChangeValue(gateType, carNumber, barrier, Command.Close);
+            if(barrier.getBarrierType() == null) {
+                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы закрыть" + ((String) properties.get("carNumber") != null ? " для номер авто " + (String) properties.get("carNumber") : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to close" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""));
+                return false;
+            } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
+                return snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Close);
+            } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
+                // TODO: close modbus type
+                return false;
+            }
         }
         return true;
     }
 
-    private Boolean snmpChangeValue(Gate.GateType gateType, String carNumber, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException, ParseException {
-        Boolean result = true;
+    public Boolean openBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException {
+        if(!disableOpen) { //  ignore in development
+            if(barrier.type == null){
+                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + (carNumber != null ? " for car number " + carNumber : ""));
+                return false;
+            } else if (Barrier.BarrierType.SNMP.equals(barrier.type)) {
+                return snmpChangeValue(gate, carNumber, barrier, Command.Open);
+            } else if (Barrier.BarrierType.MODBUS.equals(barrier.type)) {
+                return modbusChangeValue(gate, carNumber, barrier, Command.Open);
+            }
+        }
+        return true;
+    }
+
+    public Boolean closeBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException {
         if(!disableOpen) {
-            SNMPManager barrierClient = new SNMPManager("udp:" + barrier.ip + "/161", barrier.password, barrier.snmpVersion);
-            barrierClient.start();
+            if(barrier.type == null) {
+                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы закрыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to close" + (carNumber != null ? " for car number " + carNumber : ""));
+                return false;
+            } else  if (Barrier.BarrierType.SNMP.equals(barrier.type)) {
+                return snmpChangeValue(gate, carNumber, barrier, Command.Close);
+            } else if (Barrier.BarrierType.MODBUS.equals(barrier.type)) {
+                return modbusChangeValue(gate, carNumber, barrier, Command.Close);
+            }
+        }
+        return true;
+    }
 
-            if(Command.Close.equals(command) && Barrier.SensorsType.MANUAL.equals(barrier.sensorsType)){
-                String openValue = barrierClient.getCurrentValue(barrier.openOid);
-                if (BARRIER_ON.equals(openValue)) {
-                    Boolean changed = barrierClient.changeValue(barrier.openOid, Integer.valueOf(BARRIER_OFF));
+    private Boolean snmpChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException, ParseException {
+        Boolean result = true;
+
+        SNMPManager barrierClient = new SNMPManager("udp:" + barrier.ip + "/161", barrier.password, barrier.snmpVersion);
+        barrierClient.start();
+
+        if(Command.Close.equals(command) && Barrier.SensorsType.MANUAL.equals(barrier.sensorsType)){
+            String openValue = barrierClient.getCurrentValue(barrier.openOid);
+            if (BARRIER_ON.equals(openValue)) {
+                Boolean changed = barrierClient.changeValue(barrier.openOid, Integer.valueOf(BARRIER_OFF));
+                if (!changed) {
+                    for (int i = 0; i < 3; i++) {
+                        changed = barrierClient.changeValue(barrier.openOid, Integer.valueOf(BARRIER_OFF));
+                        if (changed) {
+                            break;
+                        }
+                    }
                     if (!changed) {
+                        result = false;
+                        eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 0 для остановки удержания открытия" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 0 for terminating opening process" + (carNumber != null ? " for car number " + carNumber : ""));
+                    }
+                }
+            }
+        }
+
+        String oid = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
+        String currentValue = barrierClient.getCurrentValue(oid);
+
+        if (BARRIER_OFF.equals(currentValue)) {
+            Boolean isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
+            log.info(" isOpenValueChanged: " + isOpenValueChanged);
+            if (!isOpenValueChanged) {
+                for (int i = 0; i < 3; i++) {
+                    isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
+                    if (isOpenValueChanged) {
+                        break;
+                    }
+                }
+                if (!isOpenValueChanged) {
+                    result = false;
+                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
+                }
+            }
+            if((Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType)) && isOpenValueChanged) {
+                Thread.sleep(500);
+                String currentValue2 = barrierClient.getCurrentValue(oid);
+                if (BARRIER_ON.equals(currentValue2)) {
+                    Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                    if (!isReturnValueChanged) {
                         for (int i = 0; i < 3; i++) {
-                            changed = barrierClient.changeValue(barrier.openOid, Integer.valueOf(BARRIER_OFF));
-                            if (changed) {
+                            isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                            if (isReturnValueChanged) {
                                 break;
                             }
                         }
-                        if (!changed) {
-                            result = false;
-                            eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gateType) ? "въезда" : (Gate.GateType.OUT.equals(gateType) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 для остановки удержания открытия" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gateType) ? "enter" : (Gate.GateType.OUT.equals(gateType) ? "enter" : "enter/exit")) + " couldn't change to 0 for terminating opening process" + (carNumber != null ? " for car number " + carNumber : ""));
-                        }
-                    }
-                }
-            }
-
-            String oid = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
-            String currentValue = barrierClient.getCurrentValue(oid);
-
-            if (BARRIER_OFF.equals(currentValue)) {
-                Boolean isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
-                log.info(" isOpenValueChanged: " + isOpenValueChanged);
-                if (!isOpenValueChanged) {
-                    for (int i = 0; i < 3; i++) {
-                        isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
-                        if (isOpenValueChanged) {
-                            break;
-                        }
-                    }
-                    if (!isOpenValueChanged) {
-                        result = false;
-                        eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gateType) ? "въезда" : (Gate.GateType.OUT.equals(gateType) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 1 чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gateType) ? "enter" : (Gate.GateType.OUT.equals(gateType) ? "exit" : "enter/exit")) + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
-                    }
-                }
-                if((Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType)) && isOpenValueChanged) {
-                    Thread.sleep(500);
-                    String currentValue2 = barrierClient.getCurrentValue(oid);
-                    if (BARRIER_ON.equals(currentValue2)) {
-                        Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
                         if (!isReturnValueChanged) {
-                            for (int i = 0; i < 3; i++) {
-                                isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
-                                if (isReturnValueChanged) {
-                                    break;
-                                }
-                            }
-                            if (!isReturnValueChanged) {
-                                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gateType) ? "въезда" : (Gate.GateType.OUT.equals(gateType) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gateType) ? "enter" : (Gate.GateType.OUT.equals(gateType) ? "enter" : "enter/exit")) + " couldn't change to 0 for terminating opening process " + (carNumber != null ? " for car number " + carNumber : ""));
-                            }
+                            eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 0 for terminating opening process " + (carNumber != null ? " for car number " + carNumber : ""));
                         }
-                    }
-                }
-            } else if(Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType)) {
-                Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
-                if (!isReturnValueChanged) {
-                    for (int i = 0; i < 3; i++) {
-                        isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
-                        if (isReturnValueChanged) {
-                            break;
-                        }
-                    }
-                    if (!isReturnValueChanged) {
-                        eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gateType) ? "въезда" : (Gate.GateType.OUT.equals(gateType) ? "выезда" : "въезда/выезда")) + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gateType) ? "enter" : (Gate.GateType.OUT.equals(gateType) ? "enter" : "enter/exit")) + " couldn't change to 0 for terminating opening process " + (carNumber != null ? " for car number " + carNumber : ""));
                     }
                 }
             }
-            barrierClient.close();
+        } else if(Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType)) {
+            Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+            if (!isReturnValueChanged) {
+                for (int i = 0; i < 3; i++) {
+                    isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                    if (isReturnValueChanged) {
+                        break;
+                    }
+                }
+                if (!isReturnValueChanged) {
+                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 0 for terminating opening process " + (carNumber != null ? " for car number " + carNumber : ""));
+                }
+            }
         }
+        barrierClient.close();
+
         return result;
     }
 
-    private Boolean modbusChangeValue(Gate.GateType gateType, String carNumber, BarrierStatusDto barrier, Command command) {
+    private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) {
         Boolean result = true;
-        if(!disableOpen) {
-            SerialParameters parameters = new SerialParameters();
+
+        SerialParameters parameters = new SerialParameters();
 //            parameters.set
 //            ModbusMaster modbusMaster = new ModbusMasterRTU(parameters);
 //            modbusMaster.connect();
-        }
         return true;
     }
 }

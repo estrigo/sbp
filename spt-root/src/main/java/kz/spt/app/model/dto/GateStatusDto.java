@@ -12,6 +12,7 @@ public class GateStatusDto {
     public enum DirectionStatus {QUIT, FORWARD, REVERSE};
 
     public Long gateId;
+    public String gateName;
     public Gate.GateType gateType;
     public Long parkingId;
     public Boolean isSimpleWhitelist;
@@ -45,6 +46,7 @@ public class GateStatusDto {
     public static GateStatusDto fromGate(Gate gate){
         GateStatusDto gateStatusDto = new GateStatusDto();
         gateStatusDto.gateId = gate.getId();
+        gateStatusDto.gateName = gate.getName();
         gateStatusDto.parkingId = gate.getParking().getId();
         gateStatusDto.gateType = gate.getGateType();
 

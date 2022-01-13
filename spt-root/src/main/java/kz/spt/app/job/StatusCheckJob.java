@@ -67,4 +67,13 @@ public class StatusCheckJob {
         isGatesProcessing = new ConcurrentHashMap<>();
         globalGateDtos = new ConcurrentLinkedQueue<>();
     }
+
+    public static GateStatusDto findGateStatusDtoById(Long gateId){
+        for(GateStatusDto gate: StatusCheckJob.globalGateDtos){
+            if(gate.gateId == gateId){
+                return gate;
+            }
+        }
+        return null;
+    }
 }

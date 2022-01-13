@@ -36,7 +36,7 @@ public class GateStatusCheckThread extends Thread {
             if(photoElement != null && loop != null){ // Данные фотоэлемента и петли заполнены
                 if(triggerPassed() && getSensorStatus(photoElement) == SENSOR_OFF && getSensorStatus(loop) == SENSOR_OFF && gateStatusDto.gateStatus == GateStatusDto.GateStatus.Open){ // Закрыть шлагбаум если сенсоры пусты и шлагбаум открыть
                     try {
-                        boolean result = barrierService.closeBarrier(gateStatusDto.gateType, null, gateStatusDto.barrier);
+                        boolean result = barrierService.closeBarrier(gateStatusDto, null, gateStatusDto.barrier);
                         if(result){
                             gateStatusDto.gateStatus  = GateStatusDto.GateStatus.Closed;
                             gateStatusDto.photoElementStatus = GateStatusDto.SensorStatus.Quit;
@@ -99,7 +99,7 @@ public class GateStatusCheckThread extends Thread {
                             log.info("CVT IN QUIET MODE, CAR FULLY PASSED ML AND ML NOT ACTIVATED");
                             gateStatusDto.sensor2 = GateStatusDto.SensorStatus.Quit;
                             try {
-                                boolean result = barrierService.closeBarrier(gateStatusDto.gateType, gateStatusDto.frontCamera.carEventDto.car_number, gateStatusDto.barrier);
+                                boolean result = barrierService.closeBarrier(gateStatusDto, gateStatusDto.frontCamera.carEventDto.car_number, gateStatusDto.barrier);
                                 if(result){
                                     gateStatusDto.gateStatus  = GateStatusDto.GateStatus.Closed;
                                     gateStatusDto.directionStatus = GateStatusDto.DirectionStatus.QUIT;
@@ -130,7 +130,7 @@ public class GateStatusCheckThread extends Thread {
                         if(getSensorStatus(gateStatusDto.photoElement) == SENSOR_OFF && getSensorStatus(gateStatusDto.loop) == SENSOR_OFF){
                             log.info("Start closing the gate: " + gateStatusDto.gateId);
                             try {
-                                boolean result = barrierService.closeBarrier(gateStatusDto.gateType, null, gateStatusDto.barrier);
+                                boolean result = barrierService.closeBarrier(gateStatusDto, null, gateStatusDto.barrier);
                                 if(result){
                                     log.info("We closed the gate: " + gateStatusDto.gateId);
                                     gateStatusDto.gateStatus  = GateStatusDto.GateStatus.Closed;
@@ -170,7 +170,7 @@ public class GateStatusCheckThread extends Thread {
         boolean result = false;
         if(isSimple){
             try {
-                result = barrierService.openBarrier(gate.gateType, null, gate.barrier);
+                result = barrierService.openBarrier(gate, null, gate.barrier);
             } catch (IOException | ParseException | InterruptedException e) {
                 e.printStackTrace();
             }
