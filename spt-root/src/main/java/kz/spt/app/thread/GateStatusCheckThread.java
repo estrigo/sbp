@@ -149,7 +149,6 @@ public class GateStatusCheckThread extends Thread {
             e.printStackTrace();
         }
         StatusCheckJob.isGatesProcessing.put(gateStatusDto.gateId, false);
-        log.info("gate: " + gateStatusDto.gateId + " processing ended");
     }
 
     private boolean triggerPassed(){
