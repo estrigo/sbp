@@ -49,6 +49,7 @@ public class PaymentServiceImpl implements PaymentService {
                 CarState carState = carStateService.getLastNotLeft(commandDto.account);
                 if (carState == null) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
+                    dto.sum = BigDecimal.ZERO;
                     dto.txn_id  = commandDto.txn_id;
                     dto.message = "Некорректный номер авто свяжитесь с оператором.";
                     dto.result = 1;
