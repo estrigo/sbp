@@ -58,8 +58,8 @@ public class CarStateServiceImpl implements CarStateService {
         carStateRepository.save(carState);
     }
 
-    public void createOUTState(String carNumber, Date outTimestamp, CarState carState) {
-        carState.setOutTimestamp(outTimestamp);
+    public void cancelPaid(CarState carState) {
+        carState.setPaid(false);
         carStateRepository.save(carState);
     }
 
@@ -149,7 +149,7 @@ public class CarStateServiceImpl implements CarStateService {
         if(carState == null){
             return false;
         } else {
-            createOUTState(carNumber, new Date(), carState);
+            cancelPaid(carState);
             return true;
         }
     }
