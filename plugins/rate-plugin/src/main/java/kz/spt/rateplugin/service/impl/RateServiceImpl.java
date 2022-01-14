@@ -62,10 +62,15 @@ public class RateServiceImpl implements RateService {
 
         BigDecimal result = BigDecimal.ZERO;
 
+        log.info("inDate: " +  inCalendar.getTime());
+        log.info("outDate: " +  outCalendar.getTime());
+
         if(parkingRate.getAfterFreeMinutes() != null){
+            log.info("parkingRate.getAfterFreeMinutes(): " +  parkingRate.getAfterFreeMinutes());
             SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
             Date lastPaymentDate = null;
             if(paymentsJson != null && !"".equals(paymentsJson)){ // Если была оплата проверяем прошли минуты до которые даются для выезда
+                log.info("paymentsJson: " +  paymentsJson);
                 try {
                     ArrayNode payments = (ArrayNode) mapper.readTree(paymentsJson);
                     Iterator<JsonNode> iterator = payments.iterator();
@@ -80,14 +85,22 @@ public class RateServiceImpl implements RateService {
                     e.printStackTrace();
                 }
             }
-
             if(lastPaymentDate != null){
-                int minutesPassedAfterLastPay = (int) (outCalendar.getTime().getTime() - lastPaymentDate.getTime()) / 360;
+                log.info("lastPaymentDate: " +  lastPaymentDate);
+                int seconds = (int) (outCalendar.getTime().getTime() - lastPaymentDate.getTime()) / 1000;
+                int minutesPassedAfterLastPay = seconds / 60;
+                int secondsPassedAfterLastPay = seconds % 60;
+                log.info("minutesPassedAfterLastPay: " +  minutesPassedAfterLastPay);
+                log.info("secondsPassedAfterLastPay: " +  secondsPassedAfterLastPay);
                 if(minutesPassedAfterLastPay < parkingRate.getAfterFreeMinutes()){
                     outCalendar.add(Calendar.MINUTE, (-1)*minutesPassedAfterLastPay);
+                    outCalendar.add(Calendar.SECOND, (-1)*secondsPassedAfterLastPay);
                 }
             }
         }
+
+        log.info("inDate 2: " +  inCalendar.getTime());
+        log.info("outDate 2: " +  outCalendar.getTime());
 
         Calendar inDayCalendar = Calendar.getInstance();
         inDayCalendar.setTime(inCalendar.getTime());
