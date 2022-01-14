@@ -30,4 +30,6 @@ public interface CarStateService {
     List<String> getInButNotPaidFromList(List<String> checkList);
 
     Boolean checkIsLastLeft(String carNumber, String cameraIp);
+
+    Boolean removeDebt(String carNumber);
 }

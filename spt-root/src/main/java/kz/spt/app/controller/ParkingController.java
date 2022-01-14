@@ -204,6 +204,4 @@ public class ParkingController {
         model.addAttribute("parkingCars" ,parkingService.carsInParking(id));
         return "cars-in-parkings/cars/list";
     }
-
-
 }

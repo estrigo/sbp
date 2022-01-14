@@ -47,6 +47,11 @@
                                 <option th:each="r : ${allOutGates}" th:value="${r.id}" th:text="${r.name}">
                             </select>
                         </div>
+                        <th:block sec:authorize="hasAnyRole('ROLE_OPERATOR_NO_REVENUE_SHARE')">
+                            <div class="col-3">
+                                <button type="button" data-toggle="modal" data-target="#remove-debt-modal" th:onclick="removeDebtModalContent()" class="btn btn-secondary" th:text="#{crm.deleteDebt}"></button>
+                            </div>
+                        </th:block>
                     </div>
                 </form>
                 <div class="mb-5"></div>
@@ -68,6 +73,18 @@
                             </thead>
                         </table>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="remove-debt-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body" id="removeDebtModalBody">
                 </div>
             </div>
         </div>
@@ -170,6 +187,26 @@
        }
    }
 
+    function removeDebtModalContent(){
+        $.get("/journal/remove/debt", function (data) {
+            $('#remove-debt-modal').find('#removeDebtModalBody').html(data);
+        });
+    }
+
+    function removeDebtForPlateNumber(){
+        let plateNumber = $('#remove-debt-modal').find('#platenumber').val();
+        if(plateNumber && plateNumber.length >2 && plateNumber.length < 17){
+            $.get("/rest/carstate/remove/debt?plateNumber=" + plateNumber, function (data) {
+                if(data && data == true){
+                    alert([[#{carstate.deletedSuccessfully}]]);
+                } else {
+                    alert([[#{carstate.debtNotFound}]]);
+                }
+            });
+        } else {
+            alert([[#{arm.invalidPlateNumber}]]);
+        }
+    }
 </script>
 
 </html>

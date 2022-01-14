@@ -51,7 +51,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/users/delete/**").hasRole("ADMIN")
                 .antMatchers("/arm/**").fullyAuthenticated()
-                .antMatchers( "/events/**", "/journal/**", "/arm/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN", "OPERATOR")
+                .antMatchers( "/events/**", "/journal/**", "/arm/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN", "OPERATOR", "OPERATOR_NO_REVENUE_SHARE")
                 .antMatchers( "/customers/**", "/register/**", "/cars/**", "/parking/**", "/customer/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN")
                 .antMatchers("/customer/edit/**", "/users/**", "/cars/edit/**","/parking/edit/**","/parking/details/**").hasAnyRole( "ADMIN", "MANAGER", "SUPERADMIN");
 

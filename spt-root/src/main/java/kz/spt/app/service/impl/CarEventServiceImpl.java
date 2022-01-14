@@ -30,7 +30,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -261,7 +260,7 @@ public class CarEventServiceImpl implements CarEventService {
                     }
                 } else {
                     log.info("last entered not left");
-                    if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType()) || Parking.ParkingType.WHITELIST_PAYMENT.equals(camera.getGate().getParking().getParkingType())){
+                    if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())){
                         hasAccess = checkWhiteList(eventDto, camera, properties, whitelistCheckResults);
                         if(hasAccess){
                             carStateService.createOUTState(eventDto.car_number, new Date(), camera, carState);
@@ -474,6 +473,7 @@ public class CarEventServiceImpl implements CarEventService {
                             ratePluginNode.put("inDate", format.format(carState.getInTimestamp()));
                             ratePluginNode.put("outDate", format.format(eventDto.event_time));
                             ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : false);
+                            ratePluginNode.put("paymentsJson", carState.getPaymentJson());
 
                             JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
                             rateResult = ratePluginResult.get("rateResult").decimalValue().setScale(2);

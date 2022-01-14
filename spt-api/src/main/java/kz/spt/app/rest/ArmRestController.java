@@ -25,7 +25,7 @@ public class ArmRestController {
         this.armService = armService;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_OPERATOR')")
     @GetMapping(value = "/open/{cameraId}")
     public Boolean openGate(@PathVariable("cameraId") Long cameraId) throws IOException, ParseException, InterruptedException {
         return armService.openGate(cameraId);

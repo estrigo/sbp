@@ -6,6 +6,7 @@ import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.app.repository.CarStateRepository;
+import lombok.extern.java.Log;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -22,6 +23,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Log
 @Service
 public class CarStateServiceImpl implements CarStateService {
 
@@ -53,6 +55,11 @@ public class CarStateServiceImpl implements CarStateService {
         carState.setOutChannelIp(camera.getIp());
         carState.setOutGate(camera.getGate());
         carState.setOutBarrier(camera.getGate().getBarrier());
+        carStateRepository.save(carState);
+    }
+
+    public void createOUTState(String carNumber, Date outTimestamp, CarState carState) {
+        carState.setOutTimestamp(outTimestamp);
         carStateRepository.save(carState);
     }
 
@@ -133,6 +140,18 @@ public class CarStateServiceImpl implements CarStateService {
         Pageable first = PageRequest.of(0, 1);
         List<CarState> carStates = carStateRepository.getCarStateLastLeft(cameraIp, first);
         return carStates.size() > 0 && carNumber.equals(carStates.get(0).getCarNumber());
+    }
+
+    @Override
+    public Boolean removeDebt(String carNumber) {
+        CarState carState = getLastNotLeft(carNumber);
+
+        if(carState == null){
+            return false;
+        } else {
+            createOUTState(carNumber, new Date(), carState);
+            return true;
+        }
     }
 
     private Page<CarStateDto> getPage(List<CarStateDto> carStates, PagingRequest pagingRequest) {

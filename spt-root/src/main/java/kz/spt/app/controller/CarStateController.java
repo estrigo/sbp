@@ -1,15 +1,15 @@
 package kz.spt.app.controller;
 
 import kz.spt.app.service.GateService;
+import kz.spt.lib.model.Camera;
+import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.dto.CarStateFilterDto;
+import kz.spt.lib.service.CarStateService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.text.ParseException;
@@ -23,9 +23,11 @@ import java.util.List;
 public class CarStateController {
 
     private GateService gateService;
+    private CarStateService carStateService;
 
-    public CarStateController(GateService gateService){
+    public CarStateController(GateService gateService, CarStateService carStateService){
         this.gateService = gateService;
+        this.carStateService = carStateService;
     }
 
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
@@ -75,5 +77,10 @@ public class CarStateController {
         model.addAttribute("allInGates", allInGates);
         model.addAttribute("allOutGates", allOutGates);
         return "journal/list";
+    }
+
+    @GetMapping("/remove/debt")
+    public String getRemoveDebt() {
+        return "/journal/remove/debt";
     }
 }
