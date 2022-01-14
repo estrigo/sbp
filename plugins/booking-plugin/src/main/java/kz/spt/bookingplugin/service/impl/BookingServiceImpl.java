@@ -2,6 +2,7 @@ package kz.spt.bookingplugin.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.bookingplugin.service.BookingService;
 import lombok.extern.java.Log;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 @Log
@@ -42,11 +44,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Boolean checkBookingValid(String plateNumber) throws IOException, URISyntaxException {
-
-        boolean result = false;
-
         if(bookingHalaparkCheck){
-            String desiredFormat = convertToHalaparkFormat(plateNumber);
+            String desiredFormat = convertToHalaparkRequestFormat(plateNumber);
             log.info("halapark checking platenumer: " + plateNumber + "by desired format: " + desiredFormat);
 
             CloseableHttpClient halaparkHttpClient = HttpClients.custom().setConnectionTimeToLive(5, TimeUnit.SECONDS).build();
@@ -55,7 +54,7 @@ public class BookingServiceImpl implements BookingService {
 
             ObjectNode halaparkPostNode = objectMapper.createObjectNode();
             halaparkPostNode.put("medium","Plate Number"); //medium : Plate Number (As default for Parquor)
-            halaparkPostNode.put("timestamp", System.currentTimeMillis());
+            halaparkPostNode.put("timestamp", String.valueOf(System.currentTimeMillis()/1000));
             halaparkPostNode.put("lane_id","1");
             halaparkPostNode.put("site_id","2010"); // Reference id for building its unique and for concord its 2010
             halaparkPostNode.put("identifier", desiredFormat); //  Plate Number (Emirate Code - Plate Code - Plate No)
@@ -79,16 +78,32 @@ public class BookingServiceImpl implements BookingService {
 
             JsonNode halaparkResponseNode = objectMapper.readTree(halaparkPostResponseBodyString);
             //{"response":{"status":false,"message":"Token has been expired"}}
-            //{"response":{"status":true,"message":"Valid Booking"}}
+            //{"response":{"status":true,"message":"Valid Booking","result":[{"identifier":"3-S-12345"},{"identifier":"3-S-12345"}]}}
             if(halaparkResponseNode.has("response") && halaparkResponseNode.get("response") != null){
                 JsonNode responseData = halaparkResponseNode.get("response");
                 if(responseData.has("status") && responseData.get("status").booleanValue()){
-                    result = true;
+                    String parqourCheckFormat = parqourCheckFormat(plateNumber);
+                    if (responseData.has("result")){
+                        ArrayNode results = (ArrayNode)responseData.get("result");
+                        Iterator<JsonNode> iterator = results.iterator();
+                        while (iterator.hasNext()){
+                            JsonNode result = iterator.next();
+                            if(result.has("identifier")){
+                                String halaparkNumber = result.get("identifier").textValue();
+                                if(halaparkNumber.endsWith(parqourCheckFormat)){
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    } else {
+                        return false;
+                    }
                 }
             }
             halaparkHttpClient.close();
         }
-        return result;
+        return false;
     }
 
     private void getToken() throws IOException {
@@ -107,8 +122,8 @@ public class BookingServiceImpl implements BookingService {
         lastTokenCheck = System.currentTimeMillis();
     }
 
-    private String convertToHalaparkFormat(String platenumber){
-        if(platenumber.contains("-")){
+    private String convertToHalaparkRequestFormat(String platenumber){
+/*        if(platenumber.contains("-")){
             return platenumber;
         } else {
             String copy = platenumber;
@@ -119,5 +134,24 @@ public class BookingServiceImpl implements BookingService {
             }
             return copy;
         }
+*/
+    // Temporary cod
+        String copy = platenumber;
+        if(platenumber.length() < 7){
+            copy = copy.substring(1);
+        } else {
+            copy = copy.substring(2);
+        }
+        return copy;
+    }
+
+    private String parqourCheckFormat(String platenumber){
+        String copy = platenumber;
+        if(platenumber.length() < 7){
+            copy = copy.substring(0, 1) + "-" + copy.substring(1);
+        } else {
+            copy = copy.substring(0, 2) + "-" + copy.substring(2);
+        }
+        return copy;
     }
 }
