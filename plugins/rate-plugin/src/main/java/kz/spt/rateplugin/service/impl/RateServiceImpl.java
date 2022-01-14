@@ -16,6 +16,7 @@ import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Log
@@ -43,7 +44,7 @@ public class RateServiceImpl implements RateService {
     }
 
     @Override
-    public BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment) throws JsonProcessingException {
+    public BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment, String paymentsJson) throws JsonProcessingException {
 
         ParkingRate parkingRate = getByParkingId(parkingId);
 
@@ -60,6 +61,33 @@ public class RateServiceImpl implements RateService {
         inCalendar.add(Calendar.MINUTE, (-1) * parkingRate.getBeforeFreeMinutes());
 
         BigDecimal result = BigDecimal.ZERO;
+
+        if(parkingRate.getAfterFreeMinutes() != null){
+            SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+            Date lastPaymentDate = null;
+            if(paymentsJson != null && !"".equals(paymentsJson)){ // Если была оплата проверяем прошли минуты до которые даются для выезда
+                try {
+                    ArrayNode payments = (ArrayNode) mapper.readTree(paymentsJson);
+                    Iterator<JsonNode> iterator = payments.iterator();
+                    while (iterator.hasNext()) {
+                        JsonNode node = iterator.next();
+                        Date created = format.parse(node.get("created").textValue());
+                        if(lastPaymentDate == null || lastPaymentDate.before(created)){
+                            lastPaymentDate = created;
+                        }
+                    }
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+            if(lastPaymentDate != null){
+                int minutesPassedAfterLastPay = (int) (outCalendar.getTime().getTime() - lastPaymentDate.getTime()) / 360;
+                if(minutesPassedAfterLastPay < parkingRate.getAfterFreeMinutes()){
+                    outCalendar.add(Calendar.MINUTE, (-1)*minutesPassedAfterLastPay);
+                }
+            }
+        }
 
         Calendar inDayCalendar = Calendar.getInstance();
         inDayCalendar.setTime(inCalendar.getTime());

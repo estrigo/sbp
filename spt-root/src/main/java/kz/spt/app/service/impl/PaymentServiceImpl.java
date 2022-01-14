@@ -2,6 +2,7 @@ package kz.spt.app.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.model.Cars;
@@ -62,10 +63,10 @@ public class PaymentServiceImpl implements PaymentService {
                     dto.left_free_time_minutes = 15;
 
                     if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())) {
-                        return fillPayment(carState, format, commandDto);
+                        return fillPayment(carState, format, commandDto, carState.getPaymentJson());
                     } else if (Parking.ParkingType.WHITELIST_PAYMENT.equals(carState.getParking().getParkingType())) {
                         if(carState.getPaid()){
-                            return fillPayment(carState, format, commandDto);
+                            return fillPayment(carState, format, commandDto, carState.getPaymentJson());
                         }
                     }
                     return dto;
@@ -174,7 +175,7 @@ public class PaymentServiceImpl implements PaymentService {
         return null;
     }
 
-    private BillingInfoSuccessDto fillPayment(CarState carState, SimpleDateFormat format, CommandDto commandDto) throws Exception {
+    private BillingInfoSuccessDto fillPayment(CarState carState, SimpleDateFormat format, CommandDto commandDto, String paymentsJson) throws Exception {
         BillingInfoSuccessDto dto = null;
         PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
         if (ratePluginRegister != null) {
@@ -183,6 +184,7 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("inDate", format.format(carState.getInTimestamp()));
             node.put("outDate", format.format(new Date()));
             node.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : false);
+            node.put("paymentsJson", paymentsJson);
 
             JsonNode result = ratePluginRegister.execute(node);
             BigDecimal rateResult = result.get("rateResult").decimalValue();
