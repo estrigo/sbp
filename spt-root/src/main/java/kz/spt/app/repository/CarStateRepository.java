@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSpecificationExecutor<CarState>{
 
-    @Query("from CarState cs where cs.carNumber = :carNumber and cs.outTimestamp is null order by cs.inTimestamp desc")
+    @Query("from CarState cs LEFT JOIN FETCH cs.parking where cs.carNumber = :carNumber and cs.outTimestamp is null order by cs.inTimestamp desc")
     List<CarState> getCarStateNotLeft(@Param("carNumber") String carNumber, Pageable page);
 
     @Query("from CarState cs where cs.outTimestamp is null order by cs.inTimestamp desc")
