@@ -1,14 +1,20 @@
 package kz.spt.lib.model.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Data
+@Builder
+@AllArgsConstructor
 public class CarStateFilterDto {
 
-    public String dateFromString;
-    public String dateToString;
-    public String plateNumber;
-    public Integer amount;
-    public Long inGateId;
-    public Long outGateId;
+    private String dateFromString;
+    private String dateToString;
+    private String plateNumber;
+    private Integer amount;
+    private Long inGateId;
+    private Long outGateId;
+    private boolean inParking;
 }

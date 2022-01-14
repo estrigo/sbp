@@ -64,6 +64,12 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
+    public void createOUTManual(String carNumber, Date outTimestamp, CarState carState) {
+        carState.setOutTimestamp(outTimestamp);
+        carStateRepository.save(carState);
+    }
+
+    @Override
     public Boolean checkIsLastEnteredNotLeft(String carNumber) {
         return getLastNotLeft(carNumber) != null;
     }
@@ -87,40 +93,37 @@ public class CarStateServiceImpl implements CarStateService {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         Specification<CarState> specification = null;
 
-        if(!StringUtils.isEmpty(filterDto.plateNumber)){
-            specification = CarStateSpecification.likePlateNumber(filterDto.plateNumber);
+        if (!StringUtils.isEmpty(filterDto.getPlateNumber())) {
+            specification = CarStateSpecification.likePlateNumber(filterDto.getPlateNumber());
         }
-        if(!StringUtils.isEmpty(filterDto.dateFromString)){
-            specification = specification != null? specification.and(CarStateSpecification.greaterDate(format.parse(filterDto.dateFromString))) : CarStateSpecification.greaterDate(format.parse(filterDto.dateFromString));
+        if (!StringUtils.isEmpty(filterDto.getDateFromString())) {
+            specification = specification != null ? specification.and(CarStateSpecification.greaterDate(format.parse(filterDto.getDateFromString()))) : CarStateSpecification.greaterDate(format.parse(filterDto.getDateFromString()));
         }
-        if(!StringUtils.isEmpty(filterDto.dateToString)){
-            specification = specification != null? specification.and(CarStateSpecification.lessDate(format.parse(filterDto.dateToString))) : CarStateSpecification.lessDate(format.parse(filterDto.dateToString));
+        if (!StringUtils.isEmpty(filterDto.getDateToString())) {
+            specification = specification != null ? specification.and(CarStateSpecification.lessDate(format.parse(filterDto.getDateToString()))) : CarStateSpecification.lessDate(format.parse(filterDto.getDateToString()));
         }
-        if(filterDto.amount != null){
-            specification = specification != null? specification.and(CarStateSpecification.equalAmount(BigDecimal.valueOf(filterDto.amount))) : CarStateSpecification.equalAmount(BigDecimal.valueOf(filterDto.amount));
+        if (filterDto.getAmount() != null) {
+            specification = specification != null ? specification.and(CarStateSpecification.equalAmount(BigDecimal.valueOf(filterDto.getAmount()))) : CarStateSpecification.equalAmount(BigDecimal.valueOf(filterDto.getAmount()));
         }
-        if(filterDto.inGateId != null){
-            specification = specification != null? specification.and(CarStateSpecification.equalInGateId(filterDto.inGateId)) : CarStateSpecification.equalInGateId(filterDto.inGateId);
+        if (filterDto.getInGateId() != null) {
+            specification = specification != null ? specification.and(CarStateSpecification.equalInGateId(filterDto.getInGateId())) : CarStateSpecification.equalInGateId(filterDto.getInGateId());
         }
-        if(filterDto.outGateId != null){
-            specification = specification != null? specification.and(CarStateSpecification.equalOutGateId(filterDto.outGateId)) : CarStateSpecification.equalOutGateId(filterDto.outGateId);
+        if (filterDto.getOutGateId() != null) {
+            specification = specification != null ? specification.and(CarStateSpecification.equalOutGateId(filterDto.getOutGateId())) : CarStateSpecification.equalOutGateId(filterDto.getOutGateId());
         }
+        if (filterDto.isInParking()) {
+            specification = specification != null ? specification.and(CarStateSpecification.emptyOutGateTime()) : CarStateSpecification.emptyOutGateTime();
+        }
+
         specification = specification != null? specification.and(CarStateSpecification.orderById()) : CarStateSpecification.orderById();
         return carStateRepository.findAll(specification);
     }
 
     @Override
-    public Page<CarStateDto> getAll(PagingRequest pagingRequest, String plateNumber, String dateFromString, String dateToString, Long inGateId, Long outGateId, Integer amount) throws ParseException {
+    public Page<CarStateDto> getAll(PagingRequest pagingRequest,
+                                    CarStateFilterDto carStateFilterDto) throws ParseException {
 
-        CarStateFilterDto filterDto = new CarStateFilterDto();
-        filterDto.dateToString = dateToString;
-        filterDto.dateFromString = dateFromString;
-        filterDto.plateNumber = plateNumber;
-        filterDto.amount = amount;
-        filterDto.inGateId = inGateId;
-        filterDto.outGateId = outGateId;
-
-        List<CarState> carStates = (List<CarState>) this.listByFilters(filterDto);
+        List<CarState> carStates = (List<CarState>) this.listByFilters(carStateFilterDto);
         List<CarStateDto> carStateDtos = CarStateDto.fromCarStates(carStates);
         return getPage(carStateDtos, pagingRequest);
     }
@@ -180,11 +183,11 @@ public class CarStateServiceImpl implements CarStateService {
         }
         String value = pagingRequest.getSearch().getValue();
 
-        return  carState -> ((carState.getCarNumber() != null && carState.getCarNumber().contains(value))
+        return carState -> ((carState.getCarNumber() != null && carState.getCarNumber().contains(value))
                 || carState.getInTimestampString().contains(value)
                 || carState.getOutTimestampString().contains(value)
                 || carState.getDuration().contains(value)
-                || (carState.getPayment()!=null && carState.getPayment().toString().contains(value))
+                || (carState.getPayment() != null && carState.getPayment().toString().contains(value))
         );
     }
 

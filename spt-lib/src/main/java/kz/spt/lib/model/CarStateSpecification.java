@@ -20,7 +20,7 @@ public class CarStateSpecification {
     }
 
     public static Specification<CarState> equalAmount(BigDecimal amount) {
-        if(!amount.equals(BigDecimal.ZERO)){
+        if (!amount.equals(BigDecimal.ZERO)) {
             return (root, query, builder) -> builder.equal(root.get(CarState_.amount), amount);
         } else {
             return (root, query, builder) -> {
@@ -38,6 +38,9 @@ public class CarStateSpecification {
         return (root, query, builder) -> builder.equal(root.get(CarState_.outGate).get(Gate_.id), outGateId);
     }
 
+    public static Specification<CarState> emptyOutGateTime() {
+        return (root, query, builder) -> builder.isNull(root.get(CarState_.outTimestamp));
+    }
 
     public static Specification<CarState> orderById() {
         return (root, query, builder) -> {

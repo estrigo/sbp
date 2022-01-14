@@ -5,6 +5,7 @@ import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.dto.CarStateDto;
+import kz.spt.lib.model.dto.CarStateFilterDto;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -16,14 +17,16 @@ public interface CarStateService {
 
     void createOUTState(String carNumber, Date outTimestamp, Camera camera, CarState carState);
 
+    void createOUTManual(String carNumber, Date outTimestamp, CarState carState);
+
     Boolean checkIsLastEnteredNotLeft(String carNumber);
 
     CarState getLastNotLeft(String carNumber);
 
     Iterable<CarState> getAllNotLeft();
 
-    Page<CarStateDto> getAll(PagingRequest pagingRequest, String plateNumber, String dateFromString, String dateToString,
-                             Long inGateId, Long outGateId, Integer amount) throws ParseException;
+    Page<CarStateDto> getAll(PagingRequest pagingRequest,
+                             CarStateFilterDto carStateFilterDto) throws ParseException;
 
     CarState save(CarState carState);
 
