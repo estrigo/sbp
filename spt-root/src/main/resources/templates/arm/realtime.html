@@ -60,8 +60,8 @@
                             <tbody>
                             <tr>
                                 <td class="w-50">
-                                    <input type="text" th:id="${'plateNumber' + camera.id}"
-                                           th:placeholder="#{arm.licensePlate}" class="form-control w-100">
+                                    <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
+                                           th:placeholder="#{arm.licensePlate}" th:onkeydown="onTextEnter(this.getAttribute('cameraId'))" class="form-control w-100">
                                 </td>
                                 <td class="w-25">
                                     <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
@@ -99,6 +99,7 @@
         var $div = $(this).closest('.item');
         $div.next('.item').after($div);
     })
+
 
     function connect() {
         var socket = new WebSocket((window.location.protocol.indexOf('https') !== -1 ? 'wss' : 'ws') + '://' + window.location.host + '/greeting');
@@ -166,6 +167,12 @@
         });
     }
 
+    function onTextEnter(cameraId) {
+        if (event.keyCode === 13) {
+            passCar(cameraId);
+        }
+    }
+
     function passCar(cameraId) {
         var plateNumber = $("#plateNumber" + cameraId).val();
         if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
@@ -176,6 +183,7 @@
             alert([[#{arm.invalidPlateNumber}]]);
         }
     }
+
 
     function checkBalance(cameraId) {
         var plateNumber = $("#plateNumber" + cameraId).val();
