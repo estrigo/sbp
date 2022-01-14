@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+
+<div class="content">
+    <div class="container">
+        <div class="card table-responsive table-striped">
+            <div class="card-header" th:text="#{blacklist.title}"></div>
+            <div class="card-body">
+                <div class="row">
+                    <button class="btn btn-success" onclick="showModal()" th:text="#{crm.add}"></button>
+                </div>
+                <div class="row">
+                    <div class="table-responsive" data-pattern="priority-columns">
+                        <table id="blacklistTable" class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th><a th:text="#{car.platenumber}"></a></th>
+                                <th><a th:text="#{blacklist.type}"></a></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="item : ${blacklists}">
+                                <td th:text="${item.plateNumber}"></td>
+                                <td th:text="#{'blacklist.type.'+ ${item.type}}"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="blacklist-add" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" th:action="@{|/journal/blacklist|}">
+                    <div class="modal-body">
+                        <div class="col-md form-group">
+                            <label class="form-label" th:text="#{car.platenumber}"></label>
+                            <input type="text" class="form-control" name="plateNumber" required>
+                        </div>
+                        <div class="col-md form-group">
+                            <label class="form-label" th:text="#{blacklist.type}"></label>
+                            <select name="type" class="form-control">
+                                <option th:each="t : ${T(kz.spt.lib.model.Blacklist.BlacklistType).values()}"
+                                        th:value="${t}" th:text="#{'blacklist.type.'+${t}}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div th:replace="partial/_form-footer :: hypertext('blacklist-save','blacklist-close',null)"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Required datatable js -->
+<script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
+<script th:src="@{/plugins/datatables/dataTables.bootstrap4.min.js}"></script>
+<!-- Buttons examples -->
+<script th:src="@{/plugins/datatables/dataTables.buttons.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.bootstrap4.min.js}"></script>
+<script th:src="@{/plugins/datatables/jszip.min.js}"></script>
+<script th:src="@{/plugins/datatables/pdfmake.min.js}"></script>
+<script th:src="@{/plugins/datatables/vfs_fonts.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.html5.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.print.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.colVis.min.js}"></script>
+<!-- Responsive examples -->
+<script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
+<script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+
+<script th:inline="javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    var edit = 'Редактировать';
+    var del = 'Удалить';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+        edit = "Edit";
+        del = "Delete";
+    }
+
+    const table = $('#blacklistTable').DataTable({
+        "order": [ //[[ in thymeleaf is inline script
+            [0, "desc"]
+        ],
+        language: {
+            url: address
+        },
+        searching: true
+    });
+
+    var interval = null;
+    $(document).on('ready', function () {
+        interval = setInterval(showButtons, 1000);
+    });
+
+    function showButtons() {
+        if (table.buttons().container().length > 0) {
+            clearInterval(interval);
+            table.buttons().container().appendTo('#carStateTable_wrapper .col-md-6:eq(0)');
+        }
+    }
+
+    $(".blacklist-close").on('click',function (){
+        $('#blacklist-add').modal('hide');
+    })
+
+    function showModal(){
+        $('#blacklist-add').modal('show');
+    }
+</script>
+
+</html>
