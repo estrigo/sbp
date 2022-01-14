@@ -7,6 +7,7 @@ import kz.spt.app.repository.RoleRepository;
 import kz.spt.app.repository.UserRepository;
 import kz.spt.app.service.SpringDataUserDetailsService;
 import kz.spt.lib.service.UserService;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,6 +21,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Log
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -62,8 +64,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public void saveUser(User user) {
         user.setEnabled(1);
-        String password = user.getPassword();
-        user.setPassword(passwordEncoder.encode(password));
+        if(user.getId() != null){
+            String oldPasswordHash = userRepository.getPasswordHashFromDb(user.getId());
+            if(user.getPassword() !=null && !"".equals(user.getPassword()) && !oldPasswordHash.equals(user.getPassword())){
+                String password = user.getPassword();
+                user.setPassword(passwordEncoder.encode(password));
+            } else {
+                user.setPassword(oldPasswordHash);
+            }
+        } else {
+            String password = user.getPassword();
+            user.setPassword(passwordEncoder.encode(password));
+        }
         userRepository.save(user);
     }
 
@@ -83,8 +95,7 @@ public class UserServiceImpl implements UserService {
             userRole = roleRepository.findByName("ROLE_USER");
         } finally {
             user.setRoles(roles);
-            user.setEnabled(1);
-            userRepository.save(user);
+            saveUser(user);
         }
     }
 

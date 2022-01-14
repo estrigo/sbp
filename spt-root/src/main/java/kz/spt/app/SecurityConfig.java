@@ -51,9 +51,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/users/delete/**").hasRole("ADMIN")
                 .antMatchers("/arm/**").fullyAuthenticated()
-                .antMatchers("/pdf-generator", "/search/**", "/customers/list", "/register/**", "/contract/**", "/cars/list", "/parking/list", "/arm/**", "/events/**", "/journal/**", "/customer/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN")
-                .antMatchers("/customer/edit/**", "/users/list",
-                        "/cars/edit/**","/parking/edit/**","/parking/details/**").hasAnyRole( "ADMIN", "MANAGER", "SUPERADMIN");
+                .antMatchers( "/events/**", "/journal/**", "/arm/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN", "OPERATOR")
+                .antMatchers( "/customers/**", "/register/**", "/cars/**", "/parking/**", "/customer/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN")
+                .antMatchers("/customer/edit/**", "/users/**", "/cars/edit/**","/parking/edit/**","/parking/details/**").hasAnyRole( "ADMIN", "MANAGER", "SUPERADMIN");
 
         List<PluginWrapper> plugins = pluginManager.getPlugins();
 
