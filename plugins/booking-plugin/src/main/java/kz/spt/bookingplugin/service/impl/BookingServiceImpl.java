@@ -90,7 +90,7 @@ public class BookingServiceImpl implements BookingService {
                             JsonNode result = iterator.next();
                             if(result.has("identifier")){
                                 String halaparkNumber = result.get("identifier").textValue();
-                                if(halaparkNumber.endsWith(parqourCheckFormat)){
+                                if(halaparkNumber.replaceAll(" ", "").endsWith(parqourCheckFormat)){
                                     return true;
                                 }
                             }
