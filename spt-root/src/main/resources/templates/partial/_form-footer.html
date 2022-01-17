@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="hypertext(saveClass,closeClass,closeUrl)">
+    <button type="submit" class="btn btn-success"
+            th:text="#{crm.save}"
+            th:classappend="${saveClass} != null? ${saveClass}">
+    </button>
+    <button type="button" class="btn btn-danger"
+            th:if="${#strings.isEmpty(closeUrl)}"
+            th:text="#{crm.close}"
+            th:classappend="${closeClass} != null? ${closeClass}">
+    </button>
+    <a class="btn btn-danger"
+       th:unless="${#strings.isEmpty(closeUrl)}"
+       th:text="#{crm.cancel}"
+       th:classappend="${closeClass} != null? ${closeClass}"
+       th:href="${closeUrl}">
+    </a>
+</th:block>

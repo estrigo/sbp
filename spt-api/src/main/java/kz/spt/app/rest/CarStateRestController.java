@@ -21,8 +21,6 @@ public class CarStateRestController {
         this.carStateService = carStateService;
     }
 
-    ;
-
     @PostMapping
     public Page<CarStateDto> list(@RequestBody PagingRequest pagingRequest,
                                   @RequestParam String plateNumber,

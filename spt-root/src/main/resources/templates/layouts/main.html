@@ -106,6 +106,22 @@
 
         <th:block th:replace="${body_content}" />
     </div>
+
+    <div class="modal fade" id="supportModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="#{parking.support}">Modal title</h5>
+                </div>
+                <div class="modal-body">
+                    <p th:text="#{crm.info}"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" th:text="#{crm.close}">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>

@@ -59,6 +59,10 @@
                     <i class="mdi mdi-lock-open"></i> <span th:text="#{crm.changePassword}"></span>
                 </a>
 
+                <a class="dropdown-item notify-item" onclick="javascript:$('#supportModal').modal('show')">
+                    <i class="mdi mdi-alert-circle"></i> <span th:text="#{parking.support}"></span>
+                </a>
+
                 <!-- item-->
                 <a href="/logout" th:href="@{#}" onclick="$('#logout_form').submit();"
                    class="dropdown-item notify-item">
@@ -72,7 +76,5 @@
         </li>
 
     </ul>
-
 </nav>
-
 </html>
