@@ -36,7 +36,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-group">
+                                    <div class="form-group" >
                                         <label class="control-label" th:text="#{rate.type}"></label>
                                         <select id="types" th:field="*{rateType}" th:value="*{rateType}" class="form-control" onchange="checkSelectedTypes(value)">
                                             <option th:value="STANDARD" th:text="#{'rate.Type.STANDARD'}"></option>
@@ -163,9 +163,10 @@
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <div class="col-12">
+                                <div class="col-12" sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')">
+                                    <button type="submit" class="btn btn-info waves-effect waves-light" th:text="#{crm.saveChanges}"></button>
                                     <button type="button" class="btn btn-secondary waves-effect" th:text="#{crm.close}"></button>
-                                    <button type="submit" class="btn btn-info waves-effect waves-light" th:text="#{crm.saveChanges}"></button>                                </div>
+                                                                   </div>
                                 </div>
                         </form>
                     </div>

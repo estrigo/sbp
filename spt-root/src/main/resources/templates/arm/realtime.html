@@ -48,7 +48,7 @@
                                 </td>
                                 <td class="w-50" sec:authorize="!hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
                                 </td>
-                                <td class="w-50">
+                                <td class="w-50" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
                                     <button type="button" class="btn btn-outline-warning w-100" th:cameraId="${camera.id}"
                                             th:onclick="closeGate(this.getAttribute('cameraId'))"
                                             th:text="#{arm.close}"></button>
@@ -59,16 +59,16 @@
                         <table class="w-100">
                             <tbody>
                             <tr>
-                                <td class="w-50">
+                                <td class="w-50" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
                                     <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
                                            th:placeholder="#{arm.licensePlate}" th:onkeydown="onTextEnter(this.getAttribute('cameraId'))" class="form-control w-100">
                                 </td>
-                                <td class="w-25">
+                                <td class="w-25" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
                                     <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
                                             th:onclick="passCar(this.getAttribute('cameraId'))"
                                             th:text="#{crm.letIn}"></button>
                                 </td>
-                                <td class="w-25">
+                                <td class="w-25" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
                                     <button type="button" class="btn btn-outline-primary w-100" th:cameraId="${camera.id}"
                                             th:onclick="checkBalance(this.getAttribute('cameraId'))"
                                             th:text="#{crm.balance}"></button>
