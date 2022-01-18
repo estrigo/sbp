@@ -33,7 +33,7 @@ public class CommandExecutor implements PluginRegister {
                     node.put("rateResult", getRateService().calculatePayment(command.get("parkingId").longValue(), format.parse(command.get("inDate").textValue()), format.parse(command.get("outDate").textValue()), command.get("cashlessPayment").booleanValue(), (command.has("paymentsJson") && command.get("paymentsJson")!=null ? command.get("paymentsJson").textValue() : null)));
                 }
                 ParkingRate parkingRate = getRateService().getByParkingId(command.get("parkingId").longValue());
-                node.put("rateFreeMinutes", parkingRate.getAfterFreeMinutes());
+                node.put("rateFreeMinutes", parkingRate.getBeforeFreeMinutes());
                 node.put("rateId", parkingRate.getId());
                 node.put("rateName", parkingRate.getName());
             }

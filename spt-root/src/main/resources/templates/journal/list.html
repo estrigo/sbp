@@ -74,6 +74,7 @@
                                 <th><a th:text="#{carState.outTimestamp}"></a></th>
                                 <th><a th:text="#{carState.outGate}"></a></th>
                                 <th><a th:text="#{carState.duration}"></a></th>
+                                <th><a th:text="#{carState.toPay}"></a></th>
                                 <th><a th:text="#{carState.rate}"></a></th>
                                 <th><a th:text="#{carState.payment}"></a></th>
                                 <th></th>
@@ -169,16 +170,24 @@
             "targets": "_all"
         }],
         "columns": [
-            {"data": "carNumber", "width": "10%"},
-            {"data": "inTimestampString", "width": "15%"},
+            {"data": "carNumber", "width" : "10%"},
+            {"data": "inTimestampString", "width": "12%"},
             {"data": "inGate", "width": "10%"},
-            {"data": "outTimestampString", "width": "15%"},
-            {"data": "outGate", "width": "10%"},
-            {"data": "duration", "width": "15%"},
-            {"data": "rateAmount", "width": "5%"},
+            {"data": "outTimestampString", "width" : "13%"},
+            {"data": "outGate", "width" : "10%"},
+            {"data": "duration", "width" : "15%"},
+            {"data": function (carState){
+                if(carState.paid){
+                    return [[#{carState.paid}]];
+                } else {
+                    return [[#{carState.free}]];
+                }
+            }, "width" : "5%"},
+            {"data": "rateAmount", "width" : "5%"},
             {
-                "data": function (carState) {
-                    if (!carState.paid && carState.whitelistJson) {
+                "data": function (carState)
+                {
+                    if(!carState.paid && carState.whitelistJson){
                         const whitelists = JSON.parse(carState.whitelistJson);
                         let text = '';
                         for(const w of whitelists){
