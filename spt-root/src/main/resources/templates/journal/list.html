@@ -255,6 +255,7 @@
             $.get("/rest/carstate/remove/debt?plateNumber=" + plateNumber, function (data) {
                 if(data && data == true){
                     alert([[#{carstate.deletedSuccessfully}]]);
+                    table.ajax.reload(); //reload datatable
                 } else {
                     alert([[#{carstate.debtNotFound}]]);
                 }
