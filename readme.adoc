@@ -1,0 +1,25 @@
+Smartparking monolithic application
+
+== Key components
+* https://spring.io/projects/spring-boot
+* https://github.com/pf4j/pf4j-spring
+* https://github.com/hank-cp/sbp
+
+== How to get started
+
+You need java version 11, maven 3.X.X or later, Mysql database with scheme 'crm'
+
+==== Default application start in development mode
+
+First, build plugin application:
+----
+mvn clean package
+----
+
+==== Run main jar
+----
+java -jar spt-root-0.0.1-SNAPSHOT-standalone.jar
+----
+
+==== Application start in production mode inside docker container
+
