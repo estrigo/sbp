@@ -241,6 +241,7 @@ public class CarEventServiceImpl implements CarEventService {
 
     private void handleCarInEvent(CarEventDto eventDto, Camera camera, GateStatusDto gate, Map<String, Object> properties, SimpleDateFormat format) throws Exception {
         boolean hasAccess;
+        JsonNode whitelistCheckResults = null;
 
         if (blacklistService.findByPlate(eventDto.car_number).isPresent()) {
             hasAccess = false;
@@ -248,7 +249,6 @@ public class CarEventServiceImpl implements CarEventService {
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Авто с гос. номером " + eventDto.car_number + " в чернем списке", "Not allowed to enter: Car with number " + eventDto.car_number + " in blacklist");
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Авто с гос. номером " + eventDto.car_number + " в чернем списке", "Not allowed to enter: Car with number " + eventDto.car_number + " in blacklist");
         } else {
-            JsonNode whitelistCheckResults = null;
             CarState carState = carStateService.getLastNotLeft(eventDto.car_number);
             if (carState != null && carState.getPaid() != null && !carState.getPaid()) {
                 carStateService.createOUTState(eventDto.car_number, new Date(), camera, carState);
