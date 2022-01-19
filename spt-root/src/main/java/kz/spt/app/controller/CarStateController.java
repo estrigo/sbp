@@ -100,6 +100,8 @@ public class CarStateController {
 
     @PostMapping("/blacklist")
     public String addBlacklist(@ModelAttribute BlacklistDto model){
+        CarState carState = carStateService.getLastNotLeft(model.getPlateNumber());
+        carStateService.createOUTManual(model.getPlateNumber(), new Date(),carState);
         blacklistService.save(model);
         return "redirect:/journal/list";
     }

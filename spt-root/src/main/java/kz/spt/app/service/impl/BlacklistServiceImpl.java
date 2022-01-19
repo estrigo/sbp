@@ -8,12 +8,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BlacklistServiceImpl implements BlacklistService {
     private final BlacklistRepository blacklistRepository;
+
+    @Override
+    public Optional<Blacklist> findByPlate(String plateNumber) {
+        return blacklistRepository.findByPlateNumber(plateNumber);
+    }
 
     @Override
     public List<BlacklistDto> list() {
@@ -39,5 +45,10 @@ public class BlacklistServiceImpl implements BlacklistService {
                         .type(model.getType())
                         .build());
         blacklistRepository.save(blacklist);
+    }
+
+    @Override
+    public void delete(Long id) {
+        blacklistRepository.deleteById(id);
     }
 }
