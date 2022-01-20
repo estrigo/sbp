@@ -18,5 +18,5 @@ public interface ArmService {
 
     Boolean passCar(Long cameraId, String platenumber) throws Exception;
 
-    void snapshot(Camera camera);
+    void snapshot(Camera camera) throws Throwable;
 }

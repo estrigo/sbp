@@ -24,7 +24,7 @@ public class CameraSnapshotJob {
                 .forEach(m -> {
                     try{
                         armService.snapshot(m);
-                    }catch (Exception e){
+                    }catch (Throwable e){
                         e.printStackTrace();
                     }
                 });

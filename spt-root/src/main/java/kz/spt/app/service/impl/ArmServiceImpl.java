@@ -148,9 +148,8 @@ public class ArmServiceImpl implements ArmService {
         return carEventService.passCar(cameraId, platenumber);
     }
 
-    @SneakyThrows
     @Override
-    public void snapshot(Camera camera) {
+    public void snapshot(Camera camera) throws Throwable {
         HttpHost host = new HttpHost(camera.getIp(), 8080, "http");
         CloseableHttpClient client = HttpClientBuilder.create().
                 setDefaultCredentialsProvider(provider(camera))
