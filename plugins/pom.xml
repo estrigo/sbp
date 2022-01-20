@@ -21,6 +21,7 @@
         <module>rate-plugin</module>
         <module>billing-plugin</module>
         <module>booking-plugin</module>
+        <module>zerotouch-plugin</module>
     </modules>
 
     <build>

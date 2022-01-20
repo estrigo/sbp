@@ -20,6 +20,7 @@ spring:
       base-path: "/sbp/admin"
     disabled-plugins:
       - "booking-plugin"
+      - "zerotouch-plugin"
   datasource:
     url: jdbc:mysql://localhost:3306/crm?allowPublicKeyRetrieval=true&useSSL=false
     username: root

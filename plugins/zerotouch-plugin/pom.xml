@@ -10,16 +10,16 @@
     </parent>
 
     <groupId>kz.spt</groupId>
-    <artifactId>booking-plugin</artifactId>
+    <artifactId>zerotouch-plugin</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
         <java.version>11</java.version>
-        <plugin.id>booking-plugin</plugin.id>
-        <plugin.class>kz.spt.bookingplugin.BookingPlugin</plugin.class>
+        <plugin.id>zerotouch-plugin</plugin.id>
+        <plugin.class>kz.spt.zerotouchplugin.ZerotouchPlugin</plugin.class>
         <plugin.version>0.0.1-SNAPSHOT</plugin.version>
-        <plugin.provider>spt-sbp-booking</plugin.provider>
+        <plugin.provider>spt-sbp-zerotouch</plugin.provider>
         <plugin.dependencies />
     </properties>
 
