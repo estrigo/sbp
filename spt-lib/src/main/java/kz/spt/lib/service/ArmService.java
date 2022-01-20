@@ -16,7 +16,7 @@ public interface ArmService {
 
     Boolean getEmergencyStatus();
 
-    Boolean passCar(Long cameraId, String platenumber) throws Exception;
+    Boolean passCar(Long cameraId, String platenumber, String snapshot) throws Exception;
 
     void snapshot(Camera camera) throws Throwable;
 }

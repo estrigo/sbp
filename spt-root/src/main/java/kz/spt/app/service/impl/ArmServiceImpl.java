@@ -31,6 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -144,8 +145,8 @@ public class ArmServiceImpl implements ArmService {
     }
 
     @Override
-    public Boolean passCar(Long cameraId, String platenumber) throws Exception {
-        return carEventService.passCar(cameraId, platenumber);
+    public Boolean passCar(Long cameraId, String platenumber, String snapshot) throws Exception {
+        return carEventService.passCar(cameraId, platenumber, snapshot);
     }
 
     @Override

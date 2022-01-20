@@ -69,7 +69,7 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     @Override
-    public boolean passCar(Long cameraId, String platenumber) throws Exception {
+    public boolean passCar(Long cameraId, String platenumber, String snapshot) throws Exception {
         Boolean barrierResult = false;
         if (platenumber != null) {
             Camera camera = cameraService.getCameraById(cameraId);
@@ -82,9 +82,19 @@ public class CarEventServiceImpl implements CarEventService {
                     }
                 }
 
+                CarEventDto eventDto = new CarEventDto();
+                eventDto.event_time = new Date();
+                eventDto.car_number = platenumber;
+                eventDto.ip_address = camera.getIp();
+                eventDto.car_picture = snapshot;
+                eventDto.lp_rect = null;
+                eventDto.lp_picture = null;
+                eventDto.manualOpen = true;
+
                 SimpleDateFormat format = new SimpleDateFormat(dateFormat);
 
                 Map<String, Object> properties = new HashMap<>();
+                properties.put("carNumber", platenumber);
                 properties.put("eventTime", format.format(new Date()));
                 properties.put("cameraIp", camera.getIp());
                 properties.put("gateName", camera.getGate().getName());
@@ -92,6 +102,10 @@ public class CarEventServiceImpl implements CarEventService {
                 properties.put("gateType", camera.getGate().getGateType().toString());
                 properties.put("type", EventLogService.EventType.Allow);
                 properties.put("carNumber", platenumber);
+
+                String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
+                properties.put(StaticValues.carImagePropertyName, carImageUrl);
+                properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
 
                 eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent,
                         EventLogService.EventType.Success, camera.getId(),
@@ -104,15 +118,6 @@ public class CarEventServiceImpl implements CarEventService {
                         properties,
                         "Ручной пропуск Авто с гос. номером " + platenumber + ". Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName(),
                         "Manual pass. Car with license plate " + platenumber + ". User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName());
-
-                CarEventDto eventDto = new CarEventDto();
-                eventDto.event_time = new Date();
-                eventDto.car_number = platenumber;
-                eventDto.ip_address = camera.getIp();
-                eventDto.car_picture = null;
-                eventDto.lp_rect = null;
-                eventDto.lp_picture = null;
-                eventDto.manualOpen = true;
 
                 saveCarEvent(eventDto);
             }
@@ -155,11 +160,9 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("gateDescription", camera.getGate().getDescription());
             properties.put("gateType", camera.getGate().getGateType().toString());
 
-            if (!eventDto.manualOpen) {
-                String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
-                properties.put(StaticValues.carImagePropertyName, carImageUrl);
-                properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
-            }
+            String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
+            properties.put(StaticValues.carImagePropertyName, carImageUrl);
+            properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
 
             GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(camera.getGate().getId());
             log.info("Camera belongs to gate: " + gate.gateId);
