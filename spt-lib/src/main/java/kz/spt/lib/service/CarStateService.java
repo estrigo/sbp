@@ -25,6 +25,8 @@ public interface CarStateService {
 
     Iterable<CarState> getAllNotLeft();
 
+    void editPlateNumber(CarState carState);
+
     Page<CarStateDto> getAll(PagingRequest pagingRequest,
                              CarStateFilterDto carStateFilterDto) throws ParseException;
 

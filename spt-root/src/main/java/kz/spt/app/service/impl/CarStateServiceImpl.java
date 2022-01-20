@@ -6,20 +6,20 @@ import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.app.repository.CarStateRepository;
+import kz.spt.lib.service.CarsService;
+import kz.spt.lib.service.EventLogService;
 import lombok.extern.java.Log;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -27,11 +27,17 @@ import java.util.stream.Collectors;
 @Service
 public class CarStateServiceImpl implements CarStateService {
 
-    private CarStateRepository carStateRepository;
-    private static final Comparator<CarStateDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
+    private final CarStateRepository carStateRepository;
+    private final EventLogService eventLogService;
+    private final CarsService carsService;
 
-    public CarStateServiceImpl(CarStateRepository carStateRepository){
+    private static final Comparator<CarStateDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
+    private String dateFormat = "yyyy-MM-dd'T'HH:mm";
+
+    public CarStateServiceImpl(CarStateRepository carStateRepository, EventLogService eventLogService, CarsService carsService) {
         this.carStateRepository = carStateRepository;
+        this.eventLogService = eventLogService;
+        this.carsService = carsService;
     }
 
     @Override
@@ -78,7 +84,7 @@ public class CarStateServiceImpl implements CarStateService {
     public CarState getLastNotLeft(String carNumber) {
         Pageable first = PageRequest.of(0, 1);
         List<CarState> carStates = carStateRepository.getCarStateNotLeft(carNumber, first);
-        if(carStates.size() > 0){
+        if (carStates.size() > 0) {
             return carStates.get(0);
         }
         return null;
@@ -87,6 +93,38 @@ public class CarStateServiceImpl implements CarStateService {
     @Override
     public Iterable<CarState> getAllNotLeft() {
         return carStateRepository.getAllCarStateNotLeft();
+    }
+
+    @Override
+    public void editPlateNumber(CarState carState) {
+        carStateRepository.findById(carState.getId()).ifPresent(m -> {
+            String username = "";
+            if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+                CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                if (currentUser != null) {
+                    username = currentUser.getUsername();
+                }
+            }
+
+            SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("carNumber", carState.getCarNumber());
+            properties.put("eventTime", format.format(new Date()));
+            properties.put("type", EventLogService.EventType.Success);
+            eventLogService.createEventLog(CarState.class.getSimpleName(),
+                    null,
+                    properties,
+                    "Журнал.Ручное изменение номера, новое значение:" + carState.getCarNumber() + ", старое значение:" + m.getCarNumber() + ", пользователь:" + username,
+                    "Journal.Manual edit number, new value:" + carState.getCarNumber() + ", old value:" + m.getCarNumber() + ", user:" + username);
+
+            m.setCarNumber(carState.getCarNumber());
+            carStateRepository.save(m);
+
+            if(carsService.findByPlatenumber(carState.getCarNumber()) == null){
+                carsService.createCar(carState.getCarNumber());
+            }
+        });
     }
 
     public Iterable<CarState> listByFilters(CarStateFilterDto filterDto) throws ParseException {
@@ -115,7 +153,7 @@ public class CarStateServiceImpl implements CarStateService {
             specification = specification != null ? specification.and(CarStateSpecification.emptyOutGateTime()) : CarStateSpecification.emptyOutGateTime();
         }
 
-        specification = specification != null? specification.and(CarStateSpecification.orderById()) : CarStateSpecification.orderById();
+        specification = specification != null ? specification.and(CarStateSpecification.orderById()) : CarStateSpecification.orderById();
         return carStateRepository.findAll(specification);
     }
 
@@ -149,7 +187,7 @@ public class CarStateServiceImpl implements CarStateService {
     public Boolean removeDebt(String carNumber) {
         CarState carState = getLastNotLeft(carNumber);
 
-        if(carState == null){
+        if (carState == null) {
             return false;
         } else {
             cancelPaid(carState);

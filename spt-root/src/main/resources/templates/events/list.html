@@ -131,15 +131,17 @@
         "order": [ //[[ in thymeleaf is inline script
             [1, "desc"]
         ],
+        buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: locale === "en" ? "" : "/plugins/datatables/json/ru.json"
         },
     });
 
     var interval = null;
+    var interval2 = null;
     $(document).on('ready', function () {
-        interval = setInterval(hideFilter, 10);
-        interval = setInterval(showButtons, 1000);
+        interval = setInterval(showButtons, 500);
+        interval2 = setInterval(hideFilter, 1000);
     });
 
     function showButtons() {
@@ -151,7 +153,7 @@
 
     function hideFilter() {
         if (!$("#eventTable_filter").hasClass("d-none")) {
-            clearInterval(interval);
+            clearInterval(interval2);
             $("#eventTable_filter").addClass("d-none");
         }
     }

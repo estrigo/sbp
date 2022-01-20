@@ -49,7 +49,9 @@
                         </div>
                         <th:block sec:authorize="hasAnyRole('ROLE_OPERATOR_NO_REVENUE_SHARE')">
                             <div class="col-3">
-                                <button type="button" data-toggle="modal" data-target="#remove-debt-modal" th:onclick="removeDebtModalContent()" class="btn btn-secondary" th:text="#{crm.deleteDebt}"></button>
+                                <button type="button" data-toggle="modal" data-target="#remove-debt-modal"
+                                        th:onclick="javascript:$('#removeDebt').modal('show')" class="btn btn-secondary"
+                                        th:text="#{crm.deleteDebt}"></button>
                             </div>
                         </th:block>
 
@@ -87,20 +89,40 @@
         </div>
     </div>
 
-    <div id="remove-debt-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div id="removeDebt" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true" style="display: none;">
         <div class="modal-dialog">
             <div class="modal-content">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <div class="modal-header">
                     <h4 class="modal-title"></h4>
                 </div>
-                <div class="modal-body" id="removeDebtModalBody">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-warning">
+                                <strong>Внимание!</strong> Задолженность будет удалена за все предудыщие заезды.
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label" th:text="#{car.platenumber}"></label>
+                                <input type="text" class="form-control" name="plateNumber">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success waves-effect waves-light" th:text="#{crm.deleteDebt}"
+                            th:onclick="removeDebtForPlateNumber()"></button>
+                    <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal"
+                            th:text="#{crm.close}"></button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="blacklist-add" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="addBlacklist" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <form method="post" th:action="@{|/journal/blacklist|}">
@@ -118,7 +140,26 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                       <div th:replace="partial/_form-footer :: hypertext('blacklist-save','blacklist-close',null)"></div>
+                        <div th:replace="partial/_form-footer :: hypertext('blacklist-save','blacklist-close',null)"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editPlate" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" th:action="@{|/journal/edit-plate|}">
+                    <input type="hidden" name="id"/>
+                    <div class="modal-body">
+                        <div class="col-md form-group">
+                            <label class="form-label" th:text="#{car.platenumber}"></label>
+                            <input type="text" class="form-control" name="carNumber" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div th:replace="partial/_form-footer :: hypertext('plate-save','plate-close',null)"></div>
                     </div>
                 </form>
             </div>
@@ -190,9 +231,9 @@
                     if(!carState.paid && carState.whitelistJson){
                         const whitelists = JSON.parse(carState.whitelistJson);
                         let text = '';
-                        for(const w of whitelists){
+                        for (const w of whitelists) {
                             text = text + '<span>' + (w.groupName ? w.groupName : [[#{carstate.individual}]]) + ' ([[#{whitelist.title}]])</><br/>';
-                            if(w.conditionDetails){
+                            if (w.conditionDetails) {
                                 text = text + '<small class="text-muted">' + w.conditionDetails + '</small><br/>';
                             }
                         }
@@ -200,7 +241,7 @@
                     } else if (carState.paymentJson && carState.paymentJson !== "") {
                         const payments = JSON.parse(carState.paymentJson);
                         let text = '<span>' + carState.payment + '</span>';
-                        for(const p of payments){
+                        for (const p of payments) {
                             text = text + '<br/><small class="text-muted">[[#{rate.sum}]] ' + p.price + ' [[#{billing.provider}]] ' + p.providerPaymentName + '. [[#{rate.date}]] ' + p.created + '</small>';
                         }
                         return text;
@@ -210,11 +251,33 @@
                 }, "width": "30%"
             },
             {
-                "data":function(carState){
+                "data": function (carState) {
+                    const canEdit = [[${canEdit}]];
+                    const canRemove = [[${canRemove}]];
+                    const canKick = [[${canKick}]];
+
+                    var menu = '<div class="dropdown">' +
+                        '<button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">' + [[#{crm.actions}]] + '</button>' +
+                        '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+
+                    if (canEdit) {
+                        menu += '<a class="dropdown-item" onclick="showModal(editPlate,' + carState.carNumber + ',' + carState.id + ')" >' + [[#{carState.editPlate}]] + '</a>';
+                    }
+
+                    const outTime = carState["outTimestamp"]
+                    if (canRemove && (!outTime || outTime === "")) {
+                        menu += '<a class="dropdown-item" onclick="showModal(removeDebt,' + carState.carNumber + ',' + carState.id + ')" >' + [[#{crm.deleteDebt}]] + '</a>';
+                    }
+
                     const css = carState["css"];
-                    if(!css || css === "") return "";
-                    return '<a href="out/'+carState.carNumber+'" class="btn btn-warning">'+[[#{carState.manualOut}]]+'</a>'+
-                           '<button class="btn btn-danger" onclick="showModal('+carState["carNumber"]+')">'+[[#{carState.toBlackList}]]+'</button>';
+                    if (canKick && css && css !== "") {
+                        menu += '<a class="dropdown-item" href="out/' + carState.carNumber + '">' + [[#{carState.manualOut}]] + '</a>';
+                        menu += '<a class="dropdown-item" onclick="showModal(addBlacklist,' + carState.carNumber + ',' + carState.id + ')" >' + [[#{carState.toBlackList}]] + '</a>';
+                    }
+
+                    menu += '</div></div>';
+
+                    return menu;
                 }
             }
         ],
@@ -223,8 +286,9 @@
             $(nRow).addClass(css);
         },
         "order": [ //[[ in thymeleaf is inline script
-            [ 1, "desc" ]
+            [1, "desc"]
         ],
+        buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: address
         },
@@ -243,17 +307,11 @@
         }
     }
 
-    function removeDebtModalContent(){
-        $.get("/journal/remove/debt", function (data) {
-            $('#remove-debt-modal').find('#removeDebtModalBody').html(data);
-        });
-    }
-
-    function removeDebtForPlateNumber(){
+    function removeDebtForPlateNumber() {
         let plateNumber = $('#remove-debt-modal').find('#platenumber').val();
-        if(plateNumber && plateNumber.length >2 && plateNumber.length < 17){
+        if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
             $.get("/rest/carstate/remove/debt?plateNumber=" + plateNumber, function (data) {
-                if(data && data == true){
+                if (data && data == true) {
                     alert([[#{carstate.deletedSuccessfully}]]);
                     table.ajax.reload(); //reload datatable
                 } else {
@@ -265,16 +323,52 @@
         }
     }
 
-    $(".blacklist-close").on('click',function (){
-        $('#blacklist-add').modal('hide');
+    var activeCarState = {};
+
+    function showModal(name, carNumber, id) {
+        activeCarState["plateNumber"] = carNumber
+        activeCarState["id"] = id;
+        $(name).modal('show');
+    }
+
+    $('#addBlacklist').on('shown.bs.modal', function () {
+        $(this).find("input[name=plateNumber]").each(function () {
+            $(this).val(activeCarState.plateNumber);
+        });
+    })
+    $('#addBlacklist').on('hide.bs.modal', function () {
+        activeCarState = {}
     })
 
-    function showModal(plateNumber){
-        $('#blacklist-add').find("input[name=plateNumber]").each(function () {
-            $(this).val(plateNumber);
+    $('#editPlate').on('shown.bs.modal', function () {
+        $(this).find("input[name=carNumber]").each(function () {
+            $(this).val(activeCarState.plateNumber);
         });
-        $('#blacklist-add').modal('show');
-    }
+        $(this).find("input[name=id]").each(function () {
+            $(this).val(activeCarState.id);
+        });
+    })
+    $('#editPlate').on('hide.bs.modal', function () {
+        activeCarState = {}
+    })
+
+    $('#removeDebt').on('shown.bs.modal', function () {
+        if (activeCarState && activeCarState.plateNumber) {
+            $(this).find("input[name=plateNumber]").each(function () {
+                $(this).val(activeCarState.plateNumber);
+                $(this).prop('disabled', true);
+            });
+        }
+    })
+
+    $(".blacklist-close").on('click', function () {
+        $('#addBlacklist').modal('hide');
+    })
+
+    $(".plate-close").on('click', function () {
+        $('#editPlate').modal('hide');
+    })
+
 </script>
 
 </html>

@@ -8,16 +8,18 @@ import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.dto.BlacklistDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.CarStateService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
+
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -39,7 +41,7 @@ public class CarStateController {
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
 
     @GetMapping("/list")
-    public String showAllCarStates(Model model) {
+    public String showAllCarStates(Model model, @AuthenticationPrincipal UserDetails currentUser) {
         CarStateFilterDto carStateFilterDto = null;
         if (!model.containsAttribute("carStateFilterDto")) {
             SimpleDateFormat format = new SimpleDateFormat(dateformat);
@@ -66,11 +68,15 @@ public class CarStateController {
         }
         model.addAttribute("allInGates", allInGates);
         model.addAttribute("allOutGates", allOutGates);
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
+        model.addAttribute("canRemove", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR_NO_REVENUE_SHARE").contains(m.getAuthority())));
+        model.addAttribute("canKick", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER","ROLE_OPERATOR").contains(m.getAuthority())));
+
         return "journal/list";
     }
 
     @PostMapping("/list")
-    public String processRequestSearch(Model model, @Valid @ModelAttribute("carStateFilterDto") CarStateFilterDto carStateFilterDto, BindingResult bindingResult) throws ParseException {
+    public String processRequestSearch(Model model, @Valid @ModelAttribute("carStateFilterDto") CarStateFilterDto carStateFilterDto, @AuthenticationPrincipal UserDetails currentUser) throws ParseException {
         if (carStateFilterDto != null) {
             model.addAttribute("carStateFilterDto", carStateFilterDto);
         }
@@ -83,12 +89,11 @@ public class CarStateController {
         }
         model.addAttribute("allInGates", allInGates);
         model.addAttribute("allOutGates", allOutGates);
-        return "journal/list";
-    }
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
+        model.addAttribute("canRemove", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR_NO_REVENUE_SHARE").contains(m.getAuthority())));
+        model.addAttribute("canKick", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER","ROLE_OPERATOR").contains(m.getAuthority())));
 
-    @GetMapping("/remove/debt")
-    public String getRemoveDebt() {
-        return "/journal/remove/debt";
+        return "journal/list";
     }
 
     @GetMapping("/out/{carNumber}")
@@ -103,6 +108,12 @@ public class CarStateController {
         CarState carState = carStateService.getLastNotLeft(model.getPlateNumber());
         carStateService.createOUTManual(model.getPlateNumber(), new Date(),carState);
         blacklistService.save(model);
+        return "redirect:/journal/list";
+    }
+
+    @PostMapping("/edit-plate")
+    public String editPlateNumber(@ModelAttribute CarState carState){
+        carStateService.editPlateNumber(carState);
         return "redirect:/journal/list";
     }
 }
