@@ -106,8 +106,11 @@ public class WhitelistServiceImpl implements WhitelistService {
         }
         if(whitelist.getGroup() == null && AbstractWhitelist.Type.UNLIMITED.equals(whitelist.getType())){
             rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
-        } else if(whitelist.getGroup() != null && AbstractWhitelist.Type.UNLIMITED.equals(whitelist.getGroup().getType())){
-            rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
+        } else if(whitelist.getGroup() != null){
+            WhitelistGroups group = whitelistGroupsRepository.getOne(whitelist.getGroupId());
+            if (AbstractWhitelist.Type.UNLIMITED.equals(group)){
+                rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
+            }
         }
         whitelistRepository.save(whitelist);
     }
