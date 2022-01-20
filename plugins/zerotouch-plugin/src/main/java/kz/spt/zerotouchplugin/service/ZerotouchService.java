@@ -2,5 +2,5 @@ package kz.spt.zerotouchplugin.service;
 
 public interface ZerotouchService {
 
-    Boolean checkZeroTouchValid(String plateNumber);
+    Boolean checkZeroTouchValid(String plateNumber, Long carStateId);
 }

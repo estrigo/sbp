@@ -24,8 +24,8 @@ public class CommandExecutor implements PluginRegister {
 
         if(command!=null && command.has("command")){
             if("checkZeroTouch".equals(command.get("command").textValue())){
-                if(command.has("platenumber") && command.get("platenumber").isTextual()){
-                    Boolean result = getZerotouchService().checkZeroTouchValid(command.get("platenumber").textValue());
+                if(command.has("platenumber") && command.get("platenumber").isTextual() && command.has("carStateId") && command.get("carStateId").isLong()){
+                    Boolean result = getZerotouchService().checkZeroTouchValid(command.get("platenumber").textValue(), command.get("carStateId").longValue());
                     node.put("zeroTouchResult", result);
                 }
             }
