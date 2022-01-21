@@ -258,7 +258,7 @@
                     const canKick = [[${canKick}]];
 
                     const outTime = carState["outTimestamp"]
-                    const css = carState["css"];
+                    const paid = carState["paid"];
 
                     var menu = '<div class="dropdown">' +
                         '<button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">' + [[#{crm.actions}]] + '</button>' +
@@ -267,11 +267,11 @@
 
                     if (!outTime || outTime === "") {
                         if (canEdit) {
-                            menu += '<a class="dropdown-item" onclick="showModal(editPlate,' + carState.carNumber + ',' + carState.id + ')" >' + [[#{carState.editPlate}]] + '</a>';
+                            menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="editPlate" data-number="' + carState.carNumber + '" data-id="' + carState.id + '">' + [[#{carState.editPlate}]] + '</button>';
                         }
 
-                        if (canRemove) {
-                            menu += '<a class="dropdown-item" onclick="showModal(removeDebt,' + carState.carNumber + ',' + carState.id + ')" >' + [[#{crm.deleteDebt}]] + '</a>';
+                        if (canRemove && paid) {
+                            menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="removeDebt" data-number="' + carState.carNumber + '" data-id="' + carState.id + '">' + [[#{crm.deleteDebt}]] + '</button>';
                         }
 
                         if (canKick) {
@@ -279,8 +279,8 @@
                         }
                     }
 
-                    if (canKick && css && css !== "") {
-                        menu += '<a class="dropdown-item" onclick="showModal(addBlacklist,' + carState.carNumber + ',' + carState.id + ')" >' + [[#{carState.toBlackList}]] + '</a>';
+                    if (canKick) {
+                        menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="addBlacklist" data-number="' + carState.carNumber + '" data-id="' + carState.id + '">' + [[#{carState.toBlackList}]] + '</button>';
                     }
 
                     menu += '</div></div>';
@@ -331,12 +331,21 @@
         }
     }
 
-    var activeCarState = {};
+    function showModalClick(e){
+        console.log(e);
+        const $input = $(e);
+        const $modal = $input.data("modal");
+        const $carNumber = $input.data("number");
+        const $id = $input.data("id");
+        showModal($modal,$carNumber,$id);
+    }
 
+    var activeCarState = {};
     function showModal(name, carNumber, id) {
+        console.log(name);
         activeCarState["plateNumber"] = carNumber
         activeCarState["id"] = id;
-        $(name).modal('show');
+        $("#"+name).modal('show');
     }
 
     $('#addBlacklist').on('shown.bs.modal', function () {
