@@ -107,7 +107,7 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label class="control-label" th:text="#{car.platenumber}"></label>
-                                <input type="text" class="form-control" name="plateNumber">
+                                <input type="text" class="form-control" name="plateNumber" id="plateNumber">
                             </div>
                         </div>
                     </div>
@@ -249,7 +249,7 @@
                         return carState.payment;
                     }
                 }, "width": "30%"
-            },
+            }/*,
             {
                 "data": function (carState) {
                     const canEdit = [[${canEdit}]];
@@ -279,7 +279,7 @@
 
                     return menu;
                 }
-            }
+            }*/
         ],
         "fnRowCallback": function (nRow, carState, iDisplayIndex) {
             var css = carState["css"];
@@ -308,7 +308,7 @@
     }
 
     function removeDebtForPlateNumber() {
-        let plateNumber = $('#remove-debt-modal').find('#platenumber').val();
+        let plateNumber = $('#removeDebt').find('#plateNumber').val();
         if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
             $.get("/rest/carstate/remove/debt?plateNumber=" + plateNumber, function (data) {
                 if (data && data == true) {

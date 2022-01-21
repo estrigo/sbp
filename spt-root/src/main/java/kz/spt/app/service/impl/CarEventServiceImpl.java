@@ -86,11 +86,15 @@ public class CarEventServiceImpl implements CarEventService {
                 eventDto.event_time = new Date();
                 eventDto.car_number = platenumber;
                 eventDto.ip_address = camera.getIp();
-                eventDto.car_picture = snapshot;
                 eventDto.lp_rect = null;
                 eventDto.lp_picture = null;
                 eventDto.manualOpen = true;
 
+                if(snapshot != null && !"".equals(snapshot) && !"undefined".equals(snapshot)){
+                    eventDto.car_picture = snapshot;
+                } else {
+                    eventDto.car_picture = null;
+                }
                 SimpleDateFormat format = new SimpleDateFormat(dateFormat);
 
                 Map<String, Object> properties = new HashMap<>();
@@ -103,9 +107,11 @@ public class CarEventServiceImpl implements CarEventService {
                 properties.put("type", EventLogService.EventType.Allow);
                 properties.put("carNumber", platenumber);
 
-                String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
-                properties.put(StaticValues.carImagePropertyName, carImageUrl);
-                properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
+                if(eventDto.car_picture != null){
+                    String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
+                    properties.put(StaticValues.carImagePropertyName, carImageUrl);
+                    properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
+                }
 
                 eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent,
                         EventLogService.EventType.Success, camera.getId(),
@@ -160,10 +166,11 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("gateDescription", camera.getGate().getDescription());
             properties.put("gateType", camera.getGate().getGateType().toString());
 
-            String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
-            properties.put(StaticValues.carImagePropertyName, carImageUrl);
-            properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
-
+            if(eventDto.car_picture != null) {
+                String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
+                properties.put(StaticValues.carImagePropertyName, carImageUrl);
+                properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
+            }
             GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(camera.getGate().getId());
             log.info("Camera belongs to gate: " + gate.gateId);
             if (gate.frontCamera != null && gate.frontCamera.id == camera.getId()) {
