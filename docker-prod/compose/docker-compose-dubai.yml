@@ -6,7 +6,7 @@ services:
       - "TZ=Asia/Dubai"
     volumes:
       - /var/www/parking/storage/new_parking:/files/pictures:rw
-      - ./disabled.txt:/usr/local/plugins/disabled.txt:ro
+      - ./enabled.txt:/usr/local/plugins/enabled.txt:ro
     logging:
       options:
         max-size: 50m
