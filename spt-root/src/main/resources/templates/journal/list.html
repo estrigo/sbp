@@ -211,24 +211,25 @@
             "targets": "_all"
         }],
         "columns": [
-            {"data": "carNumber", "width" : "10%"},
+            {"data": "carNumber", "width": "10%"},
             {"data": "inTimestampString", "width": "12%"},
             {"data": "inGate", "width": "10%"},
-            {"data": "outTimestampString", "width" : "13%"},
-            {"data": "outGate", "width" : "10%"},
-            {"data": "duration", "width" : "15%"},
-            {"data": function (carState){
-                if(carState.paid){
-                    return [[#{carState.paid}]];
-                } else {
-                    return [[#{carState.free}]];
-                }
-            }, "width" : "5%"},
-            {"data": "rateAmount", "width" : "5%"},
+            {"data": "outTimestampString", "width": "13%"},
+            {"data": "outGate", "width": "10%"},
+            {"data": "duration", "width": "15%"},
             {
-                "data": function (carState)
-                {
-                    if(!carState.paid && carState.whitelistJson){
+                "data": function (carState) {
+                    if (carState.paid) {
+                        return [[#{carState.paid}]];
+                    } else {
+                        return [[#{carState.free}]];
+                    }
+                }, "width": "5%"
+            },
+            {"data": "rateAmount", "width": "5%"},
+            {
+                "data": function (carState) {
+                    if (!carState.paid && carState.whitelistJson) {
                         const whitelists = JSON.parse(carState.whitelistJson);
                         let text = '';
                         for (const w of whitelists) {
@@ -249,29 +250,36 @@
                         return carState.payment;
                     }
                 }, "width": "30%"
-            }/*,
+            },
             {
                 "data": function (carState) {
                     const canEdit = [[${canEdit}]];
                     const canRemove = [[${canRemove}]];
                     const canKick = [[${canKick}]];
 
+                    const outTime = carState["outTimestamp"]
+                    const css = carState["css"];
+
                     var menu = '<div class="dropdown">' +
                         '<button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">' + [[#{crm.actions}]] + '</button>' +
                         '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
 
-                    if (canEdit) {
-                        menu += '<a class="dropdown-item" onclick="showModal(editPlate,' + carState.carNumber + ',' + carState.id + ')" >' + [[#{carState.editPlate}]] + '</a>';
+
+                    if (!outTime || outTime === "") {
+                        if (canEdit) {
+                            menu += '<a class="dropdown-item" onclick="showModal(editPlate,' + carState.carNumber + ',' + carState.id + ')" >' + [[#{carState.editPlate}]] + '</a>';
+                        }
+
+                        if (canRemove) {
+                            menu += '<a class="dropdown-item" onclick="showModal(removeDebt,' + carState.carNumber + ',' + carState.id + ')" >' + [[#{crm.deleteDebt}]] + '</a>';
+                        }
+
+                        if (canKick) {
+                            menu += '<a class="dropdown-item" href="out/' + carState.carNumber + '">' + [[#{carState.manualOut}]] + '</a>';
+                        }
                     }
 
-                    const outTime = carState["outTimestamp"]
-                    if (canRemove && (!outTime || outTime === "")) {
-                        menu += '<a class="dropdown-item" onclick="showModal(removeDebt,' + carState.carNumber + ',' + carState.id + ')" >' + [[#{crm.deleteDebt}]] + '</a>';
-                    }
-
-                    const css = carState["css"];
                     if (canKick && css && css !== "") {
-                        menu += '<a class="dropdown-item" href="out/' + carState.carNumber + '">' + [[#{carState.manualOut}]] + '</a>';
                         menu += '<a class="dropdown-item" onclick="showModal(addBlacklist,' + carState.carNumber + ',' + carState.id + ')" >' + [[#{carState.toBlackList}]] + '</a>';
                     }
 
@@ -279,7 +287,7 @@
 
                     return menu;
                 }
-            }*/
+            }
         ],
         "fnRowCallback": function (nRow, carState, iDisplayIndex) {
             var css = carState["css"];
