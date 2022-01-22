@@ -52,7 +52,7 @@ org:
 server:
   servlet:
     session:
-      timeout: 18000 # 5 hours lasts session
+      timeout: 57600 # 5 hours lasts session
 images:
   file:
     path: "~/Documents/"

@@ -53,7 +53,7 @@ server:
     protocol-header: x-forwarded-proto
   servlet:
     session:
-      timeout: 18000 # 5 hours lasts session
+      timeout: 57600 # 16 hours lasts session
 org:
   hibernate:
     envers:
