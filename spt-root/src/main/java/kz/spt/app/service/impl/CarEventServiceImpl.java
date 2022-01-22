@@ -530,7 +530,10 @@ public class CarEventServiceImpl implements CarEventService {
 
                             if (rateResult == null) {
                                 properties.put("type", EventLogService.EventType.Error);
-                                eventLogService.createEventLog("Rate", null, properties, "Ошибка расчета плагина вычисления стоимости парковки. Авто с гос. номером " + eventDto.car_number, "Error calculating the parking cost calculation plugin. Car with number " + eventDto.car_number);
+                                String descriptionRu = "Ошибка расчета плагина вычисления стоимости парковки. Авто с гос. номером " + eventDto.car_number;
+                                String descriptionEn = "Error calculating the parking cost calculation plugin. Car with number " + eventDto.car_number;
+                                eventLogService.createEventLog("Rate", null, properties, descriptionRu, descriptionEn);
+                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
                                 hasAccess = false;
                             } else if (BigDecimal.ZERO.compareTo(rateResult) == 0) {
                                 carOutBy = StaticValues.CarOutBy.PAYMENT_PROVIDER;
