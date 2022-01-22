@@ -101,11 +101,16 @@
         $div.next('.item').after($div);
     })
 
+    var recInterval = null;
+    var socket = null;
+
     function connect() {
-        var socket = new WebSocket((window.location.protocol.indexOf('https') !== -1 ? 'wss' : 'ws') + '://' + window.location.host + '/greeting');
+        console.log('Web socket initializing');
+        socket = new WebSocket((window.location.protocol.indexOf('https') !== -1 ? 'wss' : 'ws') + '://' + window.location.host + '/greeting');
         ws = Stomp.over(socket);
 
         ws.connect({}, function (frame) {
+            console.log('Web socket connecting');
             ws.subscribe("/topic", function (message) {
                 const messageBody = JSON.parse(message.body);
                 showGreeting(messageBody);
@@ -113,6 +118,16 @@
         }, function (error) {
             console.log("STOMP error " + error);
         });
+
+        console.log('Interval clearing');
+        clearInterval(recInterval);
+
+        socket.onclose = function() {
+            console.log('Web closed');
+            socket = null;
+            recInterval = setInterval(function() { connect(); }, 2000);
+        };
+        console.log('##################');
     }
 
     function showGreeting(messageBody) {
