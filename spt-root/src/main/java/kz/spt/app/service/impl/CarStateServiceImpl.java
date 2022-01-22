@@ -177,10 +177,13 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
-    public Boolean checkIsLastLeft(String carNumber, String cameraIp) {
+    public CarState getIfLastLeft(String carNumber, String cameraIp) {
         Pageable first = PageRequest.of(0, 1);
         List<CarState> carStates = carStateRepository.getCarStateLastLeft(cameraIp, first);
-        return carStates.size() > 0 && carNumber.equals(carStates.get(0).getCarNumber());
+        if(carStates.size() > 0 && carNumber.equals(carStates.get(0).getCarNumber())){
+            return carStates.get(0);
+        }
+        return null;
     }
 
     @Override

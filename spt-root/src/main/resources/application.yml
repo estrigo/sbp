@@ -19,6 +19,7 @@ spring:
     controller:
       base-path: "/sbp/admin"
     disabled-plugins:
+      - "test-plugin"
       - "booking-plugin"
       - "zerotouch-plugin"
   datasource:
@@ -52,7 +53,7 @@ org:
 server:
   servlet:
     session:
-      timeout: 57600 # 5 hours lasts session
+      timeout: 57600 # 16 hours lasts session
 images:
   file:
     path: "~/Documents/"
