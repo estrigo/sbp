@@ -187,6 +187,21 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
+    public Boolean getIfHasLastFromOtherCamera(String carNumber, String cameraIp, Date secondsBefore) {
+        log.info("control date = " + secondsBefore);
+        Pageable first = PageRequest.of(0, 1);
+        List<CarState> carStates = carStateRepository.getCarStateLastEnterFromOther(cameraIp, carNumber, secondsBefore, first);
+        if(carStates.size() > 0){
+            return true;
+        }
+        carStates = carStateRepository.getCarStateLastLeftFromOther(cameraIp, carNumber, secondsBefore, first);
+        if(carStates.size() > 0){
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public Boolean removeDebt(String carNumber) {
         CarState carState = getLastNotLeft(carNumber);
 

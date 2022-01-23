@@ -256,6 +256,14 @@ public class CarEventServiceImpl implements CarEventService {
         boolean hasAccess;
         JsonNode whitelistCheckResults = null;
 
+        // проверить если машины выезжала или заезжала 2 минуты назад
+        Calendar now = Calendar.getInstance();
+        now.add(Calendar.SECOND, -20);
+        Boolean hasLeft = carStateService.getIfHasLastFromOtherCamera(eventDto.car_number, eventDto.ip_address, now.getTime());
+        if(hasLeft){
+            return;
+        }
+
         if (blacklistService.findByPlate(eventDto.car_number).isPresent()) {
             hasAccess = false;
             properties.put("type", EventLogService.EventType.Deny);
@@ -267,7 +275,7 @@ public class CarEventServiceImpl implements CarEventService {
                 if(carState.getPaid() != null && !carState.getPaid()){
                     carStateService.createOUTState(eventDto.car_number, new Date(), camera, carState);
                     carState = null;
-                } else if(System.currentTimeMillis() - carState.getInTimestamp().getTime() < 1000 * 60 * 2) {
+                } else if(System.currentTimeMillis() - carState.getInTimestamp().getTime() < 1000 * 60) {  // перезаписываем состояние если в течение  одной минуты два события для одной машины
                     carStateService.createOUTState(eventDto.car_number, new Date(), camera, carState);
                     carState = null;
                 }
@@ -488,6 +496,14 @@ public class CarEventServiceImpl implements CarEventService {
         BigDecimal rateResult = null;
         StaticValues.CarOutBy carOutBy = null;
 
+        // проверить если машины выезжала или заезжала 20 секунд назад
+        Calendar now = Calendar.getInstance();
+        now.add(Calendar.SECOND, -20);
+        Boolean hasLeft = carStateService.getIfHasLastFromOtherCamera(eventDto.car_number, eventDto.ip_address, now.getTime());
+        if(hasLeft){
+            return;
+        }
+
         if (gate.isSimpleWhitelist) {
             carOutBy = StaticValues.CarOutBy.WHITELIST;
             hasAccess = true;
@@ -508,7 +524,7 @@ public class CarEventServiceImpl implements CarEventService {
                 }
             } else {
                 CarState lastLeft = carStateService.getIfLastLeft(eventDto.car_number, eventDto.ip_address);
-                if (lastLeft == null || System.currentTimeMillis() - lastLeft.getOutTimestamp().getTime() > 1000 * 60 * 2) { // Повторное прием фотособытии на выезд и если выехал 2 назад
+                if (lastLeft == null || System.currentTimeMillis() - lastLeft.getOutTimestamp().getTime() > 1000 * 60) { // Повторное прием фотособытии на выезд и если выехал 1 мин назад
                     if (Parking.ParkingType.WHITELIST_PAYMENT.equals(camera.getGate().getParking().getParkingType()) && carState.getPaid() != null && !carState.getPaid()) {
                         isWhitelistCar = true;
                     }

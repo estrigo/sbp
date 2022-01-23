@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -28,4 +29,10 @@ public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSp
 
     @Query("from CarState cs where cs.outChannelIp = :cameraIp order by cs.outTimestamp desc")
     List<CarState> getCarStateLastLeft(@Param("cameraIp") String cameraIp, Pageable page);
+
+    @Query("from CarState cs where cs.outChannelIp <> :cameraIp and cs.carNumber = :carNumber and cs.outTimestamp > :secondsBefore order by cs.outTimestamp desc")
+    List<CarState> getCarStateLastLeftFromOther(@Param("cameraIp") String cameraIp, @Param("carNumber") String carNumber, @Param("secondsBefore") Date secondsBefore, Pageable page);
+
+    @Query("from CarState cs where cs.inChannelIp <> :cameraIp and cs.carNumber = :carNumber and cs.inTimestamp > :secondsBefore and cs.outTimestamp is null order by cs.inTimestamp desc")
+    List<CarState> getCarStateLastEnterFromOther(@Param("cameraIp") String cameraIp, @Param("carNumber") String carNumber, @Param("secondsBefore") Date secondsBefore, Pageable page);
 }
