@@ -7,6 +7,7 @@ import kz.spt.app.thread.GetSnapshotThread;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.Gate;
+import kz.spt.lib.model.dto.SnapshotThreadDto;
 import kz.spt.lib.service.CarEventService;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.ArmService;
@@ -27,13 +28,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -151,7 +150,6 @@ public class ArmServiceImpl implements ArmService {
         return carEventService.passCar(cameraId, platenumber, snapshot);
     }
 
-    @Async
     @Override
     public String snapshot(String ip, String login, String password, String url) throws Throwable {
         HttpHost host = new HttpHost(ip, 8080, "http");
@@ -186,25 +184,27 @@ public class ArmServiceImpl implements ArmService {
         return base64;
     }
 
-    @Async
     @Override
     public void snapshot(Long cameraId) throws Throwable {
         Camera camera = cameraService.getCameraById(cameraId);
         String name = "snapshot-camera-" + camera.getId().toString();
 
         if (CameraSnapshotJob.threads.containsKey(name)) {
-            Thread thread = CameraSnapshotJob.threads.get(name);
-            thread.interrupt();
+            SnapshotThreadDto m = CameraSnapshotJob.threads.get(name);
+            m.getThread().interrupt();
             CameraSnapshotJob.threads.remove(name);
         }
-        CameraSnapshotJob.threads.put(name, new GetSnapshotThread(name,
-                camera.getId(),
-                camera.getIp(),
-                camera.getLogin(),
-                camera.getPassword(),
-                camera.getSnapshotUrl(),
-                this,
-                eventLogService));
+        CameraSnapshotJob.threads.put(name, SnapshotThreadDto.builder()
+                .isActive(false)
+                .thread(new GetSnapshotThread(name,
+                        camera.getId(),
+                        camera.getIp(),
+                        camera.getLogin(),
+                        camera.getPassword(),
+                        camera.getSnapshotUrl(),
+                        this,
+                        eventLogService))
+                .build());
     }
 
     private CredentialsProvider provider(String login, String password) {

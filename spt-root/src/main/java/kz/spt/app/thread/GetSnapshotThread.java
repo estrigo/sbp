@@ -1,12 +1,10 @@
 package kz.spt.app.thread;
 
-import kz.spt.app.job.CameraSnapshotJob;
-import kz.spt.lib.model.Camera;
 import kz.spt.lib.service.ArmService;
 import kz.spt.lib.service.EventLogService;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 
 @Log
 public class GetSnapshotThread extends Thread {
@@ -38,8 +36,9 @@ public class GetSnapshotThread extends Thread {
     }
 
     @SneakyThrows
+    @Async("SnapshotTaskScheduler")
     public void run() {
-        log.info("Running task:" + getName() + "," + "task id:" + getId() + ", thread group:" + getThreadGroup().getName());
+        log.info("Running task:" + getName() + "," + "task id:" + getId() + ", thread group:" + getThreadGroup().getName() + ", parent:" + getThreadGroup().getParent().getName());
 
         while (!Thread.currentThread().isInterrupted()) {
             try {

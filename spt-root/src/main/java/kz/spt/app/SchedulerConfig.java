@@ -2,18 +2,14 @@ package kz.spt.app;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 @Configuration
-@EnableScheduling
 public class SchedulerConfig implements SchedulingConfigurer {
     @Override
     public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
@@ -22,20 +18,20 @@ public class SchedulerConfig implements SchedulingConfigurer {
 
     @Bean
     public Executor taskScheduler() {
-        return Executors.newScheduledThreadPool(20);
+        return Executors.newScheduledThreadPool(10);
     }
 
-    /*@Bean
-    public Executor taskExecutor() {
+
+    @Bean("snapshotTaskExecutor")
+    public Executor snapshotTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(10);
         executor.setMaxPoolSize(20);
-        executor.setThreadNamePrefix("thread-snapshot");
-        executor.setThreadGroupName("group-snapshot");
         executor.initialize();
         return executor;
     }
 
+    /*
     @Bean
     public TaskScheduler taskScheduler() {
         final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
