@@ -230,13 +230,4 @@ public class WebAppConfig implements WebMvcConfigurer {
         messageSource.setBasenames(messageClassPath.toArray(new String[messageClassPath.size()]));
         return messageSource;
     }
-
-    @Bean
-    public TaskScheduler taskScheduler() {
-        final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(10);
-        scheduler.setThreadGroupName("spt-scheduler");
-        scheduler.initialize();
-        return scheduler;
-    }
 }

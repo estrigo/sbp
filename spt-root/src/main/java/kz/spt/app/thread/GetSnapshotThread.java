@@ -39,7 +39,7 @@ public class GetSnapshotThread extends Thread {
 
     @SneakyThrows
     public void run() {
-        log.info("Running task:" + getName() + "," + "task id:" + getId() + ", thread group:" + getThreadGroup());
+        log.info("Running task:" + getName() + "," + "task id:" + getId() + ", thread group:" + getThreadGroup().getName());
 
         while (!Thread.currentThread().isInterrupted()) {
             try {
