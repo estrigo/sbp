@@ -13,6 +13,7 @@ import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.ArmService;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
+import lombok.extern.java.Log;
 import lombok.val;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.codec.binary.Base64;
@@ -28,6 +29,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -40,7 +42,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Executor;
 
+@Log
 @Service
 public class ArmServiceImpl implements ArmService {
 
@@ -49,13 +53,15 @@ public class ArmServiceImpl implements ArmService {
     private EventLogService eventLogService;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
     private CarEventService carEventService;
+    private ThreadPoolTaskExecutor snapshotTaskExecutor;
 
     public ArmServiceImpl(CameraService cameraService, BarrierService barrierService, EventLogService eventLogService,
-                          CarEventService carEventService) {
+                          CarEventService carEventService, ThreadPoolTaskExecutor snapshotTaskExecutor) {
         this.cameraService = cameraService;
         this.barrierService = barrierService;
         this.eventLogService = eventLogService;
         this.carEventService = carEventService;
+        this.snapshotTaskExecutor = snapshotTaskExecutor;
     }
 
     @Override
@@ -185,7 +191,7 @@ public class ArmServiceImpl implements ArmService {
     }
 
     @Override
-    public void snapshot(Long cameraId) throws Throwable {
+    public void enableSnapshot(Long cameraId) throws Throwable {
         Camera camera = cameraService.getCameraById(cameraId);
         String name = "snapshot-camera-" + camera.getId().toString();
 
@@ -205,6 +211,16 @@ public class ArmServiceImpl implements ArmService {
                         this,
                         eventLogService))
                 .build());
+    }
+
+    @Override
+    public void disableSnapshot() throws Throwable {
+        CameraSnapshotJob.threads.forEach((key, m) -> {
+            m.getThread().interrupt();
+            log.info("Stopping task:" + m.getThread().getName() + "," + "task id:" + m.getThread().getId());
+        });
+        CameraSnapshotJob.threads.clear();
+        snapshotTaskExecutor.destroy();
     }
 
     private CredentialsProvider provider(String login, String password) {

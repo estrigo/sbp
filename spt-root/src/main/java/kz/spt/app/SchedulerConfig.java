@@ -23,11 +23,10 @@ public class SchedulerConfig implements SchedulingConfigurer {
 
 
     @Bean("snapshotTaskExecutor")
-    public Executor snapshotTaskExecutor() {
+    public ThreadPoolTaskExecutor snapshotTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10);
-        executor.setMaxPoolSize(20);
-        executor.initialize();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
         return executor;
     }
 

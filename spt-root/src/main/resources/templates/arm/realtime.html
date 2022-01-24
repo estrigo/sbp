@@ -192,12 +192,27 @@
             const $url = $input.data("url");
             if ($url && $url !== "") {
                 var d= new Date();
-                $.get("/rest/arm/snapshot/" + $id+"?ver="+d.getTime(), function (data) {
+                $.get("/rest/arm/enable/" + $id+"?ver="+d.getTime(), function (data) {
                     console.log(data);
                 });
             }
         })
+
+        $(window).unload(function() {
+            $.get("/rest/arm/disable", function (data) {
+                console.log(data);
+            });
+        });
     });
+
+    window.addEventListener("beforeunload", function (e) {
+        $.get("/rest/arm/disable", function (data) {
+            console.log(data);
+        });
+        e.preventDefault();
+        e.returnValue = "";
+    });
+
     function openGate(cameraId) {
         $.get("/rest/arm/open/" + cameraId, function (data) {
             console.log(data);

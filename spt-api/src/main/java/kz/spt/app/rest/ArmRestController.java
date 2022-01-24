@@ -50,8 +50,14 @@ public class ArmRestController {
     }
 
     @SneakyThrows
-    @GetMapping(value = "/snapshot/{cameraId}")
-    public void snapshot(@PathVariable("cameraId") Long cameraId,@RequestParam("ver") String ver){
-        armService.snapshot(cameraId);
+    @GetMapping(value = "/enable/{cameraId}")
+    public void enableSnapshot(@PathVariable("cameraId") Long cameraId,@RequestParam("ver") String ver){
+        armService.enableSnapshot(cameraId);
+    }
+
+    @SneakyThrows
+    @GetMapping(value = "/disable")
+    public void disableSnapshot(){
+        armService.disableSnapshot();
     }
 }

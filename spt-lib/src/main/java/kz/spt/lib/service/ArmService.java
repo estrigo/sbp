@@ -18,6 +18,7 @@ public interface ArmService {
 
     Boolean passCar(Long cameraId, String platenumber, String snapshot) throws Exception;
 
-    String snapshot(String ip,String login, String password, String url) throws Throwable;
-    void snapshot(Long cameraId) throws Throwable;
+    String snapshot(String ip, String login, String password, String url) throws Throwable;
+    void enableSnapshot(Long cameraId) throws Throwable;
+    void disableSnapshot() throws Throwable;
 }
