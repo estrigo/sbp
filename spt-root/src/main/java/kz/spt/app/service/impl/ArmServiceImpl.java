@@ -1,7 +1,9 @@
 package kz.spt.app.service.impl;
 
 import kz.spt.app.component.HttpRequestFactoryDigestAuth;
+import kz.spt.app.job.CameraSnapshotJob;
 import kz.spt.app.job.StatusCheckJob;
+import kz.spt.app.thread.GetSnapshotThread;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.Gate;
@@ -10,7 +12,6 @@ import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.ArmService;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
-import lombok.SneakyThrows;
 import lombok.val;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.codec.binary.Base64;
@@ -26,6 +27,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -149,11 +151,12 @@ public class ArmServiceImpl implements ArmService {
         return carEventService.passCar(cameraId, platenumber, snapshot);
     }
 
+    @Async
     @Override
-    public void snapshot(Camera camera) throws Throwable {
-        HttpHost host = new HttpHost(camera.getIp(), 8080, "http");
+    public String snapshot(String ip, String login, String password, String url) throws Throwable {
+        HttpHost host = new HttpHost(ip, 8080, "http");
         CloseableHttpClient client = HttpClientBuilder.create().
-                setDefaultCredentialsProvider(provider(camera))
+                setDefaultCredentialsProvider(provider(login, password))
                 .useSystemProperties()
                 .build();
         HttpComponentsClientHttpRequestFactory requestFactory =
@@ -163,14 +166,14 @@ public class ArmServiceImpl implements ArmService {
         val headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_JPEG);
 
-        StringBuilder url = new StringBuilder();
-        url.append("http://");
-        url.append(camera.getIp());
-        url.append(camera.getSnapshotUrl());
+        StringBuilder address = new StringBuilder();
+        address.append("http://");
+        address.append(ip);
+        address.append(url);
         //url.append("/cgi-bin/snapshot.cgi");
 
         HttpEntity entity = new HttpEntity(headers);
-        byte[] img = restTemplate.getForObject(url.toString(), byte[].class, entity);
+        byte[] img = restTemplate.getForObject(address.toString(), byte[].class, entity);
 
         ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
         Thumbnails.of(new ByteArrayInputStream(img))
@@ -179,17 +182,35 @@ public class ArmServiceImpl implements ArmService {
                 .outputQuality(1)
                 .toOutputStream(resultStream);
 
-        byte[] thumbnais = resultStream.toByteArray();
-        String base64 = null;
-        base64 = StringUtils.newStringUtf8(Base64.encodeBase64(thumbnais, false));
-
-        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLogService.EventType.Success, camera.getId(), "", base64, base64);
+        String base64 = StringUtils.newStringUtf8(Base64.encodeBase64(resultStream.toByteArray(), false));
+        return base64;
     }
 
-    private CredentialsProvider provider(Camera camera) {
+    @Async
+    @Override
+    public void snapshot(Long cameraId) throws Throwable {
+        Camera camera = cameraService.getCameraById(cameraId);
+        String name = "snapshot-camera-" + camera.getId().toString();
+
+        if (CameraSnapshotJob.threads.containsKey(name)) {
+            Thread thread = CameraSnapshotJob.threads.get(name);
+            thread.interrupt();
+            CameraSnapshotJob.threads.remove(name);
+        }
+        CameraSnapshotJob.threads.put(name, new GetSnapshotThread(name,
+                camera.getId(),
+                camera.getIp(),
+                camera.getLogin(),
+                camera.getPassword(),
+                camera.getSnapshotUrl(),
+                this,
+                eventLogService));
+    }
+
+    private CredentialsProvider provider(String login, String password) {
         CredentialsProvider provider = new BasicCredentialsProvider();
         UsernamePasswordCredentials credentials =
-                new UsernamePasswordCredentials(camera.getLogin(), camera.getPassword());
+                new UsernamePasswordCredentials(login, password);
         provider.setCredentials(AuthScope.ANY, credentials);
         return provider;
     }

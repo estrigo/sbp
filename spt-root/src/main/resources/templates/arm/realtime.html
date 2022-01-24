@@ -6,7 +6,8 @@
     <div class="container">
         <div class="row">
             <div class="row">
-                <div class="col-sm-4 col-lg-4 col-xs-12 item" th:each="camera, iterStat : ${cameras}" th:id="${'item' + camera.id}">
+                <div class="col-sm-4 col-lg-4 col-xs-12 item" th:each="camera, iterStat : ${cameras}"
+                     th:id="${'item' + camera.id}" th:attr="data-id=${camera.id},data-url=${camera.snapshotUrl}">
                     <div class="row">
                         <div class="col-md-12">
                             <div class="btn-group" role="group">
@@ -29,27 +30,35 @@
                             <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
                         </div>
                         <div class="row" style="position: relative">
-                            <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event" style="height: 250px!important;"
+                            <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event"
+                               style="height: 250px!important;"
                                th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}">
-                                <img th:id="${'image' + camera.id}" class="img-fluid m-b-10" th:src="@{#{arm.noImageLink}}" style="height: 250px !important;"
+                                <img th:id="${'image' + camera.id}" class="img-fluid m-b-10"
+                                     th:src="@{#{arm.noImageLink}}" style="height: 250px !important;"
                                      alt="Card image cap">
                             </a>
-                            <div class="align-content-center p-1" style="background-color: rgba(74, 82, 95, .5); position: absolute; bottom: 0;right: 10px;display: none">
+                            <div class="align-content-center p-1"
+                                 style="background-color: rgba(74, 82, 95, .5); position: absolute; bottom: 0;right: 10px;display: none">
                                 <img th:id="${'lp' + camera.id}"/>
                             </div>
                         </div>
                         <table class="w-100">
                             <tbody>
                             <tr>
-                                <td class="w-50" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <button type="button" class="btn btn-outline-success w-100" th:cameraId="${camera.id}"
+                                <td class="w-50"
+                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                    <button type="button" class="btn btn-outline-success w-100"
+                                            th:cameraId="${camera.id}"
                                             th:onclick="openGate(this.getAttribute('cameraId'))"
                                             th:text="#{arm.open}"></button>
                                 </td>
-                                <td class="w-50" sec:authorize="!hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <td class="w-50"
+                                    sec:authorize="!hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
                                 </td>
-                                <td class="w-50" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <button type="button" class="btn btn-outline-warning w-100" th:cameraId="${camera.id}"
+                                <td class="w-50"
+                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                    <button type="button" class="btn btn-outline-warning w-100"
+                                            th:cameraId="${camera.id}"
                                             th:onclick="closeGate(this.getAttribute('cameraId'))"
                                             th:text="#{arm.close}"></button>
                                 </td>
@@ -59,17 +68,23 @@
                         <table class="w-100">
                             <tbody>
                             <tr>
-                                <td class="w-50" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <td class="w-50"
+                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
                                     <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
-                                           th:placeholder="#{arm.licensePlate}" th:onkeydown="onTextEnter(this.getAttribute('cameraId'))" class="form-control w-100">
+                                           th:placeholder="#{arm.licensePlate}"
+                                           th:onkeydown="onTextEnter(this.getAttribute('cameraId'))"
+                                           class="form-control w-100">
                                 </td>
-                                <td class="w-25" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <td class="w-25"
+                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
                                     <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
                                             th:onclick="passCar(this.getAttribute('cameraId'))"
                                             th:text="#{crm.letIn}"></button>
                                 </td>
-                                <td class="w-25" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <button type="button" class="btn btn-outline-primary w-100" th:cameraId="${camera.id}"
+                                <td class="w-25"
+                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                    <button type="button" class="btn btn-outline-primary w-100"
+                                            th:cameraId="${camera.id}"
                                             th:onclick="checkBalance(this.getAttribute('cameraId'))"
                                             th:text="#{crm.balance}"></button>
                                 </td>
@@ -77,7 +92,8 @@
                             </tbody>
                         </table>
                     </div>
-                    <textarea class="m-b-10 border border-dark" style="width: 100%" rows="3" th:id="${'logs' + camera.id}"></textarea>
+                    <textarea class="m-b-10 border border-dark" style="width: 100%" rows="3"
+                              th:id="${'logs' + camera.id}"></textarea>
                 </div>
             </div>
         </div>
@@ -91,12 +107,13 @@
 <script th:inline="javascript">
     var locale = [[${#locale}]];
     var img;
-    jQuery('.move-left').click(function (e){
+
+    jQuery('.move-left').click(function (e) {
         var $div = $(this).closest('.item');
         $div.prev('.item').before($div);
     })
 
-    jQuery('.move-right').click(function (e){
+    jQuery('.move-right').click(function (e) {
         var $div = $(this).closest('.item');
         $div.next('.item').after($div);
     })
@@ -139,14 +156,14 @@
         } else if (messageBody.eventType == 'CarEvent') {
             $("#logs" + messageBody.id).prepend('[' + messageBody.plateNumber + ']' + logMessage + "\n");
             $("#fancyImage" + messageBody.id).attr("data-caption", messageBody.plateNumber);
-        } else if(messageBody.eventType == 'Lp' && messageBody.message){
+        } else if (messageBody.eventType == 'Lp' && messageBody.message) {
             $("#lp" + messageBody.id).parent().show();
             $("#lp" + messageBody.id).attr("src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message);
         } else {
             console.log('Unknown event type ' + messageBody);
         }
 
-        switch (messageBody.eventStatus){
+        switch (messageBody.eventStatus) {
             case "Allow":
             case "Success":
                 $("#logs" + messageBody.id)
@@ -168,6 +185,19 @@
         connect();
     });
 
+    $(document).ready(function() {
+        $(".item").each(function () {
+            const $input = $(this);
+            const $id = $input.data("id");
+            const $url = $input.data("url");
+            if ($url && $url !== "") {
+                var d= new Date();
+                $.get("/rest/arm/snapshot/" + $id+"?ver="+d.getTime(), function (data) {
+                    console.log(data);
+                });
+            }
+        })
+    });
     function openGate(cameraId) {
         $.get("/rest/arm/open/" + cameraId, function (data) {
             console.log(data);

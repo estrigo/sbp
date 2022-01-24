@@ -1,6 +1,7 @@
 package kz.spt.app.rest;
 
 import kz.spt.lib.service.ArmService;
+import lombok.SneakyThrows;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,7 +14,7 @@ import java.text.ParseException;
 @RequestMapping(value = "/rest/arm")
 public class ArmRestController {
 
-    private ArmService armService;
+    private final ArmService armService;
 
     public ArmRestController(ArmService armService){
         this.armService = armService;
@@ -46,5 +47,11 @@ public class ArmRestController {
                            @RequestParam("platenumber") String platenumber,
                            @RequestParam("snapshot") String snapshot) throws Exception {
         return armService.passCar(cameraId, platenumber, snapshot);
+    }
+
+    @SneakyThrows
+    @GetMapping(value = "/snapshot/{cameraId}")
+    public void snapshot(@PathVariable("cameraId") Long cameraId,@RequestParam("ver") String ver){
+        armService.snapshot(cameraId);
     }
 }
