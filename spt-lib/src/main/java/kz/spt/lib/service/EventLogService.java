@@ -40,4 +40,6 @@ public interface EventLogService {
     Page<EventsDto> getEventLogs(PagingRequest pagingRequest, EventFilterDto eventFilterDto) throws ParseException;
 
     void save(EventLog eventLog);
+
+    String getApplicationPropertyValue(String prortyName);
 }

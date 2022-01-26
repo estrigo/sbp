@@ -70,4 +70,9 @@ whitelist:
   group:
     show:
       advanced: true # Показать дополнительные привязку авто к номеру места в парковках в группах белого списка
+parking:
+  has:
+    access:
+      unknown:
+        cases: false # Выпускать все авто где вьезд не найден
 

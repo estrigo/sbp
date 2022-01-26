@@ -24,6 +24,7 @@ import kz.spt.lib.service.CarImageService;
 import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,9 @@ public class CarEventServiceImpl implements CarEventService {
     private final PluginService pluginService;
     private final ParkingProperties parkingProperties;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
+
+    @Value("${parking.has.access.unknown.cases}")
+    Boolean parkingHasAccessUnknownCases;
 
     private static Map<String, Long> concurrentHashMap = new ConcurrentHashMap<>();
     private ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(LocaleContextHolder.getLocale().toString().substring(0, 2)));
@@ -275,7 +279,7 @@ public class CarEventServiceImpl implements CarEventService {
                 if(carState.getPaid() != null && !carState.getPaid()){
                     carStateService.createOUTState(eventDto.car_number, new Date(), camera, carState);
                     carState = null;
-                } else if(System.currentTimeMillis() - carState.getInTimestamp().getTime() < 1000 * 60) {  // перезаписываем состояние если в течение  одной минуты два события для одной машины
+                } else if(System.currentTimeMillis() - carState.getInTimestamp().getTime() < 1000 * 60 * 2) {  // перезаписываем состояние если в течение двух минут два события для одной машины
                     carStateService.createOUTState(eventDto.car_number, new Date(), camera, carState);
                     carState = null;
                 }
@@ -495,6 +499,7 @@ public class CarEventServiceImpl implements CarEventService {
         BigDecimal balance = BigDecimal.ZERO;
         BigDecimal rateResult = null;
         StaticValues.CarOutBy carOutBy = null;
+        Boolean leftFromThisSecondsBefore = false;
 
         // проверить если машины выезжала или заезжала 20 секунд назад
         Calendar now = Calendar.getInstance();
@@ -504,23 +509,36 @@ public class CarEventServiceImpl implements CarEventService {
             return;
         }
 
+
         if (gate.isSimpleWhitelist) {
             carOutBy = StaticValues.CarOutBy.WHITELIST;
             hasAccess = true;
         } else {
             carState = carStateService.getLastNotLeft(eventDto.car_number);
             if (carState == null) {
-                if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
-                    properties.put("type", EventLogService.EventType.Allow);
-                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
-                    eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
-                    carOutBy = StaticValues.CarOutBy.WHITELIST;
+                now = Calendar.getInstance();
+                now.add(Calendar.MINUTE, -5);
+                leftFromThisSecondsBefore = carStateService.getIfHasLastFromThisCamera(eventDto.car_number, eventDto.ip_address, now.getTime()); // Если выезжал 5 минут назад но не заезжал
+                if(leftFromThisSecondsBefore) {
                     hasAccess = true;
                 } else {
-                    properties.put("type", EventLogService.EventType.Deny);
-                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited");
-                    eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited");
-                    hasAccess = false;
+                    if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
+                        properties.put("type", EventLogService.EventType.Allow);
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
+                        eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
+                        carOutBy = StaticValues.CarOutBy.WHITELIST;
+                        hasAccess = true;
+                    } else if(parkingHasAccessUnknownCases){
+                        properties.put("type", EventLogService.EventType.Allow);
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для этого паркинга выезд разрешен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For this parking exit is allowed");
+                        eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для этого паркинга выезд разрешен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For this parking exit is allowed");
+                        hasAccess = true;
+                    } else {
+                        properties.put("type", EventLogService.EventType.Deny);
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited");
+                        eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited");
+                        hasAccess = false;
+                    }
                 }
             } else {
                 CarState lastLeft = carStateService.getIfLastLeft(eventDto.car_number, eventDto.ip_address);
@@ -621,8 +639,12 @@ public class CarEventServiceImpl implements CarEventService {
                 gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
                 gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
                 gate.lastTriggeredTime = System.currentTimeMillis();
-                if (!gate.isSimpleWhitelist && carState != null) {
+                if (!gate.isSimpleWhitelist && carState != null && !leftFromThisSecondsBefore) {
                     saveCarOutState(eventDto, camera, carState, properties, isWhitelistCar, balance, rateResult, format, carOutBy);
+                } else if(leftFromThisSecondsBefore) {
+                    properties.put("type", EventLogService.EventType.Allow);
+                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
                 }
             }
         }

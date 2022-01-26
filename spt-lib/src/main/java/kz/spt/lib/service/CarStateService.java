@@ -38,5 +38,7 @@ public interface CarStateService {
 
     Boolean getIfHasLastFromOtherCamera(String carNumber, String cameraIp, Date secondsBefore);
 
+    Boolean getIfHasLastFromThisCamera(String carNumber, String cameraIp, Date secondsBefore);
+
     Boolean removeDebt(String carNumber);
 }

@@ -6,8 +6,10 @@ import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.EventLogService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.text.ParseException;
 
 
@@ -32,5 +34,9 @@ public class EventRestController {
         return eventLogService.getEventLogs(pagingRequest,eventFilterDto);
     }
 
-
+    @PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')")
+    @GetMapping(value = "/check/{propertyName}")
+    public String openGate(@PathVariable("propertyName") String propertyName) throws IOException, ParseException, InterruptedException {
+        return eventLogService.getApplicationPropertyValue(propertyName);
+    }
 }

@@ -12,6 +12,7 @@ import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.EventLogRepository;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,9 @@ import java.util.stream.Collectors;
 public class EventLogServiceImpl implements EventLogService {
 
     private ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    private Environment env;
 
     @Autowired
     private EventLogRepository eventLogRepository;
@@ -139,6 +143,11 @@ public class EventLogServiceImpl implements EventLogService {
     @Override
     public void save(EventLog eventLog) {
         eventLogRepository.save(eventLog);
+    }
+
+    @Override
+    public String getApplicationPropertyValue(String prortyName) {
+        return env.getProperty(prortyName);
     }
 
     private Page<EventsDto> getPage(List<EventsDto> events, PagingRequest pagingRequest) {

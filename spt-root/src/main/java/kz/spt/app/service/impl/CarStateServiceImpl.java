@@ -188,7 +188,6 @@ public class CarStateServiceImpl implements CarStateService {
 
     @Override
     public Boolean getIfHasLastFromOtherCamera(String carNumber, String cameraIp, Date secondsBefore) {
-        log.info("control date = " + secondsBefore);
         Pageable first = PageRequest.of(0, 1);
         List<CarState> carStates = carStateRepository.getCarStateLastEnterFromOther(cameraIp, carNumber, secondsBefore, first);
         if(carStates.size() > 0){
@@ -199,6 +198,13 @@ public class CarStateServiceImpl implements CarStateService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Boolean getIfHasLastFromThisCamera(String carNumber, String cameraIp, Date secondsBefore) {
+        Pageable first = PageRequest.of(0, 1);
+        List<CarState> carStates = carStateRepository.getCarStateLastLeftFromThis(cameraIp, carNumber, secondsBefore, first);
+        return carStates.size() > 0;
     }
 
     @Override
