@@ -19,9 +19,10 @@ import java.util.Date;
 @Table(name = "transaction")
 public class Transaction {
 
-    public Transaction(String plateNumber, BigDecimal amount, String description, String descriptionRu){
+    public Transaction(String plateNumber, BigDecimal amount, Long carStateId, String description, String descriptionRu){
         this.plateNumber = plateNumber;
         this.amount = amount;
+        this.carStateId = carStateId;
         this.description = description;
         this.descriptionRu = descriptionRu;
         this.date = new Date();
@@ -40,6 +41,9 @@ public class Transaction {
 
     @Column(name = "description")
     String description;
+
+    @Column(name = "car_state_id")
+    Long carStateId;
 
     @Column(name = "description_ru")
     String descriptionRu;

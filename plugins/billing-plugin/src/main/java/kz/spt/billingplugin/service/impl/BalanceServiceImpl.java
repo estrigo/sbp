@@ -35,7 +35,7 @@ public class BalanceServiceImpl implements BalanceService {
     private static final Comparator<Balance> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     @Override
-    public BigDecimal addBalance(String plateNumber, BigDecimal value, String description, String descriptionRu) {
+    public BigDecimal addBalance(String plateNumber, BigDecimal value, Long carStateId, String description, String descriptionRu) {
         Balance balance;
         Optional<Balance> optionalBalance = balanceRepository.findById(plateNumber);
         if(optionalBalance.isPresent()){
@@ -48,15 +48,15 @@ public class BalanceServiceImpl implements BalanceService {
         };
         Balance savedBalance = balanceRepository.save(balance);
 
-        Transaction transaction = new Transaction(plateNumber, value, description, descriptionRu);
+        Transaction transaction = new Transaction(plateNumber, value, carStateId, description, descriptionRu);
         transactionRepository.save(transaction);
 
         return savedBalance.getBalance();
     }
 
     @Override
-    public BigDecimal subtractBalance(String plateNumber, BigDecimal value, String description, String descriptionRu) {
-       return addBalance(plateNumber, BigDecimal.ZERO.compareTo(value) > 0 ? value : value.multiply(new BigDecimal(-1)), description, descriptionRu);
+    public BigDecimal subtractBalance(String plateNumber, BigDecimal value, Long carStateId, String description, String descriptionRu) {
+       return addBalance(plateNumber, BigDecimal.ZERO.compareTo(value) > 0 ? value : value.multiply(new BigDecimal(-1)), carStateId, description, descriptionRu);
     }
 
     @Override

@@ -688,15 +688,23 @@ public class CarEventServiceImpl implements CarEventService {
                 billingSubtractNode.put("amount", rateResult);
                 billingSubtractNode.put("plateNumber", carState.getCarNumber());
                 billingSubtractNode.put("parkingName", carState.getParking().getName());
+                billingSubtractNode.put("carStateId", carState.getId());
                 subtractResult = billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
             }
             subtractResult = subtractResult.setScale(2);
 
             carState.setRateAmount(rateResult);
-            properties.put("type", EventLogService.EventType.Allow);
             carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState);
-            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + rateResult + ". Остаток баланса: " + subtractResult + ". Проезд разрешен.", "Allowed: Paid for parking. Total sum: " + rateResult + ". Balance left: " + subtractResult + ". Allowed.");
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + rateResult + ". Остаток баланса: " + subtractResult + ". Проезд разрешен.", "Allowed: Paid for parking. Total sum: " + rateResult + ". Balance left: " + subtractResult + ". Allowed.");
+
+            properties.put("type", EventLogService.EventType.Allow);
+            String descriptionRu = "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + rateResult + ". Остаток баланса: " + subtractResult + ". Проезд разрешен.";
+            String descriptionEn = "Allowed: Paid for parking. Total sum: " + rateResult + ". Balance left: " + subtractResult + ". Allowed.";
+            if(BigDecimal.ZERO.compareTo(rateResult) == 0){
+                descriptionRu = "Пропускаем авто: Оплата не требуется. Проезд разрешен.";
+                descriptionEn = "Allowed: No payment required. Allowed";
+            }
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
 
             if (billingPluginRegister != null) {
                 ObjectNode addTimestampNode = this.objectMapper.createObjectNode();

@@ -79,7 +79,7 @@ public class CommandExecutor implements PluginRegister {
                 node.put("paymentId", savedPayment.getId());
                 node.put("cashlessPayment", payment.getProvider().getCashlessPayment() != null ? payment.getProvider().getCashlessPayment() : false);
 
-                getBalanceService().addBalance(command.get("carNumber").textValue(), command.get("sum").decimalValue(), "Received payment from " + payment.getProvider().getName(),  "Получен платеж от " + payment.getProvider().getName());
+                getBalanceService().addBalance(command.get("carNumber").textValue(), command.get("sum").decimalValue(), command.get("carStateId").longValue(), "Received payment from " + payment.getProvider().getName(),  "Получен платеж от " + payment.getProvider().getName());
 
                 List<Payment> carStatePayments = getPaymentService().getPaymentsByCarStateId(savedPayment.getCarStateId());
                 ArrayNode paymentArray = PaymentDto.arrayNodeFromPayments(carStatePayments);
@@ -92,8 +92,8 @@ public class CommandExecutor implements PluginRegister {
                     node.put("currentBalance", new BigDecimal(0));
                 }
             } else if("decreaseCurrentBalance".equals(commandName)){
-                if(command.has("plateNumber") && command.has("amount") && command.has("parkingName")){
-                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), "Payment for parking " + command.get("parkingName").textValue(),  "Оплата паркинга " + command.get("parkingName").textValue()));
+                if(command.has("plateNumber") && command.has("carStateId") && command.has("amount") && command.has("parkingName")){
+                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), command.get("carStateId").longValue(),  "Payment for parking " + command.get("parkingName").textValue(),  "Оплата паркинга " + command.get("parkingName").textValue()));
                 } else {
                     node.put("currentBalance", new BigDecimal(0));
                 }
@@ -160,11 +160,15 @@ public class CommandExecutor implements PluginRegister {
 
                 String checkResponse = getWebKassaService().closeOperationDay(zReport, authRequestDTO);
 
-                if (checkResponse!=null) {
-                    node.put("result" , checkResponse);
+                if (checkResponse != null) {
+                    node.put("result", checkResponse);
                 }
-
-
+            } else if("getProviderNames".equals(commandName)){
+                ArrayNode paymentProviders = objectMapper.createArrayNode();
+                getPaymentProviderService().listAllPaymentProviders().forEach(paymentProvider -> {
+                    paymentProviders.add(paymentProvider.getName());
+                });
+                node.set("providerNames", paymentProviders);
             }
         }
 

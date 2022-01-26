@@ -65,23 +65,5 @@ public class SptApplication {
         long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
         log.info("Initial Memory (xmx) : " + xmx + "mb");
         log.info("Initial Memory (xms) : " + xms + "mb");
-        /*String pluginsDir = System.getProperty(AbstractPluginManager.PLUGINS_DIR_PROPERTY_NAME);
-        if (pluginsDir != null && !pluginsDir.isEmpty()) {
-            List<Path> paths = Arrays.stream(pluginsDir.split(","))
-                    .map(String::trim)
-                    .map(Paths::get)
-                    .collect(Collectors.toList());
-            log.info("1");
-            for(Path p:paths){
-                log.info(p.toAbsolutePath().toString());
-            }
-        } else {
-            pluginsDir = AbstractPluginManager.DEVELOPMENT_PLUGINS_DIR;
-            List<Path> paths = Collections.singletonList(Paths.get(pluginsDir));
-            log.info("1");
-            for(Path p:paths){
-                log.info(p.toAbsolutePath().toString());
-            }
-        }*/
     }
 }
