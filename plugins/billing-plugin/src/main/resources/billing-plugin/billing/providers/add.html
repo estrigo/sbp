@@ -45,6 +45,30 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="webKassaID" class="control-label">ID кассы (WebKassa)</label>
+                <div class="checkbox-primary">
+                    <input id="webKassaID" type="checkbox" th:field="*{webKassaID}" th:value="*{webKassaID}">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="webKassaLogin" class="control-label">Логин (WebKassa)</label>
+                <div class="checkbox-primary">
+                    <input id="webKassaLogin" type="checkbox" th:field="*{webKassaLogin}" th:value="*{webKassaLogin}">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="webKassaPassword" class="control-label">Пароль (WebKassa)</label>
+                <div class="checkbox-primary">
+                    <input id="webKassaPassword" type="checkbox" th:field="*{webKassaPassword}" th:value="*{webKassaPassword}">
+                </div>
+            </div>
+        </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>

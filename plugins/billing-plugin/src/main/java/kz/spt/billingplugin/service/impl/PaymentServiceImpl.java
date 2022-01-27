@@ -63,6 +63,12 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentRepository.findByTransactionAndProvider(transaction, paymentProvider);
     }
 
+    @Override
+    public List<Payment> findByTransaction(String transaction) {
+        return paymentRepository.findByTransaction(transaction);
+    }
+
+
     private Page<PaymentLogDTO> getPage(List<PaymentLogDTO> paymentLogDTOList, PagingRequest pagingRequest) {
         List<PaymentLogDTO> filtered = paymentLogDTOList.stream()
                 .sorted(sortPaymentLogDTO(pagingRequest))

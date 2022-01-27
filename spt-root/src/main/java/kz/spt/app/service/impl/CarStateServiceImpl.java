@@ -219,6 +219,15 @@ public class CarStateServiceImpl implements CarStateService {
         }
     }
 
+    @Override
+    public Iterable<CarState> getCurrentNotPayed(String carNumber) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.HOUR, -24);
+        Date date24back = cal.getTime();
+        return carStateRepository.getCurrentNotPayed(carNumber+"%", date24back);
+    }
+
     private Page<CarStateDto> getPage(List<CarStateDto> carStates, PagingRequest pagingRequest) {
         List<CarStateDto> filtered = carStates.stream()
                 .sorted(sortCarStates(pagingRequest))

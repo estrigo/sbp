@@ -25,4 +25,6 @@ public interface PaymentService {
     Page<PaymentLogDTO> getPaymentDtoList(PagingRequest pagingRequest) throws ParseException;
 
     List<Payment> findByTransactionAndProvider(String transaction, PaymentProvider paymentProvider);
+
+    List<Payment> findByTransaction(String transaction);
 }

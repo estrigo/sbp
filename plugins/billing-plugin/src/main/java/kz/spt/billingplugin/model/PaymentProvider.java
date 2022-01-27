@@ -37,4 +37,10 @@ public class PaymentProvider {
 
     @Transient
     private String password;
+
+    String webKassaID;
+
+    String webKassaLogin;
+
+    String webKassaPassword;
 }

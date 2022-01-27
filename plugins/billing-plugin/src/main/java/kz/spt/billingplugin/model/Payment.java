@@ -66,4 +66,6 @@ public class Payment {
 
     @UpdateTimestamp
     private Date updated;
+
+    String checkNumber;
 }
