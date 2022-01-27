@@ -22,6 +22,8 @@ spring:
       - "test-plugin"
       - "booking-plugin"
       - "zerotouch-plugin"
+    main:
+      banner-mode: off
   datasource:
     url: jdbc:mysql://localhost:3306/crm?allowPublicKeyRetrieval=true&useSSL=false
     username: root

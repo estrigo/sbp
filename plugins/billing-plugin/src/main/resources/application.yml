@@ -20,3 +20,5 @@ spring:
     enabled: false
   messages:
     basename: billing-plugin
+webkassa:
+  host: https://devkkm.webkassa.kz

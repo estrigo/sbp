@@ -13,6 +13,7 @@ public class BillingInfoSuccessDto {
     public int left_free_time_minutes; // Кол-во оставшихся 15 минут на выезд.
     public String tariff;              // 100 тг/ч - Текстовое представление текущего тарифа.
     public String in_date;             // 2019-05-06 08:30:12 - Дата время последнего ВЪЕЗДА на паркинг.
+    public int hours;
     /*Список записей о ВЪЕЗДЕ (когда клиент платит за 2 и более стоянок):
     "payment_details":
             [

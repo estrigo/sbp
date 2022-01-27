@@ -2,8 +2,9 @@ package kz.spt.app.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.lib.model.dto.parkomat.ParkomatBillingInfoSuccessDto;
+import kz.spt.lib.model.dto.parkomat.ParkomatCommandDTO;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.dto.RateQueryDto;
@@ -23,7 +24,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @Log
 @Service
@@ -159,6 +162,180 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    public Object billingInteractions(ParkomatCommandDTO commandDto) throws Exception {
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
+
+        if(commandDto.getAccount() != null) {
+            if ("check".equals(commandDto.getCommand())) {
+                CarState carState = carStateService.getLastNotLeft(commandDto.getAccount());
+                if (carState == null) {
+                    BillingInfoErrorDto dto = new BillingInfoErrorDto();
+                    dto.sum = BigDecimal.ZERO;
+                    dto.txn_id  = commandDto.getTxn_id();
+                    dto.message = "Некорректный номер авто свяжитесь с оператором.";
+                    dto.result = 1;
+                    return dto;
+                } else {
+                    BillingInfoSuccessDto dto = new BillingInfoSuccessDto();
+                    dto.sum = BigDecimal.ZERO;
+                    dto.in_date = format.format(carState.getInTimestamp());
+                    dto.result = 0;
+                    dto.left_free_time_minutes = 15;
+
+                    if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())) {
+
+                        CommandDto payCommandDto = new CommandDto();
+                        payCommandDto.setTxn_id(commandDto.getTxn_id());
+                        carState.setCashlessPayment(false);
+                        BillingInfoSuccessDto paymentOfflineResult = fillPayment(carState, format, payCommandDto, carState.getPaymentJson());
+                        carState.setCashlessPayment(true);
+                        BillingInfoSuccessDto paymentOnlineResult = fillPayment(carState, format, payCommandDto, carState.getPaymentJson());
+                        ParkomatBillingInfoSuccessDto parkomatBillingInfoSuccessDto = ParkomatBillingInfoSuccessDto.convert(paymentOfflineResult);
+                        parkomatBillingInfoSuccessDto.setOnlineSum(paymentOnlineResult.sum);
+                        SimpleDateFormat simpleFormat = new SimpleDateFormat(StaticValues.simpleDateTimeFormat);
+                        Date inDate = carState.getInTimestamp();
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(inDate);
+                        calendar.add(Calendar.HOUR_OF_DAY, paymentOfflineResult.hours);
+                        parkomatBillingInfoSuccessDto.setPayed_till(simpleFormat.format(calendar.getTime()));
+                        parkomatBillingInfoSuccessDto.setIn_date(simpleFormat.format(carState.getInTimestamp().getTime()));
+                        parkomatBillingInfoSuccessDto.setHours(paymentOfflineResult.hours);
+
+                        long timeDiff = new Date().getTime()- inDate.getTime();
+                        long minutes = TimeUnit.MINUTES.convert(timeDiff, TimeUnit.MILLISECONDS);
+
+                        long leftFreeMinutes = paymentOfflineResult.left_free_time_minutes - minutes;
+
+                        parkomatBillingInfoSuccessDto.setLeft_free_time_minutes((leftFreeMinutes>0) ? (int)leftFreeMinutes : 0);
+
+                        return parkomatBillingInfoSuccessDto;
+
+
+                    } else if (Parking.ParkingType.WHITELIST_PAYMENT.equals(carState.getParking().getParkingType())) {
+                        if(carState.getPaid()){
+                            CommandDto payCommandDto = new CommandDto();
+                            payCommandDto.setTxn_id(commandDto.getTxn_id());
+                            return fillPayment(carState, format, payCommandDto, carState.getPaymentJson());
+                        }
+                    }
+                    return dto;
+                }
+            } else if ("pay".equals(commandDto.getCommand())) {
+                if(commandDto.getTxn_id() == null || "".equals(commandDto.getTxn_id().isEmpty())){
+                    BillingInfoErrorDto dto = new BillingInfoErrorDto();
+                    dto.message = "Пустое значение для поля txn_id";
+                    dto.result = 2;
+                    dto.sum = commandDto.getSum();
+                    dto.txn_id = commandDto.getTxn_id();
+                    return dto;
+                }
+                if(commandDto.getSum() == null || BigDecimal.ZERO.compareTo(commandDto.getSum()) > -1){
+                    BillingInfoErrorDto dto = new BillingInfoErrorDto();
+                    dto.message = "Некорректное значение для sum";
+                    dto.result = 3;
+                    dto.sum = commandDto.getSum();
+                    dto.txn_id = commandDto.getTxn_id();
+                    return dto;
+                }
+                CarState carState = carStateService.getLastNotLeft(commandDto.getAccount());
+                if (carState == null) {
+                    BillingInfoErrorDto dto = new BillingInfoErrorDto();
+                    dto.message = "Некорректный номер авто свяжитесь с оператором.";
+                    dto.result = 1;
+                    dto.sum = commandDto.getSum();
+                    dto.txn_id = commandDto.getTxn_id();
+                    return dto;
+                } else {
+                    PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+                    if (billingPluginRegister != null) {
+
+
+                        ObjectNode node = this.objectMapper.createObjectNode();
+                        node.put("command", "getParkomatClientId");
+                        node.put("parkomatId", commandDto.getParkomat());
+                        JsonNode clientIdResult = billingPluginRegister.execute(node);
+
+                        String clientId = clientIdResult.get("clientId").textValue();
+
+                        node = this.objectMapper.createObjectNode();
+                        node.put("command", "savePayment");
+                        node.put("carNumber", commandDto.getAccount());
+                        node.put("sum", commandDto.getSum());
+                        node.put("transaction", commandDto.getTxn_id());
+                        node.put("parkingId", carState.getParking().getId());
+                        node.put("carStateId", carState.getId());
+                        node.put("inDate", format.format(carState.getInTimestamp()));
+                        node.put("clientId", clientId);
+
+                        Cars cars = carService.findByPlatenumberWithCustomer(commandDto.getAccount());
+                        if(cars != null && cars.getCustomer() != null){
+                            node.put("customerId", cars.getCustomer().getId());
+                        }
+
+                        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+                        if (ratePluginRegister != null) {
+                            ObjectNode rateRequestNode = this.objectMapper.createObjectNode();
+                            rateRequestNode.put("parkingId", carState.getParking().getId());
+                            JsonNode result = ratePluginRegister.execute(rateRequestNode);
+                            String rateName = result.get("rateName").textValue();
+                            Long rateId = result.get("rateName").longValue();
+                            node.put("rateName", rateName);
+                            node.put("rateId", rateId);
+                        }
+
+                        JsonNode result = billingPluginRegister.execute(node);
+                        if (result.has("paymentError")){
+                            BillingInfoErrorDto dto = new BillingInfoErrorDto();
+                            dto.result = result.get("paymentErrorCode").intValue();
+                            dto.message = result.get("paymentError").textValue();
+                            dto.txn_id = commandDto.getTxn_id();
+                            dto.sum = commandDto.getSum();
+                            return dto;
+                        }
+                        Long paymentId = result.get("paymentId").longValue();
+
+                        carState.setAmount(carState.getAmount() != null ? carState.getAmount().add(commandDto.getSum()) : commandDto.getSum()); // if he paid early we should add this amount
+                        carState.setPaymentId(paymentId);
+                        carState.setPaymentJson(result.get("paymentArray").toString());
+                        carState.setCashlessPayment(result.get("cashlessPayment").booleanValue());
+                        carStateService.save(carState);
+
+                        BillingPaymentSuccessDto dto = new BillingPaymentSuccessDto();
+                        dto.result = 0;
+                        dto.sum = commandDto.getSum();
+                        dto.txn_id = commandDto.getTxn_id();
+                        dto.payment_id = paymentId.toString();
+                        return dto;
+                    }
+                }
+            } else if ("getCheck".equals(commandDto.getCommand())) {
+
+                PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+                ObjectNode node = this.objectMapper.createObjectNode();
+                node.put("command", "getCheck");
+                node.put("parkomatId", commandDto.getParkomat());
+                node.put("sum", commandDto.getSum());
+                node.put("change", commandDto.getChange());
+                node.put("change", commandDto.getChange());
+                node.put("txn_id", commandDto.getTxn_id());
+                node.put("operationName", "Оплата парковки");
+                node.put("paymentType", 0);
+                JsonNode checkResult = billingPluginRegister.execute(node);
+                return checkResult;
+            } else if ("zReport".equals(commandDto.getCommand())) {
+
+                PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+                ObjectNode node = this.objectMapper.createObjectNode();
+                node.put("command", "zReport");
+                node.put("parkomatId", commandDto.getParkomat());
+                JsonNode checkResult = billingPluginRegister.execute(node);
+                return checkResult;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public BigDecimal getRateValue(RateQueryDto rateQueryDto) throws Exception {
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
 
@@ -196,6 +373,7 @@ public class PaymentServiceImpl implements PaymentService {
             dto.left_free_time_minutes = result.get("rateFreeMinutes").intValue();
             dto.tariff = result.get("rateName") != null ? result.get("rateName").textValue() : "";
             dto.txn_id = commandDto.txn_id;
+            dto.hours = result.get("payed_till") != null ? (int) result.get("payed_till").longValue() : 0;
         }
         PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
         if (billingPluginRegister != null) {
