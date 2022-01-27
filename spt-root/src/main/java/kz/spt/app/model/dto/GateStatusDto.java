@@ -20,6 +20,7 @@ public class GateStatusDto {
     public SensorStatusDto loop;
     public SensorStatusDto photoElement;
     public CameraStatusDto frontCamera;
+    public CameraStatusDto frontCamera2;
     public CameraStatusDto backCamera;
 
     public GateStatus gateStatus = GateStatus.Closed;
@@ -81,8 +82,15 @@ public class GateStatusDto {
         if(cameraList.size() > 0){
             for(Camera camera: cameraList){
                 if(Camera.CameraType.FRONT.equals(camera.getCameraType())){
-                    gateStatusDto.frontCamera = new CameraStatusDto();
-                    gateStatusDto.frontCamera.id = camera.getId();
+                    if(gateStatusDto.frontCamera == null){
+                        gateStatusDto.frontCamera = new CameraStatusDto();
+                        gateStatusDto.frontCamera.id = camera.getId();
+                        gateStatusDto.frontCamera.ip = camera.getIp();
+                    } else {
+                        gateStatusDto.frontCamera2 = new CameraStatusDto();
+                        gateStatusDto.frontCamera2.id = camera.getId();
+                        gateStatusDto.frontCamera2.ip = camera.getIp();
+                    }
                 }
                 if(Camera.CameraType.BACK.equals(camera.getCameraType())){
                     gateStatusDto.backCamera = new CameraStatusDto();

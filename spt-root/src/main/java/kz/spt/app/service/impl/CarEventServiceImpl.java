@@ -150,11 +150,21 @@ public class CarEventServiceImpl implements CarEventService {
         properties.put("lp_rect", eventDto.lp_rect);
         properties.put("cameraIp", eventDto.ip_address);
 
+        GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(camera.getGate().getId());
+
         if (camera != null) {
             if (!eventDto.manualOpen) {
-                if (concurrentHashMap.containsKey(eventDto.ip_address)) {
-                    Long timeDiffInMillis = System.currentTimeMillis() - concurrentHashMap.get(eventDto.ip_address);
-                    if (timeDiffInMillis < (camera.getTimeout() == null ? 0 : camera.getTimeout() * 1000)) { // If interval smaller than timeout then ignore else proceed
+                String secondCameraIp = (gate.frontCamera2 != null) ? (eventDto.ip_address.equals(gate.frontCamera.ip) ? gate.frontCamera2.ip : gate.frontCamera.ip): null; // If there is two camera, then ignore second by timeout
+
+                if (concurrentHashMap.containsKey(eventDto.ip_address) || (secondCameraIp != null && concurrentHashMap.containsKey(secondCameraIp))) {
+                    Long timeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(eventDto.ip_address) ? concurrentHashMap.get(eventDto.ip_address) : 0);
+                    int timeout = (camera.getTimeout() == null ? 0 : camera.getTimeout() * 1000);
+                    if(secondCameraIp != null){
+                        Long secondCameraTimeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(secondCameraIp) ? concurrentHashMap.get(secondCameraIp) : 0);
+                        timeDiffInMillis = timeDiffInMillis < secondCameraTimeDiffInMillis ? timeDiffInMillis : secondCameraTimeDiffInMillis;
+                    }
+
+                    if (timeDiffInMillis < timeout) { // If interval smaller than timeout then ignore else proceed
                         log.info("Ignored event from camera: " + eventDto.ip_address + " time: " + timeDiffInMillis);
                         return;
                     } else {
@@ -177,7 +187,7 @@ public class CarEventServiceImpl implements CarEventService {
                 properties.put(StaticValues.carImagePropertyName, carImageUrl);
                 properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
             }
-            GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(camera.getGate().getId());
+
             log.info("Camera belongs to gate: " + gate.gateId);
             if (gate.frontCamera != null && gate.frontCamera.id == camera.getId()) {
                 gate.frontCamera.carEventDto = eventDto;
@@ -260,7 +270,7 @@ public class CarEventServiceImpl implements CarEventService {
         boolean hasAccess;
         JsonNode whitelistCheckResults = null;
 
-        // проверить если машины выезжала или заезжала 2 минуты назад
+        // проверить если машины выезжала или заезжала 20 секунд минуты назад
         Calendar now = Calendar.getInstance();
         now.add(Calendar.SECOND, -20);
         Boolean hasLeft = carStateService.getIfHasLastFromOtherCamera(eventDto.car_number, eventDto.ip_address, now.getTime());

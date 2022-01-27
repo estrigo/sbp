@@ -8,6 +8,7 @@ import java.util.Map;
 public class CameraStatusDto {
 
     public Long id;
+    public String ip;
 
     public Map<String, Object> properties = new HashMap<>();
     public CarEventDto carEventDto = null;
