@@ -26,14 +26,12 @@
                             </tr>
                             </thead>
                         </table>
-                        <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
-                            <div class="form-group row">
-                                <div class="col-12">
-                                    <button data-toggle="modal" data-target="#provider-close-modal" class="btn btn-danger waves-effect waves-light"
-                                            th:text="#{crm.add}" th:onclick="providerModalContent(null)"></button>
-                                </div>
+                        <div class="form-group row" id="addBlockId" style="display: none;">
+                            <div class="col-12">
+                                <button data-toggle="modal" data-target="#provider-close-modal" class="btn btn-danger waves-effect waves-light"
+                                        th:text="#{crm.add}" th:onclick="providerModalContent(null)"></button>
                             </div>
-                        </th:block>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -72,10 +70,17 @@
 <script th:inline="javascript">
     var address = '/plugins/datatables/json/ru.json';
     var locale = [[${#locale}]];
+    let canEdit = [[${canEdit}]];
+
+    if(canEdit){
+        $('#addBlockId').show();
+    }
+
     if (locale == "en") {
         address = "";
     }
     $(document).ready(function() {
+
         var table = $('#providers').DataTable({
             "processing": true,
             "serverSide": true,
@@ -92,7 +97,7 @@
                 { "data": "cashlessPayment" },
                 {"data": "id",
                     "orderable": false,
-                    "visible": [[${canEdit}]],
+                    "visible": canEdit,
                     "render" : function(id){
                         return '<a href="#" data-toggle="modal" data-target="#provider-close-modal" providerid="' + id + '" onClick="providerModalContent(this.getAttribute(\'providerid\'))">'+ [[#{crm.edit}]] + ' </a>';
                 }}

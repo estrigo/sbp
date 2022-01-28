@@ -17,19 +17,15 @@ public class PaymentProviderDTO {
     public String name;
     public String clientId;
     public String enabled;
-    public Boolean canEdit = true;
     public String cashlessPayment;
 
-    public static PaymentProviderDTO convertToDto(PaymentProvider paymentProvider, UserDetails currentUser) {
-
-        boolean canEdit = currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority()));
+    public static PaymentProviderDTO convertToDto(PaymentProvider paymentProvider) {
 
         PaymentProviderDTO paymentProviderDTO = new PaymentProviderDTO();
         paymentProviderDTO.setId(paymentProvider.getId());
         paymentProviderDTO.setProvider(paymentProvider.getProvider());
         paymentProviderDTO.setName( paymentProvider.getName());
         paymentProviderDTO.setClientId(paymentProvider.getClientId());
-        paymentProviderDTO.setCanEdit(canEdit);
         paymentProviderDTO.setEnabled(paymentProvider.getEnabled() != null && paymentProvider.getEnabled() ? "Allowed" : "Not Allowed");
         paymentProviderDTO.setCashlessPayment(paymentProvider.getCashlessPayment() != null && paymentProvider.getCashlessPayment() ? "Allowed" : "Not Allowed");
         return paymentProviderDTO;

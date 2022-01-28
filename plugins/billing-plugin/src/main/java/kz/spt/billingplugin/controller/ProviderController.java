@@ -6,6 +6,7 @@ import kz.spt.billingplugin.model.PaymentProvider;
 import kz.spt.billingplugin.service.PaymentProviderService;
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Gate;
+import lombok.extern.java.Log;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,19 +36,19 @@ public class ProviderController {
     }
 
     @GetMapping("/list")
-    public String showAllProviders(Model model) {
+    public String showAllProviders(Model model, @AuthenticationPrincipal UserDetails currentUser) {
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
         return "/billing/providers/list";
     }
 
     @PostMapping("/list")
-    public ResponseEntity getData(Model model, @AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity getData(Model model) {
         List<PaymentProvider> paymentProviderList = (List<PaymentProvider>) paymentProviderService.listAllPaymentProviders();
         TableDataDTO tableDataDTO = new TableDataDTO();
         tableDataDTO.setDraw(1);
         tableDataDTO.setRecordsTotal(10);
         tableDataDTO.setRecordsFiltered(1);
-        tableDataDTO.setData(paymentProviderList.stream().map(paymentProvider -> PaymentProviderDTO.convertToDto(paymentProvider, currentUser)).collect(Collectors.toList()));
-        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
+        tableDataDTO.setData(paymentProviderList.stream().map(paymentProvider -> PaymentProviderDTO.convertToDto(paymentProvider)).collect(Collectors.toList()));
         return new ResponseEntity(tableDataDTO, HttpStatus.OK);
     }
 
