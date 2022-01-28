@@ -27,21 +27,21 @@
         <div class="col-md-6">
             <div class="form-group">
                 <label for="type" class="control-label" th:text="#{barrier.type}"></label>
-                <select th:field="*{barrierType}" th:value="*{barrierType}" class="form-control" id="type">
+                <select th:field="*{barrierType}" th:value="*{barrierType}" class="form-control" id="barrierType" onchange="changeBarrierType()">
                     <option th:each="barrierType : ${T(kz.spt.lib.model.Barrier.BarrierType).ALL}"
                             th:value="${barrierType}" th:text="#{'barrier.barrierType.' + ${barrierType}}">
                     </option>
                 </select>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6" id="snmpPassword">
             <div class="form-group">
                 <label for="password" class="control-label" th:text="#{barrier.password}"></label>
                 <input type="text" class="form-control" id="password" th:field="*{password}" th:value="*{password}">
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row" id="snmpOpenOidDiv">
         <div class="col-md-12">
             <div class="form-group">
                 <label for="openOid" class="control-label" th:text="#{barrier.openOid}"></label>
@@ -49,7 +49,7 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row" id="snmpCloseOidDiv">
         <div class="col-md-12">
             <div class="form-group">
                 <label for="closeOid" class="control-label" th:text="#{barrier.closeOid}"></label>
@@ -57,7 +57,7 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row" id="snmpVersionDiv">
         <div class="col-md-6">
             <div class="form-group">
                 <label for="snmpVersion" class="control-label" th:text="#{barrier.snmpVersion}"></label>
@@ -66,6 +66,21 @@
                     <option value="1">1</option>
                     <option value="3">3</option>
                 </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="modbusBarrierDiv">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="snmpVersion" class="control-label" th:text="#{barrier.modbusOpenRegister}"></label>
+                <input type="number" step="1" min="0" max="64" class="form-control" id="modbusOpenRegister" th:field="*{modbusOpenRegister}" th:value="*{modbusOpenRegister}">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="snmpVersion" class="control-label" th:text="#{barrier.modbusCloseRegister}"></label>
+                <input type="number" step="1" min="0" max="64" class="form-control" id="modbusCloseRegister" th:field="*{modbusCloseRegister}" th:value="*{modbusCloseRegister}">
             </div>
         </div>
     </div>
@@ -129,6 +144,15 @@
                     </select>
                 </div>
             </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="loopDefaultValue" class="control-label" th:text="#{barrier.defaultValue}"></label>
+                    <select th:field="*{loopDefaultValue}" th:value="*{loopDefaultValue}" class="form-control" id="loopDefaultValue">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
 
@@ -174,6 +198,15 @@
                         <option value="0">0</option>
                         <option value="1">1</option>
                         <option value="3">3</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="photoElementDefaultValue" class="control-label" th:text="#{barrier.defaultValue}"></label>
+                    <select th:field="*{photoElementDefaultValue}" th:value="*{photoElementDefaultValue}" class="form-control" id="photoElementDefaultValue">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
                     </select>
                 </div>
             </div>

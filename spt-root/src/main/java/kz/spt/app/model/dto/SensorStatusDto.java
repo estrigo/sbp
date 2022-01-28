@@ -11,4 +11,5 @@ public class SensorStatusDto {
     public Integer snmpVersion;
     public Barrier.BarrierType type;
     public String sensorName; // For test only
+    public Integer defaultValue = 0;
 }

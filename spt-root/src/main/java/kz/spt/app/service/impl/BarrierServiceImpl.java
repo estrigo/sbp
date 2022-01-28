@@ -1,9 +1,14 @@
 package kz.spt.app.service.impl;
 
 import com.intelligt.modbus.jlibmodbus.Modbus;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import com.intelligt.modbus.jlibmodbus.master.ModbusMaster;
+import com.intelligt.modbus.jlibmodbus.master.ModbusMasterFactory;
 import com.intelligt.modbus.jlibmodbus.master.ModbusMasterRTU;
 import com.intelligt.modbus.jlibmodbus.serial.SerialParameters;
+import com.intelligt.modbus.jlibmodbus.tcp.TcpParameters;
 import kz.spt.app.job.CarSimulateJob;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
@@ -20,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.text.ParseException;
 import java.util.Map;
 
@@ -70,7 +76,11 @@ public class BarrierServiceImpl implements BarrierService {
                     String carDetectedString = client.getCurrentValue(sensor.oid);
                     int carDetected = -1;
                     if(carDetectedString != null){
-                        carDetected = Integer.valueOf(carDetectedString);
+                        if (sensor.defaultValue == null || sensor.defaultValue == 0) {
+                            carDetected = Integer.valueOf(carDetectedString);
+                        } else if (sensor.defaultValue == 1) {
+                            carDetected = Integer.valueOf(carDetectedString) == 0 ? 1 : 0; // бывает фотоэлементы которые работают наоборот вместе 0 выдают 1, а вместе 1 выдают 0;
+                        }
                     }
                     client.close();
                     return carDetected;
@@ -82,10 +92,18 @@ public class BarrierServiceImpl implements BarrierService {
             }
         } else { // for test
             if("loop".equals(sensor.sensorName) && CarSimulateJob.magneticLoopMap.containsKey(sensor.barrierId)){
-                return CarSimulateJob.magneticLoopMap.get(sensor.barrierId) ? 0 : 1;
+                if (sensor.defaultValue == null || sensor.defaultValue == 0) {
+                    return CarSimulateJob.magneticLoopMap.get(sensor.barrierId) ? 0 : 1;
+                } else if (sensor.defaultValue == 1) {
+                    return CarSimulateJob.magneticLoopMap.get(sensor.barrierId) ? 1 : 0;
+                }
             }
             if("photoElement".equals(sensor.sensorName) && CarSimulateJob.photoElementLoopMap.containsKey(sensor.barrierId)){
-                return CarSimulateJob.photoElementLoopMap.get(sensor.barrierId) ? 0 : 1;
+                if (sensor.defaultValue == null || sensor.defaultValue == 0) {
+                    return CarSimulateJob.photoElementLoopMap.get(sensor.barrierId) ? 0 : 1;
+                } else if (sensor.defaultValue == 1) {
+                    return CarSimulateJob.photoElementLoopMap.get(sensor.barrierId) ? 1 : 0;
+                }
             }
             return -1;
         }
@@ -104,8 +122,7 @@ public class BarrierServiceImpl implements BarrierService {
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
                 return snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
-                // TODO: open modbus type
-                return false;
+                return modbusChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
             }
         }
         return true;
@@ -124,8 +141,7 @@ public class BarrierServiceImpl implements BarrierService {
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
                 return snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Close);
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
-                // TODO: close modbus type
-                return false;
+                return modbusChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Close);
             }
         }
         return true;
@@ -189,7 +205,7 @@ public class BarrierServiceImpl implements BarrierService {
 
         if (BARRIER_OFF.equals(currentValue)) {
             Boolean isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
-            log.info(" isOpenValueChanged: " + isOpenValueChanged);
+            log.info("snmp isOpenValueChanged: " + isOpenValueChanged);
             if (!isOpenValueChanged) {
                 for (int i = 0; i < 3; i++) {
                     isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
@@ -199,7 +215,7 @@ public class BarrierServiceImpl implements BarrierService {
                 }
                 if (!isOpenValueChanged) {
                     result = false;
-                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
+                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 1 чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
                 }
             }
             if((Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType)) && isOpenValueChanged) {
@@ -242,10 +258,84 @@ public class BarrierServiceImpl implements BarrierService {
     private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) {
         Boolean result = true;
 
-        SerialParameters parameters = new SerialParameters();
-//            parameters.set
-//            ModbusMaster modbusMaster = new ModbusMasterRTU(parameters);
-//            modbusMaster.connect();
-        return true;
+        try {
+            TcpParameters tcpParameters = new TcpParameters();
+
+            //tcp parameters have already set by default as in example
+            tcpParameters.setHost(InetAddress.getByName(barrier.ip));
+            tcpParameters.setKeepAlive(true);
+            tcpParameters.setPort(Modbus.TCP_PORT);
+
+            ModbusMaster m = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
+
+            int slaveId = 1;
+            int offset = Command.Open.equals(command) ? barrier.modbusOpenRegister-1 : barrier.modbusCloseRegister;
+
+            try {
+                // since 1.2.8
+                if (!m.isConnected()) {
+                    m.connect();
+                }
+
+                Boolean isOpenValueChanged = false;
+                m.writeSingleCoil(slaveId, offset, true);
+                boolean[] changedValue = m.readCoils(slaveId, offset, 1);
+                if(changedValue != null && changedValue.length > 0 && changedValue[0]){
+                    isOpenValueChanged = true;
+                }
+                log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
+                if (!isOpenValueChanged) {
+                    for (int i = 0; i < 3; i++) {
+                        m.writeSingleCoil(slaveId, offset, true);
+                        if(changedValue != null && changedValue.length > 0 && changedValue[0]){
+                            isOpenValueChanged = true;
+                            break;
+                        }
+                    }
+                    if (!isOpenValueChanged) {
+                        result = false;
+                        eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение true чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
+                    }
+                } else {
+                    Thread.sleep(500);
+                    boolean[] currentValue = m.readCoils(slaveId, offset, 1);
+                    if(currentValue != null && currentValue.length > 0 && currentValue[0]){
+                        m.writeSingleCoil(slaveId, offset, false);
+                        currentValue = m.readCoils(slaveId, offset, 1);
+                        Boolean isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
+                        if(!isReturnValueChanged){
+                            for (int i = 0; i < 3; i++) {
+                                m.writeSingleCoil(slaveId, offset, false);
+                                isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
+                                if (isReturnValueChanged) {
+                                    break;
+                                }
+                            }
+                            if (!isReturnValueChanged) {
+                                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 0 for terminating opening process " + (carNumber != null ? " for car number " + carNumber : ""));
+                            }
+                        }
+                    }
+                }
+            } catch (ModbusProtocolException e) {
+                e.printStackTrace();
+            } catch (ModbusNumberException e) {
+                e.printStackTrace();
+            } catch (ModbusIOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    m.disconnect();
+                } catch (ModbusIOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 }

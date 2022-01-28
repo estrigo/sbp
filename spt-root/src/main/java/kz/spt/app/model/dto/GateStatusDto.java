@@ -64,6 +64,7 @@ public class GateStatusDto {
                 gateStatusDto.loop.oid = barrier.getLoopOid();
                 gateStatusDto.loop.snmpVersion = barrier.getLoopSnmpVersion();
                 gateStatusDto.loop.type = barrier.getLoopType();
+                gateStatusDto.loop.defaultValue  = barrier.getLoopDefaultValue();
                 gateStatusDto.loop.sensorName = "loop";
             }
             if(barrier.getPhotoElementIp() != null && barrier.getPhotoElementPassword() != null && barrier.getPhotoElementOid() != null && barrier.getPhotoElementType() != null){
@@ -74,6 +75,7 @@ public class GateStatusDto {
                 gateStatusDto.photoElement.oid = barrier.getPhotoElementOid();
                 gateStatusDto.photoElement.snmpVersion = barrier.getPhotoElementSnmpVersion();
                 gateStatusDto.photoElement.type = barrier.getPhotoElementType();
+                gateStatusDto.loop.defaultValue  = barrier.getPhotoElementDefaultValue();
                 gateStatusDto.photoElement.sensorName = "photoElement";
 
             }

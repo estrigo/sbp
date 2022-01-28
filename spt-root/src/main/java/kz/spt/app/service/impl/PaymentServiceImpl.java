@@ -360,6 +360,7 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("parkingId", carState.getParking().getId());
             node.put("inDate", format.format(carState.getInTimestamp()));
             node.put("outDate", format.format(new Date()));
+            node.put("isCheck", true);
             node.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : false);
             node.put("paymentsJson", paymentsJson);
 
@@ -371,6 +372,9 @@ public class PaymentServiceImpl implements PaymentService {
             dto.in_date = format.format(carState.getInTimestamp());
             dto.result = 0;
             dto.left_free_time_minutes = result.get("rateFreeMinutes").intValue();
+
+            log.info("dto.left_free_time_minutes: " + dto.left_free_time_minutes);
+
             dto.tariff = result.get("rateName") != null ? result.get("rateName").textValue() : "";
             dto.txn_id = commandDto.txn_id;
             dto.hours = result.get("payed_till") != null ? (int) result.get("payed_till").longValue() : 0;

@@ -195,6 +195,7 @@
             $.get("/parking/barrier/" + barrierId, function (data) {
                 $('#barrier-close-modal').find('#barrierModalBody').html(data);
                 changeSensorsBlock();
+                changeBarrierType();
             });
         } else if(gateId) {
             $.get("/parking/" + gateId + "/new/barrier/", function (data) {
@@ -231,6 +232,24 @@
             $('#barrier-close-modal').find('#sensorBlock').hide();
         } else {
             $('#barrier-close-modal').find('#sensorBlock').show();
+        }
+    }
+
+    function changeBarrierType(){
+        let barrierType = $('#barrier-close-modal').find('#barrierType').val();
+        console.log("barrierType: " + barrierType);
+        if("SNMP" === barrierType){
+            $('#barrier-close-modal').find('#snmpPassword').show();
+            $('#barrier-close-modal').find('#snmpOpenOidDiv').show();
+            $('#barrier-close-modal').find('#snmpCloseOidDiv').show();
+            $('#barrier-close-modal').find('#snmpVersionDiv').show();
+            $('#barrier-close-modal').find('#modbusBarrierDiv').hide();
+        } else {
+            $('#barrier-close-modal').find('#snmpPassword').hide();
+            $('#barrier-close-modal').find('#snmpOpenOidDiv').hide();
+            $('#barrier-close-modal').find('#snmpCloseOidDiv').hide();
+            $('#barrier-close-modal').find('#snmpVersionDiv').hide();
+            $('#barrier-close-modal').find('#modbusBarrierDiv').show();
         }
     }
 </script>

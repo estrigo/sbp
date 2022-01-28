@@ -62,6 +62,12 @@ public class Barrier {
     @JoinColumn(name = "gate")
     private Gate gate;
 
+    @Column(name = "modbus_open_register")
+    private Integer modbusOpenRegister;
+
+    @Column(name = "modbus_close_register")
+    private Integer modbusCloseRegister;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "sensors_type")
     private Barrier.SensorsType sensorsType;
@@ -80,6 +86,8 @@ public class Barrier {
 
     private Integer loopSnmpVersion;
 
+    private Integer loopDefaultValue = 0;
+
     // --- Данные фотоэлемента для проверки присуствия машины (До шлагбаума)
     @Enumerated(EnumType.STRING)
     @Column(name = "loop_type")
@@ -92,6 +100,8 @@ public class Barrier {
     private String photoElementOid;
 
     private Integer photoElementSnmpVersion;
+
+    private Integer photoElementDefaultValue = 0;
 
     @CreationTimestamp
     private Date created;

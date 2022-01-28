@@ -12,6 +12,8 @@ public class BarrierStatusDto {
     public Integer snmpVersion;
     public String openOid;
     public String closeOid;
+    public Integer modbusOpenRegister;
+    public Integer modbusCloseRegister;
 
     public static BarrierStatusDto fromBarrier(Barrier barrier){
         BarrierStatusDto barrierStatusDto = new BarrierStatusDto();
@@ -23,6 +25,8 @@ public class BarrierStatusDto {
         barrierStatusDto.openOid = barrier.getOpenOid();
         barrierStatusDto.closeOid = barrier.getCloseOid();
         barrierStatusDto.sensorsType = barrier.getSensorsType();
+        barrierStatusDto.modbusOpenRegister = barrier.getModbusOpenRegister();
+        barrierStatusDto.modbusCloseRegister = barrier.getModbusCloseRegister();
         return barrierStatusDto;
     }
 }

@@ -36,10 +36,11 @@ public class CommandExecutor implements PluginRegister {
                 if(command.get("inDate")!=null && command.get("outDate")!=null){
                     Date inDate = format.parse(command.get("inDate").textValue());
                     Date outDate = format.parse(command.get("outDate").textValue());
-                    Boolean cashlessPayment = command.get("cashlessPayment").booleanValue();
+                    Boolean cashlessPayment = command.has("cashlessPayment") ?  command.get("cashlessPayment").booleanValue() : false;
+                    Boolean isCheck = command.has("isCheck") ? command.get("isCheck").booleanValue() : false;
                     String paymentsJson = command.has("paymentsJson") && command.get("paymentsJson")!=null ? command.get("paymentsJson").textValue() : null;
 
-                    node.put("rateResult", getRateService().calculatePayment(parkingId, inDate, outDate, cashlessPayment, paymentsJson));
+                    node.put("rateResult", getRateService().calculatePayment(parkingId, inDate, outDate, cashlessPayment, isCheck, paymentsJson));
                     node.put("rateFreeMinutes", getRateService().calculateFreeMinutes(parkingId, inDate, outDate, paymentsJson));
                     long timeDiff = Math.abs(outDate.getTime() - inDate.getTime());
                     long hours = TimeUnit.HOURS.convert(timeDiff, TimeUnit.MILLISECONDS);

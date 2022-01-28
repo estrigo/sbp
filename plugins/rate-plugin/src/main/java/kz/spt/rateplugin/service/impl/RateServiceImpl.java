@@ -45,21 +45,27 @@ public class RateServiceImpl implements RateService {
     }
 
     @Override
-    public BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment, String paymentsJson) throws JsonProcessingException {
+    public BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment, Boolean isCheck, String paymentsJson) throws JsonProcessingException {
 
         ParkingRate parkingRate = getByParkingId(parkingId);
 
         Calendar inCalendar = Calendar.getInstance();
         inCalendar.setTime(inDate);
-        inCalendar.add(Calendar.MINUTE, parkingRate.getBeforeFreeMinutes());
 
         Calendar outCalendar = Calendar.getInstance();
         outCalendar.setTime(outDate);
 
+        if(!isCheck){
+            inCalendar.add(Calendar.MINUTE, parkingRate.getBeforeFreeMinutes());
+        }
+
         if (!inCalendar.before(outCalendar)) {
             return BigDecimal.ZERO;
         }
-        inCalendar.add(Calendar.MINUTE, (-1) * parkingRate.getBeforeFreeMinutes());
+
+        if(!isCheck){
+            inCalendar.add(Calendar.MINUTE, (-1) * parkingRate.getBeforeFreeMinutes());
+        }
 
         BigDecimal result = BigDecimal.ZERO;
 
@@ -237,12 +243,12 @@ public class RateServiceImpl implements RateService {
         Calendar outCalendar = Calendar.getInstance();
         outCalendar.setTime(outDate);
 
-        if(outDate.before(inDate)){ // Еще не истекли время бесплатных минут
+        if(outCalendar.getTime().before(inCalendar.getTime())){ // Еще не истекли время бесплатных минут
             inCalendar.add(Calendar.MINUTE, (-1)*parkingRate.getBeforeFreeMinutes());
             int seconds = (int) (outDate.getTime() - inDate.getTime()) / 1000;
             int minutesPassed = seconds / 60;
 
-            freeMinutes =  minutesPassed;
+            freeMinutes = parkingRate.getBeforeFreeMinutes() - minutesPassed - 1;
         } else {
             Date lastPaymentDate = getLastPaymentDate(payments);
             if(lastPaymentDate != null){

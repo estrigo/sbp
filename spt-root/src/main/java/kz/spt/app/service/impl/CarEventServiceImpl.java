@@ -567,6 +567,7 @@ public class CarEventServiceImpl implements CarEventService {
                             ratePluginNode.put("inDate", format.format(carState.getInTimestamp()));
                             ratePluginNode.put("outDate", format.format(eventDto.event_time));
                             ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : false);
+                            ratePluginNode.put("isCheck", false);
                             ratePluginNode.put("paymentsJson", carState.getPaymentJson());
 
                             JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
