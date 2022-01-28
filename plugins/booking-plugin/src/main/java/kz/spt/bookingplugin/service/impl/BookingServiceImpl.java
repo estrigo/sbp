@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.bookingplugin.model.BookingLog;
+import kz.spt.bookingplugin.repository.BookingRepository;
 import kz.spt.bookingplugin.service.BookingService;
 import lombok.extern.java.Log;
 import org.apache.http.HttpEntity;
@@ -28,6 +30,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class BookingServiceImpl implements BookingService {
 
+    private BookingRepository bookingRepository;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${booking.halapark.check}")
@@ -42,8 +46,13 @@ public class BookingServiceImpl implements BookingService {
     private static String halaparkToken;
     private static Long lastTokenCheck;
 
+    public BookingServiceImpl(BookingRepository bookingRepository){
+        this.bookingRepository  = bookingRepository;
+    }
+
     @Override
     public Boolean checkBookingValid(String plateNumber) throws IOException, URISyntaxException {
+        boolean valid = true;
         if(bookingHalaparkCheck){
             String desiredFormat = convertToHalaparkRequestFormat(plateNumber);
             log.info("halapark checking platenumer: " + plateNumber + "by desired format: " + desiredFormat);
@@ -74,7 +83,11 @@ public class BookingServiceImpl implements BookingService {
             String halaparkPostResponseBodyString = EntityUtils.toString(entity);
             EntityUtils.consume(contentHalaparkPostResponse.getEntity());
 
-            log.info("halapark post response: " + halaparkPostResponseBodyString );
+            BookingLog bookingLog = BookingLog.builder().build();
+            bookingLog.setRequest(halaparkPostNode.toString());
+            bookingLog.setResonse(halaparkPostResponseBodyString);
+            bookingLog.setPlatenumber(plateNumber);
+            bookingLog.setHasBooking(false);
 
             JsonNode halaparkResponseNode = objectMapper.readTree(halaparkPostResponseBodyString);
             //{"response":{"status":false,"message":"Token has been expired"}}
@@ -90,20 +103,19 @@ public class BookingServiceImpl implements BookingService {
                             JsonNode result = iterator.next();
                             if(result.has("identifier")){
                                 String halaparkNumber = result.get("identifier").textValue();
-                                if(halaparkNumber.replaceAll(" ", "").endsWith(parqourCheckFormat)){
-                                    return true;
+                                if(halaparkNumber.toUpperCase().replaceAll(" ", "").endsWith(parqourCheckFormat)){
+                                    bookingLog.setHasBooking(true);
+                                    valid = true;
                                 }
                             }
                         }
-                        return false;
-                    } else {
-                        return false;
                     }
                 }
             }
             halaparkHttpClient.close();
+            bookingRepository.save(bookingLog);
         }
-        return false;
+        return valid;
     }
 
     private void getToken() throws IOException {

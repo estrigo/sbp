@@ -1,21 +1,21 @@
-package kz.spt.zerotouchplugin.model;
+package kz.spt.bookingplugin.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.envers.Audited;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
+import java.util.Date;
 
 @Entity
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "zero_touch_log")
-public class ZeroTouchLog {
+@Table(name = "booking_log")
+public class BookingLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,15 +27,12 @@ public class ZeroTouchLog {
 
     private String platenumber;
 
-    private BigDecimal rate;
-
-    private String provider;
-
     private String request;
 
     private String resonse;
 
-    private Boolean isPaid;
+    private Boolean hasBooking;
 
-    private Long txtID;
+    @CreationTimestamp
+    private Date created;
 }
