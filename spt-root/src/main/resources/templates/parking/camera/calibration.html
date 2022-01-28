@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<div class="content">
+    <div class="container">
+        <div class="row" th:with="camera=${camera}">
+            <div class="col-8">
+                <div class="btn-toolbar justify-content-between" role="toolbar">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-secondary mr-2" id="streamOn" onclick="toggleOn(this)"
+                                th:text="#{camera.streamOn}" disabled>On/off
+                        </button>
+                        <div class="btn-group mr-2" role="group">
+                            <button id="toolDropdown" type="button" class="btn btn-secondary dropdown-toggle"
+                                    data-toggle="dropdown" th:text="#{camera.tools}">
+                                Tools
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="toolDropdown">
+                                <a class="dropdown-item" href="#" onclick="toolsChanged(this)"
+                                   th:text="#{camera.maxWidth}" data-tool="max_width"
+                                   th:attr="data-title=#{camera.maxWidth}">Max width</a>
+                                <a class="dropdown-item" href="#" onclick="toolsChanged(this)"
+                                   th:text="#{camera.minWidth}" data-tool="min_width"
+                                   th:attr="data-title=#{camera.minWidth}">Min width</a>
+                                <a class="dropdown-item" href="#" onclick="toolsChanged(this)"
+                                   th:text="#{camera.mask}" data-tool="mask"
+                                   th:attr="data-title=#{camera.mask}">Mask</a>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary mr-2" th:text="#{crm.close}" onclick="reset()">
+                            Close
+                        </button>
+                        <button type="button" class="btn btn-success" th:text="#{crm.save}" onclick="save()">Save
+                        </button>
+                    </div>
+                    <div>
+                        <img th:src="@{#{arm.loading}}" width="20" height="20" id="loading" style="display: none">
+                        <button class="btn btn-secondary" onclick="updateSnapshot()" id="refresh"><span
+                                class="mdi mdi-refresh"></span></button>
+                    </div>
+                </div>
+                <div class="row">
+                    <canvas style="margin-top: 10px;" class="col-12" id="screen"
+                            th:attr="data-id=${camera.id}"></canvas>
+                </div>
+            </div>
+            <div class="col-4">
+                <form>
+                    <fieldset>
+                        <legend>Детали</legend>
+                        <hr/>
+                        <div class="form-group">
+                            <label>
+                                [[#{camera.maxWidth}]]: <label class="text-inverse" id="maxValue">minValue</label>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                [[#{camera.minWidth}]]: <label class="text-inverse" id="minValue">maxValue</label>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                [[#{camera.mask}]]: <label class="text-inverse" id="maskValue">mask</label>
+                            </label>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/plugins/calibration/PolygonTool.js}"></script>
+<script th:src="@{/plugins/calibration/RectangleTool.js}"></script>
+<script>
+    const canvas = document.getElementById('screen');
+    const context = canvas.getContext('2d');
+    const cameraId = canvas.getAttribute('data-id');
+    let image = null;
+    let errorImageView = new Image();
+    let currentCanvasTool = null;
+    let isStreamOn = false;
+    let noConnectionViewLoaded = false;
+    let state = {
+        max: {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+            image64: null
+        },
+        min: {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+            image64: null
+        },
+        mask: [],
+        maskImage64: null
+    };
+    let startState = {};
+
+    $(document).ready(function () {
+        get();
+        errorImageView.setAttribute('src', '[[#{arm.noConnection}]]');
+        errorImageView.addEventListener('load', function () {
+            noConnectionViewLoaded = true;
+        });
+        updateSnapshot();
+    });
+
+    function toggleOn(e) {
+        if (isStreamOn) {
+            streamOff();
+            $(e).addClass('btn-secondary').removeClass('btn-success').html('[[#{camera.streamOn}]]');
+        } else {
+            streamOn();
+            $(e).addClass('btn-success').removeClass('btn-secondary').html('[[#{camera.streamOff}]]');
+        }
+    }
+
+    function toolsChanged(e) {
+        const $tool = $(e);
+        const selectedTool = $tool.data('tool');
+        const selectedTitle = $tool.data('title');
+
+        $('#toolDropdown').removeClass('btn-secondary').addClass('btn-info').html(selectedTitle);
+        if (currentCanvasTool) {
+            currentCanvasTool.release();
+        } else {
+            if (image == null) {
+                if (!checkImageExists(selectedTool)) {
+                    alert(['Ошибка загрузки изображения.', 'Обновите снимок с камеры.']);
+                    return;
+                }
+            }
+        }
+
+        onToolChange(selectedTool);
+    }
+
+    function reset() {
+        setState(startState);
+        //$('#toolDropdown').removeClass('btn-info').addClass('btn-secondary').html('[[#{camera.tools}]]');
+        //updateSnapshot();
+    }
+
+    function get() {
+        $.ajax({
+            url: "/rest/camera/getCalibrationById/" + cameraId,
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                setState(data);
+                onStateChange(state);
+                startState = state;
+            }
+        });
+    }
+
+    function save() {
+        $.ajax({
+            url: "/rest/camera/calibration/save/" + cameraId,
+            type: "POST",
+            data: JSON.stringify(state),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                setState(data);
+                startState = state;
+            }
+        });
+    }
+
+    const onToolChange = function (payload) {
+        switch (payload) {
+            case 'max_width':
+                currentCanvasTool = RectangleTool(canvas, context, image);
+                currentCanvasTool.onRectangleDrawed = onMaxRectangleDraw;
+                currentCanvasTool.drawingStateChanged = toolDrawingStateChange;
+                if (state.max.width > 0) {
+                    const max_state = state.max;
+                    const lastCoords = [max_state.x, max_state.y, max_state.width, max_state.height];
+                    currentCanvasTool.setAvailableCoords(lastCoords);
+                    updateSnapshot(max_state.image64);
+                } else if (state.max.image64) {
+                    const max_state = state.max;
+                    updateSnapshot(max_state.image64);
+                } else {
+                    currentCanvasTool.update(image);
+                }
+                break;
+            case 'min_width':
+                currentCanvasTool = RectangleTool(canvas, context, image);
+                currentCanvasTool.onRectangleDrawed = onMinRectangleDraw;
+                currentCanvasTool.drawingStateChanged = toolDrawingStateChange;
+                if (state.min.width > 0) {
+                    const min_state = state.min;
+                    const lastCoords = [min_state.x, min_state.y, min_state.width, min_state.height];
+                    currentCanvasTool.setAvailableCoords(lastCoords);
+                    updateSnapshot(min_state.image64);
+                } else if (state.max.image64) {
+                    const min_state = state.min;
+                    updateSnapshot(min_state.image64);
+                } else {
+                    currentCanvasTool.update(image);
+                }
+                break;
+            case 'mask':
+                currentCanvasTool = PolygonTool(canvas, context, image);
+                currentCanvasTool.onPolygonDrawed = onMaskDraw;
+                currentCanvasTool.drawingStateChanged = toolDrawingStateChange;
+                if (state.mask.length > 0) {
+                    currentCanvasTool.setAvailableCoords(state.mask);
+                    updateSnapshot(state.maskImage64);
+                } else {
+                    currentCanvasTool.update(image);
+                }
+                break;
+            default:
+                currentCanvasTool = null;
+                break;
+        }
+    }
+
+    const onMaxRectangleDraw = function (x, y, width, height, image64) {
+        setTimeout(function () {
+            width = Math.round(width);
+            height = Math.round(height);
+            var payload = {x, y, width, height};
+            /* if (image64) {
+                 payload.image64 = image64;
+             }*/
+            setState({max: payload});
+        });
+    };
+
+    const onMinRectangleDraw = function (x, y, width, height, image64) {
+        setTimeout(function () {
+            width = Math.round(width);
+            height = Math.round(height);
+            var payload = {x, y, width, height};
+            /* if (image64) {
+                 payload.image64 = image64;
+             }*/
+            setState({min: payload});
+        });
+    };
+
+    const onMaskDraw = function (points, image64) {
+        setTimeout(function () {
+            //setState({mask: points, maskImage64: image64});
+            setState({mask: points});
+        });
+    };
+
+    const toolDrawingStateChange = function (state) {
+        isDisabled(state);
+    };
+
+    const onStateChange = function (state) {
+        integer($('#maxValue'), state.max.width);
+        integer($('#minValue'), state.min.width);
+        string($('#maskValue'), state.mask)
+    };
+
+    function integer(e, value) {
+        $(e).addClass(value > 0 ? 'text-success' : 'text-inverse')
+            .removeClass(value > 0 ? 'text-inverse' : 'text-success')
+            .html(value);
+    }
+
+    function string(e, value) {
+        $(e).addClass(value.length > 0 ? 'text-success' : 'text-inverse')
+            .removeClass(value.length > 0 ? 'text-inverse' : 'text-success')
+            .html(value.length > 0 ? '[[#{camera.maskSet}]]' : '[[#{camera.maskNotSet}]]');
+    }
+
+    function setState(payloadObject) {
+        let change = false;
+        Object.keys(payloadObject).forEach(function (key) {
+            if (state[key] !== undefined) {
+                state[key] = payloadObject[key];
+                change = true;
+            }
+        });
+
+        if (change) {
+            onStateChange(state);
+        }
+    }
+
+    function checkImageExists(tool) {
+        switch (tool) {
+            case 'max_width':
+                return !!state.max.image64;
+            case 'min_width':
+                return !!state.min.image64;
+            case 'mask':
+                return !!state.maskImage64;
+            default:
+                return false;
+        }
+    }
+
+    let updateSnapshot = function (path) {
+        image = new Image();
+        image.addEventListener('load', function () {
+            isLoading(false);
+            canvas.width = image.width + 1;
+            canvas.height = image.height + 1;
+            if (currentCanvasTool) {
+                currentCanvasTool.update(image);
+            } else {
+                context.drawImage(image, 0, 0, image.width, image.height);
+            }
+        });
+        isLoading(true);
+
+        if (path) {
+            image.src = path;
+        } else {
+            let d = new Date();
+            image.src = '/rest/arm/snapshot/' + cameraId + '?ver=' + d.getTime();
+        }
+
+        image.addEventListener('error', function () {
+            image = null;
+            renderNoConnection();
+        });
+    }
+
+    let updateSnapshotOnline = function (path) {
+        image = new Image();
+        image.addEventListener('load', function () {
+            if (!isStreamOn) {
+                isLoading(false);
+                return;
+            }
+            canvas.width = image.width + 1;
+            canvas.height = image.height + 1;
+            if (currentCanvasTool) {
+                currentCanvasTool.update(image);
+            } else {
+                context.drawImage(image, 0, 0, image.width, image.height);
+            }
+            setTimeout(updateSnapshotOnline);
+        });
+        isLoading(true);
+        if (path) {
+            image.src = path;
+        } else {
+            let d = new Date();
+            image.src = '/rest/arm/snapshot/' + cameraId + '?ver=' + d.getTime();
+        }
+
+        image.addEventListener('error', function () {
+            if (!isStreamOn) {
+                return;
+            }
+            setTimeout(updateSnapshotOnline);
+        });
+    };
+
+    function streamOff() {
+        isStreamOn = false
+        isLoading(false);
+        if (currentCanvasTool) {
+            currentCanvasTool.onlineUpdateDisabled();
+        }
+    }
+
+    function streamOn() {
+        if (!isStreamOn) {
+            //clearCanvas();
+            updateSnapshotOnline();
+            isStreamOn = true;
+            if (currentCanvasTool) {
+                currentCanvasTool.onlineUpdateEnabled();
+            }
+        }
+    }
+
+    function isLoading(bool) {
+        if (bool) {
+            $('#loading').show();
+            $('#refresh').hide();
+            isDisabled(true)
+        } else {
+            $('#refresh').show();
+            $('#loading').hide();
+            isDisabled(false)
+        }
+    }
+
+    function isDisabled(bool) {
+        $('#streamOn').attr('disabled', bool);
+        $('#toolDropdown').attr('disabled', bool);
+        $('#refresh').attr('disabled', bool);
+    }
+
+    function renderNoConnection() {
+        isLoading(false);
+        if (!noConnectionViewLoaded) {
+            errorImageView.addEventListener('load', function () {
+                context.drawImage(errorImageView, 0, 0, canvas.width, canvas.height);
+            });
+        } else {
+            context.drawImage(errorImageView, 0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    function clearCanvas() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+    }
+</script>
+</html>

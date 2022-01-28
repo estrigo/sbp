@@ -1,12 +1,11 @@
 package kz.spt.app.controller;
 
+import kz.spt.app.service.CameraService;
 import kz.spt.lib.model.*;
 import kz.spt.lib.service.ParkingService;
 import kz.spt.app.service.BarrierService;
-import kz.spt.app.service.CameraService;
 import kz.spt.app.service.ControllerService;
 import kz.spt.app.service.GateService;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -204,5 +203,11 @@ public class ParkingController {
     {
         model.addAttribute("parkingCars" ,parkingService.carsInParking(id));
         return "cars-in-parkings/cars/list";
+    }
+
+    @GetMapping("/cars/calibration/{id}")
+    public String calibration(@PathVariable Long id, Model model){
+        model.addAttribute("camera" ,cameraService.getCameraById(id));
+        return "parking/camera/calibration";
     }
 }

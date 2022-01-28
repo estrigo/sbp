@@ -3,6 +3,7 @@ package kz.spt.app.service.impl;
 import kz.spt.app.component.HttpRequestFactoryDigestAuth;
 import kz.spt.app.job.CameraSnapshotJob;
 import kz.spt.app.job.StatusCheckJob;
+import kz.spt.app.service.CameraService;
 import kz.spt.app.thread.GetSnapshotThread;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CurrentUser;
@@ -12,7 +13,6 @@ import kz.spt.lib.service.CarEventService;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.ArmService;
 import kz.spt.app.service.BarrierService;
-import kz.spt.app.service.CameraService;
 import lombok.extern.java.Log;
 import lombok.val;
 import net.coobird.thumbnailator.Thumbnails;
@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.Executor;
 
 @Log
 @Service
@@ -157,27 +156,15 @@ public class ArmServiceImpl implements ArmService {
     }
 
     @Override
+    public byte[] snapshot(Long cameraId) throws Throwable {
+        Camera camera = cameraService.getCameraById(cameraId);
+        if(camera==null || org.apache.commons.lang3.StringUtils.isEmpty(camera.getSnapshotUrl())) return null;
+        return getSnapshot(camera.getIp(),camera.getLogin(), camera.getPassword(), camera.getSnapshotUrl());
+    }
+
+    @Override
     public String snapshot(String ip, String login, String password, String url) throws Throwable {
-        HttpHost host = new HttpHost(ip, 8080, "http");
-        CloseableHttpClient client = HttpClientBuilder.create().
-                setDefaultCredentialsProvider(provider(login, password))
-                .useSystemProperties()
-                .build();
-        HttpComponentsClientHttpRequestFactory requestFactory =
-                new HttpRequestFactoryDigestAuth(host, client);
-
-        var restTemplate = new RestTemplate(requestFactory);
-        val headers = new HttpHeaders();
-        headers.setContentType(MediaType.IMAGE_JPEG);
-
-        StringBuilder address = new StringBuilder();
-        address.append("http://");
-        address.append(ip);
-        address.append(url);
-        //url.append("/cgi-bin/snapshot.cgi");
-
-        HttpEntity entity = new HttpEntity(headers);
-        byte[] img = restTemplate.getForObject(address.toString(), byte[].class, entity);
+        byte[] img = getSnapshot(ip,login,password,url);
 
         ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
         Thumbnails.of(new ByteArrayInputStream(img))
@@ -223,6 +210,28 @@ public class ArmServiceImpl implements ArmService {
         snapshotTaskExecutor.destroy();
     }
 
+    private byte[] getSnapshot(String ip, String login, String password, String url){
+        HttpHost host = new HttpHost(ip, 8080, "http");
+        CloseableHttpClient client = HttpClientBuilder.create().
+                setDefaultCredentialsProvider(provider(login, password))
+                .useSystemProperties()
+                .build();
+        HttpComponentsClientHttpRequestFactory requestFactory =
+                new HttpRequestFactoryDigestAuth(host, client);
+
+        var restTemplate = new RestTemplate(requestFactory);
+        val headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_JPEG);
+
+        StringBuilder address = new StringBuilder();
+        address.append("http://");
+        address.append(ip);
+        address.append(url);
+        //url.append("/cgi-bin/snapshot.cgi");
+
+        HttpEntity entity = new HttpEntity(headers);
+        return restTemplate.getForObject(address.toString(), byte[].class, entity);
+    }
     private CredentialsProvider provider(String login, String password) {
         CredentialsProvider provider = new BasicCredentialsProvider();
         UsernamePasswordCredentials credentials =

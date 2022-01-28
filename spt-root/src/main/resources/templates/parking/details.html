@@ -37,9 +37,22 @@
                     <div class="tab-content">
                         <div class="tab-pane fade show active" th:id="${'cameras' + iterStat.count}">
                             <div class="col-4" th:each="camera : ${gate.cameraList}">
-                                <a href="#" data-toggle="modal" data-target="#camera-close-modal" th:cameraId="${camera.id}" th:onclick="cameraModalContent(this.getAttribute('cameraId'), null)">
-                                    <h4 class="header-title m-t-0 m-b-0"><span th:text="${camera.name}"></span> <i class="ion-edit"></i></h4>
-                                </a>
+                                <div class="row align-content-center">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
+                                            <span th:text="${camera.name}"></span> <i class="ion-edit"></i>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#camera-close-modal"
+                                               th:text="#{crm.edit}"
+                                               th:cameraId="${camera.id}"
+                                               th:onclick="cameraModalContent(this.getAttribute('cameraId'), null)">Edit</a>
+                                            <a class="dropdown-item" href="#"
+                                               th:text="#{camera.calibration}"
+                                               th:href="@{|/parking/cars/calibration/${camera.id}|}">Calibration</a>
+                                        </div>
+                                    </div>
+                                  </div>
                                 <p class="text-muted m-b-0" th:text="${camera.cameraType + ' ' + camera.ip}"></p>
                                 <p class="text-muted m-b-0" th:text="${gate.description}"></p>
                             </div>
