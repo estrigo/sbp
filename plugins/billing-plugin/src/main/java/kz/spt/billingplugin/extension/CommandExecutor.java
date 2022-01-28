@@ -35,7 +35,7 @@ public class CommandExecutor implements PluginRegister {
     @Override
     public JsonNode execute(JsonNode command) throws Exception {
 
-        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode node = objectMapper.createObjectNode();
 

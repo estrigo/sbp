@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{}, ~{})">
+
+<link th:href="@{/assets/css/fancybox.css}" rel="stylesheet" type="text/css"/>
+<div class="content">
+  <div class="container">
+    <div class="card table-responsive table-striped">
+      <div class="card-header" th:text="#{report.billingReport}"></div>
+      <div class="card-body">
+        <form th:action="@{|/report/billingReport|}" th:object="${billingReportParamsDto}" method="post">
+          <div class="row">
+            <div class="col-4">
+              <label th:text="#{events.dateFrom}"></label>
+              <input type="datetime-local" class="form-control filter" id="dateFrom" th:field="*{dateFromString}"
+                     th:value="*{dateFromString}" th:placeholder="#{events.dateFrom}">
+            </div>
+            <div class="col-4">
+              <label th:text="#{events.dateTo}"></label>
+              <input type="datetime-local" class="form-control filter" id="dateTo" th:field="*{dateToString}"
+                     th:value="*{dateToString}" placeholder="#{events.dateTo}">
+            </div>
+          </div>
+        </form>
+        <div class="mb-5"></div>
+
+        <div class="row">
+          <div class="table-responsive" data-pattern="priority-columns">
+            <table id="datatable-buttons" class="table table-bordered">
+              <thead>
+              <tr>
+                <th><a th:text="#{ordinal.number}"></a></th>
+
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="parking, iterStat : ${parkings}">
+                <td th:text="${iterStat.count}"></td>
+                </p>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</html>

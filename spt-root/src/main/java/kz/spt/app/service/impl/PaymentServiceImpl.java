@@ -45,7 +45,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Object billingInteractions(CommandDto commandDto) throws Exception {
-        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
         if(commandDto.account != null) {
             commandDto.account = commandDto.account.toUpperCase();
@@ -163,7 +163,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Object billingInteractions(ParkomatCommandDTO commandDto) throws Exception {
-        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
         if(commandDto.getAccount() != null) {
             if ("check".equals(commandDto.getCommand())) {
@@ -337,7 +337,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public BigDecimal getRateValue(RateQueryDto rateQueryDto) throws Exception {
-        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
         PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
         if (ratePluginRegister != null) {

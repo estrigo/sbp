@@ -31,18 +31,21 @@ public class CommandExecutor implements PluginRegister {
 
         if(command!=null){
             if(command.get("parkingId")!=null){
+                Long parkingId = command.get("parkingId").longValue();
+
                 if(command.get("inDate")!=null && command.get("outDate")!=null){
                     Date inDate = format.parse(command.get("inDate").textValue());
                     Date outDate = format.parse(command.get("outDate").textValue());
+                    Boolean cashlessPayment = command.get("cashlessPayment").booleanValue();
+                    String paymentsJson = command.has("paymentsJson") && command.get("paymentsJson")!=null ? command.get("paymentsJson").textValue() : null;
 
-                    node.put("rateResult", getRateService().calculatePayment(command.get("parkingId").longValue(),inDate, outDate, command.get("cashlessPayment").booleanValue(),
-                            (command.has("paymentsJson") && command.get("paymentsJson")!=null ? command.get("paymentsJson").textValue() : null)));
+                    node.put("rateResult", getRateService().calculatePayment(parkingId, inDate, outDate, cashlessPayment, paymentsJson));
+                    node.put("rateFreeMinutes", getRateService().calculateFreeMinutes(parkingId, inDate, outDate, paymentsJson));
                     long timeDiff = Math.abs(outDate.getTime() - inDate.getTime());
                     long hours = TimeUnit.HOURS.convert(timeDiff, TimeUnit.MILLISECONDS);
                     node.put("payed_till", hours);
                 }
-                ParkingRate parkingRate = getRateService().getByParkingId(command.get("parkingId").longValue());
-                node.put("rateFreeMinutes", parkingRate.getBeforeFreeMinutes());
+                ParkingRate parkingRate = getRateService().getByParkingId(parkingId);
                 node.put("rateId", parkingRate.getId());
                 node.put("rateName", parkingRate.getName());
             }

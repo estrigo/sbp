@@ -140,7 +140,7 @@ public class CarEventServiceImpl implements CarEventService {
     @Override
     public void saveCarEvent(CarEventDto eventDto) throws Exception {
 
-        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
         eventDto.car_number = eventDto.car_number.toUpperCase();
 
         Camera camera = cameraService.findCameraByIp(eventDto.ip_address);

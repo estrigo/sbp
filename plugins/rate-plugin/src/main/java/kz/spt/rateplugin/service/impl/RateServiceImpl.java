@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.service.ParkingService;
+import kz.spt.lib.utils.StaticValues;
 import kz.spt.rateplugin.RatePlugin;
 import kz.spt.rateplugin.repository.ParkingRepository;
 import kz.spt.rateplugin.model.ParkingRate;
@@ -65,28 +66,11 @@ public class RateServiceImpl implements RateService {
         log.info("inDate: " + inCalendar.getTime());
         log.info("outDate: " + outCalendar.getTime());
 
-        if (parkingRate.getAfterFreeMinutes() != null) {
-            log.info("parkingRate.getAfterFreeMinutes(): " + parkingRate.getAfterFreeMinutes());
-            SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-            Date lastPaymentDate = null;
-            if (paymentsJson != null && !"".equals(paymentsJson)) { // Если была оплата проверяем прошли минуты до которые даются для выезда
-                log.info("paymentsJson: " + paymentsJson);
-                try {
-                    ArrayNode payments = (ArrayNode) mapper.readTree(paymentsJson);
-                    Iterator<JsonNode> iterator = payments.iterator();
-                    while (iterator.hasNext()) {
-                        JsonNode node = iterator.next();
-                        Date created = format.parse(node.get("created").textValue());
-                        if (lastPaymentDate == null || lastPaymentDate.before(created)) {
-                            lastPaymentDate = created;
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            if (lastPaymentDate != null) {
-                log.info("lastPaymentDate: " + lastPaymentDate);
+        if(parkingRate.getAfterFreeMinutes() != null){
+            log.info("parkingRate.getAfterFreeMinutes(): " +  parkingRate.getAfterFreeMinutes());
+            Date lastPaymentDate = getLastPaymentDate(paymentsJson); // Если была оплата проверяем прошли минуты до которые даются для выезда
+            if(lastPaymentDate != null){
+                log.info("lastPaymentDate: " +  lastPaymentDate);
                 int seconds = (int) (outCalendar.getTime().getTime() - lastPaymentDate.getTime()) / 1000;
                 int minutesPassedAfterLastPay = seconds / 60;
                 int secondsPassedAfterLastPay = seconds % 60;
@@ -217,6 +201,59 @@ public class RateServiceImpl implements RateService {
             result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValue() : parkingRate.getCashPaymentValue()).multiply(BigDecimal.valueOf(hours)));
             return result;
         }
+    }
+
+    private Date getLastPaymentDate(String paymentsJson) {
+        Date lastPaymentDate = null;
+        if(paymentsJson != null && !"".equals(paymentsJson)){
+            log.info("paymentsJson: " +  paymentsJson);
+            try {
+                SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
+                ArrayNode payments = (ArrayNode) mapper.readTree(paymentsJson);
+                Iterator<JsonNode> iterator = payments.iterator();
+                while (iterator.hasNext()) {
+                    JsonNode node = iterator.next();
+                    Date created = format.parse(node.get("created").textValue());
+                    if(lastPaymentDate == null || lastPaymentDate.before(created)){
+                        lastPaymentDate = created;
+                    }
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        return lastPaymentDate;
+    }
+
+    @Override
+    public int calculateFreeMinutes(Long parkingId, Date inDate, Date outDate, String payments) {
+        ParkingRate parkingRate = getByParkingId(parkingId);
+        int freeMinutes = 0;
+
+        Calendar inCalendar = Calendar.getInstance();
+        inCalendar.setTime(inDate);
+        inCalendar.add(Calendar.MINUTE, parkingRate.getBeforeFreeMinutes());
+
+        Calendar outCalendar = Calendar.getInstance();
+        outCalendar.setTime(outDate);
+
+        if(outDate.before(inDate)){ // Еще не истекли время бесплатных минут
+            inCalendar.add(Calendar.MINUTE, (-1)*parkingRate.getBeforeFreeMinutes());
+            int seconds = (int) (outDate.getTime() - inDate.getTime()) / 1000;
+            int minutesPassed = seconds / 60;
+
+            freeMinutes =  minutesPassed;
+        } else {
+            Date lastPaymentDate = getLastPaymentDate(payments);
+            if(lastPaymentDate != null){
+                int seconds = (int) (outCalendar.getTime().getTime() - lastPaymentDate.getTime()) / 1000;
+                int minutesPassedAfterLastPay = seconds / 60;
+                if(minutesPassedAfterLastPay < parkingRate.getAfterFreeMinutes()){
+                   freeMinutes =  parkingRate.getAfterFreeMinutes() - minutesPassedAfterLastPay - 1;
+                }
+            }
+        }
+        return freeMinutes;
     }
 
     @Override
