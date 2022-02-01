@@ -3,7 +3,6 @@ package kz.spt.lib.service;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.EventLog;
-import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.model.dto.EventsDto;
 
@@ -38,6 +37,8 @@ public interface EventLogService {
     EventLog getById(Long id);
 
     Page<EventsDto> getEventLogs(PagingRequest pagingRequest, EventFilterDto eventFilterDto) throws ParseException;
+
+    String getEventExcel(EventFilterDto eventFilterDto) throws Exception;
 
     void save(EventLog eventLog);
 

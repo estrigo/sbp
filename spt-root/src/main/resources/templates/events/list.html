@@ -41,6 +41,12 @@
                                     </select>
                                 </div>
                             </div>
+
+                            <div class="row mt-1" style="display: none">
+                                <div class="col-4">
+                                    <input type="button" value="Выгрузка заездов" onclick="excelForEventCar()" />
+                                </div>
+                            </div>
                         </form>
 
                         <div class="mb-5"></div>
@@ -165,6 +171,17 @@
     $('#plateNumber').on('keyup', function () {
         table.search(this.value).draw();
     });
+
+    function excelForEventCar(){
+        let dateFromString = $('#dateFromString').val();
+        let dateToString = $('#dateToString').val();
+        let plateNumber = $('#plateNumber').val();
+        let gateId = $('#gateId').val();
+
+        $.get("/rest/events/excel?dateFromString=" + dateFromString + "&dateToString=" + dateToString + "&plateNumber=" + plateNumber + "&gateId=" + gateId, function (data) {
+            console.log(data);
+        });
+    }
 </script>
 
 </html>

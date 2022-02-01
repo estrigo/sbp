@@ -242,7 +242,16 @@ public class CarEventServiceImpl implements CarEventService {
         String ip_address = jsonNode.get("data").get("camera_id").asText();
         log.info(jsonNode.get("data").get("camera_id").asText() + " " + jsonNode.get("data").get("camera_id").asText());
 
-        String car_number = ((ArrayNode) jsonNode.get("data").get("results")).get(0).get("plate").asText().toUpperCase();
+        JsonNode result = ((ArrayNode) jsonNode.get("data").get("results")).get(0);
+        String car_number = result.get("plate").asText().toUpperCase();
+        String region = null;
+        String vecihleType = null;
+        if(result.has("region") && result.get("region").has("code")){
+            region = result.get("region").get("code").asText();
+        }
+        if(result.has("vehicle") && result.get("vehicle").has("type")){
+            vecihleType = result.get("vehicle").get("type").asText();
+        }
 
         String base64 = null;
         String base64_lp = null;
@@ -259,6 +268,8 @@ public class CarEventServiceImpl implements CarEventService {
         eventDto.ip_address = ip_address;
         eventDto.car_picture = base64;
         eventDto.lp_picture = base64_lp;
+        eventDto.region = region;
+        eventDto.vecihleType = vecihleType;
         saveCarEvent(eventDto);
     }
 
@@ -512,6 +523,7 @@ public class CarEventServiceImpl implements CarEventService {
         boolean isWhitelistCar = false;
         BigDecimal balance = BigDecimal.ZERO;
         BigDecimal rateResult = null;
+        BigDecimal zerotouchValue = null;
         StaticValues.CarOutBy carOutBy = null;
         Boolean leftFromThisSecondsBefore = false;
 
@@ -602,11 +614,12 @@ public class CarEventServiceImpl implements CarEventService {
                                     } else {
                                         PluginRegister zerotouchPluginRegister = pluginService.getPluginRegister(StaticValues.zerotouchPlugin);
                                         ObjectNode zerotouchRequestNode = this.objectMapper.createObjectNode();
-                                        if (zerotouchPluginRegister != null) {
+                                        if(zerotouchPluginRegister!=null){
+                                            zerotouchValue = rateResult.subtract(balance);
                                             zerotouchRequestNode.put("command", "checkZeroTouch");
                                             zerotouchRequestNode.put("plateNumber", carState.getCarNumber());
                                             zerotouchRequestNode.put("carStateId", carState.getId());
-                                            zerotouchRequestNode.put("rate", rateResult);
+                                            zerotouchRequestNode.put("rate", zerotouchValue);
                                             JsonNode zerotouchResult = zerotouchPluginRegister.execute(zerotouchRequestNode);
                                             if (zerotouchResult.has("zeroTouchResult") && zerotouchResult.get("zeroTouchResult").booleanValue()) {
                                                 carOutBy = StaticValues.CarOutBy.ZERO_TOUCH;
@@ -655,8 +668,8 @@ public class CarEventServiceImpl implements CarEventService {
                 gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
                 gate.lastTriggeredTime = System.currentTimeMillis();
                 if (!gate.isSimpleWhitelist && carState != null && !leftFromThisSecondsBefore) {
-                    saveCarOutState(eventDto, camera, carState, properties, isWhitelistCar, balance, rateResult, format, carOutBy);
-                } else if (leftFromThisSecondsBefore) {
+                    saveCarOutState(eventDto, camera, carState, properties, isWhitelistCar, balance, rateResult, zerotouchValue, format, carOutBy);
+                } else if(leftFromThisSecondsBefore) {
                     properties.put("type", EventLogService.EventType.Allow);
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
@@ -665,7 +678,7 @@ public class CarEventServiceImpl implements CarEventService {
         }
     }
 
-    private void saveCarOutState(CarEventDto eventDto, Camera camera, CarState carState, Map<String, Object> properties, boolean isWhitelistCar, BigDecimal balance, BigDecimal rateResult, SimpleDateFormat format, StaticValues.CarOutBy carOutBy) throws Exception {
+    private void saveCarOutState(CarEventDto eventDto, Camera camera, CarState carState, Map<String, Object> properties, boolean isWhitelistCar, BigDecimal balance, BigDecimal rateResult, BigDecimal zerotouchValue, SimpleDateFormat format, StaticValues.CarOutBy carOutBy) throws Exception {
         if (StaticValues.CarOutBy.WHITELIST.equals(carOutBy)) {
             carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState);
 
@@ -677,15 +690,28 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
             }
-        } else if (StaticValues.CarOutBy.ZERO_TOUCH.equals(carOutBy)) {
-            properties.put("type", EventLogService.EventType.Allow);
-            carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState);
-            String message_ru = "Пропускаем авто: Безусловная оплата прошла удачно. Сумма к оплате: " + rateResult + ". Проезд разрешен.";
-            String message_en = "Allowed: Zero touch payment received. Total sum: " + rateResult + ". Allowed.";
-            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, message_ru, message_en);
         } else {
-            BigDecimal subtractResult = balance.subtract(rateResult);
+            if(StaticValues.CarOutBy.ZERO_TOUCH.equals(carOutBy)){
+                properties.put("type", EventLogService.EventType.Allow);
+                carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState);
+                String message_ru = "Пропускаем авто: Безусловная оплата прошла удачно. Сумма к оплате: " + rateResult + ". Проезд разрешен.";
+                String message_en = "Allowed: Zero touch payment received. Total sum: " + rateResult + ". Allowed.";
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, message_ru, message_en);
+                rateResult = rateResult.subtract(zerotouchValue);
+            } else {
+                BigDecimal subtractResult = balance.subtract(rateResult);
+                properties.put("type", EventLogService.EventType.Allow);
+                String descriptionRu = "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + rateResult + ". Остаток баланса: " + subtractResult + ". Проезд разрешен.";
+                String descriptionEn = "Allowed: Paid for parking. Total sum: " + rateResult + ". Balance left: " + subtractResult + ". Allowed.";
+                if(BigDecimal.ZERO.compareTo(rateResult) == 0){
+                    descriptionRu = "Пропускаем авто: Оплата не требуется. Проезд разрешен.";
+                    descriptionEn = "Allowed: No payment required. Allowed";
+                }
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
+            }
+
             PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
             if (billingPluginRegister != null && BigDecimal.ZERO.compareTo(rateResult) != 0) {
                 ObjectNode billingSubtractNode = this.objectMapper.createObjectNode();
@@ -694,22 +720,10 @@ public class CarEventServiceImpl implements CarEventService {
                 billingSubtractNode.put("plateNumber", carState.getCarNumber());
                 billingSubtractNode.put("parkingName", carState.getParking().getName());
                 billingSubtractNode.put("carStateId", carState.getId());
-                subtractResult = billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
+                billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
             }
-            subtractResult = subtractResult.setScale(2);
-
-            carState.setRateAmount(rateResult);
+            carState.setRateAmount(zerotouchValue != null ? rateResult.add(zerotouchValue) : rateResult);
             carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState);
-
-            properties.put("type", EventLogService.EventType.Allow);
-            String descriptionRu = "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + rateResult + ". Остаток баланса: " + subtractResult + ". Проезд разрешен.";
-            String descriptionEn = "Allowed: Paid for parking. Total sum: " + rateResult + ". Balance left: " + subtractResult + ". Allowed.";
-            if (BigDecimal.ZERO.compareTo(rateResult) == 0) {
-                descriptionRu = "Пропускаем авто: Оплата не требуется. Проезд разрешен.";
-                descriptionEn = "Allowed: No payment required. Allowed";
-            }
-            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
 
             if (billingPluginRegister != null) {
                 ObjectNode addTimestampNode = this.objectMapper.createObjectNode();

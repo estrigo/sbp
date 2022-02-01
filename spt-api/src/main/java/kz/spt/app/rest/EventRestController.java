@@ -39,4 +39,15 @@ public class EventRestController {
     public String openGate(@PathVariable("propertyName") String propertyName) throws IOException, ParseException, InterruptedException {
         return eventLogService.getApplicationPropertyValue(propertyName);
     }
+
+    @GetMapping(value = "/excel")
+    public String eventExcel(@RequestBody PagingRequest pagingRequest, @RequestParam String dateFromString, @RequestParam String dateToString,
+                             @RequestParam String plateNumber, @RequestParam Long gateId) throws Exception {
+        EventFilterDto eventFilterDto = new EventFilterDto();
+        eventFilterDto.setDateFromString(dateFromString);
+        eventFilterDto.setDateToString(dateToString);
+        eventFilterDto.setPlateNumber(plateNumber);
+        eventFilterDto.setGateId(gateId);
+        return eventLogService.getEventExcel(eventFilterDto);
+    }
 }

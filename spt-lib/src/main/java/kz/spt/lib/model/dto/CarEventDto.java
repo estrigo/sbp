@@ -31,4 +31,8 @@ public class CarEventDto {
     public String lp_rect;
 
     public Boolean manualOpen = false;
+
+    public String region;
+
+    public String vecihleType;
 }

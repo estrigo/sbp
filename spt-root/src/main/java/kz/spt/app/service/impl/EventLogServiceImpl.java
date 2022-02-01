@@ -1,16 +1,26 @@
 package kz.spt.app.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.app.model.dto.EventLogExcelDto;
+import kz.spt.app.service.GateService;
 import kz.spt.lib.bootstrap.datatable.*;
+import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.EventLogSpecification;
-import kz.spt.lib.model.dto.CarEventDto;
+import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.EventLogRepository;
+import kz.spt.lib.service.ParkingService;
+import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
+import org.pf4j.PluginManager;
+import org.pf4j.PluginState;
+import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,18 +38,28 @@ import java.util.stream.Collectors;
 @Service
 public class EventLogServiceImpl implements EventLogService {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-
     @Autowired
     private Environment env;
 
     @Autowired
-    private EventLogRepository eventLogRepository;
-
-    @Autowired
     private SimpMessageSendingOperations messagingTemplate;
 
+    private String dateFormat = "yyyy-MM-dd'T'HH:mm";
+
     private static final Comparator<EventsDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    private EventLogRepository eventLogRepository;
+
+    private PluginManager pluginManager;
+
+    private GateService gateService;
+
+    public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager) {
+        this.eventLogRepository = eventLogRepository;
+        this.pluginManager = pluginManager;
+    }
 
     @Override
     public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn) {
@@ -141,6 +161,71 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
+    public String getEventExcel(EventFilterDto eventFilterDto) throws Exception {
+        List<EventLog> events = (List<EventLog>) this.listByFilters(eventFilterDto);
+        Map<String, EventLogExcelDto> eventLogExcelDtoMap = new HashMap<>();
+
+        Long parkingId = null;
+
+        for(EventLog eventLog: events){
+            EventLogExcelDto eventLogExcelDto = new EventLogExcelDto();
+            if(eventLogExcelDtoMap.containsKey(eventLog.getPlateNumber())){
+                eventLogExcelDto = eventLogExcelDtoMap.get(eventLog.getPlateNumber());
+            }
+            eventLogExcelDto.plateNumber = eventLog.getPlateNumber();
+
+            EventLogService.EventType type = (EventLogService.EventType) eventLog.getProperties().get("type");
+            if(EventType.Allow.equals(type)){
+                eventLogExcelDto.allow = eventLogExcelDto.allow + 1;
+            } else if(EventType.Deny.equals(type)){
+                eventLogExcelDto.deny = eventLogExcelDto.deny + 1;
+            }
+            eventLogExcelDtoMap.put(eventLog.getPlateNumber(), eventLogExcelDto);
+
+            if(parkingId == null){
+                Long gateId = (Long) eventLog.getProperties().get("gateId");
+                Gate gate = gateService.getById(gateId);
+                parkingId =  gate.getParking().getId();
+            }
+        }
+
+        PluginRegister whitelistPluginRegister = getPluginRegister(StaticValues.whitelistPlugin);
+        SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+
+        for (Map.Entry<String, EventLogExcelDto> entry : eventLogExcelDtoMap.entrySet()) {
+            String platenumber = entry.getKey();
+
+            ObjectNode objectNode = objectMapper.createObjectNode();
+            EventLogExcelDto eventLogExcelDto = entry.getValue();
+
+            objectNode.put("platenumber", platenumber);
+            objectNode.put("deny", eventLogExcelDto.deny);
+            objectNode.put("allow", eventLogExcelDto.allow);
+            objectNode.put("all", eventLogExcelDto.deny + eventLogExcelDto.allow);
+            objectNode.put("isWhitelist", false);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectNode command = objectMapper.createObjectNode();
+            command.put("parkingId", parkingId);
+            command.put("car_number", platenumber);
+            command.put("event_time", format.format(new Date()));
+
+            JsonNode result = whitelistPluginRegister.execute(command);
+
+            if(result != null){
+                JsonNode whitelistCheckResult = result.get("whitelistCheckResult");
+                if (whitelistCheckResult != null) {
+                    objectNode.put("isWhitelist", true);
+                }
+            }
+            arrayNode.add(objectNode);
+        }
+        return arrayNode.toString();
+    }
+
+    @Override
     public void save(EventLog eventLog) {
         eventLogRepository.save(eventLog);
     }
@@ -206,5 +291,14 @@ public class EventLogServiceImpl implements EventLogService {
         return EMPTY_COMPARATOR;
     }
 
-
+    private PluginRegister getPluginRegister(String pluginId) {
+        PluginWrapper pluginWrapper = pluginManager.getPlugin(pluginId);
+        if (pluginWrapper != null && pluginWrapper.getPluginState().equals(PluginState.STARTED)) {
+            List<PluginRegister> pluginRegisters = pluginManager.getExtensions(PluginRegister.class, pluginWrapper.getPluginId());
+            if (pluginRegisters.size() > 0) {
+                return pluginRegisters.get(0);
+            }
+        }
+        return null;
+    }
 }

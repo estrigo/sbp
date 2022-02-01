@@ -49,9 +49,6 @@ public class CarState {
 
     private Long paymentId;
 
-    @Column(name = "payment_json", columnDefinition = "text")
-    private String paymentJson;
-
     private String inChannelIp;
 
     private String outChannelIp;
@@ -76,8 +73,17 @@ public class CarState {
     @JoinColumn(name = "out_barrier")
     private Barrier outBarrier;
 
+    @Column(name = "payment_json", columnDefinition = "text")
+    private String paymentJson;
+
     @Column(name = "whitelist_json", columnDefinition = "text")
     private String whitelistJson;
+
+    @Column(name = "booking_json", columnDefinition = "text")
+    private String bookingJson;
+
+    @Column(name = "zerotouch_json", columnDefinition = "text")
+    private String zerotouchJson;
 
     private Boolean cashlessPayment = false;
 
