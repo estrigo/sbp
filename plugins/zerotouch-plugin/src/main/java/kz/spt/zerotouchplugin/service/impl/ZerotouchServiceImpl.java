@@ -37,6 +37,9 @@ public class ZerotouchServiceImpl implements ZerotouchService {
     @Value("${zero.touch.rahmet.clientId}")
     private String zeroTouchRahmetClientId;
 
+    @Value("${zero.touch.rahmet.filialId}")
+    private String zeroTouchRahmetFilialId;
+
     @Value("${zero.touch.rahmet.clientPassword}")
     private String zeroTouchRahmetClientPassword;
 
@@ -68,7 +71,7 @@ public class ZerotouchServiceImpl implements ZerotouchService {
             CloseableHttpClient zeroTouchHttpClient = HttpClients.custom().setConnectionTimeToLive(5, TimeUnit.SECONDS).build();
 
             ObjectNode zeroTouchPostNode = objectMapper.createObjectNode();
-            zeroTouchPostNode.put("filialId", "582");
+            zeroTouchPostNode.put("filialId", zeroTouchRahmetFilialId);
             zeroTouchPostNode.put("vehicleNumber", plateNumber);
             zeroTouchPostNode.put("amount", rate.longValue());
             //{"filialId":"582", "vehicleNumber":"TEST114TE", "amount": 200}

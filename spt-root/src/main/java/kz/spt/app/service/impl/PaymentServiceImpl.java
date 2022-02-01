@@ -249,8 +249,6 @@ public class PaymentServiceImpl implements PaymentService {
                 } else {
                     PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                     if (billingPluginRegister != null) {
-
-
                         ObjectNode node = this.objectMapper.createObjectNode();
                         node.put("command", "getParkomatClientId");
                         node.put("parkomatId", commandDto.getParkomat());
