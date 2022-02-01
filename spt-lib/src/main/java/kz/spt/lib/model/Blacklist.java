@@ -14,10 +14,6 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Table(name = "blacklist")
 public class Blacklist {
-    public enum BlacklistType{
-        OTHER,
-        MORE_16H
-    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,7 +21,5 @@ public class Blacklist {
     @Column(unique=true)
     private String plateNumber;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type")
-    private Blacklist.BlacklistType type;
+    private String type;
 }
