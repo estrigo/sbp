@@ -4,97 +4,115 @@
 <link th:href="@{/assets/css/fancybox.css}" rel="stylesheet" type="text/css"/>
 <div class="content">
     <div class="container">
+        <div class="row mb-1">
+           <div class="col-12 text-right">
+               <button type="button" class="btn btn-primary" th:text="#{arm.restart}" th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart</button>
+           </div>
+        </div>
         <div class="row">
-            <div class="row">
-                <div class="col-sm-4 col-lg-4 col-xs-12 item" th:each="camera, iterStat : ${cameras}"
-                     th:id="${'item' + camera.id}" th:attr="data-id=${camera.id},data-url=${camera.snapshotUrl}">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-secondary move-left">
-                                    <span> <i class="mdi mdi-arrow-left"></i></span>
-                                </button>
-                                <button type="button" class="btn btn-secondary move-right">
-                                    <span><i class="mdi mdi-arrow-right"></i></span>
-                                </button>
-                            </div>
+            <div class="col-sm-4 col-lg-4 col-xs-12 item" th:each="camera, iterStat : ${cameras}"
+                 th:id="${'item' + camera.id}" th:attr="data-id=${camera.id},data-url=${camera.snapshotUrl}">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-secondary move-left">
+                                <span> <i class="mdi mdi-arrow-left"></i></span>
+                            </button>
+                            <button type="button" class="btn btn-secondary move-right">
+                                <span><i class="mdi mdi-arrow-right"></i></span>
+                            </button>
                         </div>
                     </div>
-                    <div class="card m-b-10">
-                        <div class="card-block">
+                </div>
+                <div class="card m-b-10">
+                    <div class="card-block">
                             <span class="badge"
                                   th:class="${'IN'.equals(camera.gate.gateType.toString()) ? 'badge badge-primary' : 'badge badge-success'}"
                                   th:text="${camera.gate.gateType}">
                             </span>
-                            <h5 class="mt-0 card-title" th:text="${camera.name}"></h5>
-                            <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
-                        </div>
-                        <div class="row" style="position: relative">
-                            <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event"
-                               style="height: 250px!important;"
-                               th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}">
-                                <img th:id="${'image' + camera.id}" class="img-fluid m-b-10"
-                                     th:src="@{#{arm.noImageLink}}" style="height: 250px !important;"
-                                     alt="Card image cap">
-                            </a>
-                            <div class="align-content-center p-1"
-                                 style="background-color: rgba(74, 82, 95, .5); position: absolute; bottom: 0;right: 10px;display: none">
-                                <img th:id="${'lp' + camera.id}"/>
-                            </div>
-                        </div>
-                        <table class="w-100">
-                            <tbody>
-                            <tr>
-                                <td class="w-50"
-                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <button type="button" class="btn btn-outline-success w-100"
-                                            th:cameraId="${camera.id}"
-                                            th:onclick="openGate(this.getAttribute('cameraId'))"
-                                            th:text="#{arm.open}"></button>
-                                </td>
-                                <td class="w-50"
-                                    sec:authorize="!hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                </td>
-                                <td class="w-50"
-                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <button type="button" class="btn btn-outline-warning w-100"
-                                            th:cameraId="${camera.id}"
-                                            th:onclick="closeGate(this.getAttribute('cameraId'))"
-                                            th:text="#{arm.close}"></button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <table class="w-100">
-                            <tbody>
-                            <tr>
-                                <td class="w-50"
-                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
-                                           th:placeholder="#{arm.licensePlate}"
-                                           th:onkeydown="onTextEnter(this.getAttribute('cameraId'))"
-                                           class="form-control w-100">
-                                </td>
-                                <td class="w-25"
-                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
-                                            th:onclick="passCar(this.getAttribute('cameraId'))"
-                                            th:text="#{crm.letIn}"></button>
-                                </td>
-                                <td class="w-25"
-                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <button type="button" class="btn btn-outline-primary w-100"
-                                            th:cameraId="${camera.id}"
-                                            th:onclick="checkBalance(this.getAttribute('cameraId'))"
-                                            th:text="#{crm.balance}"></button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                        <h5 class="mt-0 card-title" th:text="${camera.name}"></h5>
+                        <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
                     </div>
-                    <textarea class="m-b-10 border border-dark" style="width: 100%" rows="3"
-                              th:id="${'logs' + camera.id}"></textarea>
+                    <div class="row" style="position: relative">
+                        <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event"
+                           style="height: 250px!important;"
+                           th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}">
+                            <img th:id="${'image' + camera.id}" class="img-fluid m-b-10"
+                                 th:src="@{#{arm.noImageLink}}" style="height: 250px !important;"
+                                 alt="Card image cap">
+                        </a>
+                        <div class="align-content-center p-1"
+                             style="background-color: rgba(74, 82, 95, .5); position: absolute; bottom: 0;right: 10px;display: none">
+                            <img th:id="${'lp' + camera.id}"/>
+                        </div>
+                    </div>
+                    <table class="w-100">
+                        <tbody>
+                        <tr>
+                            <td class="w-50"
+                                sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <button type="button" class="btn btn-outline-success w-100"
+                                        th:cameraId="${camera.id}"
+                                        th:onclick="openGate(this.getAttribute('cameraId'))"
+                                        th:text="#{arm.open}"></button>
+                            </td>
+                            <td class="w-50"
+                                sec:authorize="!hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                            </td>
+                            <td class="w-50"
+                                sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <button type="button" class="btn btn-outline-warning w-100"
+                                        th:cameraId="${camera.id}"
+                                        th:onclick="closeGate(this.getAttribute('cameraId'))"
+                                        th:text="#{arm.close}"></button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <table class="w-100">
+                        <tbody>
+                        <tr>
+                            <td class="w-50"
+                                sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
+                                       th:placeholder="#{arm.licensePlate}"
+                                       th:onkeydown="onTextEnter(this.getAttribute('cameraId'))"
+                                       class="form-control w-100">
+                            </td>
+                            <td class="w-25"
+                                sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
+                                        th:onclick="passCar(this.getAttribute('cameraId'))"
+                                        th:text="#{crm.letIn}"></button>
+                            </td>
+                            <td class="w-25"
+                                sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <button type="button" class="btn btn-outline-primary w-100"
+                                        th:cameraId="${camera.id}"
+                                        th:onclick="checkBalance(this.getAttribute('cameraId'))"
+                                        th:text="#{crm.balance}"></button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
+                <textarea class="m-b-10 border border-dark" style="width: 100%" rows="3"
+                          th:id="${'logs' + camera.id}"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="restartSuccess">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            </div>
+            <div class="modal-body">
+                <p th:text="#{arm.restartSuccess}"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" th:text="#{crm.close}">Close</button>
             </div>
         </div>
     </div>
@@ -268,6 +286,14 @@
         } else {
             alert([[#{arm.invalidPlateNumber}]]);
         }
+    }
+
+    function restart(ip){
+        $.get("/rest/arm/restart/"+ip, function (data) {
+            if(data===true){
+                $('#restartSuccess').modal('show');
+            }
+        });
     }
 </script>
 </html>

@@ -77,4 +77,5 @@ parking:
     access:
       unknown:
         cases: false # Выпускать все авто где вьезд не найден
+parkomat.ip: 172.28.25.24
 

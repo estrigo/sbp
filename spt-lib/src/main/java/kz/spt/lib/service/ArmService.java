@@ -12,6 +12,8 @@ public interface ArmService {
 
     Boolean closeGate(Long cameraId) throws IOException, ParseException, InterruptedException;
 
+    Boolean restartParkomat(String ip);
+
     Boolean setEmergencyOpen(Boolean value, UserDetails currentUser);
 
     Boolean getEmergencyStatus();

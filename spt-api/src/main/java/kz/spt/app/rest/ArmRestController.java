@@ -66,4 +66,9 @@ public class ArmRestController {
     public void disableSnapshot(){
         armService.disableSnapshot();
     }
+
+    @GetMapping("/restart/{ip}")
+    public Boolean restartParkomat(@PathVariable("ip") String ip){
+        return armService.restartParkomat(ip);
+    }
 }

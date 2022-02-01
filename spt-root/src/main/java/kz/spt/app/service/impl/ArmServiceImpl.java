@@ -13,6 +13,7 @@ import kz.spt.lib.service.CarEventService;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.ArmService;
 import kz.spt.app.service.BarrierService;
+import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import lombok.val;
 import net.coobird.thumbnailator.Thumbnails;
@@ -25,8 +26,10 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -127,6 +130,32 @@ public class ArmServiceImpl implements ArmService {
         return false;
     }
 
+    @SneakyThrows
+    @Override
+    public Boolean restartParkomat(String ip) {
+        val headers = new HttpHeaders();
+        headers.add("Content-Type", "text/plain");
+        var restTemplate = new RestTemplateBuilder().basicAuthentication("admin", "TrassaE95").build();
+        var result = restTemplate.exchange("http://" + ip + "/relay_ctrl.cgi",
+                HttpMethod.POST,
+                new HttpEntity<>("data=010101", headers),
+                Void.class);
+        log.info(result.toString());
+
+        Boolean change = result.getStatusCodeValue() == 200;
+        if (change) {
+            String username = "";
+            if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+                CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                if (currentUser != null) {
+                    username = currentUser.getUsername();
+                }
+            }
+            eventLogService.createEventLog(Gate.class.getSimpleName(), null, null, "Ручная перезвгрузка паркомата: Пользователь " + username, "Manual restart parkomat: User " + username);
+        }
+        return change;
+    }
+
     @Override
     public Boolean setEmergencyOpen(Boolean value, UserDetails currentUser) {
         if (currentUser != null) {
@@ -158,13 +187,13 @@ public class ArmServiceImpl implements ArmService {
     @Override
     public byte[] snapshot(Long cameraId) throws Throwable {
         Camera camera = cameraService.getCameraById(cameraId);
-        if(camera==null || org.apache.commons.lang3.StringUtils.isEmpty(camera.getSnapshotUrl())) return null;
-        return getSnapshot(camera.getIp(),camera.getLogin(), camera.getPassword(), camera.getSnapshotUrl());
+        if (camera == null || org.apache.commons.lang3.StringUtils.isEmpty(camera.getSnapshotUrl())) return null;
+        return getSnapshot(camera.getIp(), camera.getLogin(), camera.getPassword(), camera.getSnapshotUrl());
     }
 
     @Override
     public String snapshot(String ip, String login, String password, String url) throws Throwable {
-        byte[] img = getSnapshot(ip,login,password,url);
+        byte[] img = getSnapshot(ip, login, password, url);
 
         ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
         Thumbnails.of(new ByteArrayInputStream(img))
@@ -210,7 +239,7 @@ public class ArmServiceImpl implements ArmService {
         snapshotTaskExecutor.destroy();
     }
 
-    private byte[] getSnapshot(String ip, String login, String password, String url){
+    private byte[] getSnapshot(String ip, String login, String password, String url) {
         HttpHost host = new HttpHost(ip, 8080, "http");
         CloseableHttpClient client = HttpClientBuilder.create().
                 setDefaultCredentialsProvider(provider(login, password))
@@ -232,6 +261,7 @@ public class ArmServiceImpl implements ArmService {
         HttpEntity entity = new HttpEntity(headers);
         return restTemplate.getForObject(address.toString(), byte[].class, entity);
     }
+
     private CredentialsProvider provider(String login, String password) {
         CredentialsProvider provider = new BasicCredentialsProvider();
         UsernamePasswordCredentials credentials =
