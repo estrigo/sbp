@@ -61,6 +61,7 @@ public class PaymentServiceImpl implements PaymentService {
                 } else {
                     BillingInfoSuccessDto dto = new BillingInfoSuccessDto();
                     dto.sum = BigDecimal.ZERO;
+                    dto.current_balance = BigDecimal.ZERO;
                     dto.in_date = format.format(carState.getInTimestamp());
                     dto.result = 0;
                     dto.left_free_time_minutes = 15;
