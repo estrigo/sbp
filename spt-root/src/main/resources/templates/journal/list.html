@@ -133,10 +133,7 @@
                         </div>
                         <div class="col-md form-group">
                             <label class="form-label" th:text="#{blacklist.type}"></label>
-                            <select name="type" class="form-control">
-                                <option th:each="t : ${T(kz.spt.lib.model.Blacklist.BlacklistType).values()}"
-                                        th:value="${t}" th:text="#{'blacklist.type.'+${t}}"></option>
-                            </select>
+                            <textarea class="form-control" name="type"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">

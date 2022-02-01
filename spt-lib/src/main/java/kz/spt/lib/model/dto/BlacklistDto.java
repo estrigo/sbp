@@ -11,5 +11,5 @@ import lombok.Data;
 public class BlacklistDto {
     private Long id;
     private String plateNumber;
-    private Blacklist.BlacklistType type;
+    private String type;
 }
