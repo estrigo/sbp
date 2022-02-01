@@ -373,6 +373,20 @@ public class WhitelistServiceImpl implements WhitelistService {
         return whitelistRepository.getExistingPlatenumbers(platenumbers, parkingId, groupId);
     }
 
+    @Override
+    public List<WhiteListDto> listAllWhitelistForExcel() throws JsonProcessingException {
+        var list = listAllWhitelist().stream()
+                .map(m -> WhiteListDto.builder()
+                        .id(m.getId())
+                        .plateNumber(m.getCar().getPlatenumber())
+                        .parkingName(m.getParking().getName())
+                        .groupName(m.getGroup() != null ? m.getGroup().getName() : "")
+                        .conditionDetail(m.getConditionDetail())
+                        .build())
+                .collect(Collectors.toList());
+        return list;
+    }
+
     public static String formConditionDetails(AbstractWhitelist w, String name) throws JsonProcessingException {
         Locale locale = LocaleContextHolder.getLocale();
         String language = "en";

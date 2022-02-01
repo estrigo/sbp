@@ -38,4 +38,6 @@ public interface WhitelistService {
     List<String> getExistingPlatenumbers(List<String> platenumbers, Long parkingId);
 
     List<String> getExistingPlatenumbers(List<String> platenumbers, Long parkingId, Long groupId);
+
+    List<WhiteListDto> listAllWhitelistForExcel() throws JsonProcessingException;
 }

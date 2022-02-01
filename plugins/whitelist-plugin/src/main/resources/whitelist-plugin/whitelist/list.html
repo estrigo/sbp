@@ -52,6 +52,20 @@
                             </li>
                         </ul>
                         <div class="tab-content">
+                            <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <a th:href="@{|/whitelist/add|}"
+                                           class="btn btn-success waves-effect waves-light"
+                                           th:text="#{whitelist.addNew}"></a>
+                                        <a th:href="@{|/whitelist/groups/add|}"
+                                           class="btn btn-success waves-effect waves-light"
+                                           th:text="#{whitelist.addNewGroup}"></a>
+                                        <button class="btn btn-success waves-effect waves-light"
+                                                onclick="excelForWhitelist()">Выгрузить список</button>
+                                    </div>
+                                </div>
+                            </th:block>
                             <div class="tab-pane fade show active" id="whitelist">
                                 <table id="whitelist-table" class="table table-bordered table-bordered">
                                     <thead>
@@ -74,6 +88,8 @@
                                             <a th:href="@{|/whitelist/groups/add|}"
                                                class="btn btn-success waves-effect waves-light"
                                                th:text="#{whitelist.addNewGroup}"></a>
+                                            <button class="btn btn-success waves-effect waves-light"
+                                                    onclick="excelForWhitelist()">Выгрузить список</button>
                                         </div>
                                     </div>
                                 </th:block>
@@ -125,6 +141,8 @@
 <!-- Responsive examples -->
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+<script th:src="@{/assets/js/shim.js}"></script>
+<script th:src="@{/assets/js/xlsx.js}"></script>
 
 <script th:inline="javascript">
     var address = '/plugins/datatables/json/ru.json';
@@ -171,7 +189,6 @@
                 }
             },
         ],
-        buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: address
         }
@@ -230,6 +247,27 @@
             table1.buttons().container().appendTo('#whitelist-group-table_wrapper .col-md-6:eq(0)');
         }
         clearInterval(interval);
+    }
+
+    function excelForWhitelist(){
+        $.get("/rest/whitelist/list/excel", function (data) {
+            console.log(data);
+            try {
+                let arr = [];
+                for (let i = 0; i < data.length; i++) {
+                    arr.push(data[i]);
+                }
+
+                let ws = XLSX.utils.json_to_sheet(arr);
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Whitelist');
+                console.log(wb);
+                XLSX.writeFile(wb, "whitelist.xls", { type: "buffer" });
+            } catch(e){
+                console.log(e);
+            }
+        });
     }
 </script>
 </html>
