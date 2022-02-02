@@ -251,7 +251,6 @@
 
     function excelForWhitelist(){
         $.get("/rest/whitelist/list/excel", function (data) {
-            console.log(data);
             try {
                 let arr = [];
                 for (let i = 0; i < data.length; i++) {
@@ -262,7 +261,6 @@
 
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'Whitelist');
-                console.log(wb);
                 XLSX.writeFile(wb, "whitelist.xls", { type: "buffer" });
             } catch(e){
                 console.log(e);

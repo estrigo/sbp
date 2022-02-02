@@ -27,6 +27,10 @@
                                            th:value="*{dateToString}"
                                            placeholder="#{events.dateTo}">
                                 </div>
+                                <div class="col-4">
+                                    <label style="width: 100%">&nbsp;</label>
+                                    <button type="button" class="btn btn-success waves-effect waves-light" onclick="excelForEventCar()">Выгрузка заездов</button>
+                                </div>
                             </div>
                             <div class="row mt-1">
                                 <div class="col-4">
@@ -39,12 +43,6 @@
                                         <option th:each="r : ${allGates}" th:value="${r.id}" th:text="${r.name}">
                                         </option>
                                     </select>
-                                </div>
-                            </div>
-
-                            <div class="row mt-1" style="display: none">
-                                <div class="col-4">
-                                    <input type="button" value="Выгрузка заездов" onclick="excelForEventCar()" />
                                 </div>
                             </div>
                         </form>
@@ -88,10 +86,10 @@
 <!-- Responsive examples -->
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
-
 <script th:src="@{/assets/js/fancybox.umd.js}"></script>
+<script th:src="@{/assets/js/xlsx.js}"></script>
 
-<script type="text/javascript">
+<script type="text/javascript" th:inline="javascript">
     var locale = '[[${#locale}]]';
     var descriptionColumn = locale == "en" ? "descriptionEn" : "description";
 
@@ -107,7 +105,6 @@
             "data": function (d) {
                 return JSON.stringify(d);
             }
-
         },
         columnDefs: [{
             "defaultContent": "-",
@@ -178,8 +175,21 @@
         let plateNumber = $('#plateNumber').val();
         let gateId = $('#gateId').val();
 
+        let platenumberH = [[#{car.platenumber}]];
+        let denyH = [[#{events.deny}]];
+        let allowH = [[#{events.allow}]];
+        let allH = [[#{events.allEvents}]];
+        let whitelitedH = [[#{events.whitelisted}]];
+
+        var arr = [{platenumber: platenumberH, deny: denyH, allow: allowH, all: allH, isWhitelist: whitelitedH}];
         $.get("/rest/events/excel?dateFromString=" + dateFromString + "&dateToString=" + dateToString + "&plateNumber=" + plateNumber + "&gateId=" + gateId, function (data) {
-            console.log(data);
+            for (let i = 0; i < data.length; i++) {
+                arr.push(data[i]);
+            }
+            let ws = XLSX.utils.json_to_sheet(arr, {skipHeader:true});
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'events');
+            XLSX.writeFile(wb, "events.xls", { type: "buffer" });
         });
     }
 </script>

@@ -22,6 +22,7 @@ import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -56,9 +57,12 @@ public class EventLogServiceImpl implements EventLogService {
 
     private GateService gateService;
 
-    public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager) {
+    ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag("ru".equals(LocaleContextHolder.getLocale().toString()) ? "ru-RU" : "en"));
+
+    public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager, GateService gateService) {
         this.eventLogRepository = eventLogRepository;
         this.pluginManager = pluginManager;
+        this.gateService = gateService;
     }
 
     @Override
@@ -162,6 +166,7 @@ public class EventLogServiceImpl implements EventLogService {
 
     @Override
     public String getEventExcel(EventFilterDto eventFilterDto) throws Exception {
+
         List<EventLog> events = (List<EventLog>) this.listByFilters(eventFilterDto);
         Map<String, EventLogExcelDto> eventLogExcelDtoMap = new HashMap<>();
 
@@ -174,7 +179,7 @@ public class EventLogServiceImpl implements EventLogService {
             }
             eventLogExcelDto.plateNumber = eventLog.getPlateNumber();
 
-            EventLogService.EventType type = (EventLogService.EventType) eventLog.getProperties().get("type");
+            EventLogService.EventType type = EventLogService.EventType.valueOf((String) eventLog.getProperties().get("type"));
             if(EventType.Allow.equals(type)){
                 eventLogExcelDto.allow = eventLogExcelDto.allow + 1;
             } else if(EventType.Deny.equals(type)){
@@ -183,7 +188,7 @@ public class EventLogServiceImpl implements EventLogService {
             eventLogExcelDtoMap.put(eventLog.getPlateNumber(), eventLogExcelDto);
 
             if(parkingId == null){
-                Long gateId = (Long) eventLog.getProperties().get("gateId");
+                Long gateId = Long.valueOf((Integer)eventLog.getProperties().get("gateId"));
                 Gate gate = gateService.getById(gateId);
                 parkingId =  gate.getParking().getId();
             }
@@ -204,7 +209,7 @@ public class EventLogServiceImpl implements EventLogService {
             objectNode.put("deny", eventLogExcelDto.deny);
             objectNode.put("allow", eventLogExcelDto.allow);
             objectNode.put("all", eventLogExcelDto.deny + eventLogExcelDto.allow);
-            objectNode.put("isWhitelist", false);
+            objectNode.put("isWhitelist", bundle.getString("crm.no"));
 
             ObjectMapper objectMapper = new ObjectMapper();
             ObjectNode command = objectMapper.createObjectNode();
@@ -217,7 +222,7 @@ public class EventLogServiceImpl implements EventLogService {
             if(result != null){
                 JsonNode whitelistCheckResult = result.get("whitelistCheckResult");
                 if (whitelistCheckResult != null) {
-                    objectNode.put("isWhitelist", true);
+                    objectNode.put("isWhitelist", bundle.getString("crm.yes"));
                 }
             }
             arrayNode.add(objectNode);

@@ -41,7 +41,7 @@ public class EventRestController {
     }
 
     @GetMapping(value = "/excel")
-    public String eventExcel(@RequestBody PagingRequest pagingRequest, @RequestParam String dateFromString, @RequestParam String dateToString,
+    public String eventExcel(@RequestParam String dateFromString, @RequestParam String dateToString,
                              @RequestParam String plateNumber, @RequestParam Long gateId) throws Exception {
         EventFilterDto eventFilterDto = new EventFilterDto();
         eventFilterDto.setDateFromString(dateFromString);
