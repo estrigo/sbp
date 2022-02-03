@@ -65,6 +65,7 @@ public class PaymentServiceImpl implements PaymentService {
                     dto.in_date = format.format(carState.getInTimestamp());
                     dto.result = 0;
                     dto.left_free_time_minutes = 15;
+                    carState.setCashlessPayment(true);
 
                     if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())) {
                         return fillPayment(carState, format, commandDto, carState.getPaymentJson());
@@ -183,8 +184,8 @@ public class PaymentServiceImpl implements PaymentService {
                     dto.result = 0;
                     dto.left_free_time_minutes = 15;
 
-                    if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())) {
-
+                    if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())
+                            || (Parking.ParkingType.WHITELIST_PAYMENT.equals(carState.getParking().getParkingType()) && carState.getPaid())) {
                         CommandDto payCommandDto = new CommandDto();
                         payCommandDto.setTxn_id(commandDto.getTxn_id());
                         carState.setCashlessPayment(false);
@@ -212,12 +213,6 @@ public class PaymentServiceImpl implements PaymentService {
                         return parkomatBillingInfoSuccessDto;
 
 
-                    } else if (Parking.ParkingType.WHITELIST_PAYMENT.equals(carState.getParking().getParkingType())) {
-                        if(carState.getPaid()){
-                            CommandDto payCommandDto = new CommandDto();
-                            payCommandDto.setTxn_id(commandDto.getTxn_id());
-                            return fillPayment(carState, format, payCommandDto, carState.getPaymentJson());
-                        }
                     }
                     return dto;
                 }
@@ -353,6 +348,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private BillingInfoSuccessDto fillPayment(CarState carState, SimpleDateFormat format, CommandDto commandDto, String paymentsJson) throws Exception {
         BillingInfoSuccessDto dto = null;
+
         PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
         if (ratePluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
@@ -360,7 +356,7 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("inDate", format.format(carState.getInTimestamp()));
             node.put("outDate", format.format(new Date()));
             node.put("isCheck", true);
-            node.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : false);
+            node.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
             node.put("paymentsJson", paymentsJson);
 
             JsonNode result = ratePluginRegister.execute(node);

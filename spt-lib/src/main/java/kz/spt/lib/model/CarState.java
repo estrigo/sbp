@@ -85,7 +85,7 @@ public class CarState {
     @Column(name = "zerotouch_json", columnDefinition = "text")
     private String zerotouchJson;
 
-    private Boolean cashlessPayment = false;
+    private Boolean cashlessPayment = true;
 
     @CreationTimestamp
     private Date created;
