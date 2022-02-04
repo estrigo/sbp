@@ -13,6 +13,7 @@ import kz.spt.whitelistplugin.service.impl.RootServicesGetterServiceImpl;
 import lombok.extern.java.Log;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.IteratorUtils;
+import org.pf4j.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -61,7 +62,6 @@ public class WhitelistController {
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
         try {
             fileServices.store(file, selectedParking, rootServicesGetterService, currentUser);
-            System.out.println("Success");
             redirectAttributes.addAttribute("fileUploadResult", bundle.getString("whitelist.uploadSuccess"));
         } catch (Exception e) {
             e.printStackTrace();
@@ -106,7 +106,7 @@ public class WhitelistController {
             ObjectError error = new ObjectError("plateNumberExist", bundle.getString("whitelist.plateNumberExists"));
             bindingResult.addError(error);
         }
-        if(Whitelist.Type.PERIOD.equals(whitelist.getType()) && whitelist.getAccessEndString() == null){
+        if(Whitelist.Type.PERIOD.equals(whitelist.getType()) && StringUtils.isNullOrEmpty(whitelist.getAccessEndString())){
             ObjectError error = new ObjectError("fillDateEndIsRequired", bundle.getString("whitelist.fillEndDateIsRequired"));
             bindingResult.addError(error);
         }
