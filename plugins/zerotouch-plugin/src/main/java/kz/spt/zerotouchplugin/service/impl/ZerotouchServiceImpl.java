@@ -50,8 +50,6 @@ public class ZerotouchServiceImpl implements ZerotouchService {
     private Boolean zeroTouchRahmetCheck;
 
     private static String zeroTouchToken;
-    private static Long lastTokenCheck;
-    private static Long tokenTimeToLive;
 
     public ZerotouchServiceImpl(ZeroTouchLogRepository zeroTouchLogRepository){
         this.zeroTouchLogRepository  = zeroTouchLogRepository;
@@ -63,10 +61,7 @@ public class ZerotouchServiceImpl implements ZerotouchService {
         Boolean result = false;
 
         if(zeroTouchRahmetCheck) {
-            long currentMillis = System.currentTimeMillis();
-            if (lastTokenCheck == null || currentMillis - lastTokenCheck <= tokenTimeToLive) {
-                getToken();
-            }
+            getToken();
 
             CloseableHttpClient zeroTouchHttpClient = HttpClients.custom().setConnectionTimeToLive(5, TimeUnit.SECONDS).build();
 
@@ -142,12 +137,7 @@ public class ZerotouchServiceImpl implements ZerotouchService {
         JsonNode tokenResponseJson = objectMapper.readTree(tokenPostResponseBodyString);
         if(tokenResponseJson.has("data") && tokenResponseJson.get("data").has("token")){
             zeroTouchToken = tokenResponseJson.get("data").get("token").textValue();
-            lastTokenCheck = System.currentTimeMillis();
             log.info("zeroTouch new token: " + zeroTouchToken);
-
-            if(tokenResponseJson.has("data") && tokenResponseJson.get("data").has("expire_in")){
-                tokenTimeToLive = tokenResponseJson.get("data").get("expire_in").longValue() - 1000;
-            }
         }
 
         tokenHttpClient.close();
