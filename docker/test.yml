@@ -82,3 +82,4 @@ parking:
     access:
       unknown:
         cases: false # Выпускать все авто где вьезд не найден
+parkomat.ip: 101.101.101.101
