@@ -22,7 +22,7 @@
                             <div class="form-group row" id="platenumber">
                                 <label class="col-2 col-form-label" th:text="#{car.platenumber}"></label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" th:field="*{platenumber}" th:value="*{platenumber}">
+                                    <input type="text" id="platenumberInput" class="form-control" th:field="*{platenumber}" th:value="*{platenumber}" onkeyup="checkInvalidNumbers()">
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -90,7 +90,7 @@
 
 <script th:src="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js}"></script>
 <script th:src="@{/assets/js/week-hours-picker.js}"></script>
-<script type="text/javascript">
+<script type="text/javascript" th:inline="javascript">
     function checkSelectedTypes(value){
         if(value == 'PERIOD'){
             $('#beginDate').show();
@@ -103,6 +103,12 @@
             $('#custom').show();
         } else {
             $('#custom').hide();
+        }
+    }
+    function checkInvalidNumbers(){
+        let plateNumber = $('#platenumberInput').val();
+        if(!/^[a-zA-Z0-9]+$/.test(plateNumber)){
+            alert([[#{crm.onlyLatinAndNumbersAllowed}]]);
         }
     }
     function checkSelectedGroups(value) {

@@ -73,6 +73,7 @@
                                             <button type="button" class="btn waves-effect waves-light btn-primary" th:text="#{crm.clear}" onclick="clearCarList()"></button>
                                         </span>
                                     </div>
+                                    <div class="alert alert-warning" id="plateNumbersWarning" style="display: none"></div>
                                 </div>
                             </div>
                             <div class="form-group row" id="carsListExcel">
@@ -118,7 +119,7 @@
 <script th:src="@{/assets/js/week-hours-picker.js}"></script>
 <script th:src="@{/assets/js/xlsx.js}"></script>
 <script type="text/javascript" th:src="@{/plugins/multiselect/js/jquery.multi-select.js}"></script>
-<script type="text/javascript">
+<script type="text/javascript" th:inline="javascript">
     let showAdvanced = '[[${@environment.getProperty("whitelist.group.show.advanced")}]]';
 
     function checkSelectedTypes(value){
@@ -280,6 +281,36 @@
             let jElement = $('placeLabel' + index);
             placeCarsJson['placeCars' + index]['name'] = jElement.val();
             $("#placeCarsJson").val(JSON.stringify(placeCarsJson));
+        }
+    }
+
+    $('#plateNumbers').on('itemAdded', function(event) {
+        checkLatinAndNumbers();
+    });
+
+    $('#plateNumbers').on('itemRemoved', function(event) {
+        checkLatinAndNumbers();
+    });
+
+    function checkLatinAndNumbers(){
+        let plateNumbers = $('#plateNumbers').val();
+        let text = "";
+        if(plateNumbers && plateNumbers.length > 0){
+            for(let index in plateNumbers){
+                if(!/^[a-zA-Z0-9]+$/.test(plateNumbers[index])){
+                    if(text.length == 0){
+                        text = text + '[[#{crm.onlyLatinAndNumbersAllowed}]]' + ': ' + plateNumbers[index];
+                    } else {
+                        text = text + ',' + plateNumbers[index];
+                    }
+                }
+            }
+        }
+        $('#plateNumbersWarning').text(text);
+        if(text.length > 0){
+            $('#plateNumbersWarning').show();
+        } else {
+            $('#plateNumbersWarning').hide();
         }
     }
 </script>

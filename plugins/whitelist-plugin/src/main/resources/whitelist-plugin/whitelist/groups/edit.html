@@ -43,13 +43,14 @@
                                 <label class="col-2 col-form-label" th:text="#{whitelist.carsList}"></label>
                                 <div class="col-10">
                                     <div class="input-group">
-                                        <select class="form-control" multiple data-role="tagsinput" th:field="*{plateNumbers}" placeholder="Add car numbers">
+                                        <select class="form-control" multiple data-role="tagsinput" id = "plateNumbers" th:field="*{plateNumbers}" placeholder="Add car numbers">
                                             <option th:each="pn : ${whitelistGroups.plateNumbers}" th:text="${pn}" th:value="${pn}">
                                         </select>
                                         <span class="input-group-btn">
                                             <button type="button" class="btn waves-effect waves-light btn-primary" th:text="#{crm.clear}" onclick="clearCarList()"></button>
                                         </span>
                                     </div>
+                                    <div class="alert alert-warning" id="plateNumbersWarning" style="display: none"></div>
                                 </div>
                             </div>
                             <div class="form-group row" id="carsListExcel">
@@ -202,6 +203,36 @@
 
     function clearCarList(){
         $('#plateNumbers').tagsinput('removeAll');
+    }
+
+    $('#plateNumbers').on('itemAdded', function(event) {
+        checkLatinAndNumbers();
+    });
+
+    $('#plateNumbers').on('itemRemoved', function(event) {
+        checkLatinAndNumbers();
+    });
+
+    function checkLatinAndNumbers(){
+        let plateNumbers = $('#plateNumbers').val();
+        let text = "";
+        if(plateNumbers && plateNumbers.length > 0){
+            for(let index in plateNumbers){
+                if(!/^[a-zA-Z0-9]+$/.test(plateNumbers[index])){
+                    if(text.length == 0){
+                        text = text + '[[#{crm.onlyLatinAndNumbersAllowed}]]' + ': ' + plateNumbers[index];
+                    } else {
+                        text = text + ',' + plateNumbers[index];
+                    }
+                }
+            }
+        }
+        $('#plateNumbersWarning').text(text);
+        if(text.length > 0){
+            $('#plateNumbersWarning').show();
+        } else {
+            $('#plateNumbersWarning').hide();
+        }
     }
 </script>
 </html>

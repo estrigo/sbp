@@ -34,8 +34,7 @@
                         <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
                     </div>
                     <div class="row" style="position: relative">
-                        <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event"
-                           style="height: 250px!important;"
+                        <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event" data-width="1800"
                            th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}">
                             <img th:id="${'image' + camera.id}" class="img-fluid m-b-10"
                                  th:src="@{#{arm.noImageLink}}" style="height: 250px !important;"
@@ -279,10 +278,13 @@
 
     function checkBalance(cameraId) {
         var plateNumber = $("#plateNumber" + cameraId).val();
+
         if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
             $.get("/rest/balance/check/" + plateNumber, function (data) {
                 alert([[#{arm.balanceEqual}]] + data);
             });
+        } else if(!/^[a-zA-Z0-9]+$/.test(plateNumber)){
+            alert([[#{crm.onlyLatinAndNumbersAllowed}]]);
         } else {
             alert([[#{arm.invalidPlateNumber}]]);
         }

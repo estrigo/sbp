@@ -3,6 +3,7 @@ package kz.spt.whitelistplugin.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.service.ParkingService;
+import kz.spt.lib.utils.Utils;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.whitelistplugin.service.FileServices;
@@ -151,7 +152,7 @@ public class WhitelistController {
         } else {
             List<String> plateNumbers = new ArrayList<>();
             for (String plateNumber : whitelistGroups.getPlateNumbers()) {
-                plateNumbers.add(plateNumber.toUpperCase());
+                plateNumbers.add(Utils.changeCyrillicToLatin(plateNumber.toUpperCase()));
             }
             whitelistGroups.setPlateNumbers(plateNumbers);
 
@@ -171,7 +172,7 @@ public class WhitelistController {
                 }
             }
         }
-        if(Whitelist.Type.PERIOD.equals(whitelistGroups.getType()) && whitelistGroups.getAccessEndString() == null){
+        if(Whitelist.Type.PERIOD.equals(whitelistGroups.getType()) && StringUtils.isNullOrEmpty(whitelistGroups.getAccessEndString())){
             ObjectError error = new ObjectError("fillDateEndIsRequired", bundle.getString("whitelist.fillEndDateIsRequired"));
             bindingResult.addError(error);
         }

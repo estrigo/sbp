@@ -5,12 +5,14 @@ import kz.spt.lib.model.Cars;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.CarsRepository;
 import kz.spt.lib.service.CarsService;
+import kz.spt.lib.utils.Utils;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Log
@@ -50,6 +52,13 @@ public class CarsServiceImpl implements CarsService {
     }
 
     public Cars createCar(String platenumber){
+        platenumber = platenumber.toUpperCase();
+
+        Boolean contains = Pattern.matches(".*\\p{InCyrillic}.*", platenumber);
+        if(contains){
+            platenumber = Utils.changeCyrillicToLatin(platenumber);
+        }
+
         Cars car = findByPlatenumber(platenumber);
         if(car == null){
             car = new Cars();
