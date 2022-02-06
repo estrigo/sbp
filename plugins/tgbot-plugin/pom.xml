@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>kz.spt</groupId>
+        <artifactId>spt-plugins</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <groupId>kz.spt</groupId>
+    <artifactId>tgbot-plugin</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>tgbot-plugin</name>
+
+    <properties>
+        <java.version>11</java.version>
+        <plugin.id>tgbot-plugin</plugin.id>
+        <plugin.class>kz.spt.tgbotplugin.TgBotPlugin</plugin.class>
+        <plugin.version>0.0.1-SNAPSHOT</plugin.version>
+        <plugin.provider>spt-sbp-tgbot</plugin.provider>
+        <plugin.dependencies />
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.telegram</groupId>
+            <artifactId>telegrambots-spring-boot-starter</artifactId>
+            <version>5.7.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.laxture</groupId>
+            <artifactId>sbp-core</artifactId>
+            <version>0.1.13</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>kz.spt</groupId>
+            <artifactId>spt-lib</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>kz.spt</groupId>
+            <artifactId>whitelist-plugin</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven.jar.plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Plugin-Id>${plugin.id}</Plugin-Id>
+                            <Plugin-Class>${plugin.class}</Plugin-Class>
+                            <Plugin-Version>${plugin.version}</Plugin-Version>
+                            <Plugin-Provider>${plugin.provider}</Plugin-Provider>
+                            <Plugin-Dependencies>${plugin.dependencies}</Plugin-Dependencies>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

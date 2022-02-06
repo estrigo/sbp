@@ -22,6 +22,7 @@
         <module>billing-plugin</module>
         <module>booking-plugin</module>
         <module>zerotouch-plugin</module>
+        <module>tgbot-plugin</module>
     </modules>
 
     <build>

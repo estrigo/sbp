@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-@Repository
+@Repository("whitelistGroupsRepository")
 public interface WhitelistGroupsRepository extends JpaRepository<WhitelistGroups, Long> {
 
     @Query("from WhitelistGroups w  where w.id = ?1")

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Date;
 import java.util.List;
 
-@Repository
+@Repository("whitelistRepository")
 public interface WhitelistRepository extends JpaRepository<Whitelist, Long> {
 
     @Query("from Whitelist w where w.car = ?1 and w.parking.id = ?3 and w.group is null and (w.type = 'UNLIMITED' or w.type = 'CUSTOM' or (w.type = 'PERIOD' and ?2 between w.access_start and w.access_end))")
