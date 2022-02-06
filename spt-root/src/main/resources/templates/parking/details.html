@@ -200,6 +200,7 @@
         } else if(gateId) {
             $.get("/parking/" + gateId + "/new/barrier/", function (data) {
                 $('#barrier-close-modal').find('#barrierModalBody').html(data);
+                changeBarrierType();
             });
         }
     }
@@ -238,18 +239,26 @@
     function changeBarrierType(){
         let barrierType = $('#barrier-close-modal').find('#barrierType').val();
         console.log("barrierType: " + barrierType);
-        if("SNMP" === barrierType){
+        if(!barrierType || "SNMP" === barrierType){
             $('#barrier-close-modal').find('#snmpPassword').show();
             $('#barrier-close-modal').find('#snmpOpenOidDiv').show();
             $('#barrier-close-modal').find('#snmpCloseOidDiv').show();
             $('#barrier-close-modal').find('#snmpVersionDiv').show();
+            $('#barrier-close-modal').find('#loopSnmpDiv').show();
+            $('#barrier-close-modal').find('#photoElementSnmpDiv').show();
             $('#barrier-close-modal').find('#modbusBarrierDiv').hide();
+            $('#barrier-close-modal').find('#loopModbusDiv').hide();
+            $('#barrier-close-modal').find('#photoElementModbusDiv').hide();
         } else {
             $('#barrier-close-modal').find('#snmpPassword').hide();
             $('#barrier-close-modal').find('#snmpOpenOidDiv').hide();
             $('#barrier-close-modal').find('#snmpCloseOidDiv').hide();
             $('#barrier-close-modal').find('#snmpVersionDiv').hide();
+            $('#barrier-close-modal').find('#loopSnmpDiv').hide();
+            $('#barrier-close-modal').find('#photoElementSnmpDiv').hide();
             $('#barrier-close-modal').find('#modbusBarrierDiv').show();
+            $('#barrier-close-modal').find('#loopModbusDiv').show();
+            $('#barrier-close-modal').find('#photoElementModbusDiv').show();
         }
     }
 </script>

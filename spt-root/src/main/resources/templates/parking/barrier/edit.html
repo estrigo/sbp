@@ -70,7 +70,7 @@
         </div>
     </div>
 
-    <div class="row" id="modbusBarrierDiv">
+    <div class="row" id="modbusBarrierDiv" style="display: none;">
         <div class="col-md-6">
             <div class="form-group">
                 <label for="snmpVersion" class="control-label" th:text="#{barrier.modbusOpenRegister}"></label>
@@ -101,56 +101,66 @@
     <div id="sensorBlock">
         <hr />
         <h4 th:text="#{barrier.loopSettings}"></h4>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="loopIpAddress" class="control-label" th:text="#{barrier.ipAddress}"></label>
-                    <input type="text" class="form-control" th:field="*{loopIp}" th:value="*{loopIp}" id="loopIpAddress" placeholder="1.1.1.1">
+        <div id="loopSnmpDiv" style="display: none;">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="loopIpAddress" class="control-label" th:text="#{barrier.ipAddress}"></label>
+                        <input type="text" class="form-control" th:field="*{loopIp}" th:value="*{loopIp}" id="loopIpAddress" placeholder="1.1.1.1">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="loopPassword" class="control-label" th:text="#{barrier.password}"></label>
+                        <input type="text" class="form-control" id="loopPassword" th:field="*{loopPassword}" th:value="*{loopPassword}">
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="loopPassword" class="control-label" th:text="#{barrier.password}"></label>
-                    <input type="text" class="form-control" id="loopPassword" th:field="*{loopPassword}" th:value="*{loopPassword}">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="type" class="control-label" th:text="#{barrier.type}"></label>
+                        <select th:field="*{loopType}" th:value="*{loopType}" class="form-control" id="loopType">
+                            <option th:each="barrierType : ${T(kz.spt.lib.model.Barrier.BarrierType).ALL}"
+                                    th:value="${barrierType}" th:text="#{'barrier.barrierType.' + ${barrierType}}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label for="loopOid" class="control-label" th:text="#{barrier.loopOid}"></label>
+                        <input type="text" class="form-control" id="loopOid" th:field="*{loopOid}" th:value="*{loopOid}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="loopSnmpVersion" class="control-label" th:text="#{barrier.snmpVersion}"></label>
+                        <select th:field="*{loopSnmpVersion}" th:value="*{loopSnmpVersion}" class="form-control" id="loopSnmpVersion">
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="3">3</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="loopDefaultValue" class="control-label" th:text="#{barrier.defaultValue}"></label>
+                        <select th:field="*{loopDefaultValue}" th:value="*{loopDefaultValue}" class="form-control" id="loopDefaultValue">
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="type" class="control-label" th:text="#{barrier.type}"></label>
-                    <select th:field="*{loopType}" th:value="*{loopType}" class="form-control" id="loopType">
-                        <option th:each="barrierType : ${T(kz.spt.lib.model.Barrier.BarrierType).ALL}"
-                                th:value="${barrierType}" th:text="#{'barrier.barrierType.' + ${barrierType}}">
-                        </option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-8">
-                <div class="form-group">
-                    <label for="loopOid" class="control-label" th:text="#{barrier.loopOid}"></label>
-                    <input type="text" class="form-control" id="loopOid" th:field="*{loopOid}" th:value="*{loopOid}">
-                </div>
-            </div>
-        </div>
-        <div class="row">
+        <div class="row" id="loopModbusDiv" style="display: none;">
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="loopSnmpVersion" class="control-label" th:text="#{barrier.snmpVersion}"></label>
-                    <select th:field="*{loopSnmpVersion}" th:value="*{loopSnmpVersion}" class="form-control" id="loopSnmpVersion">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="3">3</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="loopDefaultValue" class="control-label" th:text="#{barrier.defaultValue}"></label>
-                    <select th:field="*{loopDefaultValue}" th:value="*{loopDefaultValue}" class="form-control" id="loopDefaultValue">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                    </select>
+                    <label for="loopModbusRegister" class="control-label" th:text="#{barrier.modbusRegister}"></label>
+                    <input type="number" step="1" min="0" max="64" class="form-control" id="loopModbusRegister" th:field="*{loopModbusRegister}" th:value="*{loopModbusRegister}">
                 </div>
             </div>
         </div>
@@ -158,56 +168,66 @@
 
         <hr />
         <h4 th:text="#{barrier.photoElementSettings}"></h4>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="photoElementIpAddress" class="control-label" th:text="#{barrier.ipAddress}"></label>
-                    <input type="text" class="form-control" th:field="*{photoElementIp}" th:value="*{photoElementIp}" id="photoElementIpAddress" placeholder="1.1.1.1">
+        <div id="photoElementSnmpDiv" style="display: none;">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="photoElementIpAddress" class="control-label" th:text="#{barrier.ipAddress}"></label>
+                        <input type="text" class="form-control" th:field="*{photoElementIp}" th:value="*{photoElementIp}" id="photoElementIpAddress" placeholder="1.1.1.1">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="photoElementPassword" class="control-label" th:text="#{barrier.password}"></label>
+                        <input type="text" class="form-control" id="photoElementPassword" th:field="*{photoElementPassword}" th:value="*{photoElementPassword}">
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="photoElementPassword" class="control-label" th:text="#{barrier.password}"></label>
-                    <input type="text" class="form-control" id="photoElementPassword" th:field="*{photoElementPassword}" th:value="*{photoElementPassword}">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="type" class="control-label" th:text="#{barrier.type}"></label>
+                        <select th:field="*{photoElementType}" th:value="*{photoElementType}" class="form-control" id="photoElementType">
+                            <option th:each="barrierType : ${T(kz.spt.lib.model.Barrier.BarrierType).ALL}"
+                                    th:value="${barrierType}" th:text="#{'barrier.barrierType.' + ${barrierType}}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label for="photoElementOid" class="control-label" th:text="#{barrier.loopOid}"></label>
+                        <input type="text" class="form-control" id="photoElementOid" th:field="*{photoElementOid}" th:value="*{photoElementOid}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="loopSnmpVersion" class="control-label" th:text="#{barrier.snmpVersion}"></label>
+                        <select th:field="*{photoElementSnmpVersion}" th:value="*{photoElementSnmpVersion}" class="form-control" id="photoElementSnmpVersion">
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="3">3</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="photoElementDefaultValue" class="control-label" th:text="#{barrier.defaultValue}"></label>
+                        <select th:field="*{photoElementDefaultValue}" th:value="*{photoElementDefaultValue}" class="form-control" id="photoElementDefaultValue">
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="type" class="control-label" th:text="#{barrier.type}"></label>
-                    <select th:field="*{photoElementType}" th:value="*{photoElementType}" class="form-control" id="photoElementType">
-                        <option th:each="barrierType : ${T(kz.spt.lib.model.Barrier.BarrierType).ALL}"
-                                th:value="${barrierType}" th:text="#{'barrier.barrierType.' + ${barrierType}}">
-                        </option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-8">
-                <div class="form-group">
-                    <label for="photoElementOid" class="control-label" th:text="#{barrier.loopOid}"></label>
-                    <input type="text" class="form-control" id="photoElementOid" th:field="*{photoElementOid}" th:value="*{photoElementOid}">
-                </div>
-            </div>
-        </div>
-        <div class="row">
+        <div class="row" id="photoElementModbusDiv" style="display: none;">
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="loopSnmpVersion" class="control-label" th:text="#{barrier.snmpVersion}"></label>
-                    <select th:field="*{photoElementSnmpVersion}" th:value="*{photoElementSnmpVersion}" class="form-control" id="photoElementSnmpVersion">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="3">3</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="photoElementDefaultValue" class="control-label" th:text="#{barrier.defaultValue}"></label>
-                    <select th:field="*{photoElementDefaultValue}" th:value="*{photoElementDefaultValue}" class="form-control" id="photoElementDefaultValue">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                    </select>
+                    <label for="photoElementModbusRegister" class="control-label" th:text="#{barrier.modbusRegister}"></label>
+                    <input type="number" step="1" min="0" max="64" class="form-control" id="photoElementModbusRegister" th:field="*{photoElementModbusRegister}" th:value="*{photoElementModbusRegister}">
                 </div>
             </div>
         </div>

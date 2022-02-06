@@ -88,6 +88,9 @@ public class Barrier {
 
     private Integer loopDefaultValue = 0;
 
+    @Column(name = "loop_modbus_register")
+    private Integer loopModbusRegister;
+
     // --- Данные фотоэлемента для проверки присуствия машины (До шлагбаума)
     @Enumerated(EnumType.STRING)
     @Column(name = "loop_type")
@@ -102,6 +105,9 @@ public class Barrier {
     private Integer photoElementSnmpVersion;
 
     private Integer photoElementDefaultValue = 0;
+
+    @Column(name = "photo_element_modbus_register")
+    private Integer photoElementModbusRegister;
 
     @CreationTimestamp
     private Date created;

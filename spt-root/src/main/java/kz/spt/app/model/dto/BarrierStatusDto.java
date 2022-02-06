@@ -14,6 +14,8 @@ public class BarrierStatusDto {
     public String closeOid;
     public Integer modbusOpenRegister;
     public Integer modbusCloseRegister;
+    public Integer loopModbusRegister;
+    public Integer photoElementModbusRegister;
 
     public static BarrierStatusDto fromBarrier(Barrier barrier){
         BarrierStatusDto barrierStatusDto = new BarrierStatusDto();
@@ -27,6 +29,8 @@ public class BarrierStatusDto {
         barrierStatusDto.sensorsType = barrier.getSensorsType();
         barrierStatusDto.modbusOpenRegister = barrier.getModbusOpenRegister();
         barrierStatusDto.modbusCloseRegister = barrier.getModbusCloseRegister();
+        barrierStatusDto.loopModbusRegister = barrier.getLoopModbusRegister();
+        barrierStatusDto.photoElementModbusRegister = barrier.getPhotoElementModbusRegister();
         return barrierStatusDto;
     }
 }
