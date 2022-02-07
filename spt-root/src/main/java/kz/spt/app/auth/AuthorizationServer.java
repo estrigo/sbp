@@ -3,12 +3,14 @@ package kz.spt.app.auth;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.app.config.CorsAllowedOrigins;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
@@ -38,21 +40,8 @@ public class AuthorizationServer extends AuthorizationServerConfigurerAdapter {
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        Map<String, CorsConfiguration> corsConfigMap = new HashMap<>();
-        config.setAllowedOrigins(Collections.singletonList("*"));
-        config.setAllowedMethods(Collections.singletonList("*"));
-        config.setAllowedHeaders(Collections.singletonList("*"));
-        corsConfigMap.put("/user/ext_login", config);
-
-        endpoints
-                .authenticationManager(authenticationManager)
-                .pathMapping("/oauth/token", "/user/ext_login")
-                .getFrameworkEndpointHandlerMapping().setCorsConfigurations(corsConfigMap);
-
-
+        endpoints.pathMapping("/oauth/token", "/user/ext_login");
+        endpoints.authenticationManager(authenticationManager);
     }
 
     public ClientDetailsService clientDetailsService() {
