@@ -80,7 +80,7 @@ public class EventLogServiceImpl implements EventLogService {
 
     public void sendSocketMessage(ArmEventType eventType, EventType eventStatus, Long id, String plateNumber, String message, String messageEng) {
 
-        if(ArmEventType.Photo.equals(eventType) && message == null && messageEng == null){
+        if (ArmEventType.Photo.equals(eventType) && message == null && messageEng == null) {
             return;
         }
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
@@ -150,16 +150,23 @@ public class EventLogServiceImpl implements EventLogService {
         }
 
         var eventDtos = filteredEvents.stream()
-                .map(m -> EventsDto.builder()
-                        .id(m.getId())
-                        .created(m.getCreated())
-                        .plateNumber(m.getNullSafePlateNumber())
-                        .description(m.getNullSafeDescription())
-                        .descriptionEn(m.getNullSafeDescriptionEn())
-                        .eventType(m.getProperties().get("type") != null ? m.getProperties().get("type").toString() : "")
-                        .smallImgUrl(m.getProperties().get("carSmallImageUrl") != null ? (String) m.getProperties().get("carSmallImageUrl") : "")
-                        .bigImgUrl(m.getProperties().get("carImageUrl") != null ? (String) m.getProperties().get("carImageUrl") : "")
-                        .build())
+                .map(m -> {
+                    String locale = LocaleContextHolder.getLocale().toString();
+                    String type = m.getProperties().get("type") != null ?
+                            ResourceBundle.getBundle("messages", Locale.forLanguageTag(locale))
+                                    .getString("events.".concat(m.getProperties().get("type").toString().toLowerCase())) :
+                            "";
+                    return EventsDto.builder()
+                            .id(m.getId())
+                            .created(m.getCreated())
+                            .plateNumber(m.getNullSafePlateNumber())
+                            .description(m.getNullSafeDescription())
+                            .descriptionEn(m.getNullSafeDescriptionEn())
+                            .eventType(type)
+                            .smallImgUrl(m.getProperties().get("carSmallImageUrl") != null ? (String) m.getProperties().get("carSmallImageUrl") : "")
+                            .bigImgUrl(m.getProperties().get("carImageUrl") != null ? (String) m.getProperties().get("carImageUrl") : "")
+                            .build();
+                })
                 .collect(Collectors.toList());
         return getPage(eventDtos, pagingRequest);
     }
@@ -172,25 +179,25 @@ public class EventLogServiceImpl implements EventLogService {
 
         Long parkingId = null;
 
-        for(EventLog eventLog: events){
+        for (EventLog eventLog : events) {
             EventLogExcelDto eventLogExcelDto = new EventLogExcelDto();
-            if(eventLogExcelDtoMap.containsKey(eventLog.getPlateNumber())){
+            if (eventLogExcelDtoMap.containsKey(eventLog.getPlateNumber())) {
                 eventLogExcelDto = eventLogExcelDtoMap.get(eventLog.getPlateNumber());
             }
             eventLogExcelDto.plateNumber = eventLog.getPlateNumber();
 
             EventLogService.EventType type = EventLogService.EventType.valueOf((String) eventLog.getProperties().get("type"));
-            if(EventType.Allow.equals(type)){
+            if (EventType.Allow.equals(type)) {
                 eventLogExcelDto.allow = eventLogExcelDto.allow + 1;
-            } else if(EventType.Deny.equals(type)){
+            } else if (EventType.Deny.equals(type)) {
                 eventLogExcelDto.deny = eventLogExcelDto.deny + 1;
             }
             eventLogExcelDtoMap.put(eventLog.getPlateNumber(), eventLogExcelDto);
 
-            if(parkingId == null){
-                Long gateId = Long.valueOf((Integer)eventLog.getProperties().get("gateId"));
+            if (parkingId == null) {
+                Long gateId = Long.valueOf((Integer) eventLog.getProperties().get("gateId"));
                 Gate gate = gateService.getById(gateId);
-                parkingId =  gate.getParking().getId();
+                parkingId = gate.getParking().getId();
             }
         }
 
@@ -219,7 +226,7 @@ public class EventLogServiceImpl implements EventLogService {
 
             JsonNode result = whitelistPluginRegister.execute(command);
 
-            if(result != null){
+            if (result != null) {
                 JsonNode whitelistCheckResult = result.get("whitelistCheckResult");
                 if (whitelistCheckResult != null) {
                     objectNode.put("isWhitelist", bundle.getString("crm.yes"));
