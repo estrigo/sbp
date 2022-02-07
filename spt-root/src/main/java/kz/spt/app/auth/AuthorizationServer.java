@@ -18,8 +18,12 @@ import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.ClientRegistrationException;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
+import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Log
 @Configuration
@@ -34,9 +38,21 @@ public class AuthorizationServer extends AuthorizationServerConfigurerAdapter {
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        Map<String, CorsConfiguration> corsConfigMap = new HashMap<>();
+        config.setAllowedOrigins(Collections.singletonList("*"));
+        config.setAllowedMethods(Collections.singletonList("*"));
+        config.setAllowedHeaders(Collections.singletonList("*"));
+        corsConfigMap.put("/user/ext_login", config);
+
         endpoints
                 .authenticationManager(authenticationManager)
-                .pathMapping("/oauth/token", "/user/ext_login");
+                .pathMapping("/oauth/token", "/user/ext_login")
+                .getFrameworkEndpointHandlerMapping().setCorsConfigurations(corsConfigMap);
+
+
     }
 
     public ClientDetailsService clientDetailsService() {

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -58,7 +59,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
+        http.cors().configurationSource(configurationSource()).and()
+                .authorizeRequests()
                 .antMatchers("/users/delete/**").hasRole("ADMIN")
                 .antMatchers("/arm/**").fullyAuthenticated()
                 .antMatchers( "/events/**", "/journal/**", "/arm/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN", "OPERATOR", "OPERATOR_NO_REVENUE_SHARE")
@@ -102,25 +104,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logout().logoutSuccessUrl("/login").permitAll()
                 .and()
                 .exceptionHandling().accessDeniedPage("/403");
-
         http.csrf().disable();
-        http.cors();
     }
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-
-        if(corsAllowedOrigins.getOrigins() != null && corsAllowedOrigins.getOrigins().size() > 0){
+    private CorsConfigurationSource configurationSource() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        if(corsAllowedOrigins.getOrigins() != null && corsAllowedOrigins.getOrigins().size() > 0) {
             log.info("corsAllowedOrigins.getOrigins().size(): " + corsAllowedOrigins.getOrigins().size());
-            for(String origin: corsAllowedOrigins.getOrigins()){
+            for (String origin : corsAllowedOrigins.getOrigins()) {
                 log.info("origin: " + origin);
-                configuration.addAllowedOrigin(origin);
+                config.addAllowedOrigin(origin);
             }
         }
-        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        config.addAllowedMethod(HttpMethod.HEAD);
+        config.addAllowedMethod(HttpMethod.POST);
+        config.addAllowedMethod(HttpMethod.GET);
+        config.addAllowedMethod(HttpMethod.OPTIONS);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 
