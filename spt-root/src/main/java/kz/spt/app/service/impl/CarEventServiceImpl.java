@@ -312,8 +312,8 @@ public class CarEventServiceImpl implements CarEventService {
             if (carState == null) {
                 hasAccess = true;
             } else {
-                properties.put("type", EventLogService.EventType.Deny);
-                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность", "Not allowed to enter: Car " + eventDto.car_number + " is in debt");
+                properties.put("type", EventLogService.EventType.Debt);
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Debt, camera.getId(), eventDto.car_number, "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность", "Not allowed to enter: Car " + eventDto.car_number + " is in debt");
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность", "Not allowed to enter: Car " + eventDto.car_number + " is in debt");
                 hasAccess = false;
             }
@@ -340,8 +340,8 @@ public class CarEventServiceImpl implements CarEventService {
                         }
                         // TODO: Close last entrance and open new one
                     } else {
-                        properties.put("type", EventLogService.EventType.Deny);
-                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность", "Not allowed to enter: Car " + eventDto.car_number + " is in debt");
+                        properties.put("type", EventLogService.EventType.Debt);
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Debt, camera.getId(), eventDto.car_number, "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность", "Not allowed to enter: Car " + eventDto.car_number + " is in debt");
                         eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность", "Not allowed to enter: Car " + eventDto.car_number + " is in debt");
                         hasAccess = false;
                     }

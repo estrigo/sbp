@@ -5,3 +5,4 @@
 ########################################
 #booking-plugin
 #zerotouch-plugin
+#tgbot-plugin

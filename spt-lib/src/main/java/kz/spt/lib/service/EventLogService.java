@@ -21,7 +21,8 @@ public interface EventLogService {
         Allow,
         Deny,
         Error,
-        Success
+        Success,
+        Debt
     }
 
     void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn);
