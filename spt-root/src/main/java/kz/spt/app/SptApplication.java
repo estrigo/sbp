@@ -33,19 +33,6 @@ public class SptApplication {
         return ApplicationContextProvider::registerApplicationContext;
     }
 
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry
-                        .addMapping("/**")
-                        .allowedMethods("*")
-                        .allowedOrigins("*");
-            }
-        };
-    }
-
     @Autowired
     public void configureJackson(ObjectMapper objectMapper) {
         objectMapper.setTimeZone(TimeZone.getDefault());

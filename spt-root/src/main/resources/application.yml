@@ -22,6 +22,7 @@ spring:
       - "test-plugin"
       - "booking-plugin"
       - "zerotouch-plugin"
+      - "tgbot-plugin"
     main:
       banner-mode: off
   datasource:
@@ -78,4 +79,8 @@ parking:
       unknown:
         cases: false # Выпускать все авто где вьезд не найден
 parkomat.ip: 172.28.25.24
-
+cors:
+  allowed:
+    origins:
+      - http://localhost:3000
+      - https://parqour-web-app.herokuapp.com

@@ -1,11 +1,14 @@
 package kz.spt.app;
 
 import kz.spt.app.auth.DefaultUrlAuthenticationSuccessHandler;
+import kz.spt.app.config.CorsAllowedOrigins;
 import kz.spt.lib.plugin.CustomPlugin;
 import kz.spt.app.service.SpringDataUserDetailsService;
+import lombok.extern.java.Log;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,16 +19,22 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+@Log
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PluginManager pluginManager;
+    private CorsAllowedOrigins corsAllowedOrigins;
 
     public SecurityConfig(PluginManager pluginManager) {
         this.pluginManager = pluginManager;
@@ -42,8 +51,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    public void configureGlobal(AuthenticationManagerBuilder auth, CorsAllowedOrigins corsAllowedOrigins) throws Exception {
         auth.userDetailsService(customUserDetailsService()).passwordEncoder(passwordEncoder());
+        this.corsAllowedOrigins = corsAllowedOrigins;
     }
 
     @Override
@@ -94,6 +104,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .exceptionHandling().accessDeniedPage("/403");
 
         http.csrf().disable();
+        http.cors();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        if(corsAllowedOrigins.getOrigins() != null && corsAllowedOrigins.getOrigins().size() > 0){
+            log.info("corsAllowedOrigins.getOrigins().size(): " + corsAllowedOrigins.getOrigins().size());
+            for(String origin: corsAllowedOrigins.getOrigins()){
+                log.info("origin: " + origin);
+                configuration.addAllowedOrigin(origin);
+            }
+        }
+        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/rest/**", configuration);
+        return source;
     }
 
     @Override

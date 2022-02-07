@@ -4,11 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import kz.spt.app.config.ParkingProperties;
+import kz.spt.app.config.CorsAllowedOrigins;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.service.BlacklistService;
-import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.extension.PluginRegister;
@@ -50,7 +49,6 @@ public class CarEventServiceImpl implements CarEventService {
     private final BlacklistService blacklistService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final PluginService pluginService;
-    private final ParkingProperties parkingProperties;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
 
     @Value("${parking.has.access.unknown.cases}")
@@ -61,7 +59,7 @@ public class CarEventServiceImpl implements CarEventService {
 
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                CarStateService carStateService, CarImageService carImageService,
-                               BarrierService barrierService, BlacklistService blacklistService, PluginService pluginService, ParkingProperties parkingProperties) {
+                               BarrierService barrierService, BlacklistService blacklistService, PluginService pluginService) {
         this.carsService = carsService;
         this.cameraService = cameraService;
         this.eventLogService = eventLogService;
@@ -70,7 +68,6 @@ public class CarEventServiceImpl implements CarEventService {
         this.barrierService = barrierService;
         this.blacklistService = blacklistService;
         this.pluginService = pluginService;
-        this.parkingProperties = parkingProperties;
     }
 
     @Override
