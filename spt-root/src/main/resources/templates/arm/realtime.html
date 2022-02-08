@@ -5,9 +5,11 @@
 <div class="content">
     <div class="container">
         <div class="row mb-1">
-           <div class="col-12 text-right">
-               <button type="button" class="btn btn-primary" th:text="#{arm.restart}" th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart</button>
-           </div>
+            <div class="col-12 text-right">
+                <button type="button" class="btn btn-primary" th:text="#{arm.restart}"
+                        th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart
+                </button>
+            </div>
         </div>
         <div class="row">
             <div class="col-sm-4 col-lg-4 col-xs-12 item" th:each="camera, iterStat : ${cameras}"
@@ -34,7 +36,8 @@
                         <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
                     </div>
                     <div class="row" style="position: relative">
-                        <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event" data-width="1800"
+                        <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event"
+                           data-width="1800"
                            th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}">
                             <img th:id="${'image' + camera.id}" class="img-fluid m-b-10"
                                  th:src="@{#{arm.noImageLink}}" style="height: 250px !important;"
@@ -95,8 +98,9 @@
                         </tbody>
                     </table>
                 </div>
-                <textarea class="m-b-10 border border-dark" style="width: 100%" rows="3"
-                          th:id="${'logs' + camera.id}"></textarea>
+                <div class="m-b-10 border border-dark"
+                     style="overflow-x:hidden;overflow-y:scroll; width: 100%;max-height: 150px;min-height: 100px;"
+                     th:id="${'logs'+camera.id}"></div>
             </div>
         </div>
     </div>
@@ -111,7 +115,8 @@
                 <p th:text="#{arm.restartSuccess}"></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" th:text="#{crm.close}">Close</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" th:text="#{crm.close}">Close
+                </button>
             </div>
         </div>
     </div>
@@ -156,10 +161,12 @@
         console.log('Interval clearing');
         clearInterval(recInterval);
 
-        socket.onclose = function() {
+        socket.onclose = function () {
             console.log('Web closed');
             socket = null;
-            recInterval = setInterval(function() { connect(); }, 2000);
+            recInterval = setInterval(function () {
+                connect();
+            }, 2000);
         };
         console.log('##################');
     }
@@ -171,13 +178,13 @@
             $("#image" + messageBody.id).attr("src", img[messageBody.id]);
             $("#fancyImage" + messageBody.id).attr("data-src", img[messageBody.id]);
         } else if (messageBody.eventType == 'CarEvent') {
-            $("#logs" + messageBody.id).prepend('[' + messageBody.plateNumber + ']' + logMessage + "\n");
+            $("#logs" + messageBody.id).prepend(createPWithClassByStatus(messageBody.eventStatus,'[' + messageBody.plateNumber + ']' + logMessage));
             $("#fancyImage" + messageBody.id).attr("data-caption", messageBody.plateNumber);
-        } else if (messageBody.eventType == 'Lp' && messageBody.message) {
+        } else if (messageBody.eventType == 'Lp' && !!messageBody.message) {
             $("#lp" + messageBody.id).parent().show();
             $("#lp" + messageBody.id).attr("src", messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message);
         } else {
-            console.log('Unknown event type ' + messageBody);
+            console.log('Unknown event type ' + JSON.stringify(messageBody));
         }
 
         switch (messageBody.eventStatus) {
@@ -198,11 +205,37 @@
         }
     }
 
+    function createPWithClassByStatus(eventStatus, text) {
+        const p = document.createElement("p");
+        p.innerText = text;
+        p.style.padding = '0px';
+        p.style.marginBottom = '2px';
+        p.className = "text-left";
+        switch (eventStatus) {
+            case "Deny":
+            case "Error":
+                p.className += " bg-danger";
+                p.className += " text-white";
+                break;
+            case "Debt":
+                p.className += " bg-warning";
+                p.className += " text-white";
+                break;
+            case "Allow":
+            case "Success":
+            default:
+                p.className += " bg-light";
+                p.className += " text-dark";
+                break;
+        }
+        return p;
+    }
+
     $(function () {
         connect();
     });
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         $(".item").each(function () {
             const $input = $(this);
             const $id = $input.data("id");
@@ -300,9 +333,9 @@
         }
     }
 
-    function restart(ip){
-        $.get("/rest/arm/restart/"+ip, function (data) {
-            if(data===true){
+    function restart(ip) {
+        $.get("/rest/arm/restart/" + ip, function (data) {
+            if (data === true) {
                 $('#restartSuccess').modal('show');
             }
         });
