@@ -186,23 +186,6 @@
         } else {
             console.log('Unknown event type ' + JSON.stringify(messageBody));
         }
-
-        switch (messageBody.eventStatus) {
-            case "Allow":
-            case "Success":
-                $("#logs" + messageBody.id)
-                    .removeClass("border-dark")
-                    .removeClass("border-danger")
-                    .addClass("border-success");
-                break;
-            case "Deny":
-            case "Error":
-                $("#logs" + messageBody.id)
-                    .removeClass("border-dark")
-                    .removeClass("border-success")
-                    .addClass("border-danger");
-                break;
-        }
     }
 
     function createPWithClassByStatus(eventStatus, text) {
