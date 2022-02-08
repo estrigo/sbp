@@ -29,7 +29,8 @@ public class ParkingRate {
     public enum RateType {
         STANDARD,   // Одинаковая сумма для всех часов.  например 200 тенге за каждый час
         PROGRESSIVE, // Сумма за каждый час увеличивается или уменьшается. например 1 час 200mг, второй час 300тг, дальше по 400тг
-        INTERVAL // Разные суммы в зависимости от часов заезд. например каждый час между 08.00 - 16.00 по 500тг, между 16.00 - 08.00 по 1000тг
+        INTERVAL, // Разные суммы в зависимости от часов заезд. например каждый час между 08.00 - 16.00 по 500тг, между 16.00 - 08.00 по 1000тг
+        PREPAID // Работает по предоплате
     }
 
     @Id
@@ -61,6 +62,9 @@ public class ParkingRate {
 
     @Column(name = "day_payment_value")
     private Integer dayPaymentValue;
+
+    @Column(name = "prepaid_value")
+    private Integer prepaidValue;
 
     @Column(name = "progressive_json", columnDefinition = "text")
     private String progressiveJson;

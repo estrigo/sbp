@@ -42,11 +42,12 @@
                                             <option th:value="STANDARD" th:text="#{'rate.Type.STANDARD'}"></option>
                                             <option th:value="PROGRESSIVE" th:text="#{'rate.Type.PROGRESSIVE'}"></option>
                                             <option th:value="INTERVAL" th:text="#{'rate.Type.INTERVAL'}"></option>
+                                            <option th:value="PREPAID" th:text="#{'rate.Type.PREPAID'}"></option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
+                            <div id="freeMinutes" class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="beforeFreeMinutes" class="control-label" th:text="#{rate.beforeFreeMinutes}"></label>
@@ -60,11 +61,19 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
+                            <div id="dayPayment" class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="dayPaymentValue" class="control-label" th:text="#{rate.dayPaymentValue}"></label>
                                         <input type="number" class="form-control" th:field="*{dayPaymentValue}" th:value="*{dayPaymentValue}" id="dayPaymentValue">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="prepaid" class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="prepaidValue" class="control-label" th:text="#{rate.prepaidValue}"></label>
+                                        <input type="number" class="form-control" th:field="*{prepaidValue}" th:value="*{prepaidValue}" id="prepaidValue">
                                     </div>
                                 </div>
                             </div>
@@ -233,6 +242,15 @@
             drawInterval();
         } else {
             $('#interval').hide();
+        }
+        if(val === 'PREPAID'){
+            $('#prepaid').show();
+            $('#freeMinutes').hide();
+            $('#dayPayment').hide();
+        } else {
+            $('#prepaid').hide();
+            $('#freeMinutes').show();
+            $('#dayPayment').show();
         }
     }
 

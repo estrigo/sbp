@@ -7,9 +7,12 @@ import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.parkomat.ParkomatBillingInfoSuccessDto;
 import kz.spt.lib.model.dto.parkomat.ParkomatCommandDTO;
 import kz.spt.lib.service.*;
+import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.dto.RateQueryDto;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.extension.PluginRegister;
+import kz.spt.lib.model.CarState;
+import kz.spt.lib.model.Parking;
 import kz.spt.lib.model.dto.payment.*;
 import lombok.extern.java.Log;
 import org.springframework.security.core.Authentication;
@@ -31,13 +34,15 @@ public class PaymentServiceImpl implements PaymentService {
     private final PluginService pluginService;
     private final CarStateService carStateService;
     private final CarsService carService;
+    private final ParkingService parkingService;
     private final EventLogService eventLogService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService, EventLogService eventLogService){
+    public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService, ParkingService parkingService, EventLogService eventLogService){
         this.pluginService = pluginService;
         this.carStateService = carStateService;
         this.carService = carService;
+        this.parkingService = parkingService;
         this.eventLogService = eventLogService;
     }
 
@@ -48,31 +53,46 @@ public class PaymentServiceImpl implements PaymentService {
         if(commandDto.account != null) {
             commandDto.account = commandDto.account.toUpperCase();
             if ("check".equals(commandDto.command)) {
-                CarState carState = carStateService.getLastNotLeft(commandDto.account);
-                if (carState == null) {
-                    BillingInfoErrorDto dto = new BillingInfoErrorDto();
-                    dto.sum = BigDecimal.ZERO;
-                    dto.txn_id  = commandDto.txn_id;
-                    dto.message = "Некорректный номер авто свяжитесь с оператором.";
-                    dto.result = 1;
-                    return dto;
-                } else {
-                    BillingInfoSuccessDto dto = new BillingInfoSuccessDto();
-                    dto.sum = BigDecimal.ZERO;
-                    dto.current_balance = BigDecimal.ZERO;
-                    dto.in_date = format.format(carState.getInTimestamp());
-                    dto.result = 0;
-                    dto.left_free_time_minutes = 15;
-                    carState.setCashlessPayment(true);
 
-                    if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())) {
-                        return fillPayment(carState, format, commandDto, carState.getPaymentJson());
-                    } else if (Parking.ParkingType.WHITELIST_PAYMENT.equals(carState.getParking().getParkingType())) {
-                        if(carState.getPaid()){
-                            return fillPayment(carState, format, commandDto, carState.getPaymentJson());
-                        }
+                if(commandDto.prepaid != null && commandDto.prepaid){
+                    Parking parking = parkingService.findByType(Parking.ParkingType.PREPAID);
+                    if(parking != null){
+                        // code для выдачи значения для предоплатыs
+                    } else {
+                        BillingInfoErrorDto dto = new BillingInfoErrorDto();
+                        dto.message = "Платный паркинг не найден";
+                        dto.result = 4;
+                        dto.sum = commandDto.sum;
+                        dto.txn_id = commandDto.txn_id;
+                        return dto;
                     }
-                    return dto;
+                } else {
+                    CarState carState = carStateService.getLastNotLeft(commandDto.account);
+                    if (carState == null) {
+                        BillingInfoErrorDto dto = new BillingInfoErrorDto();
+                        dto.sum = BigDecimal.ZERO;
+                        dto.txn_id  = commandDto.txn_id;
+                        dto.message = "Некорректный номер авто свяжитесь с оператором.";
+                        dto.result = 1;
+                        return dto;
+                    } else {
+                        BillingInfoSuccessDto dto = new BillingInfoSuccessDto();
+                        dto.sum = BigDecimal.ZERO;
+                        dto.current_balance = BigDecimal.ZERO;
+                        dto.in_date = format.format(carState.getInTimestamp());
+                        dto.result = 0;
+                        dto.left_free_time_minutes = 15;
+                        carState.setCashlessPayment(true);
+
+                        if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())) {
+                            return fillPayment(carState, format, commandDto, carState.getPaymentJson());
+                        } else if (Parking.ParkingType.WHITELIST_PAYMENT.equals(carState.getParking().getParkingType())) {
+                            if(carState.getPaid()){
+                                return fillPayment(carState, format, commandDto, carState.getPaymentJson());
+                            }
+                        }
+                        return dto;
+                    }
                 }
             } else if ("pay".equals(commandDto.command)) {
                 if(commandDto.txn_id == null || "".equals(commandDto.txn_id)){
@@ -158,7 +178,12 @@ public class PaymentServiceImpl implements PaymentService {
                 }
             }
         }
-        return null;
+        BillingInfoErrorDto dto = new BillingInfoErrorDto();
+        dto.sum = BigDecimal.ZERO;
+        dto.txn_id  = commandDto.txn_id;
+        dto.message = "Некорректный номер авто свяжитесь с оператором.";
+        dto.result = 1;
+        return dto;
     }
 
     @Override

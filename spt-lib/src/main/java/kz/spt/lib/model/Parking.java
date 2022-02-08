@@ -25,9 +25,10 @@ public class Parking {
     public enum ParkingType {
         WHITELIST,
         PAYMENT,
-        WHITELIST_PAYMENT;
+        WHITELIST_PAYMENT,
+        PREPAID;
 
-        public static final ParkingType[] ALL = {WHITELIST, PAYMENT, WHITELIST_PAYMENT};
+        public static final ParkingType[] ALL = {WHITELIST, PAYMENT, WHITELIST_PAYMENT, PREPAID};
     }
 
     @Id

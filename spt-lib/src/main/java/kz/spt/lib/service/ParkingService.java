@@ -14,6 +14,8 @@ public interface ParkingService {
 
     Parking findById(Long id);
 
+    Parking findByType(Parking.ParkingType type);
+
     void deleteById(Long id);
 
     List<ParkingCarsDTO> listAllParkingCars();

@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface ParkingRepository  extends JpaRepository<Parking, Long> {
 
-    @Query("from Parking p where p.parkingType = 'PAYMENT' or p.parkingType = 'WHITELIST_PAYMENT'")
+    @Query("from Parking p where p.parkingType = 'PAYMENT' or p.parkingType = 'WHITELIST_PAYMENT' or p.parkingType = 'PREPAID'")
     List<Parking> listPaymentParkings();
 }

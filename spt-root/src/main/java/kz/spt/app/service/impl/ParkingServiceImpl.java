@@ -57,6 +57,12 @@ public class ParkingServiceImpl implements ParkingService {
     }
 
     @Override
+    public Parking findByType(Parking.ParkingType type) {
+        List<Parking> prepaidParkings = parkingRepository.findParkingByParkingType(type);
+        return prepaidParkings != null &&  prepaidParkings.size() > 0 ? prepaidParkings.get(0) : null;
+    }
+
+    @Override
     public void deleteById(Long id) {
         Parking parking = findById(id);
         if (parking.getGateList() != null) {
