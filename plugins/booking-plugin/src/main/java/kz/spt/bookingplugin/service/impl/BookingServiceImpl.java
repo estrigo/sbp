@@ -52,7 +52,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Boolean checkBookingValid(String plateNumber) throws IOException, URISyntaxException {
-        boolean valid = true;
+        boolean valid = false;
         if(bookingHalaparkCheck){
             String desiredFormat = convertToHalaparkRequestFormat(plateNumber);
             log.info("halapark checking platenumer: " + plateNumber + "by desired format: " + desiredFormat);
