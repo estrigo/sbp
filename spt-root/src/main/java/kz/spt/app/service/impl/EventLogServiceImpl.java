@@ -15,8 +15,8 @@ import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.EventLogRepository;
-import kz.spt.lib.service.ParkingService;
 import kz.spt.lib.utils.StaticValues;
+import kz.spt.app.utils.StringExtensions;
 import lombok.extern.java.Log;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
@@ -151,11 +151,7 @@ public class EventLogServiceImpl implements EventLogService {
 
         var eventDtos = filteredEvents.stream()
                 .map(m -> {
-                    String locale = LocaleContextHolder.getLocale().toString();
-                    String type = m.getProperties().get("type") != null ?
-                            ResourceBundle.getBundle("messages", Locale.forLanguageTag(locale))
-                                    .getString("events.".concat(m.getProperties().get("type").toString().toLowerCase())) :
-                            "";
+                    String type = m.getProperties().get("type") != null ? StringExtensions.locale("events.".concat(m.getProperties().get("type").toString().toLowerCase())) : "";
                     return EventsDto.builder()
                             .id(m.getId())
                             .created(m.getCreated())
