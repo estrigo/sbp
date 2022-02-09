@@ -123,7 +123,7 @@
 
 <script th:inline="javascript">
     var locale = [[${#locale}]];
-    var img;
+    var img = {};
 
     jQuery('.move-left').click(function (e) {
         var $div = $(this).closest('.item');
@@ -167,9 +167,9 @@
     function showGreeting(messageBody) {
         var logMessage = locale == "en" ? messageBody.messageEng : messageBody.message;
         if (messageBody.eventType == 'Photo') {
-            img = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
-            $("#image" + messageBody.id).attr("src", img);
-            $("#fancyImage" + messageBody.id).attr("data-src", img);
+            img[messageBody.id] = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
+            $("#image" + messageBody.id).attr("src", img[messageBody.id]);
+            $("#fancyImage" + messageBody.id).attr("data-src", img[messageBody.id]);
         } else if (messageBody.eventType == 'CarEvent') {
             $("#logs" + messageBody.id).prepend('[' + messageBody.plateNumber + ']' + logMessage + "\n");
             $("#fancyImage" + messageBody.id).attr("data-caption", messageBody.plateNumber);
@@ -231,8 +231,20 @@
     });
 
     function openGate(cameraId) {
-        $.get("/rest/arm/open/" + cameraId, function (data) {
-            console.log(data);
+        var form = new FormData();
+        form.append("cameraId", cameraId);
+        form.append("snapshot", img[cameraId]);
+
+        var settings = {
+            "url": "/rest/arm/open/barrier",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (response) {
+            console.log(response);
         });
     }
 
@@ -250,11 +262,13 @@
 
     function passCar(cameraId) {
         var plateNumber = $("#plateNumber" + cameraId).val();
-        if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
+        if(!/^[a-zA-Z0-9]+$/.test(plateNumber)){
+            alert([[#{crm.onlyLatinAndNumbersAllowed}]]);
+        } else if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
             var form = new FormData();
             form.append("cameraId", cameraId);
             form.append("platenumber", plateNumber);
-            form.append("snapshot", img);
+            form.append("snapshot", img[cameraId]);
 
             var settings = {
                 "url": "/rest/arm/pass",
@@ -267,10 +281,6 @@
             $.ajax(settings).done(function (response) {
                 console.log(response);
             });
-
-            /*$.get("/rest/arm/pass/" + cameraId + "/platenumber/" + plateNumber, function (data) {
-                console.log(data);
-            });*/
         } else {
             alert([[#{arm.invalidPlateNumber}]]);
         }
@@ -279,12 +289,12 @@
     function checkBalance(cameraId) {
         var plateNumber = $("#plateNumber" + cameraId).val();
 
-        if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
+        if(!/^[a-zA-Z0-9]+$/.test(plateNumber)){
+            alert([[#{crm.onlyLatinAndNumbersAllowed}]]);
+        } else if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
             $.get("/rest/balance/check/" + plateNumber, function (data) {
                 alert([[#{arm.balanceEqual}]] + data);
             });
-        } else if(!/^[a-zA-Z0-9]+$/.test(plateNumber)){
-            alert([[#{crm.onlyLatinAndNumbersAllowed}]]);
         } else {
             alert([[#{arm.invalidPlateNumber}]]);
         }

@@ -247,6 +247,26 @@ public class EventLogServiceImpl implements EventLogService {
         return env.getProperty(prortyName);
     }
 
+    @Override
+    public String findLastNotEnoughFunds(Long gateId) {
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE, -1);
+
+        List<EventLog> eventLogs = eventLogRepository.getEventsFromDate(calendar.getTime(), Gate.class.getSimpleName(), gateId);
+        if(eventLogs != null && eventLogs.size()>0){
+            EventLog eventLog = eventLogs.get(0);
+            if(eventLog.getDescription().startsWith("В проезде отказано: Не достаточно средств")){
+                return eventLog.getPlateNumber();
+            } else if(eventLog.getDescription().startsWith("Зафиксирован новый номер авто")){
+                if(eventLogs.size()>1 && eventLogs.get(1).getDescription().startsWith("В проезде отказано: Не достаточно средств") && eventLog.getPlateNumber().equals(eventLogs.get(1).getPlateNumber())){
+                    return eventLog.getPlateNumber();
+                }
+            }
+        }
+        return null;
+    }
+
     private Page<EventsDto> getPage(List<EventsDto> events, PagingRequest pagingRequest) {
         List<EventsDto> filtered = events.stream()
                 .sorted(sortEvents(pagingRequest))

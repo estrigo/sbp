@@ -3,19 +3,14 @@ package kz.spt.app.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.parkomat.ParkomatBillingInfoSuccessDto;
 import kz.spt.lib.model.dto.parkomat.ParkomatCommandDTO;
-import kz.spt.lib.service.PluginService;
-import kz.spt.lib.model.Cars;
+import kz.spt.lib.service.*;
 import kz.spt.lib.model.dto.RateQueryDto;
-import kz.spt.lib.service.CarsService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.extension.PluginRegister;
-import kz.spt.lib.model.CarState;
-import kz.spt.lib.model.Parking;
 import kz.spt.lib.model.dto.payment.*;
-import kz.spt.lib.service.CarStateService;
-import kz.spt.lib.service.PaymentService;
 import lombok.extern.java.Log;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +21,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Log
@@ -35,12 +31,14 @@ public class PaymentServiceImpl implements PaymentService {
     private final PluginService pluginService;
     private final CarStateService carStateService;
     private final CarsService carService;
+    private final EventLogService eventLogService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService){
+    public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService, EventLogService eventLogService){
         this.pluginService = pluginService;
         this.carStateService = carStateService;
         this.carService = carService;
+        this.eventLogService = eventLogService;
     }
 
     @Override
@@ -344,6 +342,53 @@ public class PaymentServiceImpl implements PaymentService {
             return result.get("rateResult").decimalValue().setScale(2);
         }
         return null;
+    }
+
+    @Override
+    public void createDebtAndOUTState(String carNumber, Camera camera, Map<String, Object> properties) throws Exception {
+
+        CarState carState = carStateService.getLastNotLeft(carNumber);
+        if(carState != null && carState.getPaid()){
+            log.info("carState: " + carState.getId());
+            carState.setCashlessPayment(true);
+
+            PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+            BigDecimal rateResult = BigDecimal.ZERO;
+            if (ratePluginRegister != null) {
+                log.info("ratePluginRegister: " + ratePluginRegister);
+                SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
+
+                ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
+                ratePluginNode.put("parkingId", camera.getGate().getParking().getId());
+                ratePluginNode.put("inDate", format.format(carState.getInTimestamp()));
+                ratePluginNode.put("outDate", format.format(new Date()));
+                ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
+                ratePluginNode.put("isCheck", false);
+                ratePluginNode.put("paymentsJson", carState.getPaymentJson());
+
+                JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
+                rateResult = ratePluginResult.get("rateResult").decimalValue().setScale(2);
+                carState.setRateAmount(rateResult);
+
+                PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+                if (billingPluginRegister != null && BigDecimal.ZERO.compareTo(rateResult) != 0) {
+                    log.info("billingPluginRegister: " + billingPluginRegister);
+                    ObjectNode billingSubtractNode = this.objectMapper.createObjectNode();
+                    billingSubtractNode.put("command", "decreaseCurrentBalance");
+                    billingSubtractNode.put("amount", rateResult);
+                    billingSubtractNode.put("plateNumber", carState.getCarNumber());
+                    billingSubtractNode.put("parkingName", carState.getParking().getName());
+                    billingSubtractNode.put("carStateId", carState.getId());
+                    billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
+                }
+            }
+            carStateService.createOUTState(carNumber, new Date(), camera, carState);
+
+            String descriptionRu = "Выпускаем авто: Авто с гос. номером " + carNumber + " с долгом -" + rateResult;
+            String descriptionEn = "Releasing: Car with license plate " + carNumber + " with debt -" + rateResult;
+            eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), carNumber, descriptionRu, descriptionEn);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
+        }
     }
 
     private BillingInfoSuccessDto fillPayment(CarState carState, SimpleDateFormat format, CommandDto commandDto, String paymentsJson) throws Exception {

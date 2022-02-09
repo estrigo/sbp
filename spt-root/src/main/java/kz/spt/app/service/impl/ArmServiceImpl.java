@@ -9,10 +9,9 @@ import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.dto.SnapshotThreadDto;
-import kz.spt.lib.service.CarEventService;
-import kz.spt.lib.service.EventLogService;
-import kz.spt.lib.service.ArmService;
+import kz.spt.lib.service.*;
 import kz.spt.app.service.BarrierService;
+import kz.spt.lib.utils.StaticValues;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import lombok.val;
@@ -56,14 +55,19 @@ public class ArmServiceImpl implements ArmService {
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
     private CarEventService carEventService;
     private ThreadPoolTaskExecutor snapshotTaskExecutor;
+    private CarImageService carImageService;
+    private PaymentService paymentService;
 
     public ArmServiceImpl(CameraService cameraService, BarrierService barrierService, EventLogService eventLogService,
-                          CarEventService carEventService, ThreadPoolTaskExecutor snapshotTaskExecutor) {
+                          CarEventService carEventService, ThreadPoolTaskExecutor snapshotTaskExecutor, CarImageService carImageService,
+                          PaymentService paymentService) {
         this.cameraService = cameraService;
         this.barrierService = barrierService;
         this.eventLogService = eventLogService;
         this.carEventService = carEventService;
         this.snapshotTaskExecutor = snapshotTaskExecutor;
+        this.carImageService = carImageService;
+        this.paymentService = paymentService;
     }
 
     @Override
@@ -96,6 +100,51 @@ public class ArmServiceImpl implements ArmService {
         }
 
         return false;
+    }
+
+    @Override
+    public Boolean openGate(Long cameraId, String snapshot) throws Exception {
+        Camera camera = cameraService.getCameraById(cameraId);
+        if (camera != null && camera.getGate() != null && camera.getGate().getBarrier() != null) {
+            SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("eventTime", format.format(new Date()));
+            properties.put("cameraIp", camera.getIp());
+            properties.put("gateName", camera.getGate().getName());
+            properties.put("gateDescription", camera.getGate().getDescription());
+            properties.put("gateType", camera.getGate().getGateType().toString());
+            properties.put("type", EventLogService.EventType.Allow);
+
+            Boolean result = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+            if (result) {
+                String username = "";
+                if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+                    CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                    if (currentUser != null) {
+                        username = currentUser.getUsername();
+                    }
+                }
+
+                String debtPlatenumber = eventLogService.findLastNotEnoughFunds(camera.getGate().getId());
+
+                eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLogService.EventType.Success, camera.getId(), "", snapshot, null);
+                eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), "", "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName(), "Manual opening gate: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName());
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName(), "Manual gate opening: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName());
+
+                if(debtPlatenumber != null){
+                    if (snapshot != null) {
+                        String carImageUrl = carImageService.saveImage(snapshot, new Date(), debtPlatenumber);
+                        properties.put(StaticValues.carImagePropertyName, carImageUrl);
+                        properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
+                    }
+
+                    paymentService.createDebtAndOUTState(debtPlatenumber, camera, properties);
+                }
+            }
+            return result;
+        }
+
+        return null;
     }
 
     @Override

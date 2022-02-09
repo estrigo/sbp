@@ -10,6 +10,8 @@ public interface ArmService {
 
     Boolean openGate(Long cameraId) throws IOException, ParseException, InterruptedException;
 
+    Boolean openGate(Long cameraId, String snapshot) throws Exception;
+
     Boolean closeGate(Long cameraId) throws IOException, ParseException, InterruptedException;
 
     Boolean restartParkomat(String ip);

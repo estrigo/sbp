@@ -44,4 +44,6 @@ public interface EventLogService {
     void save(EventLog eventLog);
 
     String getApplicationPropertyValue(String prortyName);
+
+    String findLastNotEnoughFunds(Long gateId);
 }

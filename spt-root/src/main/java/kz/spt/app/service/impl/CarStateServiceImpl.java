@@ -1,13 +1,12 @@
 package kz.spt.app.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
-import kz.spt.lib.service.CarStateService;
+import kz.spt.lib.service.*;
 import kz.spt.app.repository.CarStateRepository;
-import kz.spt.lib.service.CarsService;
-import kz.spt.lib.service.EventLogService;
 import lombok.extern.java.Log;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +33,8 @@ public class CarStateServiceImpl implements CarStateService {
     private static final Comparator<CarStateDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
 
-    public CarStateServiceImpl(CarStateRepository carStateRepository, EventLogService eventLogService, CarsService carsService) {
+    public CarStateServiceImpl(CarStateRepository carStateRepository, EventLogService eventLogService,
+                               CarsService carsService) {
         this.carStateRepository = carStateRepository;
         this.eventLogService = eventLogService;
         this.carsService = carsService;
