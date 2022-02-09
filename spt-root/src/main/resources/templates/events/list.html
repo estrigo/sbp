@@ -90,7 +90,7 @@
 <script th:src="@{/assets/js/xlsx.js}"></script>
 
 <script type="text/javascript" th:inline="javascript">
-    var locale = '[[${#locale}]]';
+    var locale = [[${#locale}]];
     var descriptionColumn = locale == "en" ? "descriptionEn" : "description";
 
     const table = $('#eventTable').DataTable({
