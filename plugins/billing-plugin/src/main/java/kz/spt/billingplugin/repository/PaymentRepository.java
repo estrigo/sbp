@@ -3,14 +3,14 @@ package kz.spt.billingplugin.repository;
 import kz.spt.billingplugin.model.Payment;
 import kz.spt.billingplugin.model.PaymentProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface PaymentRepository extends JpaRepository<Payment, Long> {
+public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpecificationExecutor<Payment> {
 
     @Query("From Payment p LEFT JOIN FETCH p.parking")
     List<Payment> listAllPaymentsWithParkings();

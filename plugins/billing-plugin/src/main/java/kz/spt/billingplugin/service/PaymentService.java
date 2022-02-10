@@ -1,5 +1,6 @@
 package kz.spt.billingplugin.service;
 
+import kz.spt.billingplugin.dto.FilterPaymentDTO;
 import kz.spt.billingplugin.dto.PaymentLogDTO;
 import kz.spt.billingplugin.model.Payment;
 import kz.spt.billingplugin.model.PaymentProvider;

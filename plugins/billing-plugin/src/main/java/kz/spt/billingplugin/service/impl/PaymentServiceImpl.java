@@ -1,18 +1,21 @@
 package kz.spt.billingplugin.service.impl;
 
 import kz.spt.billingplugin.bootstrap.datatable.PaymentDtoComparators;
+import kz.spt.billingplugin.dto.FilterPaymentDTO;
 import kz.spt.billingplugin.dto.PaymentLogDTO;
 import kz.spt.billingplugin.model.Payment;
 import kz.spt.billingplugin.model.PaymentProvider;
+import kz.spt.billingplugin.model.PaymentSpecification;
 import kz.spt.billingplugin.repository.PaymentRepository;
 import kz.spt.billingplugin.service.PaymentService;
 import kz.spt.lib.bootstrap.datatable.*;
-import kz.spt.lib.model.EventLog;
+import kz.spt.lib.model.CarStateSpecification;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -46,7 +49,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public void updateOutTimestamp(Long carStateId, Date outTimestamp) {
         List<Payment> payments = paymentRepository.getPaymentsByCarStateIdWithProvider(carStateId);
-        for(Payment payment: payments){
+        for (Payment payment : payments) {
             payment.setOutDate(outTimestamp);
         }
         paymentRepository.saveAll(payments);
@@ -54,7 +57,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Page<PaymentLogDTO> getPaymentDtoList(PagingRequest pagingRequest) {
-        List<Payment> allPayments = (List<Payment>) this.listAllPayments();
+        FilterPaymentDTO filterPayment = pagingRequest.convertTo(FilterPaymentDTO.builder().build());
+        List<Payment> allPayments = listByFilters(filterPayment);
         return getPage(PaymentLogDTO.convertToDto(allPayments), pagingRequest);
     }
 
@@ -68,6 +72,29 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentRepository.findByTransaction(transaction);
     }
 
+    @SneakyThrows
+    private List<Payment> listByFilters(FilterPaymentDTO filterDto) {
+        Specification<Payment> specification = null;
+
+        if (!StringUtils.isEmpty(filterDto.getCarNumber())) {
+            specification = PaymentSpecification.likePlateNumber(filterDto.getCarNumber());
+        }
+        if (filterDto.getDateFrom() != null) {
+            specification = specification != null ? specification.and(PaymentSpecification.greaterDate(filterDto.getDateFrom())) : PaymentSpecification.greaterDate(filterDto.getDateFrom());
+        }
+        if (filterDto.getDateTo() != null) {
+            specification = specification != null ? specification.and(PaymentSpecification.lessDate(filterDto.getDateTo())) : PaymentSpecification.lessDate(filterDto.getDateTo());
+        }
+        if (filterDto.getTotal() != null) {
+            specification = specification != null ? specification.and(PaymentSpecification.equalAmount(filterDto.getTotal())) : PaymentSpecification.equalAmount(filterDto.getTotal());
+        }
+        if (filterDto.getPaymentProvider() != null) {
+            specification = specification != null ? specification.and(PaymentSpecification.equalProvider(filterDto.getPaymentProvider())) : PaymentSpecification.equalProvider(filterDto.getPaymentProvider());
+        }
+
+        specification = specification != null ? specification.and(PaymentSpecification.orderById()) : PaymentSpecification.orderById();
+        return paymentRepository.findAll(specification);
+    }
 
     private Page<PaymentLogDTO> getPage(List<PaymentLogDTO> paymentLogDTOList, PagingRequest pagingRequest) {
         List<PaymentLogDTO> filtered = paymentLogDTOList.stream()
@@ -95,7 +122,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
         String value = pagingRequest.getSearch().getValue();
 
-        return paymentLogDTOs -> (paymentLogDTOs.getParking() !=  null && paymentLogDTOs.getParking().toLowerCase().contains(value.toLowerCase())
+        return paymentLogDTOs -> (paymentLogDTOs.getParking() != null && paymentLogDTOs.getParking().toLowerCase().contains(value.toLowerCase())
                 || (paymentLogDTOs.getInDate() != null && paymentLogDTOs.getInDate().toString().toLowerCase().contains(value.toLowerCase()))
                 || (paymentLogDTOs.getOutDate() != null && paymentLogDTOs.getOutDate().toString().toLowerCase().contains(value.toLowerCase()))
                 || (paymentLogDTOs.getCreated() != null && paymentLogDTOs.getCreated().toString().toLowerCase().contains(value.toLowerCase()))
