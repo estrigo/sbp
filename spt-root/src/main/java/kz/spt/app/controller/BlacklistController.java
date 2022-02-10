@@ -1,13 +1,14 @@
 package kz.spt.app.controller;
 
 import kz.spt.app.service.BlacklistService;
+import kz.spt.lib.model.CarState;
+import kz.spt.lib.model.dto.BlacklistDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
 
 @Controller
 @RequestMapping("/blacklist")
@@ -19,6 +20,12 @@ public class BlacklistController {
     public String list(Model model){
         model.addAttribute("blacklists", blacklistService.list());
         return "blacklist/list";
+    }
+
+    @PostMapping("/save")
+    public String addBlacklist(@ModelAttribute BlacklistDto model){
+        blacklistService.save(model);
+        return "redirect:/blacklist/list";
     }
 
     @GetMapping("/delete")
