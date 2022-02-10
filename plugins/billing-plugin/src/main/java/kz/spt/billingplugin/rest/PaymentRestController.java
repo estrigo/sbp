@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/rest/payments")
@@ -24,5 +25,10 @@ public class PaymentRestController {
     @PostMapping
     public Page<PaymentLogDTO> list(@RequestBody PagingRequest pagingRequest) throws ParseException {
         return paymentService.getPaymentDtoList(pagingRequest);
+    }
+
+    @PostMapping("/excel")
+    public List<PaymentLogDTO> excel(@RequestBody FilterPaymentDTO filter) throws ParseException {
+        return paymentService.getPaymentDtoList(filter);
     }
 }

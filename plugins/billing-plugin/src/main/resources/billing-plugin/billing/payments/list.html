@@ -21,13 +21,11 @@
                                         <input id="dateFrom" type="date" class="form-control form-control-sm"
                                                th:placeholder="#{payments.startDate}">
                                     </div>
-
                                     <div class="form-group col-md-2">
                                         <label for="dateTo" th:text="#{payments.endDate}"></label>
                                         <input id="dateTo" type="date" class="form-control form-control-sm"
                                                th:placeholder="#{payments.endDate}">
                                     </div>
-
                                     <div class="form-group col-md-2">
                                         <label for="paymentProvider" th:text="#{billing.provider}"></label>
                                         <select class="form-control form-control-sm" id="paymentProvider">
@@ -36,7 +34,6 @@
                                                     th:text="${r.label}">
                                         </select>
                                     </div>
-
                                     <div class="form-group col-md-2">
                                         <label for="carNumber" th:text="#{payments.carNumber}"></label>
                                         <input type="text" class="form-control form-control-sm" id="carNumber"
@@ -55,6 +52,12 @@
                                     </div>
                                 </div>
                             </form>
+                            <div class="form-row">
+                                <button class="btn btn-success waves-effect waves-light"
+                                        onclick="excel()"
+                                        type="button"
+                                        th:text="#{billing.excel}"></button>
+                            </div>
                         </div>
                         <hr>
                         <table class="table table-striped table-bordered" style="width:100%" id="payments">
@@ -97,6 +100,8 @@
 <!-- Responsive examples -->
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+<script th:src="@{/assets/js/shim.js}"></script>
+<script th:src="@{/assets/js/xlsx.js}"></script>
 
 <script th:inline="javascript">
     var localizationAddress = '/plugins/datatables/json/ru.json';
@@ -114,7 +119,7 @@
             "dataType": "json",
             "contentType": "application/json",
             "data": function (d) {
-                d.customFilters ={
+                d.customFilters = {
                     "dateFrom": $('#dateFrom').val(),
                     "dateTo": $('#dateTo').val(),
                     "paymentProvider": $('#paymentProvider').val(),
@@ -149,15 +154,41 @@
     });
 
     $(document).ready(function () {
-        table.buttons().container()
-            .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
-
         $('.filter').on('click', function () {
             table.ajax.reload();
         })
     });
 
-
+    function excel() {
+        let request = {
+            "dateFrom": $('#dateFrom').val(),
+            "dateTo": $('#dateTo').val(),
+            "paymentProvider": $('#paymentProvider').val(),
+            "carNumber": $('#carNumber').val(),
+            "total": $('#total').val()
+        };
+        $.ajax({
+            url:"/rest/payments/excel",
+            type:"POST",
+            data:JSON.stringify(request),
+            contentType:"application/json; charset=utf-8",
+            dataType:"json",
+            success: function(data){
+                try {
+                    let arr = [];
+                    for (let i = 0; i < data.length; i++) {
+                        arr.push(data[i]);
+                    }
+                    let ws = XLSX.utils.json_to_sheet(arr);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, 'Payments');
+                    XLSX.writeFile(wb, "payments.xls", {type: "buffer"});
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        })
+    }
 </script>
 
 </html>

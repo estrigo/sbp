@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -60,6 +61,12 @@ public class PaymentServiceImpl implements PaymentService {
         FilterPaymentDTO filterPayment = pagingRequest.convertTo(FilterPaymentDTO.builder().build());
         List<Payment> allPayments = listByFilters(filterPayment);
         return getPage(PaymentLogDTO.convertToDto(allPayments), pagingRequest);
+    }
+
+    @Override
+    public List<PaymentLogDTO> getPaymentDtoList(FilterPaymentDTO filter) throws ParseException {
+        List<Payment> allPayments = listByFilters(filter);
+        return PaymentLogDTO.convertToDto(allPayments);
     }
 
     @Override
