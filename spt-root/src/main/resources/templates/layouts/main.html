@@ -15,11 +15,11 @@
     <link th:href="@{/assets/css/style.css}" rel="stylesheet" type="text/css">
     <link th:href="@{/assets/css/app.css}" rel="stylesheet" type="text/css">
 
-    <link th:href="@{/plugins/switchery/switchery.min.css}" rel="stylesheet" />
-    <link th:href="@{/plugins/morris/morris.css}" rel="stylesheet" />
+    <link th:href="@{/plugins/switchery/switchery.min.css}" rel="stylesheet"/>
+    <link th:href="@{/plugins/morris/morris.css}" rel="stylesheet"/>
     <script th:src="@{/assets/js/modernizr.min.js}"></script>
 
-    <th:block th:replace="${links}" />
+    <th:block th:replace="${links}"/>
 </head>
 
 <body class="fixed-left">
@@ -30,7 +30,8 @@
         <!-- LOGO -->
         <div class="topbar-left">
             <div class="text-center">
-                <a th:href="@{|/|}" class="logo"><i class="mdi mdi-radar"></i> <span th:text="#{crm.smartparking}"></span></a>
+                <a th:href="@{|/|}" class="logo"><i class="mdi mdi-radar"></i> <span
+                        th:text="#{crm.smartparking}"></span></a>
             </div>
         </div>
         <!-- Button mobile view to collapse sidebar menu -->
@@ -49,7 +50,7 @@
                     <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
                         <a th:href="@{|/users/list|}" class="waves-effect waves-primary"><i
                                 class="ti-user"></i><span th:text=" #{user.users} "></span></a>
-                    </li >
+                    </li>
                     <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
                         <a th:href="@{|/customers/list|}" class="waves-effect waves-primary"><i
                                 class="ti-home"></i><span th:text=" #{customer.customers}"></span></a>
@@ -66,16 +67,21 @@
                         <a th:href="@{|/journal/list|}" class="waves-effect waves-primary"><i
                                 class="ti-receipt"></i><span th:text=" #{carstate.journal} "></span></a>
                     </li>
-                    <li th:each="template : ${@pluginServiceImpl.getTemplateMenus()}" th:if="${template != null}" th:class="${template['subMenus'] != null ? 'has_sub' : ''}">
-                        <a th:if="${template['subMenus'] == null}" th:href="@{|/${template['url']}|}" class="waves-effect waves-primary">
+                    <li th:each="template : ${@pluginServiceImpl.getTemplateMenus()}" th:if="${template != null}"
+                        th:class="${template['subMenus'] != null ? 'has_sub' : ''}">
+                        <a th:if="${template['subMenus'] == null}" th:href="@{|/${template['url']}|}"
+                           class="waves-effect waves-primary">
                             <i th:class="${template['cssClass']}"></i><span th:text=" ${template['label']} "></span>
                         </a>
 
-                        <a th:if="${template['subMenus'] != null}" href="javascript:void(0);" class="waves-effect waves-primary">
-                            <i th:class="${template['cssClass']}"></i><span th:text=" ${template['label']} "></span><span class="menu-arrow"></span>
+                        <a th:if="${template['subMenus'] != null}" href="javascript:void(0);"
+                           class="waves-effect waves-primary">
+                            <i th:class="${template['cssClass']}"></i><span
+                                th:text=" ${template['label']} "></span><span class="menu-arrow"></span>
                         </a>
                         <ul th:if="${template['subMenus'] != null}" class="list-unstyled">
-                            <li th:each="submenu : ${template['subMenus']}"><a th:href="@{|/${submenu['url']}|}" th:text=" ${submenu['label']} "></a></li>
+                            <li th:each="submenu : ${template['subMenus']}"><a th:href="@{|/${submenu['url']}|}"
+                                                                               th:text=" ${submenu['label']} "></a></li>
                         </ul>
                     </li>
                     <li>
@@ -85,6 +91,10 @@
                     <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_AUDIT')">
                         <a th:href="@{|/parking/cars|}" class="waves-effect waves-primary"><i
                                 class="ti-files"></i><span th:text=" #{parking.cars} "></span></a>
+                    </li>
+                    <li>
+                        <a class="waves-effect waves-primary" onclick="javascript:$('#helpModal').modal('show')">
+                            <i class="ti-heart"></i><span th:text=" #{crm.help} "></span></a>
                     </li>
                 </ul>
                 <ul sec:authorize="!isAuthenticated()">
@@ -104,7 +114,7 @@
     <div class="content-page">
         <!-- Start content -->
 
-        <th:block th:replace="${body_content}" />
+        <th:block th:replace="${body_content}"/>
     </div>
 
     <div class="modal fade" id="supportModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -117,7 +127,44 @@
                     <p th:text="#{crm.info}"></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" th:text="#{crm.close}">Close</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" th:text="#{crm.close}">Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="#{crm.help}">Modal title</h5>
+                </div>
+                <div class="modal-body">
+                    <th:block sec:authorize="hasAnyRole('ROLE_ADMIN')">
+                       <p>
+                           <a th:href="@{/assets/pdf/instruct_admin.pdf}" th:text="#{crm.instructionsAdmin}" target="_blank"></a>
+                       </p>
+                    </th:block>
+                    <th:block sec:authorize="hasAnyRole('ROLE_OPERATOR_NO_REVENUE_SHARE')">
+                       <p>
+                           <a th:href="@{/assets/pdf/instruct_norevenue.pdf}" th:text="#{crm.instructionsNorevenue}" target="_blank"></a>
+                       </p>
+                    </th:block>
+                    <th:block sec:authorize="hasAnyRole('ROLE_MANAGER')">
+                        <p>
+                            <a th:href="@{/assets/pdf/instruct_manager.pdf}" th:text="#{crm.instructionsManager}" target="_blank"></a>
+                        </p>
+                    </th:block>
+                    <th:block sec:authorize="hasAnyRole('ROLE_OPERATOR')">
+                       <p>
+                           <a th:href="@{/assets/pdf/instruct_operator.pdf}" th:text="#{crm.instructionsOperator}" target="_blank"></a>
+                       </p>
+                    </th:block>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" th:text="#{crm.close}">Close
+                    </button>
                 </div>
             </div>
         </div>
@@ -146,31 +193,32 @@
 <script th:src="@{/plugins/notifyjs/dist/notify.min.js}"></script>
 <script th:src="@{/plugins/notifications/notify-metro.js}"></script>
 
-<th:block th:replace="${scripts}" />
+<th:block th:replace="${scripts}"/>
 
 <script th:src="@{/assets/js/jquery.core.js}"></script>
 <script th:src="@{/assets/js/jquery.app.js}"></script>
 
 <script lang="javascript">
-    function changeLanguage(lang){
+    function changeLanguage(lang) {
         window.location.href = window.location.protocol + '//' + window.location.host + '/?lang=' + lang;
     }
-    function showWarningModal(){
+
+    function showWarningModal() {
         $.Notification.confirm('error', 'top center', '[[#{crm.warning}]]' + '!!!', '[[#{crm.emergencyOpenConfirm}]]', '[[#{crm.yes}]]', '[[#{crm.no}]]');
     }
 
-    function cancelWarning(){
+    function cancelWarning() {
         $.get("/rest/arm/emergency/open/false", function (data) {
-            if(data && data === false){
+            if (data && data === false) {
                 $('#warningSet').show();
                 $('#warningMessage').hide();
             }
         });
     }
 
-    $(document).on('click', '.notifyjs-metro-base .yes', function() {
+    $(document).on('click', '.notifyjs-metro-base .yes', function () {
         $.get("/rest/arm/emergency/open/true", function (data) {
-            if(data){
+            if (data) {
                 $('#warningSet').hide();
                 $('#warningMessage').show();
             }
