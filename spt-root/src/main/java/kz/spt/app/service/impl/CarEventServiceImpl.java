@@ -298,16 +298,36 @@ public class CarEventServiceImpl implements CarEventService {
 
         CarState carState = carStateService.getLastNotLeft(eventDto.car_number);
         if (carState != null) {
-            if (carState.getPaid() != null && !carState.getPaid()) {
-                carStateService.createOUTState(eventDto.car_number, new Date(), camera, carState);
-                carState = null;
-            } else if (System.currentTimeMillis() - carState.getInTimestamp().getTime() < 1000 * 60 * 2) {  // перезаписываем состояние если в течение двух минут два события для одной машины
-                carStateService.createOUTState(eventDto.car_number, new Date(), camera, carState);
-                carState = null;
+            carStateService.createOUTManual(eventDto.car_number, new Date(), carState); // Принудительная закрытие предыдущей сессий
+            carState = null;
+        }
+
+        // Проверка долга
+        Boolean hasDebt = false;
+        BigDecimal debt = BigDecimal.ZERO;
+        if(!eventDto.manualOpen && Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType()) || Parking.ParkingType.WHITELIST_PAYMENT.equals(camera.getGate().getParking().getParkingType())){
+            PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+            if (billingPluginRegister != null) {
+                ObjectNode billinNode = this.objectMapper.createObjectNode();
+                billinNode.put("command", "getCurrentBalance");
+                billinNode.put("plateNumber", eventDto.car_number);
+                JsonNode billingResult = billingPluginRegister.execute(billinNode);
+                debt = billingResult.get("currentBalance").decimalValue().setScale(2);
+                if(debt.compareTo(BigDecimal.ZERO) == -1){
+                    hasDebt = true;
+                }
             }
         }
 
-        if (Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType())) {
+        if(hasDebt){
+            properties.put("type", EventLogService.EventType.Debt);
+            String descriptionRu = "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность " + debt;
+            String descriptionEn = "Not allowed to enter: Car " + eventDto.car_number + " is in debt " + debt;
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Debt, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
+            hasAccess = false;
+        }
+        else if (Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType())) {
             if (carState == null) {
                 hasAccess = true;
             } else {
@@ -547,18 +567,18 @@ public class CarEventServiceImpl implements CarEventService {
                     if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
                         properties.put("type", EventLogService.EventType.Allow);
                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
-                        eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
                         carOutBy = StaticValues.CarOutBy.WHITELIST;
                         hasAccess = true;
                     } else if (parkingHasAccessUnknownCases) {
                         properties.put("type", EventLogService.EventType.Allow);
                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для этого паркинга выезд разрешен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For this parking exit is allowed");
-                        eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для этого паркинга выезд разрешен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For this parking exit is allowed");
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для этого паркинга выезд разрешен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For this parking exit is allowed");
                         hasAccess = true;
                     } else {
                         properties.put("type", EventLogService.EventType.Deny);
                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited");
-                        eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited");
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited");
                         hasAccess = false;
                     }
                 }
@@ -628,9 +648,14 @@ public class CarEventServiceImpl implements CarEventService {
                                         }
                                     }
                                     if (!hasAccess) {
-                                        properties.put("type", EventLogService.EventType.Deny);
-                                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
-                                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
+                                        if(eventDto.manualOpen){
+                                            carOutBy = StaticValues.CarOutBy.MANUAL;
+                                            hasAccess = true;
+                                        } else {
+                                            properties.put("type", EventLogService.EventType.Deny);
+                                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
+                                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
+                                        }
                                     }
                                 } else {
                                     properties.put("type", EventLogService.EventType.Error);
@@ -695,6 +720,13 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, message_ru, message_en);
                 rateResult = rateResult.subtract(zerotouchValue);
+            } if(StaticValues.CarOutBy.MANUAL.equals(carOutBy)){
+                BigDecimal subtractResult = balance.subtract(rateResult);
+                properties.put("type", EventLogService.EventType.Allow);
+                String descriptionRu = "Пропускаем авто в ручном режиме: Долг: " + rateResult + ". Остаток баланса: " + subtractResult + ". Проезд разрешен.";
+                String descriptionEn = "Car exit allowed by manual mode: Debt: " + rateResult + ". Balance left: " + subtractResult + ". Allowed.";
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
             } else {
                 BigDecimal subtractResult = balance.subtract(rateResult);
                 properties.put("type", EventLogService.EventType.Allow);

@@ -41,4 +41,7 @@ public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSp
 
     @Query("from CarState cs where cs.outChannelIp = :cameraIp and cs.carNumber = :carNumber and cs.outTimestamp > :secondsBefore order by cs.outTimestamp desc")
     List<CarState> getCarStateLastLeftFromThis(@Param("cameraIp") String cameraIp, @Param("carNumber") String carNumber, Date secondsBefore, Pageable page);
+
+    @Query("from CarState cs where cs.carNumber = :carNumber order by cs.inTimestamp desc")
+    List<CarState> getLastCarState(@Param("carNumber") String carNumber, Pageable page);
 }

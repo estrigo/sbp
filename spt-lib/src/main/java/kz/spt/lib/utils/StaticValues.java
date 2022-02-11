@@ -6,7 +6,8 @@ public class StaticValues {
         WHITELIST,
         PAYMENT_PROVIDER,
         BOOKING,
-        ZERO_TOUCH
+        ZERO_TOUCH,
+        MANUAL;
     }
 
     public static String dateFormatTZ = "yyyy-MM-dd'T'HH:mm:ssZ";

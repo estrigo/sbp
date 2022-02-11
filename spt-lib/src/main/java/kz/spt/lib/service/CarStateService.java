@@ -43,4 +43,6 @@ public interface CarStateService {
     Boolean removeDebt(String carNumber);
 
     Iterable<CarState> getCurrentNotPayed(String carNumber);
+
+    CarState getLastCarState(String carNumber);
 }

@@ -228,6 +228,16 @@ public class CarStateServiceImpl implements CarStateService {
         return carStateRepository.getCurrentNotPayed(carNumber+"%", date24back);
     }
 
+    @Override
+    public CarState getLastCarState(String carNumber) {
+        Pageable first = PageRequest.of(0, 1);
+        List<CarState> carStates = carStateRepository.getLastCarState(carNumber, first);
+        if(carStates.size() > 0){
+            return carStates.get(0);
+        }
+        return null;
+    }
+
     private Page<CarStateDto> getPage(List<CarStateDto> carStates, PagingRequest pagingRequest) {
         List<CarStateDto> filtered = carStates.stream()
                 .sorted(sortCarStates(pagingRequest))
