@@ -24,11 +24,25 @@ import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import org.thymeleaf.util.StringUtils;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -93,7 +107,40 @@ public class EventLogServiceImpl implements EventLogService {
         node.put("eventType", eventType.toString());
         node.put("eventStatus", eventStatus.toString());
 
+        //////////////////////send notification to bot
+        sendEventBot(node);
+        /////////////////////
+
         messagingTemplate.convertAndSend("/topic", node.toString());
+    }
+
+
+    public void sendEventBot(ObjectNode node) {
+
+        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+
+        URI uri = URI.create(baseUrl);
+        try {
+            uri = new URI(uri.getScheme(), uri.getHost(), uri.getPath(), uri.getFragment());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        String url = uri.toString() + ":8081/event";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<ObjectNode> requestEntity = new HttpEntity<>(node, headers);
+
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
+
+            System.out.println(response);
+        } catch (Exception e ) {
+            if (e instanceof org.springframework.web.client.ResourceAccessException) {
+            }
+        }
+
     }
 
     @Override
