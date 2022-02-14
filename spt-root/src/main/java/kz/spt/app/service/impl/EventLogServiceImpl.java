@@ -134,8 +134,6 @@ public class EventLogServiceImpl implements EventLogService {
         RestTemplate restTemplate = new RestTemplate();
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
-
-            System.out.println(response);
         } catch (Exception e ) {
             if (e instanceof org.springframework.web.client.ResourceAccessException) {
             }
