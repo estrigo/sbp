@@ -4,7 +4,14 @@ import kz.spt.lib.service.ArmService;
 import kz.spt.lib.service.EventLogService;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
+import net.coobird.thumbnailator.Thumbnails;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.scheduling.annotation.Async;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.concurrent.Future;
 
 @Log
 public class GetSnapshotThread extends Thread {
@@ -42,8 +49,21 @@ public class GetSnapshotThread extends Thread {
 
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                String base64 = armService.snapshot(ip, login, password, url);
-                eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLogService.EventType.Success, cameraId, "", base64, "");
+                Future<byte[]> future = armService.getSnapshot(ip, login, password, url);
+                while (true) {
+                    if (future.isDone()) {
+                        ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
+                        Thumbnails.of(new ByteArrayInputStream(future.get()))
+                                .size(500, 500)
+                                .outputFormat("JPEG")
+                                .outputQuality(1)
+                                .toOutputStream(resultStream);
+
+                        String base64 = StringUtils.newStringUtf8(Base64.encodeBase64(resultStream.toByteArray(), false));
+                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLogService.EventType.Success, cameraId, "", base64, "");
+                        break;
+                    }
+                }
             } catch (Exception ex) {
                 log.warning("Error task:" + getName() + "," +
                         "task id:" + getId() + "," +

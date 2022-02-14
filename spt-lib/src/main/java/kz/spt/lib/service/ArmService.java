@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.concurrent.Future;
 
 public interface ArmService {
 
@@ -23,7 +24,10 @@ public interface ArmService {
     Boolean passCar(Long cameraId, String platenumber, String snapshot) throws Exception;
 
     byte[] snapshot(Long cameraId) throws Throwable;
-    String snapshot(String ip, String login, String password, String url) throws Throwable;
+
+    Future<byte[]> getSnapshot(String ip, String login, String password, String url) throws Throwable;
+
     void enableSnapshot(Long cameraId) throws Throwable;
+
     void disableSnapshot() throws Throwable;
 }

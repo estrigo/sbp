@@ -15,9 +15,6 @@ import kz.spt.lib.utils.StaticValues;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import lombok.val;
-import net.coobird.thumbnailator.Thumbnails;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -31,6 +28,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,12 +37,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Future;
 
 @Log
 @Service
@@ -237,11 +235,40 @@ public class ArmServiceImpl implements ArmService {
     public byte[] snapshot(Long cameraId) throws Throwable {
         Camera camera = cameraService.getCameraById(cameraId);
         if (camera == null || org.apache.commons.lang3.StringUtils.isEmpty(camera.getSnapshotUrl())) return null;
-        return getSnapshot(camera.getIp(), camera.getLogin(), camera.getPassword(), camera.getSnapshotUrl());
+        Future<byte[]> future = getSnapshot(camera.getIp(), camera.getLogin(), camera.getPassword(), camera.getSnapshotUrl());
+        while (true){
+            if(future.isDone()){
+                return future.get();
+            }
+        }
     }
 
     @Override
-    public String snapshot(String ip, String login, String password, String url) throws Throwable {
+    @Async("snapshotTaskExecutor")
+    public Future<byte[]> getSnapshot(String ip, String login, String password, String url) {
+        HttpHost host = new HttpHost(ip, 8080, "http");
+        CloseableHttpClient client = HttpClientBuilder.create().
+                setDefaultCredentialsProvider(provider(login, password))
+                .useSystemProperties()
+                .build();
+        HttpComponentsClientHttpRequestFactory requestFactory =
+                new HttpRequestFactoryDigestAuth(host, client);
+
+        var restTemplate = new RestTemplate(requestFactory);
+        val headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_JPEG);
+
+        StringBuilder address = new StringBuilder();
+        address.append("http://");
+        address.append(ip);
+        address.append(url);
+        //url.append("/cgi-bin/snapshot.cgi");
+
+        HttpEntity entity = new HttpEntity(headers);
+        return new AsyncResult<>(restTemplate.getForObject(address.toString(), byte[].class, entity));
+    }
+
+    /*public String snapshot(String ip, String login, String password, String url) throws Throwable {
         byte[] img = getSnapshot(ip, login, password, url);
 
         ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
@@ -253,7 +280,7 @@ public class ArmServiceImpl implements ArmService {
 
         String base64 = StringUtils.newStringUtf8(Base64.encodeBase64(resultStream.toByteArray(), false));
         return base64;
-    }
+    }*/
 
     @Override
     public void enableSnapshot(Long cameraId) throws Throwable {
@@ -286,29 +313,6 @@ public class ArmServiceImpl implements ArmService {
         });
         CameraSnapshotJob.threads.clear();
         snapshotTaskExecutor.destroy();
-    }
-
-    private byte[] getSnapshot(String ip, String login, String password, String url) {
-        HttpHost host = new HttpHost(ip, 8080, "http");
-        CloseableHttpClient client = HttpClientBuilder.create().
-                setDefaultCredentialsProvider(provider(login, password))
-                .useSystemProperties()
-                .build();
-        HttpComponentsClientHttpRequestFactory requestFactory =
-                new HttpRequestFactoryDigestAuth(host, client);
-
-        var restTemplate = new RestTemplate(requestFactory);
-        val headers = new HttpHeaders();
-        headers.setContentType(MediaType.IMAGE_JPEG);
-
-        StringBuilder address = new StringBuilder();
-        address.append("http://");
-        address.append(ip);
-        address.append(url);
-        //url.append("/cgi-bin/snapshot.cgi");
-
-        HttpEntity entity = new HttpEntity(headers);
-        return restTemplate.getForObject(address.toString(), byte[].class, entity);
     }
 
     private CredentialsProvider provider(String login, String password) {
