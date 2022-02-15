@@ -349,9 +349,6 @@ public class PaymentServiceImpl implements PaymentService {
 
         CarState carState = carStateService.getLastNotLeft(carNumber);
         if(carState != null && carState.getPaid()){
-            log.info("carState: " + carState.getId());
-            carState.setCashlessPayment(true);
-
             PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
             BigDecimal rateResult = BigDecimal.ZERO;
             if (ratePluginRegister != null) {
