@@ -1,12 +1,16 @@
 package kz.spt.app.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.bootstrap.datatable.*;
+import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.*;
 import kz.spt.app.repository.CarStateRepository;
+import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,15 +33,18 @@ public class CarStateServiceImpl implements CarStateService {
     private final CarStateRepository carStateRepository;
     private final EventLogService eventLogService;
     private final CarsService carsService;
+    private final PluginService pluginService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final Comparator<CarStateDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
 
     public CarStateServiceImpl(CarStateRepository carStateRepository, EventLogService eventLogService,
-                               CarsService carsService) {
+                               CarsService carsService, PluginService pluginService) {
         this.carStateRepository = carStateRepository;
         this.eventLogService = eventLogService;
         this.carsService = carsService;
+        this.pluginService = pluginService;
     }
 
     @Override
@@ -208,15 +215,36 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
-    public Boolean removeDebt(String carNumber) {
-        CarState carState = getLastNotLeft(carNumber);
+    public Boolean removeDebt(String carNumber) throws Exception {
 
-        if (carState == null) {
-            return false;
-        } else {
-            cancelPaid(carState);
-            return true;
+        Boolean result = false;
+
+        PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+        if(billingPluginRegister != null){
+            ObjectNode billinNode = this.objectMapper.createObjectNode();
+            billinNode.put("command", "getCurrentBalance");
+            billinNode.put("plateNumber", carNumber);
+            JsonNode billingResult = billingPluginRegister.execute(billinNode);
+            BigDecimal balance = billingResult.get("currentBalance").decimalValue().setScale(2);
+            if(balance.compareTo(BigDecimal.ZERO) == -1){
+                ObjectNode billingSubtractNode = this.objectMapper.createObjectNode();
+                billingSubtractNode.put("command", "increaseCurrentBalance");
+                billingSubtractNode.put("plateNumber", carNumber);
+                billingSubtractNode.put("amount", balance.multiply(BigDecimal.valueOf(-1L)));
+                billingSubtractNode.put("reason", "Списание долга");
+                billingSubtractNode.put("reasonEn", "Debt cancellation");
+                billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
+                result = true;
+            }
         }
+
+        CarState carState = getLastNotLeft(carNumber);
+        if (carState != null) {
+            cancelPaid(carState);
+            result = true;
+        }
+
+        return result;
     }
 
     @Override

@@ -19,7 +19,7 @@ public interface WhitelistGroupsService {
 
     WhitelistGroups getWithCars(Long id);
 
-    WhitelistGroups saveWhitelistGroup(WhitelistGroups whitelistGroups, String currentUser) throws ParseException;
+    WhitelistGroups saveWhitelistGroup(WhitelistGroups whitelistGroups, String currentUser) throws Exception;
 
     void deleteGroup(WhitelistGroups group);
 

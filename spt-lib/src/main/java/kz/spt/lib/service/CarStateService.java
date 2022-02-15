@@ -40,7 +40,7 @@ public interface CarStateService {
 
     Boolean getIfHasLastFromThisCamera(String carNumber, String cameraIp, Date secondsBefore);
 
-    Boolean removeDebt(String carNumber);
+    Boolean removeDebt(String carNumber) throws Exception;
 
     Iterable<CarState> getCurrentNotPayed(String carNumber);
 

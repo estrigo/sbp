@@ -287,7 +287,7 @@ public class WhitelistServiceImpl implements WhitelistService {
     }
 
     @Override
-    public void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser, Parking parking) {
+    public void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser, Parking parking) throws Exception {
         Cars car = rootServicesGetterService.getCarsService().createCar(plateNumber);
 
         Whitelist whitelist = whitelistRepository.findWhiteListByCar(car, parking.getId());

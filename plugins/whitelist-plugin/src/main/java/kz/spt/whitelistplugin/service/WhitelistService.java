@@ -29,7 +29,7 @@ public interface WhitelistService {
 
     void deleteById(Long id);
 
-    void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser, Parking parking);
+    void saveWhitelistFromGroup(String plateNumber, WhitelistGroups group, String currentUser, Parking parking) throws Exception;
 
     ArrayNode getList(Long parkingId, String plateNumber) throws JsonProcessingException;
 

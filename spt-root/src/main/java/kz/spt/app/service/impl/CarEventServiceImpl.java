@@ -212,7 +212,6 @@ public class CarEventServiceImpl implements CarEventService {
                     log.info("last closed date is null");
                 }
             }
-
         } else {
             properties.put("type", EventLogService.EventType.Error);
             eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + " " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address, "Identified new car with number " + " " + eventDto.car_number + " from unknown camera with ip " + eventDto.ip_address);
@@ -222,8 +221,8 @@ public class CarEventServiceImpl implements CarEventService {
     private boolean isAllow(CarEventDto carEvent, Camera camera, Map<String, Object> properties, GateStatusDto gate) {
         if (blacklistService.findByPlate(carEvent.car_number).isPresent()) {
             properties.put("type", EventLogService.EventType.Deny);
-            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), carEvent.car_number, "В проезде отказано: Авто с гос. номером " + carEvent.car_number + " в чернем списке", "Not allowed to enter: Car with number " + carEvent.car_number + " in blacklist");
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Авто с гос. номером " + carEvent.car_number + " в чернем списке", "Not allowed to enter: Car with number " + carEvent.car_number + " in blacklist");
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), carEvent.car_number, "В проезде отказано: Авто с гос. номером " + carEvent.car_number + " в черном списке", "Not allowed to enter: Car with number " + carEvent.car_number + " in blacklist");
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Авто с гос. номером " + carEvent.car_number + " в черном списке", "Not allowed to enter: Car with number " + carEvent.car_number + " in blacklist");
             return false;
         }
         return gate.lastClosedTime == null || System.currentTimeMillis() - gate.lastClosedTime > 5000; ////если последний раз закрыли больше 5 секунды
@@ -550,7 +549,6 @@ public class CarEventServiceImpl implements CarEventService {
             return;
         }
 
-
         if (gate.isSimpleWhitelist) {
             carOutBy = StaticValues.CarOutBy.WHITELIST;
             hasAccess = true;
@@ -647,14 +645,9 @@ public class CarEventServiceImpl implements CarEventService {
                                         }
                                     }
                                     if (!hasAccess) {
-                                        if(eventDto.manualOpen){
-                                            carOutBy = StaticValues.CarOutBy.MANUAL;
-                                            hasAccess = true;
-                                        } else {
-                                            properties.put("type", EventLogService.EventType.Deny);
-                                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
-                                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
-                                        }
+                                        properties.put("type", EventLogService.EventType.Deny);
+                                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
+                                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
                                     }
                                 } else {
                                     properties.put("type", EventLogService.EventType.Error);
@@ -719,13 +712,6 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, message_ru, message_en);
                 rateResult = rateResult.subtract(zerotouchValue);
-            } if(StaticValues.CarOutBy.MANUAL.equals(carOutBy)){
-                BigDecimal subtractResult = balance.subtract(rateResult);
-                properties.put("type", EventLogService.EventType.Allow);
-                String descriptionRu = "Пропускаем авто в ручном режиме: Долг: " + rateResult + ". Остаток баланса: " + subtractResult + ". Проезд разрешен.";
-                String descriptionEn = "Car exit allowed by manual mode: Debt: " + rateResult + ". Balance left: " + subtractResult + ". Allowed.";
-                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
             } else {
                 BigDecimal subtractResult = balance.subtract(rateResult);
                 properties.put("type", EventLogService.EventType.Allow);

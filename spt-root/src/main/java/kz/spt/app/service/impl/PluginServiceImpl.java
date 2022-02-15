@@ -13,7 +13,6 @@ import kz.spt.lib.utils.StaticValues;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -25,12 +24,10 @@ import java.util.Map;
 public class PluginServiceImpl implements PluginService {
 
     private PluginManager pluginManager;
-    private ParkingService parkingService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public PluginServiceImpl(PluginManager pluginManager, ParkingService parkingService){
+    public PluginServiceImpl(PluginManager pluginManager){
         this.pluginManager = pluginManager;
-        this.parkingService = parkingService;
     }
 
     @Override
@@ -67,14 +64,13 @@ public class PluginServiceImpl implements PluginService {
     }
 
     @Override
-    public ArrayNode getWhitelist(Long parkingId, String platenumber) throws Exception {
+    public ArrayNode getWhitelist(Parking parking, String platenumber) throws Exception {
         PluginRegister whitelistPluginRegister = getPluginRegister(StaticValues.whitelistPlugin);
         if(whitelistPluginRegister != null) {
-            Parking parking = parkingService.findById(parkingId);
             if (parking != null && (Parking.ParkingType.WHITELIST.equals(parking.getParkingType()) || Parking.ParkingType.WHITELIST_PAYMENT.equals(parking.getParkingType()))) {
                 ObjectNode node = this.objectMapper.createObjectNode();
                 JsonNode whitelistCheckResult = null;
-                node.put("parkingId", parkingId);
+                node.put("parkingId", parking.getId());
                 node.put("car_number", platenumber);
                 whitelistCheckResult = whitelistPluginRegister.execute(node);
             }

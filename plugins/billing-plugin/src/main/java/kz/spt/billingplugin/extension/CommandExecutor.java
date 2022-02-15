@@ -47,6 +47,8 @@ public class CommandExecutor implements PluginRegister {
                     if(paymentProvider != null && paymentProvider.getEnabled() && paymentProvider.getSecret() != null){
                         node.put("passwordHash", paymentProvider.getSecret());
                     }
+                } else {
+                    throw new RuntimeException("Not all getPasswordHash parameters set");
                 }
             } else if("savePayment".equals(commandName)){
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue());
@@ -89,17 +91,29 @@ public class CommandExecutor implements PluginRegister {
                 if(command.has("plateNumber")){
                     node.put("currentBalance", getBalanceService().getBalance(command.get("plateNumber").textValue()));
                 } else {
-                    node.put("currentBalance", new BigDecimal(0));
+                    throw new RuntimeException("Not all getCurrentBalance parameters set");
                 }
             } else if("decreaseCurrentBalance".equals(commandName)){
                 if(command.has("plateNumber") && command.has("carStateId") && command.has("amount") && command.has("parkingName")){
                     node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), command.get("carStateId").longValue(),  "Payment for parking " + command.get("parkingName").textValue(),  "Оплата паркинга " + command.get("parkingName").textValue()));
                 } else {
-                    node.put("currentBalance", new BigDecimal(0));
+                    throw new RuntimeException("Not all decreaseCurrentBalance parameters set");
+                }
+            } else if("increaseCurrentBalance".equals(commandName)){
+                if(command.has("plateNumber") && command.has("amount") && command.has("reason") && command.has("reasonEn")){
+                    String plateNumber = command.get("plateNumber").textValue();
+                    BigDecimal amount = command.get("amount").decimalValue();
+                    String reason = command.get("reason").textValue();
+                    String reasonEn = command.get("reasonEn").textValue();
+                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reason,  reasonEn));
+                } else {
+                    throw new RuntimeException("Not all increaseCurrentBalance parameters set");
                 }
             } else if("addOutTimestampToPayments".equals(commandName)){
                 if(command.has("outTimestamp") && command.has("carStateId")){
                     getPaymentService().updateOutTimestamp(command.get("carStateId").longValue(), format.parse(command.get("outTimestamp").textValue()));
+                } else {
+                    throw new RuntimeException("Not all addOutTimestampToPayments parameters set");
                 }
             } else if ("getParkomatClientId".equals(commandName)) {
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("parkomatId").textValue());

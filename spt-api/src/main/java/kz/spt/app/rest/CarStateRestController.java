@@ -43,7 +43,7 @@ public class CarStateRestController {
 
     @PreAuthorize("hasAnyRole('ROLE_OPERATOR_NO_REVENUE_SHARE')")
     @GetMapping("/remove/debt")
-    public Boolean removeDebt(@RequestParam String plateNumber){
+    public Boolean removeDebt(@RequestParam String plateNumber) throws Exception {
         return carStateService.removeDebt(plateNumber);
     }
 }

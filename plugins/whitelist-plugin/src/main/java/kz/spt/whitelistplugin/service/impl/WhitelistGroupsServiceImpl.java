@@ -61,7 +61,7 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
     }
 
     @Override
-    public WhitelistGroups saveWhitelistGroup(WhitelistGroups whitelistGroups, String currentUser) throws ParseException {
+    public WhitelistGroups saveWhitelistGroup(WhitelistGroups whitelistGroups, String currentUser) throws Exception {
         SimpleDateFormat format = new SimpleDateFormat(dateformat);
         if (Whitelist.Type.PERIOD.equals(whitelistGroups.getType())) {
             if (StringUtils.isNotNullOrEmpty(whitelistGroups.getAccessStartString())) {
