@@ -10,9 +10,9 @@
                     <button class="btn btn-info dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false" th:text="#{parking.support}">
                     </button>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="#" th:text="#{support.cameraNotWork}"></a>
-                        <a class="dropdown-item" href="#" th:text="#{support.barrierNotWork}"></a>
-                        <a class="dropdown-item" href="#" th:text="#{support.cvNotWork}"></a>
+                        <a class="dropdown-item" href="#" th:text="#{support.cameraNotWork}" onclick="support(this)"></a>
+                        <a class="dropdown-item" href="#" th:text="#{support.barrierNotWork}" onclick="support(this)"></a>
+                        <a class="dropdown-item" href="#" th:text="#{support.cvNotWork}" onclick="support(this)"></a>
                     </div>
                 </span>
                 <button type="button" class="btn btn-primary" th:text="#{arm.restart}"
@@ -352,6 +352,21 @@
             if (data === true) {
                 $('#restartSuccess').modal('show');
             }
+        });
+    }
+
+    function support(e){
+        const text = $(e).text();
+        let request = {
+            "subject": text,
+            "message": text,
+        };
+        $.ajax({
+            "url": "/rest/mail/send",
+            "type": "POST",
+            "data": JSON.stringify(request),
+            "contentType": "application/json; charset=utf-8",
+            "dataType": "json",
         });
     }
 </script>
