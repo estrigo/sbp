@@ -6,6 +6,15 @@
     <div class="container">
         <div class="row mb-1">
             <div class="col-12 text-right">
+                <span class="dropdown">
+                    <button class="btn btn-info dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false" th:text="#{parking.support}">
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#" th:text="#{support.cameraNotWork}"></a>
+                        <a class="dropdown-item" href="#" th:text="#{support.barrierNotWork}"></a>
+                        <a class="dropdown-item" href="#" th:text="#{support.cvNotWork}"></a>
+                    </div>
+                </span>
                 <button type="button" class="btn btn-primary" th:text="#{arm.restart}"
                         th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart
                 </button>

@@ -124,9 +124,18 @@
                     <h5 class="modal-title" th:text="#{parking.support}">Modal title</h5>
                 </div>
                 <div class="modal-body">
-                    <p th:text="#{crm.info}"></p>
+                    <div class="form-group">
+                        <label class="label" th:text="#{mail.subject}"></label>
+                        <input class="form-control" id="mail-subject" type="text"/>
+                    </div>
+                    <div class="form-group">
+                        <label class="label" th:text="#{mail.message}"></label>
+                        <textarea class="form-control" id="mail-message" rows="2"></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="sendMail()"
+                            th:text="#{crm.sendMail}"></button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" th:text="#{crm.close}">Close
                     </button>
                 </div>
@@ -142,24 +151,28 @@
                 </div>
                 <div class="modal-body">
                     <th:block sec:authorize="hasAnyRole('ROLE_ADMIN')">
-                       <p>
-                           <a th:href="@{/assets/pdf/instruct_admin.pdf}" th:text="#{crm.instructionsAdmin}" target="_blank"></a>
-                       </p>
+                        <p>
+                            <a th:href="@{/assets/pdf/instruct_admin.pdf}" th:text="#{crm.instructionsAdmin}"
+                               target="_blank"></a>
+                        </p>
                     </th:block>
                     <th:block sec:authorize="hasAnyRole('ROLE_OPERATOR_NO_REVENUE_SHARE')">
-                       <p>
-                           <a th:href="@{/assets/pdf/instruct_norevenue.pdf}" th:text="#{crm.instructionsNorevenue}" target="_blank"></a>
-                       </p>
+                        <p>
+                            <a th:href="@{/assets/pdf/instruct_norevenue.pdf}" th:text="#{crm.instructionsNorevenue}"
+                               target="_blank"></a>
+                        </p>
                     </th:block>
                     <th:block sec:authorize="hasAnyRole('ROLE_MANAGER')">
                         <p>
-                            <a th:href="@{/assets/pdf/instruct_manager.pdf}" th:text="#{crm.instructionsManager}" target="_blank"></a>
+                            <a th:href="@{/assets/pdf/instruct_manager.pdf}" th:text="#{crm.instructionsManager}"
+                               target="_blank"></a>
                         </p>
                     </th:block>
                     <th:block sec:authorize="hasAnyRole('ROLE_OPERATOR')">
-                       <p>
-                           <a th:href="@{/assets/pdf/instruct_operator.pdf}" th:text="#{crm.instructionsOperator}" target="_blank"></a>
-                       </p>
+                        <p>
+                            <a th:href="@{/assets/pdf/instruct_operator.pdf}" th:text="#{crm.instructionsOperator}"
+                               target="_blank"></a>
+                        </p>
                     </th:block>
                 </div>
                 <div class="modal-footer">
@@ -199,6 +212,21 @@
 <script th:src="@{/assets/js/jquery.app.js}"></script>
 
 <script lang="javascript">
+    function sendMail() {
+        let request = {
+            "subject": $('#mail-subject').val(),
+            "message": $('#mail-message').val(),
+        };
+        $.ajax({
+            "url": "/rest/mail/send",
+            "type": "POST",
+            "data": JSON.stringify(request),
+            "contentType": "application/json; charset=utf-8",
+            "dataType": "json",
+        });
+        $("#supportModal").modal('hide');
+    }
+
     function changeLanguage(lang) {
         window.location.href = window.location.protocol + '//' + window.location.host + '/?lang=' + lang;
     }
