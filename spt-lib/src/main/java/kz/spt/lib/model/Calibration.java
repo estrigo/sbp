@@ -22,5 +22,7 @@ public class Calibration {
     private Long cameraId;
 
     private String ip;
+
+    @Column(name = "json", columnDefinition = "text")
     private String json;
 }

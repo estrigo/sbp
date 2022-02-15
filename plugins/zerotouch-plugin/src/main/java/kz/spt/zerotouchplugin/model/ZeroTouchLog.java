@@ -31,8 +31,10 @@ public class ZeroTouchLog {
 
     private String provider;
 
+    @Column(name = "request", columnDefinition = "text")
     private String request;
 
+    @Column(name = "resonse", columnDefinition = "text")
     private String resonse;
 
     private Boolean isPaid;
