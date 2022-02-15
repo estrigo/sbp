@@ -87,6 +87,48 @@ public class BarrierServiceImpl implements BarrierService {
                 } else {
                     return -1;
                 }
+            } else if(Barrier.BarrierType.MODBUS.equals(sensor.type)) {
+                int result = -1;
+                try {
+                    TcpParameters tcpParameters = new TcpParameters();
+
+                    //tcp parameters have already set by default as in example
+                    tcpParameters.setHost(InetAddress.getByName(sensor.ip));
+                    tcpParameters.setKeepAlive(true);
+                    tcpParameters.setPort(Modbus.TCP_PORT);
+
+                    ModbusMaster m = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
+
+                    int slaveId = 1;
+                    int offset = sensor.modbusRegister-1;
+
+                    try {
+                        if (!m.isConnected()) {
+                            m.connect();
+                        }
+                        boolean[] changedValue = m.readCoils(slaveId, offset, 1);
+                        if(changedValue != null && changedValue.length > 0){
+                            result = changedValue[0] ? 0 : 1;
+                        }
+                    } catch (ModbusProtocolException e) {
+                        e.printStackTrace();
+                    } catch (ModbusNumberException e) {
+                        e.printStackTrace();
+                    } catch (ModbusIOException e) {
+                        e.printStackTrace();
+                    } finally {
+                        try {
+                            m.disconnect();
+                        } catch (ModbusIOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (RuntimeException e) {
+                    throw e;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return result;
             } else {
                 return -1;
             }
@@ -269,7 +311,7 @@ public class BarrierServiceImpl implements BarrierService {
             ModbusMaster m = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
 
             int slaveId = 1;
-            int offset = Command.Open.equals(command) ? barrier.modbusOpenRegister-1 : barrier.modbusCloseRegister;
+            int offset = Command.Open.equals(command) ? barrier.modbusOpenRegister-1 : barrier.modbusCloseRegister-1;
 
             try {
                 // since 1.2.8

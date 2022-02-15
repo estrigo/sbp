@@ -271,7 +271,7 @@
     function openGate(cameraId) {
         var form = new FormData();
         form.append("cameraId", cameraId);
-        form.append("snapshot", img[cameraId]);
+        form.append("snapshot", cameras[cameraId].snapshot);
 
         var settings = {
             "url": "/rest/arm/open/barrier",
@@ -306,7 +306,7 @@
             var form = new FormData();
             form.append("cameraId", cameraId);
             form.append("platenumber", plateNumber);
-            form.append("snapshot", img[cameraId]);
+            form.append("snapshot", cameras[cameraId].snapshot);
 
             var settings = {
                 "url": "/rest/arm/pass",

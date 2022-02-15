@@ -114,7 +114,7 @@ public class CarEventServiceImpl implements CarEventService {
                     properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
                 }
 
-                String messageRu = "Ручной запуск Авто с гос. номером " + platenumber + ". Пользователь " + username + " инициировал ручной запуск на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
+                String messageRu = "Ручной запуск Авто с гос. номером " + platenumber + ". Пользователь " + username + " инициировал ручной запуск на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
                 String messageEn = "Manual pass. Car with license plate " + platenumber + ". User " + username + " initiated manual open gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
                 eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent,
                         EventLogService.EventType.Success, camera.getId(),
@@ -305,7 +305,7 @@ public class CarEventServiceImpl implements CarEventService {
         // Проверка долга
         Boolean hasDebt = false;
         BigDecimal debt = BigDecimal.ZERO;
-        if(!eventDto.manualOpen && Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType()) || Parking.ParkingType.WHITELIST_PAYMENT.equals(camera.getGate().getParking().getParkingType())){
+        if(!eventDto.manualOpen && (Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType()) || Parking.ParkingType.WHITELIST_PAYMENT.equals(camera.getGate().getParking().getParkingType()))){
             PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
             if (billingPluginRegister != null) {
                 ObjectNode billinNode = this.objectMapper.createObjectNode();
@@ -326,8 +326,7 @@ public class CarEventServiceImpl implements CarEventService {
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Debt, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
             hasAccess = false;
-        }
-        else if (Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType())) {
+        } else if (Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType())) {
             if (carState == null) {
                 hasAccess = true;
             } else {
