@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+
+<div class="content">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card-box table-responsive">
+                    <h4 class="m-t-0 header-title"><b th:text="#{abonoment.title}"></b></h4>
+
+                    <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <button type="button" data-toggle="modal" data-target="#add-abonoment-modal"
+                                   th:onclick="javascript:$('#addAbonoment').modal('show')" class="btn btn-success waves-effect waves-light"
+                                   th:text="#{crm.addAbonoment}"></button>
+                            </div>
+                        </div>
+                    </th:block>
+
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item">
+                            <a href="#list" data-toggle="tab" aria-expanded="true" class="nav-link active"
+                               th:text="#{abonoment.list}"></a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#types" data-toggle="tab" aria-expanded="false" class="nav-link"
+                               th:text="#{abonoment.types}"></a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="list">
+                            <table id="abonomentTable" class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th><a th:text="#{abonoment.platenumber}"></a></th>
+                                    <th><a th:text="#{abonoment.begin}"></a></th>
+                                    <th><a th:text="#{abonoment.end}"></a></th>
+                                    <th><a th:text="#{abonoment.months}"></a></th>
+                                    <th><a th:text="#{abonoment.parking}"></a></th>
+                                </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="tab-pane fade" id="types">
+                            <table id="typesTable" class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>
+                                        <div class="input-group">
+                                            <div class="input-group-btn">
+                                                <button type="button" class="btn waves-effect waves-light btn-primary dropdown-toggle" data-toggle="dropdown">Action <span class="caret"></span></button>
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                    <a class="dropdown-item">Change</a>
+                                                    <a class="dropdown-item">Delete</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th>
+                                    <th><a th:text="#{abonoment.typePeriod}"></a></th>
+                                    <th><a th:text="#{abonoment.typePrice}"></a></th>
+                                </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="addAbonoment" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label" th:text="#{abonoment.periodMonthCount}"></label>
+                                <input type="number"step="0" min="1" max="36" class="form-control" name="period" id="period">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label" th:text="#{abonoment.price}"></label>
+                                <input type="number" step="0" min="1" class="form-control" name="price" id="price">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success waves-effect waves-light" th:text="#{crm.save}"
+                            th:onclick="saveAbonomentType()"></button>
+                    <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal"
+                            th:text="#{crm.close}"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Required datatable js -->
+<script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
+<script th:src="@{/plugins/datatables/dataTables.bootstrap4.min.js}"></script>
+<!-- Buttons examples -->
+<script th:src="@{/plugins/datatables/dataTables.buttons.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.bootstrap4.min.js}"></script>
+<script th:src="@{/plugins/datatables/jszip.min.js}"></script>
+<script th:src="@{/plugins/datatables/pdfmake.min.js}"></script>
+<script th:src="@{/plugins/datatables/vfs_fonts.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.html5.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.print.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.colVis.min.js}"></script>
+<!-- Responsive examples -->
+<script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
+<script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+    var locale = [[${#locale}]];
+    var address = '/plugins/datatables/json/ru.json';
+    var edit = 'Редактировать';
+    var del = 'Удалить';
+    if (locale == "en") {
+        address = "";
+        edit = "Edit";
+        del = "Delete";
+    }
+/*    const table = $('#abonomentTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "/rest/abonoments",
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+                return JSON.stringify(d);
+            }
+        },
+        "columns": [
+            {"data": "platenumber", "width" : "34%"},
+            {"data": "brand", "width" : "33%"},
+            {"data": "color", "width" : "33%"}
+        ],
+        "buttons": ['copy', 'excel', 'pdf', 'csv'],
+        language: {
+            url: address
+        }
+    });
+
+    var interval = null;
+    $(document).on('ready',function(){
+        interval = setInterval(showButtons,1000);
+    });
+
+    function showButtons(){
+        if(table.buttons().container().length > 0){
+            clearInterval(interval);
+            table.buttons().container().appendTo('#abonomentTable_wrapper .col-md-6:eq(0)');
+        }
+    }
+ */
+    const typesTable = $('#typesTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "/abonoment/type/list",
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+                return JSON.stringify(d);
+            }
+        },
+        "columns": [
+            {"data": "period", "width" : "33%"},
+            {"data": "price", "width" : "33%"}
+        ],
+        "buttons": ['copy', 'excel', 'pdf', 'csv'],
+        language: {
+            url: address
+        }
+    });
+
+    function saveAbonomentType(){
+        console.log('saveAbonomentType');
+        var form = new FormData();
+        form.append("period", $('#addAbonoment').find('#period'));
+        form.append("price", $('#addAbonoment').find('#price'));
+
+        var settings = {
+            "url": "/rest/abonoment/create",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (response) {
+            typesTable.ajax.reload(); //reload datatable
+            console.log(response);
+        });
+    }
+</script>
+
+</html>

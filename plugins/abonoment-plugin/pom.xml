@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>kz.spt</groupId>
+        <artifactId>spt-plugins</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <groupId>kz.spt</groupId>
+    <artifactId>abonoment-plugin</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <java.version>11</java.version>
+        <plugin.id>abonoment-plugin</plugin.id>
+        <plugin.class>kz.spt.abonomentplugin.AbonomentPlugin</plugin.class>
+        <plugin.version>0.0.1-SNAPSHOT</plugin.version>
+        <plugin.provider>spt-sbp-abonoment</plugin.provider>
+        <plugin.dependencies />
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.laxture</groupId>
+            <artifactId>sbp-core</artifactId>
+            <version>0.1.13</version>
+        </dependency>
+        <dependency>
+            <groupId>kz.spt</groupId>
+            <artifactId>spt-lib</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven.jar.plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Plugin-Id>${plugin.id}</Plugin-Id>
+                            <Plugin-Class>${plugin.class}</Plugin-Class>
+                            <Plugin-Version>${plugin.version}</Plugin-Version>
+                            <Plugin-Provider>${plugin.provider}</Plugin-Provider>
+                            <Plugin-Dependencies>${plugin.dependencies}</Plugin-Dependencies>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
