@@ -9,7 +9,7 @@
                 <div class="btn-toolbar justify-content-between" role="toolbar">
                     <div class="btn-group" role="group">
                         <button type="button" class="btn btn-secondary mr-2" id="streamOn" onclick="toggleOn(this)"
-                                th:text="#{camera.streamOn}" disabled>On/off
+                                th:text="#{camera.streamOn}">On/off
                         </button>
                         <div class="btn-group mr-2" role="group">
                             <button id="toolDropdown" type="button" class="btn btn-secondary dropdown-toggle"
@@ -100,7 +100,22 @@
         mask: [],
         maskImage64: null
     };
-    let startState = {};
+    let startState = {
+        max: {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+        },
+        min: {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+        },
+        mask: [],
+    };
+    let currentTool;
 
     $(document).ready(function () {
         get();
@@ -115,9 +130,11 @@
         if (isStreamOn) {
             streamOff();
             $(e).addClass('btn-secondary').removeClass('btn-success').html('[[#{camera.streamOn}]]');
+            $('#toolDropdown').attr('disabled',false);
         } else {
             streamOn();
             $(e).addClass('btn-success').removeClass('btn-secondary').html('[[#{camera.streamOff}]]');
+            $('#toolDropdown').attr('disabled',true);
         }
     }
 
@@ -144,7 +161,10 @@
     function reset() {
         setState(startState);
         //$('#toolDropdown').removeClass('btn-info').addClass('btn-secondary').html('[[#{camera.tools}]]');
-        //updateSnapshot();
+        if (currentCanvasTool) {
+            currentCanvasTool.release();
+        }
+        onToolChange(currentTool);
     }
 
     function get() {
@@ -155,13 +175,14 @@
             dataType: "json",
             success: function (data) {
                 setState(data);
+                setStartState(data);
                 onStateChange(state);
-                startState = state;
             }
         });
     }
 
     function save() {
+        isLoading(true);
         $.ajax({
             url: "/rest/camera/calibration/save/" + cameraId,
             type: "POST",
@@ -169,13 +190,18 @@
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (data) {
+                isLoading(false);
                 setState(data);
-                startState = state;
+                setStartState(data);
+            },
+            error: function (){
+                isLoading(false);
             }
         });
     }
 
     const onToolChange = function (payload) {
+        currentTool = payload;
         switch (payload) {
             case 'max_width':
                 currentCanvasTool = RectangleTool(canvas, context, image);
@@ -293,6 +319,14 @@
         }
     }
 
+    function setStartState(payloadObject) {
+        Object.keys(payloadObject).forEach(function (key) {
+            if (startState[key] !== undefined) {
+                startState[key] = payloadObject[key];
+            }
+        });
+    }
+
     function checkImageExists(tool) {
         switch (tool) {
             case 'max_width':
@@ -376,8 +410,8 @@
     function streamOn() {
         if (!isStreamOn) {
             //clearCanvas();
-            updateSnapshotOnline();
             isStreamOn = true;
+            updateSnapshotOnline();
             if (currentCanvasTool) {
                 currentCanvasTool.onlineUpdateEnabled();
             }
@@ -397,8 +431,8 @@
     }
 
     function isDisabled(bool) {
-        $('#streamOn').attr('disabled', bool);
-        $('#toolDropdown').attr('disabled', bool);
+        //$('#streamOn').attr('disabled', bool);
+        //$('#toolDropdown').attr('disabled', bool);
         $('#refresh').attr('disabled', bool);
     }
 
