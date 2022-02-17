@@ -52,14 +52,7 @@ public class GetSnapshotThread extends Thread {
                 Future<byte[]> future = armService.getSnapshot(ip, login, password, url);
                 while (true) {
                     if (future.isDone()) {
-                        ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
-                        Thumbnails.of(new ByteArrayInputStream(future.get()))
-                                .size(500, 500)
-                                .outputFormat("JPEG")
-                                .outputQuality(1)
-                                .toOutputStream(resultStream);
-
-                        String base64 = StringUtils.newStringUtf8(Base64.encodeBase64(resultStream.toByteArray(), false));
+                        String base64 = StringUtils.newStringUtf8(Base64.encodeBase64(future.get(), false));
                         eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLogService.EventType.Success, cameraId, "", base64, "");
                         break;
                     }
