@@ -26,29 +26,43 @@ public class CommandExecutor implements PluginRegister {
 
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode node = objectMapper.createObjectNode();
-        node.put("rateResult", BigDecimal.ZERO);
-        node.put("rateFreeMinutes", 0);
+
 
         if(command!=null){
-            if(command.get("parkingId")!=null){
-                Long parkingId = command.get("parkingId").longValue();
-
-                if(command.get("inDate")!=null && command.get("outDate")!=null){
-                    Date inDate = format.parse(command.get("inDate").textValue());
-                    Date outDate = format.parse(command.get("outDate").textValue());
-                    Boolean cashlessPayment = command.has("cashlessPayment") ?  command.get("cashlessPayment").booleanValue() : false;
-                    Boolean isCheck = command.has("isCheck") ? command.get("isCheck").booleanValue() : false;
-                    String paymentsJson = command.has("paymentsJson") && command.get("paymentsJson")!=null ? command.get("paymentsJson").textValue() : null;
-
-                    node.put("rateResult", getRateService().calculatePayment(parkingId, inDate, outDate, cashlessPayment, isCheck, paymentsJson));
-                    node.put("rateFreeMinutes", getRateService().calculateFreeMinutes(parkingId, inDate, outDate, paymentsJson));
-                    long timeDiff = Math.abs(outDate.getTime() - inDate.getTime());
-                    long hours = TimeUnit.HOURS.convert(timeDiff, TimeUnit.MILLISECONDS);
-                    node.put("payed_till", hours);
+            String commandName = command.get("command").textValue();
+            if("getPrepaidValue".equals(commandName)){
+                node.put("prepaidValue",getRateService().getByParkingId(command.get("parkingId").longValue()).getPrepaidValue());
+            }else if("getRateByParking".equals(commandName)){
+                if(command.get("parkingId")!=null) {
+                    Long parkingId = command.get("parkingId").longValue();
+                    ParkingRate parkingRate = getRateService().getByParkingId(parkingId);
+                    node.put("rateId", parkingRate.getId());
+                    node.put("rateName", parkingRate.getName());
                 }
-                ParkingRate parkingRate = getRateService().getByParkingId(parkingId);
-                node.put("rateId", parkingRate.getId());
-                node.put("rateName", parkingRate.getName());
+            }else{
+                node.put("rateResult", BigDecimal.ZERO);
+                node.put("rateFreeMinutes", 0);
+
+                if(command.get("parkingId")!=null){
+                    Long parkingId = command.get("parkingId").longValue();
+
+                    if(command.get("inDate")!=null && command.get("outDate")!=null){
+                        Date inDate = format.parse(command.get("inDate").textValue());
+                        Date outDate = format.parse(command.get("outDate").textValue());
+                        Boolean cashlessPayment = command.has("cashlessPayment") ?  command.get("cashlessPayment").booleanValue() : false;
+                        Boolean isCheck = command.has("isCheck") ? command.get("isCheck").booleanValue() : false;
+                        String paymentsJson = command.has("paymentsJson") && command.get("paymentsJson")!=null ? command.get("paymentsJson").textValue() : null;
+
+                        node.put("rateResult", getRateService().calculatePayment(parkingId, inDate, outDate, cashlessPayment, isCheck, paymentsJson));
+                        node.put("rateFreeMinutes", getRateService().calculateFreeMinutes(parkingId, inDate, outDate, paymentsJson));
+                        long timeDiff = Math.abs(outDate.getTime() - inDate.getTime());
+                        long hours = TimeUnit.HOURS.convert(timeDiff, TimeUnit.MILLISECONDS);
+                        node.put("payed_till", hours);
+                    }
+                    ParkingRate parkingRate = getRateService().getByParkingId(parkingId);
+                    node.put("rateId", parkingRate.getId());
+                    node.put("rateName", parkingRate.getName());
+                }
             }
         }
         return node;

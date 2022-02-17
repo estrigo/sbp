@@ -64,7 +64,7 @@ public class ParkingRate {
     private Integer dayPaymentValue;
 
     @Column(name = "prepaid_value")
-    private Integer prepaidValue;
+    private Integer prepaidValue; //Сумма предоплаты
 
     @Column(name = "progressive_json", columnDefinition = "text")
     private String progressiveJson;

@@ -57,10 +57,10 @@ public class PaymentServiceImpl implements PaymentService {
                 if(commandDto.prepaid != null && commandDto.prepaid){
                     Parking parking = parkingService.findByType(Parking.ParkingType.PREPAID);
                     if(parking != null){
-                        // code для выдачи значения для предоплатыs
+                        return fillPrepaid(commandDto,parking);
                     } else {
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
-                        dto.message = "Платный паркинг не найден";
+                        dto.message = "Паркинг по предопплате не найден";
                         dto.result = 4;
                         dto.sum = commandDto.sum;
                         dto.txn_id = commandDto.txn_id;
@@ -441,16 +441,71 @@ public class PaymentServiceImpl implements PaymentService {
             dto.txn_id = commandDto.txn_id;
             dto.hours = result.get("payed_till") != null ? (int) result.get("payed_till").longValue() : 0;
         }
-        PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
-        if (billingPluginRegister != null) {
-            ObjectNode node = this.objectMapper.createObjectNode();
-            node.put("command", "getCurrentBalance");
-            node.put("plateNumber", carState.getCarNumber());
 
-            JsonNode result = billingPluginRegister.execute(node);
-            dto.current_balance = result.get("currentBalance").decimalValue().setScale(2);
+        JsonNode currentBalanceResult = getCurrentBalance(carState.getCarNumber());
+        if(currentBalanceResult.has("currentBalance")){
+            dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue().setScale(2);
         }
 
         return dto;
+    }
+
+    private BillingInfoSuccessDto fillPrepaid(CommandDto commandDto, Parking parking) throws Exception{
+        BillingInfoSuccessDto dto = new BillingInfoSuccessDto();
+        dto.txn_id = commandDto.txn_id;
+        dto.result = 0;
+        dto.left_free_time_minutes = 0;
+        dto.in_date = "";
+        dto.hours = 0;
+
+        JsonNode rateValue = getRateByParking(parking.getId());
+        dto.tariff = rateValue.get("rateName").textValue();
+
+        JsonNode prepaidValue = getPrepaidValue(parking.getId());
+        dto.sum = new BigDecimal(prepaidValue.get("prepaidValue").intValue());
+
+        JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
+        dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue().setScale(2);
+
+        return dto;
+    }
+
+    private JsonNode getPrepaidValue(Long parkingId) throws Exception {
+        ObjectNode node = this.objectMapper.createObjectNode();
+        JsonNode prepaidValueResult = null;
+        node.put("command", "getPrepaidValue");
+        node.put("parkingId", parkingId);
+
+        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+        if (ratePluginRegister != null) {
+            prepaidValueResult = ratePluginRegister.execute(node);
+        }
+        return prepaidValueResult;
+    }
+
+    private JsonNode getRateByParking(Long parkingId) throws Exception {
+        ObjectNode node = this.objectMapper.createObjectNode();
+        JsonNode rateResult = null;
+        node.put("command", "getRateByParking");
+        node.put("parkingId", parkingId);
+
+        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+        if (ratePluginRegister != null) {
+            rateResult = ratePluginRegister.execute(node);
+        }
+        return rateResult;
+    }
+
+    private JsonNode getCurrentBalance(String car_number) throws Exception {
+        ObjectNode node = this.objectMapper.createObjectNode();
+        JsonNode currentBalanceResult = null;
+        node.put("command", "getCurrentBalance");
+        node.put("plateNumber", car_number);
+
+        PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+        if (billingPluginRegister != null) {
+            currentBalanceResult = billingPluginRegister.execute(node);
+        }
+        return currentBalanceResult;
     }
 }

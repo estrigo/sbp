@@ -4,6 +4,7 @@ public class StaticValues {
 
     public enum CarOutBy {
         WHITELIST,
+        PREPAID,
         PAYMENT_PROVIDER,
         BOOKING,
         ZERO_TOUCH,
