@@ -99,7 +99,6 @@ public class CarEventServiceImpl implements CarEventService {
                 properties.put("gateDescription", camera.getGate().getDescription());
                 properties.put("gateType", camera.getGate().getGateType().toString());
                 properties.put("type", EventLogService.EventType.Allow);
-                properties.put("carNumber", platenumber);
 
                 if (eventDto.car_picture != null) {
                     String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);

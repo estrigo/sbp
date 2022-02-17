@@ -20,7 +20,8 @@ public class AbstractWhitelist {
     public enum Type {
         PERIOD,
         UNLIMITED,
-        CUSTOM;
+        CUSTOM,
+        BOTTAXI;
     }
 
     @Id

@@ -6,3 +6,8 @@
 #booking-plugin
 #zerotouch-plugin
 #tgbot-plugin
+#abonoment-plugin
+#billing-plugin
+#rate-plugin
+#test-plugin
+#whitelist-plugin

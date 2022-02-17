@@ -150,6 +150,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         ArrayNode arrayNode = objectMapper.createArrayNode();
 
         Cars car = rootServicesGetterService.getCarsService().findByPlatenumber(platenumber);
+
         if (car != null) {
             List<Whitelist> whitelists = whitelistRepository.findValidWhiteListByCar(car, date, parkingId);
             List<Whitelist> groupWhitelists = whitelistRepository.findValidWhiteListGroupByCar(car, date, parkingId);
@@ -256,6 +257,31 @@ public class WhitelistServiceImpl implements WhitelistService {
                     arrayNode.add(objectNode);
                 }
             }
+        }
+        if (arrayNode.isEmpty() && platenumber.length() > 2) {
+            SimpleDateFormat format = new SimpleDateFormat(datePrettyFormat);
+            if (platenumber.length() == 9) {
+                platenumber = platenumber.substring(0, platenumber.length() - 3);
+            } else {
+                platenumber = platenumber.substring(0, platenumber.length() - 2);
+            }
+                List<Cars> carsList = rootServicesGetterService.getCarsService().findByPlatenumberContaining(platenumber);
+                for (Cars cars: carsList) {
+                    List<Whitelist> whitelists = whitelistRepository.findWhitelistGroupTaxiByCar(cars, date, parkingId);
+
+                    for (Whitelist w : whitelists) {
+                        ObjectNode objectNode = objectMapper.createObjectNode();
+                        objectNode.put("id", w.getGroup().getId());
+                        objectNode.put("plateNumber", w.getCar().getPlatenumber());
+                        objectNode.put("groupId", w.getGroup().getId());
+                        objectNode.put("groupName", w.getGroup().getName());
+                        objectNode.put("type", w.getGroup().getType().toString());
+                        objectNode.put("accessStart", format.format(w.getGroup().getAccess_start()));
+                        objectNode.put("accessEnd", format.format(w.getGroup().getAccess_end()));
+                        arrayNode.add(objectNode);
+                        log.info("Whitelist from bottaxi " + cars.getPlatenumber());
+                    }
+                }
         }
 
         return arrayNode.isEmpty() ? null : arrayNode;
@@ -454,7 +480,7 @@ public class WhitelistServiceImpl implements WhitelistService {
                 }
                 result = details.toString();
             }
-        } else if (Whitelist.Type.PERIOD.equals(type)) {
+        } else if (Whitelist.Type.PERIOD.equals(type) || AbstractWhitelist.Type.BOTTAXI.equals(type)) {
             result = resultStart + (w.getAccess_start() != null && w.getAccess_start().after(new Date()) ? bundle.getString("whitelist.fromDate") + format.format(w.getAccess_start()) : bundle.getString("whitelist.anytime")) + bundle.getString("whitelist.untilDate") + format.format(w.getAccess_end());
         } else if (Whitelist.Type.UNLIMITED.equals(type)) {
             result = resultStart + bundle.getString("whitelist.anytime");

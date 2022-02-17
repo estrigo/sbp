@@ -29,8 +29,14 @@ public class CarsServiceImpl implements CarsService {
 
     private static final Comparator<Cars> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
+    @Override
     public Cars findByPlatenumber(String platenumber){
         return carsRepository.findCarsByPlatenumberIgnoreCase(platenumber);
+    }
+
+    @Override
+    public List<Cars> findByPlatenumberContaining(String platenumber) {
+        return carsRepository.findByPlatenumberContaining(platenumber);
     }
 
     @Override

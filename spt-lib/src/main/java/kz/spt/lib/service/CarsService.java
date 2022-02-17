@@ -3,10 +3,15 @@ package kz.spt.lib.service;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Cars;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
 
 public interface CarsService {
 
     Cars findByPlatenumber(String platenumber);
+
+    List<Cars> findByPlatenumberContaining(String platenumber);
 
     Cars findByPlatenumberWithCustomer(String platenumber);
 
