@@ -24,4 +24,6 @@ public interface RateService {
     void saveRate(ParkingRate rate);
 
     Parking getParkingById(Long parkingId);
+
+    Parking getParkingByType(Parking.ParkingType type);
 }

@@ -63,7 +63,7 @@ public class CommandExecutor implements PluginRegister {
                 Payment payment = new Payment();
                 payment.setCarNumber(command.get("carNumber").textValue());
                 payment.setPrice(command.get("sum").decimalValue());
-                payment.setProvider(getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue()));
+                payment.setProvider(provider);
                 payment.setTransaction(command.get("transaction").textValue());
                 if(command.has("parkingId")){
                     Parking parking = getRootServicesGetterService().getParkingService().findById(command.get("parkingId").longValue());
@@ -74,8 +74,8 @@ public class CommandExecutor implements PluginRegister {
                     payment.setCustomer(customer);
                 }
                 payment.setInDate(format.parse(command.get("inDate").textValue()));
-                payment.setRateDetails(command.get("rateName").textValue());
-                payment.setCarStateId(command.get("carStateId").longValue());
+                payment.setRateDetails(command.has("rateName") ? command.get("rateName").textValue() : "");
+                payment.setCarStateId(command.has("carStateId") ? command.get("carStateId").longValue() : null);
 
                 Payment savedPayment = getPaymentService().savePayment(payment);
                 node.put("paymentId", savedPayment.getId());
@@ -83,9 +83,11 @@ public class CommandExecutor implements PluginRegister {
 
                 getBalanceService().addBalance(command.get("carNumber").textValue(), command.get("sum").decimalValue(), command.get("carStateId").longValue(), "Received payment from " + payment.getProvider().getName(),  "Получен платеж от " + payment.getProvider().getName());
 
-                List<Payment> carStatePayments = getPaymentService().getPaymentsByCarStateId(savedPayment.getCarStateId());
-                ArrayNode paymentArray = PaymentDto.arrayNodeFromPayments(carStatePayments);
-                node.set("paymentArray", paymentArray);
+                if(savedPayment.getCarStateId()!=null){
+                    List<Payment> carStatePayments = getPaymentService().getPaymentsByCarStateId(savedPayment.getCarStateId());
+                    ArrayNode paymentArray = PaymentDto.arrayNodeFromPayments(carStatePayments);
+                    node.set("paymentArray", paymentArray);
+                }
 
             } else if("getCurrentBalance".equals(commandName)){
                 if(command.has("plateNumber")){
