@@ -27,9 +27,8 @@ public class CommandExecutor implements PluginRegister {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode node = objectMapper.createObjectNode();
 
-
         if(command!=null){
-            String commandName = command.get("command").textValue();
+            String commandName = command.has("command") ? command.get("command").textValue() : "";
             if("getPrepaidValue".equals(commandName)){
                 node.put("prepaidValue",getRateService().getByParkingId(command.get("parkingId").longValue()).getPrepaidValue());
             }else if("getRateByParking".equals(commandName)){
