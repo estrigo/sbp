@@ -25,6 +25,8 @@ spring:
           properties:
             hibernate:
               dialect: org.hibernate.dialect.MySQL55Dialect
+              jdbc:
+                time_zone: UTC
   datasource:
     url: jdbc:mysql://db/new_parking?allowPublicKeyRetrieval=true&useSSL=false
     username: root
@@ -36,6 +38,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL55Dialect
+        jdbc:
+          time_zone: UTC
 #    open-in-view: false TODO: enable in production to reduce database connect on every web page call
   thymeleaf:
     mode: HTML
@@ -108,3 +112,5 @@ parking:
       unknown:
         cases: false # Выпускать все авто где вьезд не найден
 parkomat.ip: 101.101.101.101
+webkassa:
+  host: https://kkm.webkassa.kz

@@ -25,6 +25,8 @@ spring:
           properties:
             hibernate:
               dialect: org.hibernate.dialect.MySQL55Dialect
+              jdbc:
+                time_zone: UTC
   datasource:
     url: jdbc:mysql://10.66.5.6:3307/parking?allowPublicKeyRetrieval=true&useSSL=false
     username: root
@@ -36,6 +38,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL55Dialect
+        jdbc:
+          time_zone: UTC
   thymeleaf:
     mode: HTML
     cache: false
