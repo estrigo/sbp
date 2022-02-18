@@ -24,5 +24,7 @@ public interface ParkingService {
 
     Iterable<Parking> listWhitelistParkings();
 
+    Iterable<Parking> listPaymentParkings();
+
     List<ParkingDto> getParkings();
 }

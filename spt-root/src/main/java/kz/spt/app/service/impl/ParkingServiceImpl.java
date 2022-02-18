@@ -123,6 +123,11 @@ public class ParkingServiceImpl implements ParkingService {
     }
 
     @Override
+    public Iterable<Parking> listPaymentParkings() {
+        return parkingRepository.paymentParkings();
+    }
+
+    @Override
     public List<ParkingDto> getParkings() {
         return ParkingDto.fromParking(parkingRepository.findAll());
     }

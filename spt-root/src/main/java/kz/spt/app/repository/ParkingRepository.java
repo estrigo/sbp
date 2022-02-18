@@ -15,4 +15,7 @@ public interface ParkingRepository extends JpaRepository<Parking, Long> {
     List<Parking> whitelistParkings();
 
     List<Parking> findParkingByParkingType(Parking.ParkingType parkingType);
+
+    @Query("from Parking p where p.parkingType = 'PAYMENT' or p.parkingType = 'WHITELIST_PAYMENT'")
+    List<Parking> paymentParkings();
 }

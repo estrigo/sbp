@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.abonomentplugin.AbonomentPlugin;
+import kz.spt.abonomentplugin.model.Abonoment;
 import kz.spt.abonomentplugin.model.AbonomentTypes;
 import kz.spt.abonomentplugin.service.AbonomentPluginService;
 import kz.spt.lib.extension.PluginRegister;
@@ -17,28 +18,38 @@ public class CommandExecutor implements PluginRegister {
     private AbonomentPluginService abonomentPluginService;
 
     @Override
-    public JsonNode execute(JsonNode command) throws Exception {
+    public JsonNode execute(JsonNode jsonCommand) throws Exception {
 
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode node = objectMapper.createObjectNode();
         node.put("result", false);
 
-        if(command.has("command")){
+        if(jsonCommand.has("command")){
+            String command = jsonCommand.get("command").textValue();
+
             if("createType".equals(command)){
-                int period = command.get("period").intValue();
-                int price = command.get("price").intValue();
+                int period = jsonCommand.get("period").intValue();
+                int price = jsonCommand.get("price").intValue();
                 AbonomentTypes abonomentTypes = getAbonomentPluginService().createType(period, price);
                 node.put("result", true);
-            } else if("createType".equals(command)){
-                Long typeId = command.get("id").longValue();
+            } else if("deleteType".equals(command)){
+                Long typeId = jsonCommand.get("id").longValue();
                 getAbonomentPluginService().deleteType(typeId);
                 node.put("result", true);
-            } else if("getTypeList".equals(command)){
-                Long typeId = command.get("id").longValue();
-                getAbonomentPluginService().deleteType(typeId);
+            } else if("createAbonoment".equals(command)){
+                String platenumber = jsonCommand.get("platenumber").textValue();
+                Long parkingId = jsonCommand.get("parkingId").longValue();
+                Long typeId = jsonCommand.get("typeId").longValue();
+                String dateStart = jsonCommand.get("dateStart").textValue();
+                Abonoment abonoment = getAbonomentPluginService().createAbonoment(platenumber, parkingId, typeId, dateStart);
                 node.put("result", true);
+            } else if("deleteAbonoment".equals(command)){
+                Long typeId = jsonCommand.get("id").longValue();
+                getAbonomentPluginService().deleteAbonoment(typeId);
+                node.put("result", true);
+            } else {
+                node.put("error", "unknownCommand");
             }
-
         } else {
             node.put("error", "unknownCommand");
         }

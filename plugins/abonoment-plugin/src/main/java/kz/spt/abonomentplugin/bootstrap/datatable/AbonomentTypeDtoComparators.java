@@ -24,7 +24,10 @@ public final class AbonomentTypeDtoComparators {
 
     static {
         map.put(new Key("period", Direction.asc), Comparator.comparing(AbonomentTypeDTO::getPeriod));
-        map.put(new Key("period", Direction.desc), Comparator.comparing(AbonomentTypeDTO::getPrice).reversed());
+        map.put(new Key("period", Direction.desc), Comparator.comparing(AbonomentTypeDTO::getPeriod).reversed());
+
+        map.put(new Key("price", Direction.asc), Comparator.comparing(AbonomentTypeDTO::getPrice));
+        map.put(new Key("price", Direction.desc), Comparator.comparing(AbonomentTypeDTO::getPrice).reversed());
     }
 
     public static Comparator<AbonomentTypeDTO> getComparator(String name, Direction dir) {

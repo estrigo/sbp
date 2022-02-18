@@ -12,6 +12,7 @@ import java.util.List;
 @Data @NoArgsConstructor
 public class AbonomentTypeDTO {
 
+    public Long id;
     public int period;
     public int price;
 
@@ -19,6 +20,7 @@ public class AbonomentTypeDTO {
         AbonomentTypeDTO dto = new AbonomentTypeDTO();
         dto.period = abonomentType.getPeriod();
         dto.price = abonomentType.getPrice();
+        dto.id = abonomentType.getId();
         return dto;
     }
 

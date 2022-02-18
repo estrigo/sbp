@@ -17,14 +17,27 @@ public class AbonomentRestController {
         this.abonomentService = abonomentService;
     }
 
-    @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "multipart/form-data")
-    public JsonNode createAbonoment(@RequestParam("period") int period,
+    @RequestMapping(value = "/type/create", method = RequestMethod.POST, consumes = "multipart/form-data")
+    public JsonNode createAbonomentType(@RequestParam("period") int period,
                                     @RequestParam("price") int price) throws Exception {
         return abonomentService.createAbonomentType(period, price);
     }
 
+    @RequestMapping(value = "/type/delete", method = RequestMethod.POST, consumes = "multipart/form-data")
+    public JsonNode deleteAbonomentType(@RequestParam("id") Long id) throws Exception {
+        return abonomentService.deleteAbonomentType(id);
+    }
+
+    @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "multipart/form-data")
+    public JsonNode createAbonoment(@RequestParam("platenumber") String platenumber,
+                                    @RequestParam("parkingId") Long parkingId,
+                                    @RequestParam("typeId") Long typeId,
+                                    @RequestParam("dateStart") String dateStart) throws Exception {
+        return abonomentService.createAbonoment(platenumber, parkingId, typeId, dateStart);
+    }
+
     @RequestMapping(value = "/delete", method = RequestMethod.POST, consumes = "multipart/form-data")
     public JsonNode deleteAbonoment(@RequestParam("id") Long id) throws Exception {
-        return abonomentService.deleteAbonomentType(id);
+        return abonomentService.deleteAbonoment(id);
     }
 }

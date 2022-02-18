@@ -60,7 +60,7 @@ public class PaymentServiceImpl implements PaymentService {
                         return fillPrepaid(commandDto,parking);
                     } else {
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
-                        dto.message = "Паркинг по предопплате не найден";
+                        dto.message = "Паркинг по предоплате не найден";
                         dto.result = 4;
                         dto.sum = commandDto.sum;
                         dto.txn_id = commandDto.txn_id;

@@ -28,4 +28,7 @@ public class AbonomentTypes {
 
     @Column(name = "price")
     private Integer price = 0;
+
+    @Transient
+    private String description;
 }

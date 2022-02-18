@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.service.AbonomentService;
 import kz.spt.lib.service.PluginService;
+import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 
 import static kz.spt.lib.utils.StaticValues.abonomentPlugin;
 
+@Log
 @Service
 public class AbonomentServiceImpl implements AbonomentService {
 
@@ -39,7 +41,6 @@ public class AbonomentServiceImpl implements AbonomentService {
         } else {
             result.put("error", "abonomentPluginNotStarted");
         }
-
         return result;
     }
 
@@ -52,6 +53,53 @@ public class AbonomentServiceImpl implements AbonomentService {
         if(abonomentPluginRegister != null){
             ObjectNode command = objectMapper.createObjectNode();
             command.put("command", "deleteType");
+            command.put("id", id);
+            JsonNode abonomentResult = abonomentPluginRegister.execute(command);
+            result.put("result", abonomentResult.get("result").booleanValue());
+            if(abonomentResult.has("error")){
+                result.put("error", abonomentResult.get("error").textValue());
+            }
+        } else {
+            result.put("error", "abonomentPluginNotStarted");
+        }
+
+        return result;
+    }
+
+    @Override
+    public JsonNode createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart) throws Exception {
+
+        ObjectNode result = objectMapper.createObjectNode();
+        result.put("result", false);
+
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonomentPlugin);
+        if(abonomentPluginRegister != null){
+            ObjectNode command = objectMapper.createObjectNode();
+            command.put("command", "createAbonoment");
+            command.put("platenumber", platenumber);
+            command.put("parkingId", parkingId);
+            command.put("typeId", typeId);
+            command.put("dateStart", dateStart);
+            JsonNode abonomentResult = abonomentPluginRegister.execute(command);
+            result.put("result", abonomentResult.get("result").booleanValue());
+            if(abonomentResult.has("error")){
+                result.put("error", abonomentResult.get("error").textValue());
+            }
+        } else {
+            result.put("error", "abonomentPluginNotStarted");
+        }
+        return result;
+    }
+
+    @Override
+    public JsonNode deleteAbonoment(Long id) throws Exception {
+        ObjectNode result = objectMapper.createObjectNode();
+        result.put("result", false);
+
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonomentPlugin);
+        if(abonomentPluginRegister != null){
+            ObjectNode command = objectMapper.createObjectNode();
+            command.put("command", "deleteAbonoment");
             command.put("id", id);
             JsonNode abonomentResult = abonomentPluginRegister.execute(command);
             result.put("result", abonomentResult.get("result").booleanValue());
