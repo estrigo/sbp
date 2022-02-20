@@ -135,7 +135,9 @@ public class EventLogServiceImpl implements EventLogService {
         catch (URISyntaxException e){
             e.printStackTrace();
         }
-
+        catch (Exception e){
+            //e.printStackTrace();
+        }
     }
 
     @Override
