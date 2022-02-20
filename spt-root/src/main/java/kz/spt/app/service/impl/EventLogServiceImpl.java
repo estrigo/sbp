@@ -22,6 +22,7 @@ import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.domain.Specification;
@@ -68,6 +69,9 @@ public class EventLogServiceImpl implements EventLogService {
 
     ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag("ru".equals(LocaleContextHolder.getLocale().toString()) ? "ru-RU" : "en"));
 
+    @Value("${telegram.bot.external.enabled}")
+    Boolean telegramBotExternalEnabled;
+
     public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager, GateService gateService) {
         this.eventLogRepository = eventLogRepository;
         this.pluginManager = pluginManager;
@@ -103,7 +107,9 @@ public class EventLogServiceImpl implements EventLogService {
         node.put("eventStatus", eventStatus.toString());
 
         //////////////////////send notification to bot
-        sendEventBot(node);
+        if(telegramBotExternalEnabled){
+            sendEventBot(node);
+        }
         /////////////////////
 
         messagingTemplate.convertAndSend("/topic", node.toString());

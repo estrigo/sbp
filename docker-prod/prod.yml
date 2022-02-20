@@ -111,6 +111,9 @@ parking:
     access:
       unknown:
         cases: false # Выпускать все авто где вьезд не найден
-parkomat.ip: 101.101.101.101
 webkassa:
   host: https://kkm.webkassa.kz
+telegram:
+  bot:
+    external:
+      enabled: false

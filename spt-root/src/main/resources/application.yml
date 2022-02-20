@@ -100,3 +100,7 @@ cors:
     origins:
       - http://localhost:3000
       - https://parqour-web-app.herokuapp.com
+telegram:
+  bot:
+    external:
+      enabled: false
