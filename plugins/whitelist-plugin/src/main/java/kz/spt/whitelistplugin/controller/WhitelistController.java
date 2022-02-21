@@ -77,7 +77,7 @@ public class WhitelistController {
         parkingService = rootServicesGetterService.getParkingService();
         model.addAttribute("parkings", parkingService.listAllParking());
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
-        model.addAttribute("canDelete", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN").contains(m.getAuthority())));
+        model.addAttribute("canDelete", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
         
         return "whitelist/list";
     }
@@ -226,7 +226,7 @@ public class WhitelistController {
                 bindingResult.addError(error);
             }
         }
-        if(Whitelist.Type.PERIOD.equals(whitelist.getType()) && whitelist.getAccessEndString() == null){
+        if(Whitelist.Type.PERIOD.equals(whitelist.getType()) && StringUtils.isNullOrEmpty(whitelist.getAccessEndString())){
             ObjectError error = new ObjectError("fillDateEndIsRequired", bundle.getString("whitelist.fillEndDateIsRequired"));
             bindingResult.addError(error);
         }
@@ -297,7 +297,7 @@ public class WhitelistController {
                 }
             }
         }
-        if(Whitelist.Type.PERIOD.equals(whitelistGroups.getType()) && whitelistGroups.getAccessEndString() == null){
+        if(Whitelist.Type.PERIOD.equals(whitelistGroups.getType()) && StringUtils.isNullOrEmpty(whitelistGroups.getAccessEndString())){
             ObjectError error = new ObjectError("fillDateEndIsRequired", bundle.getString("whitelist.fillEndDateIsRequired"));
             bindingResult.addError(error);
         }
