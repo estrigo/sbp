@@ -1,5 +1,8 @@
 package kz.spt.abonomentplugin.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.abonomentplugin.bootstrap.datatable.AbonomentDtoComparators;
 import kz.spt.abonomentplugin.bootstrap.datatable.AbonomentTypeDtoComparators;
 import kz.spt.abonomentplugin.dto.AbonomentDTO;
@@ -20,6 +23,8 @@ import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -36,6 +41,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     private final AbonomentTypesRepository abonomentTypesRepository;
     private final AbonomentRepository abonomentRepository;
     private final RootServicesGetterService rootServicesGetterService;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private static final Comparator<AbonomentTypeDTO> EMPTY_COMPARATOR = (e1, e2) -> 0;
     private static final Comparator<AbonomentDTO> ABONOMENT_EMPTY_COMPARATOR = (e1, e2) -> 0;
@@ -119,6 +125,27 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     public Page<AbonomentDTO> abonomentDtoList(PagingRequest pagingRequest) {
         List<Abonoment> allAbonoments = listAbonomentsByFilters();
         return getAbonomentPage(AbonomentDTO.convertToDto(allAbonoments), pagingRequest);
+    }
+
+    @Override
+    public JsonNode getUnpaidNotExpiredAbonoment(String plateNumber) {
+        Pageable first = PageRequest.of(0, 1);
+        List<Abonoment> abonoments = abonomentRepository.findNotPaidAbonoment(plateNumber, new Date(), first);
+        if(abonoments.size() > 0){
+            Abonoment abonoment = abonoments.get(0);
+            ObjectNode node = objectMapper.createObjectNode();
+            node.put("price", abonoment.getPrice());
+            node.put("parkingId", abonoment.getParking().getId());
+            return node;
+        }
+        return null;
+    }
+
+    @Override
+    public void setAbonomentPaid(Long id) {
+        Abonoment abonoment  = abonomentRepository.getOne(id);
+        abonoment.setPaid(true);
+        abonomentRepository.save(abonoment);
     }
 
     private List<AbonomentTypes> listByFilters() {

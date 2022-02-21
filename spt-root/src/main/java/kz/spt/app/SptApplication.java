@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -45,5 +46,14 @@ public class SptApplication {
         long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
         log.info("Initial Memory (xmx) : " + xmx + "mb");
         log.info("Initial Memory (xms) : " + xms + "mb");
+    }
+
+    @Bean
+    public ServletServerContainerFactoryBean createServletServerContainerFactoryBean() {
+        ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
+        container.setMaxTextMessageBufferSize(1024 * 1024);
+        container.setMaxBinaryMessageBufferSize(1024 * 1024);
+        log.info("Websocket factory returned");
+        return container;
     }
 }

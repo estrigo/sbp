@@ -1,5 +1,6 @@
 package kz.spt.abonomentplugin.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import kz.spt.abonomentplugin.dto.AbonomentDTO;
 import kz.spt.abonomentplugin.dto.AbonomentTypeDTO;
 import kz.spt.abonomentplugin.model.Abonoment;
@@ -25,4 +26,8 @@ public interface AbonomentPluginService {
     void deleteAbonoment(Long id);
 
     Page<AbonomentDTO> abonomentDtoList(PagingRequest pagingRequest);
+
+    JsonNode getUnpaidNotExpiredAbonoment(String plateNumber);
+
+    void setAbonomentPaid(Long id);
 }

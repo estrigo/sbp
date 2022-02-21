@@ -67,6 +67,10 @@ public class PaymentServiceImpl implements PaymentService {
                 } else {
                     CarState carState = carStateService.getLastNotLeft(commandDto.account);
                     if (carState == null) {
+                        JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
+                        if(abonomentResultNode != null && abonomentResultNode.has("price")){
+                            return fillAbonomentDetails(abonomentResultNode, commandDto.account);
+                        }
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
                         dto.sum = BigDecimal.ZERO;
                         dto.txn_id = commandDto.txn_id;
@@ -87,6 +91,10 @@ public class PaymentServiceImpl implements PaymentService {
                         } else if (Parking.ParkingType.WHITELIST_PAYMENT.equals(carState.getParking().getParkingType())) {
                             if (carState.getPaid()) {
                                 return fillPayment(carState, format, commandDto, carState.getPaymentJson());
+                            }
+                            JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
+                            if(abonomentResultNode != null && abonomentResultNode.has("price")){
+                                return fillAbonomentDetails(abonomentResultNode, commandDto.account);
                             }
                         }
                         return dto;
@@ -112,7 +120,7 @@ public class PaymentServiceImpl implements PaymentService {
                 CarState carState = carStateService.getLastNotLeft(commandDto.account);
                 if (carState == null) {
                     if (commandDto.prepaid != null && commandDto.prepaid) {
-                        Object payment = savePayment(commandDto, null, Parking.ParkingType.PREPAID);
+                        Object payment = savePayment(commandDto, null, Parking.ParkingType.PREPAID, false);
                         if (BillingInfoErrorDto.class.equals(payment.getClass())) {
                             return payment;
                         }
@@ -122,6 +130,20 @@ public class PaymentServiceImpl implements PaymentService {
 
                         return successPayment(commandDto, paymentId);
                     } else {
+                        JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
+                        if(abonomentResultNode != null && abonomentResultNode.has("price")){
+                            Object payment = savePayment(commandDto, carState, null, true);
+                            if (BillingInfoErrorDto.class.equals(payment.getClass())) {
+                                return payment;
+                            }
+
+                            JsonNode result = (JsonNode) payment;
+                            Long paymentId = result.get("paymentId").longValue();
+
+                            setAbonomentPaid(abonomentResultNode.get("id").longValue());
+
+                            return successPayment(commandDto, paymentId);
+                        }
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
                         dto.message = "Некорректный номер авто свяжитесь с оператором.";
                         dto.result = 1;
@@ -130,7 +152,7 @@ public class PaymentServiceImpl implements PaymentService {
                         return dto;
                     }
                 } else {
-                    Object payment = savePayment(commandDto, carState, null);
+                    Object payment = savePayment(commandDto, carState, null, false);
                     if (BillingInfoErrorDto.class.equals(payment.getClass())) {
                         return payment;
                     }
@@ -498,7 +520,7 @@ public class PaymentServiceImpl implements PaymentService {
         return currentBalanceResult;
     }
 
-    private Object savePayment(CommandDto commandDto, CarState carState, Parking.ParkingType parkingType) throws Exception {
+    private Object savePayment(CommandDto commandDto, CarState carState, Parking.ParkingType parkingType, Boolean isAbonomentPayment) throws Exception {
         ObjectNode node = this.objectMapper.createObjectNode();
         node.put("command", "savePayment");
         node.put("carNumber", commandDto.account);
@@ -511,6 +533,9 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("inDate", format.format(carState.getInTimestamp()));
 
             parkingId = carState.getParking().getId();
+        } else if(isAbonomentPayment){
+            node.put("inDate", format.format(new Date()));
+            parkingId = getNotPaidAbonoment(commandDto).get("parkingId").longValue();
         } else {
             node.put("inDate", format.format(new Date()));
 
@@ -557,7 +582,48 @@ public class PaymentServiceImpl implements PaymentService {
         if (paymentResult.has("paymentError")) {
             return fillError(commandDto, paymentResult.get("paymentError").textValue(), paymentResult.get("paymentErrorCode").intValue());
         }
-
         return paymentResult;
+    }
+
+    private JsonNode getNotPaidAbonoment(CommandDto commandDto) throws Exception {
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
+        if (abonomentPluginRegister != null) {
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("command", "hasUnpaidNotExpiredAbonoment");
+            node.put("plateNumber", commandDto.account);
+
+            JsonNode result = abonomentPluginRegister.execute(node);
+            if(result.has("unPaidNotExpiredAbonoment")){
+                return result.get("unPaidNotExpiredAbonoment");
+            }
+        }
+        return null;
+    }
+
+    private BillingInfoSuccessDto fillAbonomentDetails(JsonNode abonomentJsonNode, String account) throws Exception {
+        BillingInfoSuccessDto billingInfoSuccessDto = new BillingInfoSuccessDto();
+        billingInfoSuccessDto.hours = 0;
+        billingInfoSuccessDto.tariff = "Оплата за абономент";
+        billingInfoSuccessDto.txn_id = null;
+        billingInfoSuccessDto.sum = abonomentJsonNode.get("price").decimalValue().setScale(2);
+        billingInfoSuccessDto.left_free_time_minutes = 0;
+        billingInfoSuccessDto.in_date = null;
+        billingInfoSuccessDto.result = 0;
+        JsonNode currentBalanceResult = getCurrentBalance(account);
+        if (currentBalanceResult.has("currentBalance")) {
+            billingInfoSuccessDto.current_balance = currentBalanceResult.get("currentBalance").decimalValue().setScale(2);
+        }
+        return null;
+    }
+
+    private void setAbonomentPaid(Long id) throws Exception {
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
+        if (abonomentPluginRegister != null) {
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("command", "setAbonomentPaid");
+            node.put("id", id);
+
+            JsonNode result = abonomentPluginRegister.execute(node);
+        }
     }
 }
