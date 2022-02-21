@@ -1,6 +1,7 @@
 package kz.spt.whitelistplugin.repository;
 
 
+import kz.spt.lib.model.Parking;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,4 +14,7 @@ public interface WhitelistGroupsRepository extends JpaRepository<WhitelistGroups
     WhitelistGroups getWhitelistGroup(Long id);
 
     WhitelistGroups getWhitelistGroupsByName(String groupName);
+
+    WhitelistGroups getWhitelistGroupsByNameAndParking(String groupName, Parking parking);
+
 }

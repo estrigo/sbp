@@ -10,4 +10,3 @@
 #billing-plugin
 #rate-plugin
 #test-plugin
-#whitelist-plugin
