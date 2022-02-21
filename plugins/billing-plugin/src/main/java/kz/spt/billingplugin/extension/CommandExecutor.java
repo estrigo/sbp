@@ -81,7 +81,10 @@ public class CommandExecutor implements PluginRegister {
                 node.put("paymentId", savedPayment.getId());
                 node.put("cashlessPayment", payment.getProvider().getCashlessPayment() != null ? payment.getProvider().getCashlessPayment() : false);
 
-                getBalanceService().addBalance(command.get("carNumber").textValue(), command.get("sum").decimalValue(), command.get("carStateId").longValue(), "Received payment from " + payment.getProvider().getName(),  "Получен платеж от " + payment.getProvider().getName());
+                String carNumber = command.get("carNumber").textValue();
+                BigDecimal sum = command.get("sum").decimalValue();
+                Long carStateId = command.has("carStateId") ? command.get("carStateId").longValue() : null;
+                getBalanceService().addBalance(carNumber,sum,carStateId, "Received payment from " + payment.getProvider().getName(),  "Получен платеж от " + payment.getProvider().getName());
 
                 if(savedPayment.getCarStateId()!=null){
                     List<Payment> carStatePayments = getPaymentService().getPaymentsByCarStateId(savedPayment.getCarStateId());

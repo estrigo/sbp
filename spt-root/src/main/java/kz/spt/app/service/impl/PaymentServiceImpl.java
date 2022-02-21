@@ -112,10 +112,12 @@ public class PaymentServiceImpl implements PaymentService {
                 CarState carState = carStateService.getLastNotLeft(commandDto.account);
                 if (carState == null) {
                     if (commandDto.prepaid != null && commandDto.prepaid) {
-                        JsonNode result = (JsonNode) savePayment(commandDto, null, Parking.ParkingType.PREPAID);
-                        if (result.has("paymentError")) {
-                            return fillError(commandDto, result.get("paymentError").textValue(), result.get("paymentErrorCode").intValue());
+                        Object payment = savePayment(commandDto, null, Parking.ParkingType.PREPAID);
+                        if (BillingInfoErrorDto.class.equals(payment.getClass())) {
+                            return payment;
                         }
+
+                        JsonNode result = (JsonNode) payment;
                         Long paymentId = result.get("paymentId").longValue();
 
                         return successPayment(commandDto, paymentId);
@@ -128,10 +130,12 @@ public class PaymentServiceImpl implements PaymentService {
                         return dto;
                     }
                 } else {
-                    JsonNode result = (JsonNode) savePayment(commandDto, carState, null);
-                    if (result.has("paymentError")) {
-                        return fillError(commandDto, result.get("paymentError").textValue(), result.get("paymentErrorCode").intValue());
+                    Object payment = savePayment(commandDto, carState, null);
+                    if (BillingInfoErrorDto.class.equals(payment.getClass())) {
+                        return payment;
                     }
+
+                    JsonNode result = (JsonNode) payment;
                     Long paymentId = result.get("paymentId").longValue();
 
                     carState.setAmount(carState.getAmount() != null ? carState.getAmount().add(commandDto.sum) : commandDto.sum); // if he paid early we should add this amount
@@ -511,9 +515,9 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("inDate", format.format(new Date()));
 
             if (parkingType != null) {
-                JsonNode parkingResult = getParkingByType(parkingType);
-                if (parkingResult.has("parkingId")) {
-                    parkingId = parkingResult.get("parkingId").longValue();
+                Parking parking = parkingService.findByType(Parking.ParkingType.PREPAID);
+                if(parking != null){
+                    parkingId = parking.getId();
                 }
             }
         }
@@ -549,19 +553,11 @@ public class PaymentServiceImpl implements PaymentService {
         if (billingPluginRegister != null) {
             paymentResult = billingPluginRegister.execute(node);
         }
-        return paymentResult;
-    }
 
-    private JsonNode getParkingByType(Parking.ParkingType parkingType) throws Exception {
-        ObjectNode node = this.objectMapper.createObjectNode();
-        node.put("command", "savePayment");
-        node.put("parkingType", parkingType.toString());
-
-        JsonNode parkingResult = null;
-        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
-        if (ratePluginRegister != null) {
-            parkingResult = ratePluginRegister.execute(node);
+        if (paymentResult.has("paymentError")) {
+            return fillError(commandDto, paymentResult.get("paymentError").textValue(), paymentResult.get("paymentErrorCode").intValue());
         }
-        return parkingResult;
+
+        return paymentResult;
     }
 }

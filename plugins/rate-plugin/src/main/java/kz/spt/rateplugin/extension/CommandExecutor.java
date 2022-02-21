@@ -39,13 +39,6 @@ public class CommandExecutor implements PluginRegister {
                     node.put("rateId", parkingRate.getId());
                     node.put("rateName", parkingRate.getName());
                 }
-            }else if("getParkingByType".equals(commandName)){
-                if(command.has("parkingType")){
-                    Parking.ParkingType parkingType = Parking.ParkingType.valueOf(command.get("parkingType").toString());
-                    Parking parking = getRateService().getParkingByType(parkingType);
-                    node.put("parkingId",parking.getId());
-                    node.put("parkingName",parking.getName());
-                }
             }else{
                 node.put("rateResult", BigDecimal.ZERO);
                 node.put("rateFreeMinutes", 0);

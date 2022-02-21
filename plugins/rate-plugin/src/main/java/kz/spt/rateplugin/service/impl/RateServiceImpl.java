@@ -292,11 +292,6 @@ public class RateServiceImpl implements RateService {
         return getParkingService().findById(parkingId);
     }
 
-    @Override
-    public Parking getParkingByType(Parking.ParkingType type) {
-        return parkingService.findByType(type);
-    }
-
     private JsonNode getSatisfiedJsonNode(int inCalendarHour, ArrayNode intervalJson) {
         Iterator<JsonNode> iterator = intervalJson.iterator();
         JsonNode returnNode = null;
