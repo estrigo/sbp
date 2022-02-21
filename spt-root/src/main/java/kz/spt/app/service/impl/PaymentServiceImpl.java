@@ -401,6 +401,7 @@ public class PaymentServiceImpl implements PaymentService {
                     billingSubtractNode.put("command", "decreaseCurrentBalance");
                     billingSubtractNode.put("amount", rateResult);
                     billingSubtractNode.put("plateNumber", carState.getCarNumber());
+                    billingSubtractNode.put("parkingName", carState.getParking().getName());
                     billingSubtractNode.put("reason", "Оплата паркинга " + carState.getParking().getName());
                     billingSubtractNode.put("reasonEn", "Payment for parking " + carState.getParking().getName());
                     billingSubtractNode.put("carStateId", carState.getId());

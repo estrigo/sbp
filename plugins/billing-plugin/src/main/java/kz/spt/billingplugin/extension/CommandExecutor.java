@@ -39,22 +39,22 @@ public class CommandExecutor implements PluginRegister {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode node = objectMapper.createObjectNode();
 
-        if(command!=null && command.has("command")){
+        if (command != null && command.has("command")) {
             String commandName = command.get("command").textValue();
-            if("getPasswordHash".equals(commandName)){
-                if(command.has("client_id") && command.get("client_id").isTextual()){
+            if ("getPasswordHash".equals(commandName)) {
+                if (command.has("client_id") && command.get("client_id").isTextual()) {
                     PaymentProvider paymentProvider = getPaymentProviderService().getProviderByClientId(command.get("client_id").textValue());
-                    if(paymentProvider != null && paymentProvider.getEnabled() && paymentProvider.getSecret() != null){
+                    if (paymentProvider != null && paymentProvider.getEnabled() && paymentProvider.getSecret() != null) {
                         node.put("passwordHash", paymentProvider.getSecret());
                     }
                 } else {
                     throw new RuntimeException("Not all getPasswordHash parameters set");
                 }
-            } else if("savePayment".equals(commandName)){
+            } else if ("savePayment".equals(commandName)) {
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue());
                 List<Payment> oldPayments = getPaymentService().findByTransactionAndProvider(command.get("transaction").textValue(), provider);
 
-                if(oldPayments.size() > 0){
+                if (oldPayments.size() > 0) {
                     node.put("paymentError", "txn_id уже зарегистрирован");
                     node.put("paymentErrorCode", 4);
                     return node;
@@ -65,11 +65,11 @@ public class CommandExecutor implements PluginRegister {
                 payment.setPrice(command.get("sum").decimalValue());
                 payment.setProvider(provider);
                 payment.setTransaction(command.get("transaction").textValue());
-                if(command.has("parkingId")){
+                if (command.has("parkingId")) {
                     Parking parking = getRootServicesGetterService().getParkingService().findById(command.get("parkingId").longValue());
                     payment.setParking(parking);
                 }
-                if(command.has("customerId")){
+                if (command.has("customerId")) {
                     Customer customer = getRootServicesGetterService().getCustomerService().findById(command.get("customerId").longValue());
                     payment.setCustomer(customer);
                 }
@@ -92,8 +92,8 @@ public class CommandExecutor implements PluginRegister {
                     node.set("paymentArray", paymentArray);
                 }
 
-            } else if("getCurrentBalance".equals(commandName)){
-                if(command.has("plateNumber")){
+            } else if ("getCurrentBalance".equals(commandName)) {
+                if (command.has("plateNumber")) {
                     node.put("currentBalance", getBalanceService().getBalance(command.get("plateNumber").textValue()));
                 } else {
                     throw new RuntimeException("Not all getCurrentBalance parameters set");
@@ -106,25 +106,25 @@ public class CommandExecutor implements PluginRegister {
                 } else {
                     throw new RuntimeException("Not all decreaseCurrentBalance parameters set");
                 }
-            } else if("increaseCurrentBalance".equals(commandName)){
-                if(command.has("plateNumber") && command.has("amount") && command.has("reason") && command.has("reasonEn")){
+            } else if ("increaseCurrentBalance".equals(commandName)) {
+                if (command.has("plateNumber") && command.has("amount") && command.has("reason") && command.has("reasonEn")) {
                     String plateNumber = command.get("plateNumber").textValue();
                     BigDecimal amount = command.get("amount").decimalValue();
                     String reason = command.get("reason").textValue();
                     String reasonEn = command.get("reasonEn").textValue();
-                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reason,  reasonEn));
+                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reason, reasonEn));
                 } else {
                     throw new RuntimeException("Not all increaseCurrentBalance parameters set");
                 }
-            } else if("addOutTimestampToPayments".equals(commandName)){
-                if(command.has("outTimestamp") && command.has("carStateId")){
+            } else if ("addOutTimestampToPayments".equals(commandName)) {
+                if (command.has("outTimestamp") && command.has("carStateId")) {
                     getPaymentService().updateOutTimestamp(command.get("carStateId").longValue(), format.parse(command.get("outTimestamp").textValue()));
                 } else {
                     throw new RuntimeException("Not all addOutTimestampToPayments parameters set");
                 }
             } else if ("getParkomatClientId".equals(commandName)) {
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("parkomatId").textValue());
-                node.put("clientId" , provider.getClientId());
+                node.put("clientId", provider.getClientId());
             } else if ("getCheck".equals(commandName)) {
 
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("parkomatId").textValue());
@@ -147,7 +147,7 @@ public class CommandExecutor implements PluginRegister {
                 payment.sum = String.valueOf(sum);
                 check.getPayments().add(payment);
                 check.setChange(String.valueOf(change));
-                check.setExternalCheckNumber(txn_id+"-"+provider.getId());
+                check.setExternalCheckNumber(txn_id + "-" + provider.getId());
 
                 AuthRequestDTO authRequestDTO = new AuthRequestDTO();
                 authRequestDTO.setPassword(provider.getWebKassaPassword());
@@ -155,20 +155,20 @@ public class CommandExecutor implements PluginRegister {
 
                 CheckResponse checkResponse = getWebKassaService().registerCheck(check, authRequestDTO);
 
-                if (checkResponse!=null) {
-                    node.put("checkNumber" , checkResponse.data.checkNumber);
-                    node.put("ticketUrl" , checkResponse.data.ticketUrl);
+                if (checkResponse != null) {
+                    node.put("checkNumber", checkResponse.data.checkNumber);
+                    node.put("ticketUrl", checkResponse.data.ticketUrl);
 
                     List<Payment> paymentList = getPaymentService().findByTransactionAndProvider(txn_id, provider);
                     if (!paymentList.isEmpty()) {
                         paymentList.get(0).setCheckNumber(checkResponse.data.checkNumber);
-                        getPaymentService().savePayment( paymentList.get(0));
+                        getPaymentService().savePayment(paymentList.get(0));
                     }
 
                 }
 
 
-            }else if ("zReport".equals(commandName)) {
+            } else if ("zReport".equals(commandName)) {
 
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("parkomatId").textValue());
 
@@ -184,7 +184,7 @@ public class CommandExecutor implements PluginRegister {
                 if (checkResponse != null) {
                     node.put("result", checkResponse);
                 }
-            } else if("getProviderNames".equals(commandName)){
+            } else if ("getProviderNames".equals(commandName)) {
                 ArrayNode paymentProviders = objectMapper.createArrayNode();
                 getPaymentProviderService().listAllPaymentProviders().forEach(paymentProvider -> {
                     paymentProviders.add(paymentProvider.getName());
@@ -211,36 +211,36 @@ public class CommandExecutor implements PluginRegister {
         return node;
     }
 
-    private PaymentProviderService getPaymentProviderService(){
-        if(paymentProviderService == null) {
+    private PaymentProviderService getPaymentProviderService() {
+        if (paymentProviderService == null) {
             paymentProviderService = (PaymentProviderService) BillingPlugin.INSTANCE.getApplicationContext().getBean("paymentProviderServiceImpl");
         }
         return paymentProviderService;
     }
 
-    private PaymentService getPaymentService(){
-        if(paymentService == null) {
-            paymentService = (PaymentService) BillingPlugin.INSTANCE.getApplicationContext().getBean("paymentServiceImpl");
+    private PaymentService getPaymentService() {
+        if (paymentService == null) {
+            paymentService = (PaymentService) BillingPlugin.INSTANCE.getApplicationContext().getBean("paymentService");
         }
         return paymentService;
     }
 
-    private RootServicesGetterService getRootServicesGetterService(){
-        if(rootServicesGetterService == null) {
+    private RootServicesGetterService getRootServicesGetterService() {
+        if (rootServicesGetterService == null) {
             rootServicesGetterService = (RootServicesGetterService) BillingPlugin.INSTANCE.getApplicationContext().getBean("rootServicesGetterServiceImpl");
         }
         return rootServicesGetterService;
     }
 
-    private BalanceService getBalanceService(){
-        if(balanceService == null) {
+    private BalanceService getBalanceService() {
+        if (balanceService == null) {
             balanceService = (BalanceService) BillingPlugin.INSTANCE.getApplicationContext().getBean("balanceServiceImpl");
         }
         return balanceService;
     }
 
     private WebKassaService getWebKassaService() {
-        if(webKassaService == null) {
+        if (webKassaService == null) {
             webKassaService = (WebKassaServiceImpl) BillingPlugin.INSTANCE.getApplicationContext().getBean("webKassaServiceImpl");
         }
         return webKassaService;

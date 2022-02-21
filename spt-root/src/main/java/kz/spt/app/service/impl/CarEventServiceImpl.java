@@ -554,6 +554,7 @@ public class CarEventServiceImpl implements CarEventService {
         node.put("command", "decreaseCurrentBalance");
         node.put("amount", amaount);
         node.put("plateNumber", carNumber);
+        node.put("parkingName", parkingName);
         node.put("reason", "Оплата паркинга " + parkingName);
         node.put("reasonEn", "Payment for parking " + parkingName);
         node.put("carStateId", carStateId);
@@ -669,7 +670,7 @@ public class CarEventServiceImpl implements CarEventService {
                     if(Parking.ParkingType.PREPAID.equals(camera.getGate().getParking().getParkingType())){
                         hasAccess = true;
                         carOutBy = StaticValues.CarOutBy.PREPAID;
-                    } else {
+                    }else{
                         if (Parking.ParkingType.WHITELIST_PAYMENT.equals(camera.getGate().getParking().getParkingType()) && carState.getPaid() != null && !carState.getPaid()) {
                             isWhitelistCar = true;
                         }
