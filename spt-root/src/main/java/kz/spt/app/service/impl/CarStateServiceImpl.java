@@ -266,6 +266,13 @@ public class CarStateServiceImpl implements CarStateService {
         return null;
     }
 
+    @Override
+    public void setAbonomentDetails(Long id, JsonNode details) {
+        CarState carState = carStateRepository.getOne(id);
+        carState.setAbonomentJson(details.toString());
+        carStateRepository.save(carState);
+    }
+
     private Page<CarStateDto> getPage(List<CarStateDto> carStates, PagingRequest pagingRequest) {
         List<CarStateDto> filtered = carStates.stream()
                 .sorted(sortCarStates(pagingRequest))

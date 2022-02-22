@@ -243,6 +243,9 @@
                             text = text + '<br/><small class="text-muted">[[#{rate.sum}]] ' + p.price + ' [[#{billing.provider}]] ' + p.providerPaymentName + '. [[#{rate.date}]] ' + p.created + '</small>';
                         }
                         return text;
+                    } else if (carState.abonomentJson && carState.abonomentJson !== "") {
+                        const a = JSON.parse(carState.abonomentJson);
+                        return '<br/><small class="text-muted">' + [[#{abonoment.title}]] + ': ' + [[#{abonoment.begin}]] + '-' + a.begin + ' '+ [[#{abonoment.end}]] + ' - ' + a.end;
                     } else {
                         return carState.payment;
                     }

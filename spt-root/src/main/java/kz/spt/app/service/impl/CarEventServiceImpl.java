@@ -554,7 +554,8 @@ public class CarEventServiceImpl implements CarEventService {
         node.put("command", "decreaseCurrentBalance");
         node.put("amount", amaount);
         node.put("plateNumber", carNumber);
-        node.put("parkingName", parkingName);
+        node.put("reason", "Оплата паркинга " + parkingName);
+        node.put("reasonEn", "Payment for parking " + parkingName);
         node.put("carStateId", carStateId);
 
         PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
@@ -647,7 +648,7 @@ public class CarEventServiceImpl implements CarEventService {
                         hasAccess = true;
                     } else {
                         ArrayNode whitelistCheckResultArray = (ArrayNode) getWhiteLists(camera.getGate().getParking().getId(), eventDto.car_number, new Date(), format, properties);
-                        if(whitelistCheckResultArray.size() > 0){
+                        if(whitelistCheckResultArray != null && whitelistCheckResultArray.size() > 0){
                             properties.put("type", EventLogService.EventType.Allow);
                             String description = "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого листа выезд разрешен.";
                             String descriptionEn = "No record found about entering. Car with license number " + eventDto.car_number + ". For white list exit is allowed";
@@ -668,12 +669,15 @@ public class CarEventServiceImpl implements CarEventService {
                     if(Parking.ParkingType.PREPAID.equals(camera.getGate().getParking().getParkingType())){
                         hasAccess = true;
                         carOutBy = StaticValues.CarOutBy.PREPAID;
-                    }else{
+                    } else {
                         if (Parking.ParkingType.WHITELIST_PAYMENT.equals(camera.getGate().getParking().getParkingType()) && carState.getPaid() != null && !carState.getPaid()) {
                             isWhitelistCar = true;
                         }
                         if (isWhitelistCar || Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
                             carOutBy = StaticValues.CarOutBy.WHITELIST;
+                            hasAccess = true;
+                        } else if(hasValidAbonoment(eventDto.car_number, carState.getParking().getId())){ // Проверяем абономент, если валидна выпускаем
+                            carOutBy = StaticValues.CarOutBy.ABONOMENT;
                             hasAccess = true;
                         } else {
                             PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
@@ -796,6 +800,14 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("type", EventLogService.EventType.Allow);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто по предоплате: Авто с гос. номером" + eventDto.car_number, "For prepaid exit is allowed on prepaid basis. Car with license plate " + eventDto.car_number);
             eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Выпускаем авто по предоплате: Авто с гос. номером" + eventDto.car_number, "For prepaid exit is allowed on prepaid basis. Car with license plate " + eventDto.car_number);
+        } else if (StaticValues.CarOutBy.ABONOMENT.equals(carOutBy)) {
+            carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState);
+            properties.put("type", EventLogService.EventType.Allow);
+            String message_ru = "Пропускаем авто: Найдено действущий абономент на номер авто " + eventDto.car_number + ". Проезд разрешен.";
+            String message_en = "Allowed: Found valid subscription for car late number " + eventDto.car_number + ". Allowed.";
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLogService.EventType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, message_ru, message_en);
+            carStateService.setAbonomentDetails(carState.getId(), getAbonomentDetails(eventDto.car_number, carState.getParking().getId()));
         } else {
             if (StaticValues.CarOutBy.ZERO_TOUCH.equals(carOutBy)) {
                 properties.put("type", EventLogService.EventType.Allow);
@@ -841,5 +853,37 @@ public class CarEventServiceImpl implements CarEventService {
         eventLogService.sendSocketMessage(ArmEventType.Lp, EventLogService.EventType.Success, camera.getId(), eventDto.car_number, eventDto.lp_picture, null);
         eventLogService.createEventLog(Camera.class.getSimpleName(), camera.getId(), properties, "Зафиксирован новый номер авто " + eventDto.car_number, "New license plate number identified " + eventDto.car_number);
         carsService.createCar(eventDto.car_number);
+    }
+
+    private boolean hasValidAbonoment(String plateNumber, Long parkingId) throws Exception {
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
+        if (abonomentPluginRegister != null) {
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("command", "hasPaidNotExpiredAbonoment");
+            node.put("plateNumber", plateNumber);
+            node.put("parkingId", parkingId);
+
+            JsonNode result = abonomentPluginRegister.execute(node);
+            if(result.has("hasPaidNotExpiredAbonoment")){
+                return result.get("hasPaidNotExpiredAbonoment").booleanValue();
+            }
+        }
+        return false;
+    }
+
+    private JsonNode getAbonomentDetails(String plateNumber, Long parkingId) throws Exception {
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
+        if (abonomentPluginRegister != null) {
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("command", "getPaidNotExpiredAbonomentDetails");
+            node.put("plateNumber", plateNumber);
+            node.put("parkingId", parkingId);
+
+            JsonNode result = abonomentPluginRegister.execute(node);
+            if(result.has("abonomentDetails")){
+                return result.get("abonomentDetails");
+            }
+        }
+        return null;
     }
 }

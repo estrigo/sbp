@@ -224,9 +224,11 @@
             {"data": "price"},
             {"data": "paid", "orderable": false, "render": function (data, type, abonoment)
                 {
+                    console.log(abonoment);
                     if(abonoment && abonoment.paid){
                         return '<span>' + paidStatus + '</span>';
-                    }  else return '<span>' + notPaidStatus + '</span>';
+                    }  else
+                        return '<span>' + notPaidStatus + '</span>';
                 }
             },
             {"data": "parking"}

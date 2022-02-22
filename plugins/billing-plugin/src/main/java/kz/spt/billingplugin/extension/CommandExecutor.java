@@ -99,8 +99,10 @@ public class CommandExecutor implements PluginRegister {
                     throw new RuntimeException("Not all getCurrentBalance parameters set");
                 }
             } else if("decreaseCurrentBalance".equals(commandName)){
-                if(command.has("plateNumber") && command.has("carStateId") && command.has("amount") && command.has("parkingName")){
-                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), command.get("carStateId").longValue(),  "Payment for parking " + command.get("parkingName").textValue(),  "Оплата паркинга " + command.get("parkingName").textValue()));
+                if(command.has("plateNumber") && command.has("amount") && command.has("reason") && command.has("reasonEn")){
+                    String reason = command.get("reason").textValue();
+                    String reasonEn = command.get("reasonEn").textValue();
+                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), command.has("carStateId") ? command.get("carStateId").longValue() : null,  reasonEn,  reason));
                 } else {
                     throw new RuntimeException("Not all decreaseCurrentBalance parameters set");
                 }
@@ -188,7 +190,11 @@ public class CommandExecutor implements PluginRegister {
                     paymentProviders.add(paymentProvider.getName());
                 });
                 node.set("providerNames", paymentProviders);
+            } else {
+                throw new RuntimeException("Unknown command for billing operation");
             }
+        } else {
+            throw new RuntimeException("Unknown command for billing operation");
         }
 
         return node;

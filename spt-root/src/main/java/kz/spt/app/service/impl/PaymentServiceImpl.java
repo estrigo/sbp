@@ -140,6 +140,16 @@ public class PaymentServiceImpl implements PaymentService {
                             JsonNode result = (JsonNode) payment;
                             Long paymentId = result.get("paymentId").longValue();
 
+                            PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+                            if (billingPluginRegister != null) {
+                                ObjectNode billingSubtractNode = this.objectMapper.createObjectNode();
+                                billingSubtractNode.put("command", "decreaseCurrentBalance");
+                                billingSubtractNode.put("amount", abonomentResultNode.get("price").decimalValue());
+                                billingSubtractNode.put("plateNumber", commandDto.account);
+                                billingSubtractNode.put("reason", "Оплата абономента паркинга " + abonomentResultNode.get("parkingName").textValue());
+                                billingSubtractNode.put("reasonEn", "Payment for subscription of parking " + abonomentResultNode.get("parkingName").textValue());
+                                billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
+                            }
                             setAbonomentPaid(abonomentResultNode.get("id").longValue());
 
                             return successPayment(commandDto, paymentId);
@@ -387,12 +397,12 @@ public class PaymentServiceImpl implements PaymentService {
 
                 PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                 if (billingPluginRegister != null && BigDecimal.ZERO.compareTo(rateResult) != 0) {
-                    log.info("billingPluginRegister: " + billingPluginRegister);
                     ObjectNode billingSubtractNode = this.objectMapper.createObjectNode();
                     billingSubtractNode.put("command", "decreaseCurrentBalance");
                     billingSubtractNode.put("amount", rateResult);
                     billingSubtractNode.put("plateNumber", carState.getCarNumber());
-                    billingSubtractNode.put("parkingName", carState.getParking().getName());
+                    billingSubtractNode.put("reason", "Оплата паркинга " + carState.getParking().getName());
+                    billingSubtractNode.put("reasonEn", "Payment for parking " + carState.getParking().getName());
                     billingSubtractNode.put("carStateId", carState.getId());
                     billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
                 }
@@ -604,16 +614,16 @@ public class PaymentServiceImpl implements PaymentService {
         BillingInfoSuccessDto billingInfoSuccessDto = new BillingInfoSuccessDto();
         billingInfoSuccessDto.hours = 0;
         billingInfoSuccessDto.tariff = "Оплата за абономент";
-        billingInfoSuccessDto.txn_id = null;
+        billingInfoSuccessDto.txn_id = "";
         billingInfoSuccessDto.sum = abonomentJsonNode.get("price").decimalValue().setScale(2);
         billingInfoSuccessDto.left_free_time_minutes = 0;
-        billingInfoSuccessDto.in_date = null;
+        billingInfoSuccessDto.in_date = "";
         billingInfoSuccessDto.result = 0;
         JsonNode currentBalanceResult = getCurrentBalance(account);
         if (currentBalanceResult.has("currentBalance")) {
             billingInfoSuccessDto.current_balance = currentBalanceResult.get("currentBalance").decimalValue().setScale(2);
         }
-        return null;
+        return billingInfoSuccessDto;
     }
 
     private void setAbonomentPaid(Long id) throws Exception {
@@ -623,7 +633,7 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("command", "setAbonomentPaid");
             node.put("id", id);
 
-            JsonNode result = abonomentPluginRegister.execute(node);
+            abonomentPluginRegister.execute(node);
         }
     }
 }

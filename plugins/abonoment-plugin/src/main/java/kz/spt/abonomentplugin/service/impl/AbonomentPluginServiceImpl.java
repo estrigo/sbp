@@ -91,13 +91,13 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     @Override
     public Abonoment createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart) throws ParseException {
 
-        final String dateformat = "yyyy-MM-dd'T'HH:mm";
+        final String dateTimeFormat = "yyyy-MM-dd'T'HH:mm";
 
         platenumber = platenumber.toUpperCase();
         Cars car = rootServicesGetterService.getCarsService().createCar(platenumber);
         Parking parking = rootServicesGetterService.getParkingService().findById(parkingId);
         AbonomentTypes type = abonomentTypesRepository.findById(typeId).get();
-        SimpleDateFormat format = new SimpleDateFormat(dateformat);
+        SimpleDateFormat format = new SimpleDateFormat(dateTimeFormat);
 
         Abonoment abonoment = new Abonoment();
         abonoment.setCar(car);
@@ -105,10 +105,14 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         abonoment.setPrice(BigDecimal.valueOf(type.getPrice()));
         abonoment.setPaid(false);
         abonoment.setMonths(type.getPeriod());
-        abonoment.setBegin(format.parse(dateStart));
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(abonoment.getBegin());
+        calendar.setTime(format.parse(dateStart));
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        abonoment.setBegin(calendar.getTime());
+
         calendar.add(Calendar.DATE, type.getPeriod() * 30);
         abonoment.setEnd(calendar.getTime());
         Abonoment savedAbonoment = abonomentRepository.save(abonoment);
@@ -136,6 +140,8 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             ObjectNode node = objectMapper.createObjectNode();
             node.put("price", abonoment.getPrice());
             node.put("parkingId", abonoment.getParking().getId());
+            node.put("parkingName", abonoment.getParking().getName());
+            node.put("id", abonoment.getId());
             return node;
         }
         return null;
@@ -143,9 +149,32 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
 
     @Override
     public void setAbonomentPaid(Long id) {
-        Abonoment abonoment  = abonomentRepository.getOne(id);
+        Abonoment abonoment  = abonomentRepository.findById(id).get();
         abonoment.setPaid(true);
         abonomentRepository.save(abonoment);
+    }
+
+    @Override
+    public Boolean hasPaidNotExpiredAbonoment(String plateNumber, Long parkingId) {
+        Pageable first = PageRequest.of(0, 1);
+        List<Abonoment> abonoments = abonomentRepository.findPaidNotExpiredAbonoment(plateNumber, parkingId, new Date(), first);
+        return abonoments.size() > 0;
+    }
+
+    @Override
+    public JsonNode getPaidNotExpiredAbonoment(String plateNumber, Long parkingId) {
+        Pageable first = PageRequest.of(0, 1);
+        List<Abonoment> abonoments = abonomentRepository.findPaidNotExpiredAbonoment(plateNumber, parkingId, new Date(), first);
+        if(abonoments.size() > 0){
+            final String dateFormat = "dd.mm.yyyy HH:mm";
+            SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+            Abonoment abonoment = abonoments.get(0);
+            ObjectNode result = objectMapper.createObjectNode();
+            result.put("begin", format.format(abonoment.getBegin()));
+            result.put("end", format.format(abonoment.getEnd()));
+            return result;
+        }
+        return null;
     }
 
     private List<AbonomentTypes> listByFilters() {

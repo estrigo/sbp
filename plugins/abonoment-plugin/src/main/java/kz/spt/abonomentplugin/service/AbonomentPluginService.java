@@ -30,4 +30,8 @@ public interface AbonomentPluginService {
     JsonNode getUnpaidNotExpiredAbonoment(String plateNumber);
 
     void setAbonomentPaid(Long id);
+
+    Boolean hasPaidNotExpiredAbonoment(String plateNumber, Long parkingId);
+
+    JsonNode getPaidNotExpiredAbonoment(String plateNumber, Long parkingId);
 }

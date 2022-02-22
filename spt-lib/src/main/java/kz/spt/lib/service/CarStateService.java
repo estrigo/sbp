@@ -1,5 +1,6 @@
 package kz.spt.lib.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Camera;
@@ -45,4 +46,6 @@ public interface CarStateService {
     Iterable<CarState> getCurrentNotPayed(String carNumber);
 
     CarState getLastCarState(String carNumber);
+
+    void setAbonomentDetails(Long id, JsonNode details);
 }

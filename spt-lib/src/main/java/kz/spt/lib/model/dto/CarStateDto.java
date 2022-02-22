@@ -34,6 +34,7 @@ public class CarStateDto {
     public String outGate;
     public String parking;
     public String css;
+    public String abonomentJson;
 
     public Date getNullSafeInTimestamp() {
         return this.inTimestamp == null ? new Date() : this.inTimestamp;
@@ -60,6 +61,7 @@ public class CarStateDto {
         dto.id = carState.getId();
         dto.whitelistJson = carState.getWhitelistJson();
         dto.paymentJson = carState.getPaymentJson();
+        dto.abonomentJson = carState.getAbonomentJson();
         dto.rateAmount = carState.getRateAmount();
         dto.paid = carState.getPaid() != null && carState.getPaid();
         dto.payment = carState.getAmount() == null ? BigDecimal.ZERO : carState.getAmount();

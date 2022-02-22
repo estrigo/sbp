@@ -8,7 +8,8 @@ public class StaticValues {
         PAYMENT_PROVIDER,
         BOOKING,
         ZERO_TOUCH,
-        MANUAL;
+        MANUAL,
+        ABONOMENT;
     }
 
     public static String dateFormatTZ = "yyyy-MM-dd'T'HH:mm:ssZ";

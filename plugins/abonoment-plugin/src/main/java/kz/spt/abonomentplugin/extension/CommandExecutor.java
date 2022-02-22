@@ -54,7 +54,18 @@ public class CommandExecutor implements PluginRegister {
             } else if("setAbonomentPaid".equals(command)){
                 Long id = jsonCommand.get("id").longValue();
                 getAbonomentPluginService().setAbonomentPaid(id);
+            } else if("hasPaidNotExpiredAbonoment".equals(command)){
+                Long parkingId = jsonCommand.get("parkingId").longValue();
+                String plateNumber = jsonCommand.get("plateNumber").textValue();
+                Boolean result = getAbonomentPluginService().hasPaidNotExpiredAbonoment(plateNumber, parkingId);
+                node.put("hasPaidNotExpiredAbonoment", result);
+            } else if("getPaidNotExpiredAbonomentDetails".equals(command)){
+                Long parkingId = jsonCommand.get("parkingId").longValue();
+                String plateNumber = jsonCommand.get("plateNumber").textValue();
+                JsonNode result = getAbonomentPluginService().getPaidNotExpiredAbonoment(plateNumber, parkingId);
+                node.set("abonomentDetails", result);
             } else {
+
                 throw new RuntimeException("Abonent plugin: unkown command");
             }
         } else {
