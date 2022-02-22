@@ -20,6 +20,7 @@ public class EventsDto {
     private String description;
     private String descriptionEn;
     private String eventType;
+    private String gate;
     private String smallImgUrl;
     private String bigImgUrl;
 }

@@ -196,6 +196,7 @@ public class EventLogServiceImpl implements EventLogService {
         var eventDtos = filteredEvents.stream()
                 .map(m -> {
                     String type = m.getProperties().get("type") != null ? StringExtensions.locale("events.".concat(m.getProperties().get("type").toString().toLowerCase())) : "";
+                    String gate = m.getProperties().containsKey("gateName") ? m.getProperties().get("gateName").toString() : "";
                     return EventsDto.builder()
                             .id(m.getId())
                             .created(m.getCreated())
@@ -203,6 +204,7 @@ public class EventLogServiceImpl implements EventLogService {
                             .description(m.getNullSafeDescription())
                             .descriptionEn(m.getNullSafeDescriptionEn())
                             .eventType(type)
+                            .gate(gate)
                             .smallImgUrl(m.getProperties().get("carSmallImageUrl") != null ? (String) m.getProperties().get("carSmallImageUrl") : "")
                             .bigImgUrl(m.getProperties().get("carImageUrl") != null ? (String) m.getProperties().get("carImageUrl") : "")
                             .build();

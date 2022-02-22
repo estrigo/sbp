@@ -58,6 +58,7 @@
                                         <th><a th:text="#{events.date}"></a></th>
                                         <th><a th:text="#{parking.description}"></a></th>
                                         <th><a th:text="#{events.type}"></a></th>
+                                        <th><a th:text="#{events.gate}"></a></th>
                                         <th><a th:text="#{events.photo}"></a></th>
                                     </tr>
                                     </thead>
@@ -111,10 +112,11 @@
             "targets": "_all"
         }],
         "columns": [
-            {"data": "plateNumber", "width": "15%"},
-            {"data": "created", "width": "25%"},
+            {"data": "plateNumber", "width": "10%"},
+            {"data": "created", "width": "20%"},
             {"data": descriptionColumn, "orderable": false},
-            {"data": "eventType", "orderable": false},
+            {"data": "eventType", "width": "10%", "orderable": false},
+            {"data": "gate", "width": "10%", "orderable": false},
             {
                 "data": "imgUrl",
                 "orderable": false,
