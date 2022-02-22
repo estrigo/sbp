@@ -112,12 +112,12 @@ public class CommandExecutor implements PluginRegister {
                     BigDecimal amount = command.get("amount").decimalValue();
                     String reason = command.get("reason").textValue();
                     String reasonEn = command.get("reasonEn").textValue();
-                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reason, reasonEn));
+                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reason,  reasonEn));
                 } else {
                     throw new RuntimeException("Not all increaseCurrentBalance parameters set");
                 }
-            } else if ("addOutTimestampToPayments".equals(commandName)) {
-                if (command.has("outTimestamp") && command.has("carStateId")) {
+            } else if("addOutTimestampToPayments".equals(commandName)){
+                if(command.has("outTimestamp") && command.has("carStateId")){
                     getPaymentService().updateOutTimestamp(command.get("carStateId").longValue(), format.parse(command.get("outTimestamp").textValue()));
                 } else {
                     throw new RuntimeException("Not all addOutTimestampToPayments parameters set");
@@ -162,13 +162,13 @@ public class CommandExecutor implements PluginRegister {
                     List<Payment> paymentList = getPaymentService().findByTransactionAndProvider(txn_id, provider);
                     if (!paymentList.isEmpty()) {
                         paymentList.get(0).setCheckNumber(checkResponse.data.checkNumber);
-                        getPaymentService().savePayment(paymentList.get(0));
+                        getPaymentService().savePayment( paymentList.get(0));
                     }
 
                 }
 
 
-            } else if ("zReport".equals(commandName)) {
+            }else if ("zReport".equals(commandName)) {
 
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("parkomatId").textValue());
 
