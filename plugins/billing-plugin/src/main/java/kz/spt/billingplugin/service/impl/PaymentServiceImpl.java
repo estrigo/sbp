@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-@Service
+@Service("paymentService")
 public class PaymentServiceImpl implements PaymentService {
 
     @Autowired

@@ -24,6 +24,7 @@
         <module>zerotouch-plugin</module>
         <module>tgbot-plugin</module>
         <module>abonoment-plugin</module>
+        <module>report-plugin</module>
     </modules>
 
     <build>

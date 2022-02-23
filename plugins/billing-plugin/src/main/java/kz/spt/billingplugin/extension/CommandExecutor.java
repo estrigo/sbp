@@ -190,8 +190,19 @@ public class CommandExecutor implements PluginRegister {
                     paymentProviders.add(paymentProvider.getName());
                 });
                 node.set("providerNames", paymentProviders);
-            } else {
-                throw new RuntimeException("Unknown command for billing operation");
+            } else if ("getPayments".equals(commandName)) {
+                ArrayNode payments = objectMapper.createArrayNode();
+                ((List<Payment>) paymentService.listAllPayments()).stream()
+                        .filter(m-> m.getCarStateId() != null)
+                        .map(m -> objectMapper.createObjectNode()
+                                .put("carStateId",m.getCarStateId())
+                                .put("sum", m.getPrice())
+                                .put("provider", m.getProvider().getName())
+                                .put("rate", m.getRateDetails()))
+                        .forEach(m -> {
+                            payments.add(m);
+                        });
+                node.set("payments", payments);
             }
         } else {
             throw new RuntimeException("Unknown command for billing operation");

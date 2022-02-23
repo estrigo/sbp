@@ -28,6 +28,8 @@ public interface CarStateService {
 
     void editPlateNumber(CarState carState);
 
+    Iterable<CarState> listByFilters(CarStateFilterDto filterDto);
+
     Page<CarStateDto> getAll(PagingRequest pagingRequest,
                              CarStateFilterDto carStateFilterDto) throws ParseException;
 

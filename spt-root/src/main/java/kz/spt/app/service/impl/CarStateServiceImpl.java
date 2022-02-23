@@ -11,6 +11,7 @@ import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.*;
 import kz.spt.app.repository.CarStateRepository;
 import kz.spt.lib.utils.StaticValues;
+import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -134,7 +135,9 @@ public class CarStateServiceImpl implements CarStateService {
         });
     }
 
-    public Iterable<CarState> listByFilters(CarStateFilterDto filterDto) throws ParseException {
+    @SneakyThrows
+    @Override
+    public Iterable<CarState> listByFilters(CarStateFilterDto filterDto) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         Specification<CarState> specification = null;
 
