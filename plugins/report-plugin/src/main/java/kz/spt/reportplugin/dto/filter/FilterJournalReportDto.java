@@ -11,7 +11,7 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FilterJournalReportDto {
+public class FilterJournalReportDto extends FilterReportDto{
     private Date dateFrom;
     private Date dateTo;
     private String paymentProvider;
