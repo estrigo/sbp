@@ -1,5 +1,6 @@
 package kz.spt.app.thread;
 
+import kz.spt.lib.model.EventLog;
 import kz.spt.lib.service.ArmService;
 import kz.spt.lib.service.EventLogService;
 import lombok.SneakyThrows;
@@ -53,7 +54,7 @@ public class GetSnapshotThread extends Thread {
                 while (true) {
                     if (future.isDone()) {
                         String base64 = StringUtils.newStringUtf8(Base64.encodeBase64(future.get(), false));
-                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLogService.EventType.Success, cameraId, "", base64, "");
+                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLog.StatusType.Success, cameraId, "", base64, "");
                         break;
                     }
                 }

@@ -84,6 +84,8 @@ public class EventLogServiceImpl implements EventLogService {
         eventLog.setObjectClass(objectClass);
         eventLog.setObjectId(objectId);
         eventLog.setPlateNumber((properties != null && properties.containsKey("carNumber")) ? (String) properties.get("carNumber") : "");
+        eventLog.setStatusType((properties != null && properties.containsKey("type")) ? EventLog.StatusType.valueOf(properties.get("type").toString()) : null);
+        eventLog.setEventType((properties != null && properties.containsKey("event")) ? EventLog.EventType.valueOf(properties.get("event").toString()) : null);
         eventLog.setDescription(description);
         eventLog.setDescriptionEn(descriptionEn);
         eventLog.setCreated(new Date());
@@ -91,7 +93,7 @@ public class EventLogServiceImpl implements EventLogService {
         eventLogRepository.save(eventLog);
     }
 
-    public void sendSocketMessage(ArmEventType eventType, EventType eventStatus, Long id, String plateNumber, String message, String messageEng) {
+    public void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long id, String plateNumber, String message, String messageEng) {
 
         if (ArmEventType.Photo.equals(eventType) && message == null && messageEng == null) {
             return;
@@ -228,10 +230,10 @@ public class EventLogServiceImpl implements EventLogService {
             }
             eventLogExcelDto.plateNumber = eventLog.getPlateNumber();
 
-            EventLogService.EventType type = EventLogService.EventType.valueOf((String) eventLog.getProperties().get("type"));
-            if (EventType.Allow.equals(type)) {
+            EventLog.StatusType type = EventLog.StatusType.valueOf((String) eventLog.getProperties().get("type"));
+            if (EventLog.StatusType.Allow.equals(type)) {
                 eventLogExcelDto.allow = eventLogExcelDto.allow + 1;
-            } else if (EventType.Deny.equals(type)) {
+            } else if (EventLog.StatusType.Deny.equals(type)) {
                 eventLogExcelDto.deny = eventLogExcelDto.deny + 1;
             }
             eventLogExcelDtoMap.put(eventLog.getPlateNumber(), eventLogExcelDto);

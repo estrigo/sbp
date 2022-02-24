@@ -2,6 +2,7 @@ package kz.spt.app.service.impl;
 
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.model.Cars;
+import kz.spt.lib.model.EventLog;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.CarsRepository;
 import kz.spt.lib.service.CarsService;
@@ -73,7 +74,7 @@ public class CarsServiceImpl implements CarsService {
             Map<String, Object> properties = new HashMap<>();
             properties.put("carNumber", platenumber);
 
-            properties.put("type", EventLogService.EventType.Success);
+            properties.put("type", EventLog.StatusType.Success);
             eventLogService.createEventLog(Cars.class.getSimpleName(), car.getId(), properties, "Новый номер авто " + car.getPlatenumber() + " сохранен в системе ", "New car number " + car.getPlatenumber() + " added to the system ");
         }
         return car;

@@ -119,7 +119,7 @@ public class CarStateServiceImpl implements CarStateService {
             Map<String, Object> properties = new HashMap<>();
             properties.put("carNumber", carState.getCarNumber());
             properties.put("eventTime", format.format(new Date()));
-            properties.put("type", EventLogService.EventType.Success);
+            properties.put("type", EventLog.StatusType.Success);
             eventLogService.createEventLog(CarState.class.getSimpleName(),
                     null,
                     properties,

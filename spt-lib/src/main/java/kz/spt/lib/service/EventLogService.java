@@ -17,17 +17,9 @@ public interface EventLogService {
         Lp
     }
 
-    enum EventType{
-        Allow,
-        Deny,
-        Error,
-        Success,
-        Debt
-    }
-
     void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn);
 
-    void sendSocketMessage(ArmEventType eventType, EventType eventStatus, Long gateId, String plateNumber, String message, String messageEng);
+    void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long gateId, String plateNumber, String message, String messageEng);
 
     Iterable<EventLog> listAllLogs();
 

@@ -21,6 +21,19 @@ import java.util.TimeZone;
 @Table(name = "event_log")
 public class EventLog {
 
+    public enum EventType {
+        MANUAL_GATE_OPEN,
+        MANUAL_GATE_CLOSE,
+    }
+
+    public enum StatusType{
+        Allow,
+        Deny,
+        Error,
+        Success,
+        Debt
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,6 +47,14 @@ public class EventLog {
     private String descriptionEn;
 
     private String plateNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_type")
+    private EventLog.EventType eventType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_type")
+    private EventLog.StatusType statusType;
 
     @Column(name = "properties", columnDefinition = "text")
     @Convert(converter = HashMapConverter.class)
