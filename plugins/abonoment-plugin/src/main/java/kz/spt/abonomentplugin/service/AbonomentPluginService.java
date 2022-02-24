@@ -34,4 +34,7 @@ public interface AbonomentPluginService {
     Boolean hasPaidNotExpiredAbonoment(String plateNumber, Long parkingId);
 
     JsonNode getPaidNotExpiredAbonoment(String plateNumber, Long parkingId);
+
+    Boolean checkAbonomentIntersection(String platenumber, Long parkingId, Long typeId, String dateStart) throws ParseException;
+
 }

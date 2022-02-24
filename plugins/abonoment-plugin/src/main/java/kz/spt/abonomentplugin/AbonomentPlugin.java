@@ -41,7 +41,7 @@ public class AbonomentPlugin extends SpringBootPlugin implements CustomPlugin {
         Map<String, Object> mainMenu = new HashMap<>();
         mainMenu.put("label", bundle.getString("abonoment.title"));
         mainMenu.put("url", "abonoment/list");
-        mainMenu.put("cssClass", "ti-file");
+        mainMenu.put("cssClass", "mdi mdi-calendar-multiple-check");
         mainMenu.put("role", "MANAGER");
         list.add(mainMenu);
         return list;

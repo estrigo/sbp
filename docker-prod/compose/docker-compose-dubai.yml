@@ -4,6 +4,8 @@ services:
     restart: always
     environment:
       - "TZ=Asia/Dubai"
+      - "telegram_bot_external_enabled=false"
+      - "parkomat_ip=1.1.1.1"
     volumes:
       - /var/www/parking/storage/new_parking:/files/pictures:rw
       - ./enabled.txt:/usr/local/plugins/enabled.txt:ro

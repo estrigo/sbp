@@ -177,6 +177,28 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         return null;
     }
 
+    @Override
+    public Boolean checkAbonomentIntersection(String platenumber, Long parkingId, Long typeId, String dateStart) throws ParseException {
+        final String dateTimeFormat = "yyyy-MM-dd'T'HH:mm";
+
+        platenumber = platenumber.toUpperCase();
+        AbonomentTypes type = abonomentTypesRepository.findById(typeId).get();
+        SimpleDateFormat format = new SimpleDateFormat(dateTimeFormat);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(format.parse(dateStart));
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        Date begin = calendar.getTime();
+
+        calendar.add(Calendar.DATE, type.getPeriod() * 30);
+        Date end = calendar.getTime();
+
+        Long count = abonomentRepository.findIntersectionAbonoment(platenumber, parkingId, begin, end);
+        return count > 0;
+    }
+
     private List<AbonomentTypes> listByFilters() {
         return abonomentTypesRepository.findAll();
     }

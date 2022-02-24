@@ -41,8 +41,13 @@ public class CommandExecutor implements PluginRegister {
                 Long parkingId = jsonCommand.get("parkingId").longValue();
                 Long typeId = jsonCommand.get("typeId").longValue();
                 String dateStart = jsonCommand.get("dateStart").textValue();
-                Abonoment abonoment = getAbonomentPluginService().createAbonoment(platenumber, parkingId, typeId, dateStart);
-                node.put("result", true);
+                if(getAbonomentPluginService().checkAbonomentIntersection(platenumber, parkingId, typeId, dateStart)){
+                    node.put("result", false);
+                    node.put("error", "Даты Абономента пересекаются с другим на этот номер авто");
+                } else {
+                    Abonoment abonoment = getAbonomentPluginService().createAbonoment(platenumber, parkingId, typeId, dateStart);
+                    node.put("result", true);
+                }
             } else if("deleteAbonoment".equals(command)){
                 Long typeId = jsonCommand.get("id").longValue();
                 getAbonomentPluginService().deleteAbonoment(typeId);

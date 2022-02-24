@@ -193,6 +193,7 @@
     var address = '/plugins/datatables/json/ru.json';
     var paidStatus = [[#{abonoment.paid}]];
     var notPaidStatus = [[#{abonoment.notPaid}]];
+    let canEdit = [[${canEdit}]];
     var del = [[#{crm.delete}]];
     if (locale == "en") {
         address = "";
@@ -212,7 +213,7 @@
         "columns": [
             {"data": "action", "orderable": false, "render": function (data, type, abonoment)
                 {
-                    if(abonoment && !abonoment.paid){
+                    if(canEdit && abonoment && !abonoment.paid){
                         return '<a href="javascript:deleteAbonoment(' + abonoment.id + ')">' + del + '</a>';
                     } else return '<span></span>';
                 }
@@ -262,7 +263,11 @@
         "columns": [
             {"data": "action","orderable": false,"render": function (data, type, abonomentType)
                 {
-                    return '<a href="javascript:deleteAbonomentType(' + abonomentType.id + ')">' + del + '</a>';
+                    if(canEdit){
+                        return '<a href="javascript:deleteAbonomentType(' + abonomentType.id + ')">' + del + '</a>';
+                    } else {
+                        return '<span></span>';
+                    }
                 }
             },
             {"data": "period", "width" : "33%"},
@@ -371,10 +376,15 @@
                     $('#addAbonoment').find('#parkingId').val(undefined);
                     $('#addAbonoment').find('#typeId').val(undefined);
                     $('#addAbonoment').find('#dateStart').val(undefined);
+                    $('#abonomentErrors').hide();
                 } else {
                     errorLiHtml = errorLiHtml + "<li>" + response.error + "</li>";
+                    $('#abonomentErrors').find('#abonomentErrorContainer').html(errorLiHtml);
+                    $('#abonomentErrors').show();
                 }
             });
+        } else {
+            $('#abonomentErrors').show();
         }
     }
 
