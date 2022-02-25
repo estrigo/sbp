@@ -153,6 +153,11 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
+    public Iterable<EventLog> listByType(EventLog.EventType type) {
+        return eventLogRepository.listByType(type);
+    }
+
+    @Override
     public Iterable<EventLog> listByFilters(EventFilterDto eventFilterDto) throws ParseException {
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");

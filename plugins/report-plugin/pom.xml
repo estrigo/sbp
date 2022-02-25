@@ -20,7 +20,7 @@
         <plugin.class>kz.spt.reportplugin.ReportPlugin</plugin.class>
         <plugin.version>0.0.1-SNAPSHOT</plugin.version>
         <plugin.provider>spt-sbp-report</plugin.provider>
-        <plugin.dependencies>billing-plugin</plugin.dependencies>
+        <plugin.dependencies/>
     </properties>
 
     <dependencies>
@@ -34,12 +34,6 @@
             <groupId>kz.spt</groupId>
             <artifactId>spt-lib</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>kz.spt</groupId>
-            <artifactId>billing-plugin</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

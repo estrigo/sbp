@@ -192,16 +192,20 @@ public class CommandExecutor implements PluginRegister {
                 node.set("providerNames", paymentProviders);
             } else if ("getPayments".equals(commandName)) {
                 ArrayNode payments = objectMapper.createArrayNode();
-                ((List<Payment>) paymentService.listAllPayments()).stream()
-                        .filter(m-> m.getCarStateId() != null)
-                        .map(m -> objectMapper.createObjectNode()
-                                .put("carStateId",m.getCarStateId())
-                                .put("sum", m.getPrice())
-                                .put("provider", m.getProvider().getName())
-                                .put("rate", m.getRateDetails()))
-                        .forEach(m -> {
-                            payments.add(m);
-                        });
+                var result = (List<Payment>) getPaymentService().getPaymentsByCarStateId(command.get("carStateId").longValue());
+                if (!result.isEmpty()) {
+                    result.stream()
+                            .map(m -> objectMapper.createObjectNode()
+                                    .put("paymentId", m.getId())
+                                    .put("carStateId", m.getCarStateId())
+                                    .put("sum", m.getPrice())
+                                    .put("provider", m.getProvider() != null ? m.getProvider().getName() : "")
+                                    .put("cashlessPayment", m.getProvider() != null ? m.getProvider().getCashlessPayment() : false)
+                                    .put("rate", m.getRateDetails()))
+                            .forEach(m -> {
+                                payments.add(m);
+                            });
+                }
                 node.set("payments", payments);
             }
         } else {

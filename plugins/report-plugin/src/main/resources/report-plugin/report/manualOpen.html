@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/assets/css/fancybox.css}" rel="stylesheet" type="text/css"/>
+<div class="content">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card table-responsive">
+                    <div class="card-header" th:text="#{events.events}"></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="button" class="btn btn-success mr-1"
+                                        onclick="excel()"
+                                        th:text="#{report.excel}"></button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 table-responsive" data-pattern="priority-columns">
+                                <table id="eventTable" class="table table-bordered table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th><a th:text="#{car.platenumber}"></a></th>
+                                        <th><a th:text="#{events.date}"></a></th>
+                                        <th><a th:text="#{parking.description}"></a></th>
+                                        <th><a th:text="#{events.photo}"></a></th>
+                                    </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Required datatable js -->
+<script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
+<script th:src="@{/plugins/datatables/dataTables.bootstrap4.min.js}"></script>
+<!-- Buttons examples -->
+<script th:src="@{/plugins/datatables/dataTables.buttons.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.bootstrap4.min.js}"></script>
+<script th:src="@{/plugins/datatables/jszip.min.js}"></script>
+<script th:src="@{/plugins/datatables/pdfmake.min.js}"></script>
+<script th:src="@{/plugins/datatables/vfs_fonts.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.html5.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.print.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.colVis.min.js}"></script>
+<!-- Responsive examples -->
+<script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
+<script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+<script th:src="@{/assets/js/fancybox.umd.js}"></script>
+<script th:src="@{/assets/js/xlsx.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+    var locale = [[${#locale}]];
+    var descriptionColumn = locale == "en" ? "descriptionEn" : "description";
+
+    const table = $('#eventTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "searching": false,
+        "ajax": {
+            "url": "/rest/report/manualOpen",
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+                return JSON.stringify(d);
+            }
+        },
+        columnDefs: [{
+            "defaultContent": "-",
+            "targets": "_all"
+        }],
+        "columns": [
+            {"data": "plateNumber", "width": "15%"},
+            {"data": "created", "width": "25%"},
+            {"data": descriptionColumn, "orderable": false},
+            {
+                "data": "imgUrl",
+                "orderable": false,
+                "render": function (data, type, event) {
+                    if(event.smallImgUrl){
+                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigImgUrl + '" data-caption="' + event.plateNumber + '">' +
+                            '<img class="thumb-img" alt src="/files/pictures' + event.smallImgUrl + '"></a>';
+                    } else if(event.bigImgUrl){
+                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigImgUrl + '" data-caption="' + event.plateNumber + '">' +
+                            '<img class="thumb-img" alt src="/files/pictures' + event.bigImgUrl + '"></a>';
+                    }
+                    return '';
+                },
+                "width": "20%"
+            }
+        ],
+        "order": [ //[[ in thymeleaf is inline script
+            [1, "desc"]
+        ],
+        buttons: ['copy', 'excel', 'pdf', 'csv'],
+        language: {
+            url: locale === "en" ? "" : "/plugins/datatables/json/ru.json"
+        },
+    });
+
+    function excel() {
+        let request = {};
+        $.ajax({
+            url: "/rest/report/manualOpen/excel",
+            type: "POST",
+            data: JSON.stringify(request),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                try {
+                    let arr = [];
+                    for (let i = 0; i < data.length; i++) {
+                        arr.push(data[i]);
+                    }
+                    let ws = XLSX.utils.json_to_sheet(arr);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, 'Manual open');
+                    XLSX.writeFile(wb, "report.xls", {type: "buffer"});
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        })
+    }
+</script>
+
+</html>

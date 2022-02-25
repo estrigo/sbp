@@ -12,7 +12,41 @@
                 <div class="card table-responsive">
                     <div class="card-header" th:text="#{report.journal}"></div>
                     <div class="card-body">
-
+                        <div>
+                            <form method="post">
+                                <div class="form-row">
+                                    <div class="col-2">
+                                        <select class="form-control" onchange="onPeriodChange(this)">
+                                            <option value="0" th:text="#{report.period}"></option>
+                                            <option value="1" th:text="#{report.period.day}"></option>
+                                            <option value="2" th:text="#{report.period.month}"></option>
+                                            <option value="3" th:text="#{report.period.year}"></option>
+                                            <option value="4" th:text="#{report.period.other}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-10">
+                                       <div class="row">
+                                           <div class="col-6">
+                                               <input id="dateFrom" type="date" class="form-control" disabled th:placeholder="#{payments.startDate}" />
+                                           </div>
+                                           <div class="col-6">
+                                               <input id="dateTo" type="date" class="form-control" disabled th:placeholder="#{payments.endDate}" />
+                                           </div>
+                                       </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="form-row float-right mt-1">
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-success mr-1"
+                                            onclick="excel()"
+                                            th:text="#{report.excel}"></button>
+                                    <button type="button" class="btn btn-primary mr-1"
+                                            onclick="find()"
+                                            th:text="#{payments.find}"></button>
+                                </div>
+                            </div>
+                        </div>
                         <table id="journalReport" class="table table-bordered table-bordered">
                             <thead>
                             <tr>
@@ -23,6 +57,7 @@
                                 <th th:text="#{report.total}"></th>
                                 <th th:text="#{report.provider}"></th>
                                 <th th:text="#{report.parkingType}"></th>
+                                <th th:text="#{report.cashless}"></th>
                             </tr>
                             </thead>
                         </table>
@@ -67,11 +102,8 @@
             "contentType": "application/json",
             "data": function (d) {
                 d.customFilters = {
-                    "dateFrom": "",
-                    "dateTo": "",
-                    "paymentProvider": 0,
-                    "carNumber": "",
-                    "total": 0
+                    "dateFrom": $('#dateFrom').val(),
+                    "dateTo": $('#dateTo').val(),
                 };
                 return JSON.stringify(d);
             }
@@ -84,8 +116,8 @@
             {"data": "sum"},
             {"data": "provider"},
             {
-                "data": function (carSate){
-                    switch (carSate.parkingTypeCode){
+                "data": function (carSate) {
+                    switch (carSate.parkingTypeCode) {
                         case 'WHITELIST':
                             return [[#{parking.parkingType.WHITELIST}]];
                         case 'PAYMENT':
@@ -97,14 +129,105 @@
                     }
                 }
             },
+            {
+                "data":function (carSate){
+                    if(carSate.cashlessPayment) return [[#{crm.yes}]];
+                    return [[#{crm.no}]];
+                }
+            }
         ],
+        "fnRowCallback": function (nRow, carState, iDisplayIndex) {
+            let css = "";
+            switch (carState.parkingTypeCode) {
+                case 'WHITELIST':
+                    css = "bg-info";
+                    break;
+                case 'PREPAID':
+                    css = "bg-warning";
+                    break;
+                default:
+                    css = "bg-success";
+                    break;
+            }
+            $(nRow).addClass(css);
+        },
         "order": [ //[[ in thymeleaf is inline script
-            [5, "desc"]
+            [0, "desc"]
         ],
         language: {
             url: localizationAddress
         }
     });
+
+    function find() {
+        table.ajax.reload();
+    }
+
+    let date=new Date();
+    function onPeriodChange(e) {
+        const val = $(e).val();
+        switch (val){
+            case "0":
+                $("#dateFrom").attr("disabled",true);
+                $("#dateTo").attr("disabled",true);
+                $("#dateFrom").val("");
+                $("#dateTo").val("");
+                break;
+            case "1":
+                console.log(val);
+                $("#dateFrom").attr("disabled",true);
+                $("#dateTo").attr("disabled",true);
+                $("#dateFrom").val(date.toISOString().split('T')[0]);
+                $("#dateTo").val(date.toISOString().split('T')[0]);
+                break;
+            case "2":
+                $("#dateFrom").attr("disabled",true);
+                $("#dateTo").attr("disabled",true);
+                $("#dateFrom").val(new Date(date.getFullYear(),date.getMonth(),1).toISOString().split('T')[0]);
+                $("#dateTo").val(date.toISOString().split('T')[0]);
+                break;
+            case "3":
+                $("#dateFrom").attr("disabled",true);
+                $("#dateTo").attr("disabled",true);
+                $("#dateFrom").val(new Date(date.getFullYear(),1,1).toISOString().split('T')[0]);
+                $("#dateTo").val(date.toISOString().split('T')[0]);
+                break;
+            case "4":
+                $("#dateFrom").attr("disabled",false);
+                $("#dateTo").attr("disabled",false);
+                $("#dateFrom").val("");
+                $("#dateTo").val("");
+                break;
+        }
+    }
+
+    function excel() {
+        let request = {
+            "dateFrom": $('#dateFrom').val(),
+            "dateTo": $('#dateTo').val(),
+        };
+        $.ajax({
+            url: "/rest/report/journal/excel",
+            type: "POST",
+            data: JSON.stringify(request),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                try {
+                    let arr = [];
+                    for (let i = 0; i < data.length; i++) {
+                        arr.push(data[i]);
+                    }
+                    let ws = XLSX.utils.json_to_sheet(arr);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, 'Journal');
+                    XLSX.writeFile(wb, "report.xls", {type: "buffer"});
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        })
+    }
 </script>
 
 </html>

@@ -19,7 +19,6 @@ public class ReportPlugin extends SpringBootPlugin implements CustomPlugin {
     @Override
     protected SpringBootstrap createSpringBootstrap() {
         SpringBootstrap bootstrap = new SpringBootstrap(this,ReportPluginApplication.class);
-        bootstrap.importBean("paymentService");
         return bootstrap;
     }
 
@@ -48,7 +47,18 @@ public class ReportPlugin extends SpringBootPlugin implements CustomPlugin {
         Map<String, Object> subMenu1 = new HashMap<>();
         subMenu1.put("label", bundle.getString("menu.report.journal"));
         subMenu1.put("url", "report/journal");
+
+        Map<String, Object> subMenu2 = new HashMap<>();
+        subMenu2.put("label", bundle.getString("menu.report.manualOpen"));
+        subMenu2.put("url", "report/manualOpen");
+
+        Map<String, Object> subMenu3 = new HashMap<>();
+        subMenu3.put("label", bundle.getString("menu.report.payments"));
+        subMenu3.put("url", "billing/payments/list");
+
         subMenus.add(subMenu1);
+        subMenus.add(subMenu2);
+        subMenus.add(subMenu3);
 
         mainMenu.put("subMenus", subMenus);
         list.add(mainMenu);

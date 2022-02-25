@@ -1,22 +1,32 @@
 package kz.spt.reportplugin.service.impl;
 
-import kz.spt.billingplugin.model.Payment;
-import kz.spt.billingplugin.service.PaymentService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.bootstrap.datatable.Column;
 import kz.spt.lib.bootstrap.datatable.Order;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
+import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.CarStateService;
+import kz.spt.lib.service.EventLogService;
+import kz.spt.lib.service.PluginService;
+import kz.spt.lib.utils.StaticValues;
+import kz.spt.reportplugin.ReportPlugin;
 import kz.spt.reportplugin.datatable.JournalReportDtoComparators;
 import kz.spt.reportplugin.dto.JournalReportDto;
 import kz.spt.reportplugin.dto.filter.FilterJournalReportDto;
 import kz.spt.reportplugin.dto.filter.FilterReportDto;
 import kz.spt.reportplugin.service.ReportService;
+import kz.spt.reportplugin.service.RootServicesGetterService;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.jvnet.hk2.annotations.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -28,18 +38,59 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JournalReportServiceImpl implements ReportService<JournalReportDto> {
     private static final Comparator<JournalReportDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
-    private final CarStateService carStateService;
-    private final PaymentService paymentService;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
+    private PluginService pluginService;
+    private CarStateService carStateService;
+    private RootServicesGetterService rootServicesGetterService;
+
+    @SneakyThrows
     @Override
     public List<JournalReportDto> list(FilterReportDto filterReportDto) {
         var filter = (FilterJournalReportDto) filterReportDto;
-        var carStates = (List<CarState>) carStateService.listByFilters(CarStateFilterDto.builder().build());
+        var carStates = (List<CarState>) getCarStateService().listByFilters(CarStateFilterDto.builder()
+                .dateToString(filter.dateToString(filter.getDateTo()))
+                .dateFromString(filter.dateToString(filter.getDateFrom()))
+                .build());
 
         var result = new ArrayList<JournalReportDto>();
         for (var carState : carStates) {
-            var payments = (List<Payment>) paymentService.getPaymentsByCarStateId(carState.getId());
-            if (payments.isEmpty()) {
+            PluginRegister billingPluginRegister = getPluginService().getPluginRegister(StaticValues.billingPlugin);
+            if (billingPluginRegister != null) {
+                ObjectNode node = this.objectMapper.createObjectNode();
+                node.put("command", "getPayments");
+                node.put("carStateId", carState.getId());
+
+                JsonNode paymentResult = billingPluginRegister.execute(node);
+                ArrayNode payments = paymentResult.withArray("payments");
+                if (payments.isEmpty()) {
+                    result.add(JournalReportDto.builder()
+                            .carStateId(carState.getId())
+                            .carNumber(carState.getCarNumber())
+                            .outTimestamp(carState.getOutTimestamp())
+                            .inTimestamp(carState.getInTimestamp())
+                            .parkingTypeCode(carState.getType().name())
+                            .paymentId(null)
+                            .sum(BigDecimal.ZERO)
+                            .provider("")
+                            .cashlessPayment(false)
+                            .build());
+                } else {
+                    payments.forEach(p -> {
+                        result.add(JournalReportDto.builder()
+                                .carStateId(carState.getId())
+                                .carNumber(carState.getCarNumber())
+                                .outTimestamp(carState.getOutTimestamp())
+                                .inTimestamp(carState.getInTimestamp())
+                                .parkingTypeCode(carState.getType().name())
+                                .paymentId(p.get("paymentId").longValue())
+                                .sum(p.get("sum").decimalValue())
+                                .provider(p.get("provider").textValue())
+                                .cashlessPayment(p.get("cashlessPayment").booleanValue())
+                                .build());
+                    });
+                }
+            } else {
                 result.add(JournalReportDto.builder()
                         .carStateId(carState.getId())
                         .paymentId(null)
@@ -47,22 +98,10 @@ public class JournalReportServiceImpl implements ReportService<JournalReportDto>
                         .outTimestamp(carState.getOutTimestamp())
                         .inTimestamp(carState.getInTimestamp())
                         .parkingTypeCode(carState.getType().name())
-                        .sum(null)
+                        .sum(BigDecimal.ZERO)
                         .provider("")
+                        .cashlessPayment(false)
                         .build());
-            } else {
-                result.addAll(payments.stream()
-                        .map(p -> JournalReportDto.builder()
-                                .carStateId(carState.getId())
-                                .paymentId(p.getId())
-                                .carNumber(carState.getCarNumber())
-                                .outTimestamp(carState.getOutTimestamp())
-                                .inTimestamp(carState.getInTimestamp())
-                                .parkingTypeCode(carState.getParking().getParkingType().name())
-                                .sum(p.getPrice())
-                                .provider(p.getProvider() != null ? p.getProvider().getName() : "")
-                                .build())
-                        .collect(Collectors.toList()));
             }
         }
 
@@ -119,5 +158,36 @@ public class JournalReportServiceImpl implements ReportService<JournalReportDto>
 
     private FilterJournalReportDto convert(PagingRequest pagingRequest) {
         return pagingRequest.convertTo(FilterJournalReportDto.builder().build());
+    }
+
+    private RootServicesGetterService getRootServicesGetterService() {
+        if (rootServicesGetterService == null) {
+            rootServicesGetterService = (RootServicesGetterService) ReportPlugin.INSTANCE.getApplicationContext().getBean("rootServicesGetterServiceImpl");
+        }
+        return rootServicesGetterService;
+    }
+
+    private CarStateService getCarStateService(){
+        if(carStateService==null){
+            carStateService = getRootServicesGetterService().getCarStateService();
+        }
+
+        if (carStateService == null) {
+            carStateService = (CarStateService) ReportPlugin.INSTANCE.getMainApplicationContext().getBean("carStateServiceImpl");
+        }
+
+        return carStateService;
+    }
+
+    private PluginService getPluginService(){
+        if(pluginService==null){
+            pluginService = getRootServicesGetterService().getPluginService();
+        }
+
+        if (pluginService == null) {
+            pluginService = (PluginService) ReportPlugin.INSTANCE.getMainApplicationContext().getBean("pluginServiceImpl");
+        }
+
+        return pluginService;
     }
 }

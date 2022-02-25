@@ -11,8 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequiredArgsConstructor
 public class ReportController {
     @GetMapping("/journal")
-    public String showAllBalances(Model model) {
-        //model.addAttribute("whitelist", balanceService.listAllBalances());
+    public String journal() {
         return "report/journal";
+    }
+
+    @GetMapping("/manualOpen")
+    public String manualOpen() {
+        return "report/manualOpen";
     }
 }
