@@ -5,7 +5,6 @@ import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.dto.parkomat.CarInRequestDTO;
 import kz.spt.lib.model.dto.parkomat.ParkomatCommandDTO;
 import kz.spt.lib.model.dto.parkomat.InCarResponseDTO;
-import kz.spt.lib.model.dto.payment.CommandDto;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.PaymentService;
 import lombok.AllArgsConstructor;
