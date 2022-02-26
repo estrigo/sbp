@@ -8,6 +8,8 @@ import kz.spt.app.repository.CarsRepository;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.utils.Utils;
 import lombok.extern.java.Log;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
@@ -89,6 +91,12 @@ public class CarsServiceImpl implements CarsService {
     public Page<Cars> getCars(PagingRequest pagingRequest) {
         List<Cars> cars = carsRepository.findAll();
         return getPage(cars, pagingRequest);
+    }
+
+    @Override
+    public List<String> searchByPlateNumberContaining(String text) {
+        Pageable twenty = PageRequest.of(0, 20);
+        return carsRepository.searchPlateNumbersIgnoreCase(text, twenty);
     }
 
     private Page<Cars> getPage(List<Cars> cars, PagingRequest pagingRequest) {

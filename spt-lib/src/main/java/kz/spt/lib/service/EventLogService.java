@@ -21,6 +21,8 @@ public interface EventLogService {
 
     void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long gateId, String plateNumber, String message, String messageEng);
 
+    void sendSocketSnapshotMessage(ArmEventType eventType, EventType eventStatus, Long id, String plateNumber, String message, String messageEng);
+
     Iterable<EventLog> listAllLogs();
 
     Iterable<EventLog> listAllLogsDesc();

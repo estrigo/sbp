@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+
+<div class="content">
+    <div class="container">
+        <div class="card table-responsive table-striped">
+            <div class="card-header" th:text="#{balance.operation.title}"></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-horizontal">
+                            <div class="form-group row">
+                                <label class="col-4 col-form-label" th:text="#{balance.type}"></label>
+                                <div class="col-4">
+                                    <div class="radio">
+                                        <input type="radio" name="type" id="decrease" value="decrease" onchange="changeButtonView()">
+                                        <label for="decrease" th:text="#{balance.decrease}"></label>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="radio">
+                                        <input type="radio" name="type" id="increase" checked value="increase" onchange="changeButtonView()">
+                                        <label for="increase" th:text="#{balance.increase}"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-4 col-form-label" th:text="#{car.platenumber}"></label>
+                                <div class="col-8">
+                                    <input type="text" class="form-control" id="plateNumber" name="plateNumber" required autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-4 col-form-label" th:text="#{balance.value}"></label>
+                                <div class="col-8">
+                                    <input type="number" min="0" max="1000000" class="form-control" id="value" name="value" required autocomplete="off" onchange="changeAfterBalance()">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-success" onclick="transact()" id="increaseButton" th:text="#{balance.topup}"></button>
+                                    <button type="button" class="btn btn-success" onclick="transact()" id="decreaseButton" th:text="#{balance.writeoff}" style="display: none;"></button>
+                                    <button type="button" class="btn btn-secondary" onclick="clear()" th:text="#{crm.cancel}"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6" id="resultBlock" style="display: none">
+                        <div class="form-horizontal">
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <span th:text="#{balance.autoNumber}"></span>: <span id="foundCarNumber"></span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <span th:text="#{balance.currenBalance}"></span>: <span id="currentBalance"></span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <span th:text="#{balance.afterBalance}"></span>: <span id="afterBalance"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Required datatable js -->
+<script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
+<script th:src="@{/plugins/datatables/dataTables.bootstrap4.min.js}"></script>
+<!-- Buttons examples -->
+<script th:src="@{/plugins/datatables/dataTables.buttons.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.bootstrap4.min.js}"></script>
+<script th:src="@{/plugins/datatables/jszip.min.js}"></script>
+<script th:src="@{/plugins/datatables/pdfmake.min.js}"></script>
+<script th:src="@{/plugins/datatables/vfs_fonts.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.html5.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.print.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.colVis.min.js}"></script>
+<!-- Responsive examples -->
+<script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
+<script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+<script th:src="@{/assets/js/bootstrap-autocomplete.min.js}"></script>
+
+<script th:inline="javascript">
+    $('#plateNumber').autoComplete({
+        resolver: 'custom',
+        events: {
+            search: function (qry, callback) {
+                $.ajax(
+                    '/rest/cars/search/plateNumber/'+qry
+                ).done(function (res) {
+                    callback(res);
+                });
+            }
+        }
+    });
+
+    $('#plateNumber').on('autocomplete.select', function (evt, item) {
+        console.log(item);
+        let plateNumber = item;
+        $('#foundCarNumber').text(plateNumber);
+        $('#resultBlock').show();
+
+        $.get("/rest/balance/check/" + plateNumber, function (data) {
+            $('#currentBalance').text(data);
+        });
+    });
+    function changeButtonView(){
+        let radioVal = $('input[name="type"]:checked').val();
+        if("increase" === radioVal){
+            $('#increaseButton').show();
+            $('#decreaseButton').hide();
+        } else {
+            $('#increaseButton').hide();
+            $('#decreaseButton').show();
+        }
+        changeAfterBalance();
+    }
+
+    function changeAfterBalance(){
+        let current = $('#currentBalance').text();
+        let value = $('#value').val();
+        if(!isNaN(current) && !isNaN(value)){
+            let radioVal = $('input[name="type"]:checked').val();
+            let new_val = 0;
+            if("increase" === radioVal){
+                new_val = Number(current) + Number(value);
+            } else {
+                new_val = Number(current) - Number(value);
+            }
+            $('#afterBalance').text(new_val);
+        } else if(!isNaN(current)) {
+            $('#afterBalance').text(current);
+        }
+    }
+
+    function clear(){
+        $('#resultBlock').hide();
+        $('#foundCarNumber').text('');
+        $('#currentBalance').text('');
+        $('#afterBalance').text('');
+        $('#plateNumber').val(undefined);
+        $('#value').val(undefined);
+    }
+
+    function transact(){
+        let value = $('#value').val();
+        if(!isNaN(value)){
+            let radioVal = $('input[name="type"]:checked').val();
+            let val = 0;
+            if("increase" === radioVal){
+                val = Number(value);
+            } else {
+                val = Number(value) * (-1);
+            }
+            var form = new FormData();
+            form.append("plateNumber", $('#foundCarNumber').text());
+            form.append("value", val);
+
+            var settings = {
+                "url": "/rest/balance/change",
+                "method": "POST",
+                "timeout": 0,
+                "processData": false,
+                "contentType": false,
+                "data": form
+            };
+            $.ajax(settings).done(function (response) {
+                if(response){
+                    clear();
+                }
+            });
+        }
+    }
+</script>
+
+</html>

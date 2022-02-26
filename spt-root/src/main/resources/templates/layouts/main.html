@@ -84,13 +84,18 @@
                                                                                th:text=" ${submenu['label']} "></a></li>
                         </ul>
                     </li>
+                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_AUDIT')">
+                        <a th:href="@{|/parking/cars|}" class="waves-effect waves-primary"><i
+                                class="ti-files"></i><span th:text=" #{parking.cars} "></span></a>
+                    </li>
+                    <li class="menu-title" th:text="#{crm.service}"></li>
                     <li>
                         <a th:href="@{|/blacklist/list|}" class="waves-effect waves-primary"><i
                                 class="ti-list-ol"></i><span th:text=" #{blacklist.title} "></span></a>
                     </li>
-                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_AUDIT')">
-                        <a th:href="@{|/parking/cars|}" class="waves-effect waves-primary"><i
-                                class="ti-files"></i><span th:text=" #{parking.cars} "></span></a>
+                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                        <a th:href="@{|/balance/operation|}" class="waves-effect waves-primary"><i
+                                class="ti-list-ol"></i><span th:text=" #{balance.balance} "></span></a>
                     </li>
                     <li>
                         <a class="waves-effect waves-primary" onclick="javascript:$('#helpModal').modal('show')">

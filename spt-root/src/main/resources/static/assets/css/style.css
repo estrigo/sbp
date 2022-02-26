@@ -1162,24 +1162,7 @@ code, pre {
     opacity: 1;
     -o-transform: translateX(0); } }
 /* Dropdown */
-@-webkit-keyframes dropdownOpen {
-  0% {
-    opacity: 0;
-    -webkit-transform: scale(0); }
-  100% {
-    -webkit-transform: scale(1); } }
-@-moz-keyframes dropdownOpen {
-  0% {
-    opacity: 0;
-    -moz-transform: scale(0); }
-  100% {
-    -moz-transform: scale(1); } }
-@-o-keyframes dropdownOpen {
-  0% {
-    opacity: 0;
-    -o-transform: scale(0); }
-  100% {
-    -o-transform: scale(1); } }
+
 /* Portlets loader */
 @-webkit-keyframes loaderAnimate {
   0% {

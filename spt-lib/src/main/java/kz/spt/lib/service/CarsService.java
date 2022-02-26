@@ -26,4 +26,6 @@ public interface CarsService {
     Cars createCar(String platenumber);
 
     Page<Cars> getCars(PagingRequest pagingRequest);
+
+    List<String> searchByPlateNumberContaining(String text);
 }

@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/rest/cars")
@@ -47,5 +48,10 @@ public class CarsRestController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addCarEvent(@RequestParam("upload") MultipartFile upload, @RequestParam("json") String json) throws Exception{
         carEventService.handleTempCarEvent(upload, json);
+    }
+
+    @GetMapping(value = "/search/plateNumber/{text}")
+    public List<String> getCalibrationByIp(@PathVariable("text") String text) {
+        return carsService.searchByPlateNumberContaining(text.toUpperCase());
     }
 }

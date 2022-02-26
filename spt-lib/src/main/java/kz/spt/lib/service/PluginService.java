@@ -18,4 +18,6 @@ public interface PluginService {
     ArrayNode getWhitelist(Parking parking, String platenumber) throws Exception;
 
     BigDecimal checkBalance(String platenumber) throws Exception;
+
+    BigDecimal changeBalance(String platenumber, BigDecimal value) throws Exception;
 }

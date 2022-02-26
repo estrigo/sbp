@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.extension.PluginRegister;
+import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.plugin.CustomPlugin;
 import kz.spt.lib.service.ParkingService;
@@ -13,6 +14,7 @@ import kz.spt.lib.utils.StaticValues;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -89,6 +91,38 @@ public class PluginServiceImpl implements PluginService {
             balanceCheckResult = billingPluginRegister.execute(node);
             return balanceCheckResult.get("currentBalance").decimalValue().setScale(2);
         }
+        return null;
+    }
+
+    @Override
+    public BigDecimal changeBalance(String platenumber, BigDecimal value) throws Exception {
+        PluginRegister billingPluginRegister = getPluginRegister(StaticValues.billingPlugin);
+        if(billingPluginRegister != null){
+            ObjectNode node = this.objectMapper.createObjectNode();
+            JsonNode balanceCheckResult = null;
+            node.put("command", "increaseCurrentBalance");
+            node.put("plateNumber", platenumber);
+            node.put("amount", value);
+
+            String username = "";
+            if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+                CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                if (currentUser != null) {
+                    username = currentUser.getUsername();
+                }
+            }
+
+            if(BigDecimal.ZERO.compareTo(value) == -1) {
+                node.put("reason", "Ручное пополнение пользователем " + username);
+                node.put("reasonEn", "Manual top up by user " + username);
+            } else {
+                node.put("reason", "Ручное списание пользователем " + username );
+                node.put("reasonEn", "Manual write-off by user  " + username);
+            }
+            balanceCheckResult = billingPluginRegister.execute(node);
+            return balanceCheckResult.get("currentBalance").decimalValue().setScale(2);
+        }
+
         return null;
     }
 }
