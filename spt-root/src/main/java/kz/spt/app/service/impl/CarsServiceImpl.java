@@ -60,7 +60,13 @@ public class CarsServiceImpl implements CarsService {
         return carsRepository.save(cars);
     }
 
+    @Override
     public Cars createCar(String platenumber){
+        return createCar(platenumber, null, null);
+    }
+
+    @Override
+    public Cars createCar(String platenumber, String region, String type){
         platenumber = platenumber.toUpperCase();
 
         Boolean contains = Pattern.matches(".*\\p{InCyrillic}.*", platenumber);
@@ -72,19 +78,20 @@ public class CarsServiceImpl implements CarsService {
         if(car == null){
             car = new Cars();
             car.setPlatenumber(platenumber);
+            car.setRegion(region);
+            car.setType(type);
             car = saveCars(car);
             Map<String, Object> properties = new HashMap<>();
             properties.put("carNumber", platenumber);
 
             properties.put("type", EventLog.StatusType.Success);
             eventLogService.createEventLog(Cars.class.getSimpleName(), car.getId(), properties, "Новый номер авто " + car.getPlatenumber() + " сохранен в системе ", "New car number " + car.getPlatenumber() + " added to the system ");
+        } else if(region != null && car.getRegion() == null){
+            car.setRegion(region);
+            car.setType(type);
+            car = saveCars(car);
         }
         return car;
-    }
-
-    @Override
-    public Iterable<Cars> findAllByDeletedFalse(){
-        return carsRepository.findCarsByDeletedFalse();
     }
 
     @Override

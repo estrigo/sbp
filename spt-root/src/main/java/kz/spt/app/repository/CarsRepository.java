@@ -20,8 +20,6 @@ public interface CarsRepository extends JpaRepository<Cars, Long>, JpaSpecificat
     @Query("from Cars c where c.platenumber like %:platenumber%")
     List<Cars> findByPlatenumberContaining(String platenumber);
 
-    Iterable<Cars> findCarsByDeletedFalse();
-
     @Query("select c.platenumber from Cars c where c.platenumber like %:text% order by c.id desc")
     List<String> searchPlateNumbersIgnoreCase(String text, Pageable page);
 }

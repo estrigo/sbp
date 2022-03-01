@@ -34,7 +34,9 @@ public class Cars {
 
     private String brand;
 
-    private Boolean deleted = false;
+    private String region;
+
+    private String type;
 
     @JsonIgnore
     @ManyToOne

@@ -140,6 +140,12 @@ public class CarEventServiceImpl implements CarEventService {
         properties.put("eventTime", format.format(eventDto.event_time));
         properties.put("lp_rect", eventDto.lp_rect);
         properties.put("cameraIp", eventDto.ip_address);
+        if(eventDto.region != null){
+            properties.put("region", eventDto.region);
+        }
+        if(eventDto.vecihleType != null){
+            properties.put("vecihleType", eventDto.vecihleType);
+        }
 
         GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(camera.getGate().getId());
 
@@ -863,7 +869,7 @@ public class CarEventServiceImpl implements CarEventService {
         eventLogService.sendSocketMessage(ArmEventType.Photo, EventLog.StatusType.Success, camera.getId(), eventDto.car_number, eventDto.car_picture, null);
         eventLogService.sendSocketMessage(ArmEventType.Lp, EventLog.StatusType.Success, camera.getId(), eventDto.car_number, eventDto.lp_picture, null);
         eventLogService.createEventLog(Camera.class.getSimpleName(), camera.getId(), properties, "Зафиксирован новый номер авто " + eventDto.car_number, "New license plate number identified " + eventDto.car_number);
-        carsService.createCar(eventDto.car_number);
+        carsService.createCar(eventDto.car_number, eventDto.region, eventDto.vecihleType);
     }
 
     private boolean hasValidAbonoment(String plateNumber, Long parkingId) throws Exception {

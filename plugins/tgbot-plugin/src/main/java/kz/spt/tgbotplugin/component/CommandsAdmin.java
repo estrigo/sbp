@@ -115,7 +115,6 @@ public class CommandsAdmin {
             if (car == null) {
                 car = new Cars();
                 car.setPlatenumber(command.toUpperCase());
-                car.setDeleted(false);
                 car.setCustomer(customer);
                 rootServicesGetterService.getCarsService().saveCars(car);
             }
@@ -147,7 +146,6 @@ public class CommandsAdmin {
             if (car == null) {
                 car = new Cars();
                 car.setPlatenumber(command.toUpperCase());
-                car.setDeleted(false);
                 rootServicesGetterService.getCarsService().saveCars(car);
             }
 
@@ -189,18 +187,6 @@ public class CommandsAdmin {
         } else if (lastCommand.equals("Проверить машину в белом списке")) {
             Cars car = rootServicesGetterService.getCarsService().findByPlatenumber(command);
             boolean exist = false;
-            if (car != null && car.getDeleted() == false) {
-                /*List<Whitelist> whitelistByCar = whitelistRepository.getWhitelistByCar(car);
-                for (Whitelist whitelist : whitelistByCar) {
-                    if (whitelist.getGroup() != null && ((whitelist.getGroup().getType() == AbstractWhitelist.Type.UNLIMITED)
-                            || (whitelist.getGroup().getType() == AbstractWhitelist.Type.PERIOD && whitelist.getGroup().getAccess_end() != null && whitelist.getGroup().getAccess_end().after(new Date()))))
-                    {
-                        exist = true;
-                        break;
-                    }
-                }*/
-            }
-
             if (exist) {
                 message.setText("Данная машина существует в белом списке");
             } else {

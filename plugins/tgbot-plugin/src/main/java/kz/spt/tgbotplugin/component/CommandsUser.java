@@ -115,7 +115,6 @@ public class CommandsUser {
                 telegramBotLastCommandRepository.delete(telegramLastCommand);
                 car = car == null ? new Cars() : car;
                 car.setPlatenumber(command.toUpperCase());
-                car.setDeleted(false);
                 car.setCustomer(customer);
                 Whitelist whitelist = new Whitelist();
                 whitelist.setCar(car);

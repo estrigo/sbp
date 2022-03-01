@@ -3,7 +3,6 @@ package kz.spt.lib.service;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Cars;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -21,7 +20,7 @@ public interface CarsService {
 
     Cars saveCars(Cars cars);
 
-    Iterable<Cars> findAllByDeletedFalse();
+    Cars createCar(String platenumber, String region, String type);
 
     Cars createCar(String platenumber);
 
