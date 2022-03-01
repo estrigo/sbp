@@ -2,6 +2,7 @@ package kz.spt.app.thread;
 
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.service.ArmService;
+import kz.spt.lib.service.CarImageService;
 import kz.spt.lib.service.EventLogService;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
@@ -12,12 +13,13 @@ import org.springframework.scheduling.annotation.Async;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Date;
 import java.util.concurrent.Future;
 
 @Log
 public class GetSnapshotThread extends Thread {
     private ArmService armService;
-    private EventLogService eventLogService;
+    private CarImageService carImageService;
 
     private Long cameraId;
     private String ip;
@@ -32,7 +34,7 @@ public class GetSnapshotThread extends Thread {
                              String password,
                              String url,
                              ArmService armService,
-                             EventLogService eventLogService) {
+                             CarImageService carImageService) {
         super(name);
         this.cameraId = cameraId;
         this.ip = ip;
@@ -40,11 +42,10 @@ public class GetSnapshotThread extends Thread {
         this.password = password;
         this.url = url;
         this.armService = armService;
-        this.eventLogService = eventLogService;
+        this.carImageService = carImageService;
     }
 
     @SneakyThrows
-    @Async("SnapshotTaskScheduler")
     public void run() {
         log.info("Running task:" + getName() + "," + "task id:" + getId() + ", thread group:" + getThreadGroup().getName() + ", parent:" + getThreadGroup().getParent().getName());
 
@@ -54,7 +55,7 @@ public class GetSnapshotThread extends Thread {
                 while (true) {
                     if (future.isDone()) {
                         String base64 = StringUtils.newStringUtf8(Base64.encodeBase64(future.get(), false));
-                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLog.StatusType.Success, cameraId, "", base64, "");
+                        carImageService.saveSnapshot(base64,new Date(), ip);
                         break;
                     }
                 }
@@ -63,7 +64,6 @@ public class GetSnapshotThread extends Thread {
                         "task id:" + getId() + "," +
                         "message:" + ex.getMessage());
             }
-            //Thread.currentThread().sleep(1000);
         }
     }
 }

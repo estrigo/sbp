@@ -76,7 +76,8 @@ server:
       timeout: 57600 # 16 hours lasts session
 images:
   file:
-    path: "~/Documents/"
+    path: "~/Documents"
+    snapshot: "~/Documents/snapshots"
 barrier:
   open:
     disabled: true #Для локальной работы без подключения к сенсорам и шлагбаумам
@@ -95,7 +96,7 @@ parking:
     access:
       unknown:
         cases: false # Выпускать все авто где вьезд не найден
-parkomat.ip: 172.28.25.24
+parkomat.ip:
 cors:
   allowed:
     origins:

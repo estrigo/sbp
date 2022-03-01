@@ -22,10 +22,12 @@ import java.util.*;
 public class CarImageServiceImpl implements CarImageService {
 
     private String imagePath;
+    private String snapshotPath;
     private EventLogService eventLogService;
 
-    public CarImageServiceImpl(@Value("${images.file.path}") String imagePath, EventLogService eventLogService){
+    public CarImageServiceImpl(@Value("${images.file.path}") String imagePath, @Value("${images.file.snapshot}") String snapshotPath, EventLogService eventLogService){
         this.imagePath = imagePath;
+        this.snapshotPath = snapshotPath;
         this.eventLogService = eventLogService;
     }
 
@@ -75,8 +77,65 @@ public class CarImageServiceImpl implements CarImageService {
     }
 
     @Override
+    public void saveSnapshot(String base64, Date eventDate, String ip) throws IOException {
+        SimpleDateFormat format = new SimpleDateFormat("HHmmss");
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(eventDate);
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int day = calendar.get(Calendar.DATE);
+
+        String cameraPath = snapshotPath +"/"+ip;
+        File cameraDir = new File(cameraPath);
+        if(!cameraDir.exists()){
+            cameraDir.mkdirs();
+        }
+
+        String fileName = format.format(calendar.getTime());
+        String path = cameraPath + "/" + year + "/" + month + "/" + day + "/";
+        File theDir = new File(path);
+        if (!theDir.exists()){
+            theDir.mkdirs();
+        }
+
+        List<String> base64imageTypes = new ArrayList<>();
+        base64imageTypes.add("data:image/jpeg;base64,");
+        base64imageTypes.add("data:image/jpg;base64,");
+
+        for(String imageType : base64imageTypes){
+            if(base64.startsWith(imageType)){
+                base64 = base64.replaceFirst(imageType, "");
+            }
+        }
+        String base64Raw = base64;
+        byte[] imageBytes = Base64.decodeBase64(base64Raw);
+
+        String fullPath = path + fileName + StaticValues.carImageExtension;
+        Files.write(Path.of(fullPath), imageBytes);
+
+        String resizedFileName = fileName + StaticValues.carImageSmallAddon;
+        String resizedfullPath = path + resizedFileName + StaticValues.carImageExtension;
+
+        Thumbnails.of(fullPath)
+                .size(350, 350)
+                .outputFormat("JPEG")
+                .outputQuality(1)
+                .toFile(resizedfullPath);
+    }
+
+    @Override
     public byte[] getByUrl(String url) throws IOException {
         File thePath = new File(imagePath + url);
+        if (thePath.exists()) {
+            return Files.readAllBytes(thePath.toPath());
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] snapshotByUrl(String url) throws IOException {
+        File thePath = new File(snapshotPath + url);
         if (thePath.exists()) {
             return Files.readAllBytes(thePath.toPath());
         }

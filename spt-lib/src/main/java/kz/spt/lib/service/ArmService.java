@@ -26,8 +26,4 @@ public interface ArmService {
     byte[] snapshot(Long cameraId) throws Throwable;
 
     Future<byte[]> getSnapshot(String ip, String login, String password, String url) throws Throwable;
-
-    void enableSnapshot(Long cameraId) throws Throwable;
-
-    void disableSnapshot() throws Throwable;
 }

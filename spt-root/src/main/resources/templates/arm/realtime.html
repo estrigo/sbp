@@ -7,11 +7,14 @@
         <div class="row mb-1">
             <div class="col-12 text-right">
                 <span class="dropdown">
-                    <button class="btn btn-info dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false" th:text="#{parking.support}">
+                    <button class="btn btn-info dropdown-toggle" type="button" data-toggle="dropdown"
+                            aria-expanded="false" th:text="#{parking.support}">
                     </button>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="#" th:text="#{support.cameraNotWork}" onclick="support(this)"></a>
-                        <a class="dropdown-item" href="#" th:text="#{support.barrierNotWork}" onclick="support(this)"></a>
+                        <a class="dropdown-item" href="#" th:text="#{support.cameraNotWork}"
+                           onclick="support(this)"></a>
+                        <a class="dropdown-item" href="#" th:text="#{support.barrierNotWork}"
+                           onclick="support(this)"></a>
                         <a class="dropdown-item" href="#" th:text="#{support.cvNotWork}" onclick="support(this)"></a>
                     </div>
                 </span>
@@ -22,7 +25,8 @@
         </div>
         <div class="row">
             <div class="col-sm-4 col-lg-4 col-xs-12 item" th:each="camera, iterStat : ${cameras}"
-                 th:id="${'item_' + camera.id}" th:attr="data-id=${camera.id},data-url=${camera.snapshotUrl}">
+                 th:id="${'item_' + camera.id}"
+                 th:attr="data-id=${camera.id},data-url=${camera.snapshotUrl},data-ip=${camera.ip}">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="btn-group" role="group">
@@ -48,9 +52,8 @@
                         <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event"
                            data-width="1800"
                            th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}">
-                            <img th:id="${'image' + camera.id}" class="img-fluid m-b-10"
-                                 th:src="@{#{arm.noImageLink}}" style="height: 250px !important;"
-                                 alt="Card image cap">
+                            <canvas th:id="${'image' + camera.id}" class="img-fluid m-b-10"
+                                    style="height: 250px !important;"></canvas>
                         </a>
                         <div class="align-content-center p-1"
                              style="background-color: rgba(74, 82, 95, .5); position: absolute; bottom: 0;right: 10px;display: none">
@@ -138,6 +141,7 @@
 <script th:inline="javascript">
     var locale = [[${#locale}]];
     var cameras = {};
+    let noImage = new Image();
 
     jQuery('.move-left').click(function (e) {
         var $div = $(this).closest('.item');
@@ -181,7 +185,7 @@
     }
 
     function showGreeting(messageBody) {
-        if(cameras[messageBody.id] === null || cameras[messageBody.id] === undefined){
+        if (cameras[messageBody.id] === null || cameras[messageBody.id] === undefined) {
             initCamera(messageBody.id);
         }
         const lp = cameras[messageBody.id].lp;
@@ -232,47 +236,76 @@
     }
 
     $(function () {
+        noImage.setAttribute('src', '[[#{arm.noImageLink}]]');
         connect();
-        enableSnapshot();
+        setTimeout(enableSnapshot, 1000);
     });
 
     function initCamera(id) {
-        const item = $("#item_"+id);
-        const lp = $(item).find("#lp" + id)[0];
-        const logs = $(item).find("#logs" + id)[0];
-        const image = $(item).find("#image" + id)[0];
-        const fancyImage = $(item).find("#fancyImage" + id)[0];
+        const lp = document.getElementById('lp' + id);
+        const logs =document.getElementById('logs' + id);
+
+        const canvas = document.getElementById('image' + id);
+        const context = canvas.getContext('2d');
+
+        const fancyImage = document.getElementById('fancyImage' + id);
 
         cameras[id] = {
             "lp": lp,
             "logs": logs,
-            "image": image,
-            "fancyImage": fancyImage,
+            "canvas": canvas,
+            "context": context,
             "snapshot": null,
+            "fancyImage": fancyImage
         }
     }
+
+    let updateSnapshotOnline = function (camera, ip) {
+        const image = new Image();
+        const canvas = camera.canvas;
+        const context = camera.context;
+
+        image.addEventListener('load', function () {
+            canvas.width = image.width + 1;
+            canvas.height = image.height + 1;
+            context.drawImage(image, 0, 0, image.width, image.height);
+            setTimeout(function () {
+                updateSnapshotOnline(camera, ip)
+            }, 1000);
+        });
+
+        const carImageExtension = ".jpeg";
+        const carImageSmallAddon = "_resize_w_200_h_100";
+        let d = new Date();
+        let year = d.getFullYear();
+        let month = d.getMonth() + 1;
+        let day = d.getDate();
+        let h = d.getHours();
+        let m = d.getMinutes() > 9 ? d.getMinutes() : "0" + d.getMinutes();
+        let s = d.getSeconds() > 9 ? d.getSeconds() : "0" + d.getSeconds();
+        image.src = '/files/pictures/' + ip + "/" + year + "/" + month + "/" + day + "/" + h + m + s + carImageSmallAddon + carImageExtension + "?ver=" + Math.random();
+
+        image.addEventListener('error', function () {
+            setTimeout(function () {
+                updateSnapshotOnline(camera, ip)
+            }, 1000);
+        });
+    };
 
     function enableSnapshot() {
         $(".item").each(function () {
             const $input = $(this);
             const $id = $input.data("id");
             const $url = $input.data("url");
-            if ($url && $url !== "") {
-                var d = new Date();
-                $.get("/rest/arm/enable/" + $id+"?ver="+d.getTime(), function (data) {
-                    console.log(data);
-                });
+            const $ip = $input.data("ip");
+
+            if (!$url) return;
+            if (!cameras[$id]) {
+                initCamera($id);
             }
+            updateSnapshotOnline(cameras[$id], $ip);
         })
     }
-
-    window.addEventListener("beforeunload", function (e) {
-        $.get("/rest/arm/disable", function (data) {
-            console.log(data);
-        });
-        e.preventDefault();
-        e.returnValue = "";
-    });
 
     function openGate(cameraId) {
         var form = new FormData();
@@ -352,7 +385,7 @@
         });
     }
 
-    function support(e){
+    function support(e) {
         const text = $(e).text();
         let request = {
             "subject": text,

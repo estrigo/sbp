@@ -53,7 +53,6 @@ public class ArmServiceImpl implements ArmService {
     private EventLogService eventLogService;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
     private CarEventService carEventService;
-    private ThreadPoolTaskExecutor snapshotTaskExecutor;
     private CarImageService carImageService;
     private PaymentService paymentService;
 
@@ -64,7 +63,6 @@ public class ArmServiceImpl implements ArmService {
         this.barrierService = barrierService;
         this.eventLogService = eventLogService;
         this.carEventService = carEventService;
-        this.snapshotTaskExecutor = snapshotTaskExecutor;
         this.carImageService = carImageService;
         this.paymentService = paymentService;
     }
@@ -247,7 +245,7 @@ public class ArmServiceImpl implements ArmService {
     }
 
     @Override
-    @Async("snapshotTaskExecutor")
+    @Async
     public Future<byte[]> getSnapshot(String ip, String login, String password, String url) {
         HttpHost host = new HttpHost(ip, 8080, "http");
         CloseableHttpClient client = HttpClientBuilder.create().
@@ -285,15 +283,13 @@ public class ArmServiceImpl implements ArmService {
         return base64;
     }*/
 
-    @Override
-    public void enableSnapshot(Long cameraId) throws Throwable {
+   /* @Override
+    public void enableSnapshot(Long cameraId) {
         Camera camera = cameraService.getCameraById(cameraId);
         String name = "snapshot-camera-" + camera.getId().toString();
 
         if (CameraSnapshotJob.threads.containsKey(name)) {
-            SnapshotThreadDto m = CameraSnapshotJob.threads.get(name);
-            m.getThread().interrupt();
-            CameraSnapshotJob.threads.remove(name);
+           return;
         }
         CameraSnapshotJob.threads.put(name, SnapshotThreadDto.builder()
                 .isActive(false)
@@ -304,19 +300,9 @@ public class ArmServiceImpl implements ArmService {
                         camera.getPassword(),
                         camera.getSnapshotUrl(),
                         this,
-                        eventLogService))
+                        carImageService))
                 .build());
-    }
-
-    @Override
-    public void disableSnapshot() throws Throwable {
-        CameraSnapshotJob.threads.forEach((key, m) -> {
-            m.getThread().interrupt();
-            log.info("Stopping task:" + m.getThread().getName() + "," + "task id:" + m.getThread().getId());
-        });
-        CameraSnapshotJob.threads.clear();
-        snapshotTaskExecutor.destroy();
-    }
+    }*/
 
     private CredentialsProvider provider(String login, String password) {
         CredentialsProvider provider = new BasicCredentialsProvider();

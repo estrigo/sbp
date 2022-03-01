@@ -62,18 +62,6 @@ public class ArmRestController {
         return armService.snapshot(cameraId);
     }
 
-    @SneakyThrows
-    @GetMapping(value = "/enable/{cameraId}")
-    public void enableSnapshot(@PathVariable("cameraId") Long cameraId,@RequestParam("ver") String ver){
-        armService.enableSnapshot(cameraId);
-    }
-
-    @SneakyThrows
-    @GetMapping(value = "/disable")
-    public void disableSnapshot(){
-        armService.disableSnapshot();
-    }
-
     @GetMapping("/restart/{ip}")
     public Boolean restartParkomat(@PathVariable("ip") String ip){
         return armService.restartParkomat(ip);
