@@ -117,12 +117,6 @@ public class EventLogServiceImpl implements EventLogService {
         messagingTemplate.convertAndSend("/topic", node.toString());
     }
 
-    @Override
-    public void sendSocketSnapshotMessage(ArmEventType eventType, EventLog.EventType eventStatus, Long id, String plateNumber, String message, String messageEng) {
-
-    }
-
-
     public void sendEventBot(ObjectNode node) {
 
         try{

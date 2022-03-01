@@ -1,6 +1,5 @@
 package kz.spt.app.service.impl;
 
-import kz.spt.lib.model.EventLog;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.CarImageService;
 import kz.spt.lib.utils.StaticValues;
