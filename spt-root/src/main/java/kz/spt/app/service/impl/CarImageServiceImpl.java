@@ -21,12 +21,10 @@ import java.util.*;
 public class CarImageServiceImpl implements CarImageService {
 
     private String imagePath;
-    private String snapshotPath;
     private EventLogService eventLogService;
 
-    public CarImageServiceImpl(@Value("${images.file.path}") String imagePath, @Value("${images.file.snapshot}") String snapshotPath, EventLogService eventLogService){
+    public CarImageServiceImpl(@Value("${images.file.path}") String imagePath, EventLogService eventLogService){
         this.imagePath = imagePath;
-        this.snapshotPath = snapshotPath;
         this.eventLogService = eventLogService;
     }
 
@@ -85,7 +83,7 @@ public class CarImageServiceImpl implements CarImageService {
         int month = calendar.get(Calendar.MONTH) + 1;
         int day = calendar.get(Calendar.DATE);
 
-        String cameraPath = snapshotPath +"/"+ip;
+        String cameraPath = imagePath +"/"+ip;
         File cameraDir = new File(cameraPath);
         if(!cameraDir.exists()){
             cameraDir.mkdirs();
@@ -126,15 +124,6 @@ public class CarImageServiceImpl implements CarImageService {
     @Override
     public byte[] getByUrl(String url) throws IOException {
         File thePath = new File(imagePath + url);
-        if (thePath.exists()) {
-            return Files.readAllBytes(thePath.toPath());
-        }
-        return null;
-    }
-
-    @Override
-    public byte[] snapshotByUrl(String url) throws IOException {
-        File thePath = new File(snapshotPath + url);
         if (thePath.exists()) {
             return Files.readAllBytes(thePath.toPath());
         }

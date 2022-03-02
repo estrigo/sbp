@@ -77,7 +77,6 @@ server:
 images:
   file:
     path: "~/Documents"
-    snapshot: "~/Documents/snapshots"
 barrier:
   open:
     disabled: true #Для локальной работы без подключения к сенсорам и шлагбаумам

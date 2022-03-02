@@ -29,6 +29,6 @@ public class ImageRestController {
                               @PathVariable("day") String day,
                               @PathVariable("filename") String filename,
                               @RequestParam("ver") String ver) throws Exception {
-        return carImageService.snapshotByUrl("/" + ip + "/" + year + "/" + month + "/" + day + "/" + filename);
+        return carImageService.getByUrl("/" + ip + "/" + year + "/" + month + "/" + day + "/" + filename);
     }
 }

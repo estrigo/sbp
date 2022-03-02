@@ -10,6 +10,4 @@ public interface CarImageService {
     void saveSnapshot(String base64, Date eventDate, String carNumber) throws IOException;
 
     byte[] getByUrl(String url) throws IOException;
-
-    byte[] snapshotByUrl(String url) throws IOException;
 }
