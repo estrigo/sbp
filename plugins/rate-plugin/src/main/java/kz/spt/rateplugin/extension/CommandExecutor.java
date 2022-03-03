@@ -60,8 +60,10 @@ public class CommandExecutor implements PluginRegister {
                         node.put("payed_till", hours);
                     }
                     ParkingRate parkingRate = getRateService().getByParkingId(parkingId);
-                    node.put("rateId", parkingRate.getId());
-                    node.put("rateName", parkingRate.getName());
+                    if (parkingRate != null) {
+                        node.put("rateId", parkingRate.getId());
+                        node.put("rateName", parkingRate.getName());
+                    }
                 }
             }
         }
