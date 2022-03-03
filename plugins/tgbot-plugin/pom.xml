@@ -20,7 +20,7 @@
         <plugin.class>kz.spt.tgbotplugin.TgBotPlugin</plugin.class>
         <plugin.version>0.0.1-SNAPSHOT</plugin.version>
         <plugin.provider>spt-sbp-tgbot</plugin.provider>
-        <plugin.dependencies />
+        <plugin.dependencies>whitelist-plugin</plugin.dependencies>
     </properties>
 
     <dependencies>
