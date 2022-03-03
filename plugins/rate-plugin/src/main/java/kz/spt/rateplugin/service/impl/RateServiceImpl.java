@@ -72,7 +72,7 @@ public class RateServiceImpl implements RateService {
         log.info("inDate: " + inCalendar.getTime());
         log.info("outDate: " + outCalendar.getTime());
 
-        if(parkingRate.getAfterFreeMinutes() != null){
+        if(parkingRate != null && parkingRate.getAfterFreeMinutes() != null){
             log.info("parkingRate.getAfterFreeMinutes(): " +  parkingRate.getAfterFreeMinutes());
             Date lastPaymentDate = getLastPaymentDate(paymentsJson); // Если была оплата проверяем прошли минуты до которые даются для выезда
             if(lastPaymentDate != null){
@@ -96,7 +96,7 @@ public class RateServiceImpl implements RateService {
         inDayCalendar.setTime(inCalendar.getTime());
         inDayCalendar.add(Calendar.DATE, 1);
 
-        if (parkingRate.getDayPaymentValue() != null && inDayCalendar.before(outCalendar)) {
+        if (parkingRate != null && parkingRate.getDayPaymentValue() != null && inDayCalendar.before(outCalendar)) {
             while (inDayCalendar.before(outCalendar)) {
                 result = result.add(BigDecimal.valueOf(parkingRate.getDayPaymentValue()));
                 inDayCalendar.add(Calendar.DATE, 1);
@@ -105,7 +105,7 @@ public class RateServiceImpl implements RateService {
             inCalendar.setTime(inDayCalendar.getTime());
         }
 
-        if (ParkingRate.RateType.PROGRESSIVE.equals(parkingRate.getRateType())) {
+        if (parkingRate != null && ParkingRate.RateType.PROGRESSIVE.equals(parkingRate.getRateType())) {
             ArrayNode progressiveJson = (ArrayNode) mapper.readTree(parkingRate.getProgressiveJson());
             Map<Integer, Integer> onlinePrices = new HashMap<>();
             Map<Integer, Integer> parkomatPrices = new HashMap<>();
@@ -136,7 +136,7 @@ public class RateServiceImpl implements RateService {
                 inCalendar.add(Calendar.HOUR, 1);
             }
             return result;
-        } else if (ParkingRate.RateType.INTERVAL.equals(parkingRate.getRateType())) {
+        } else if (parkingRate != null && ParkingRate.RateType.INTERVAL.equals(parkingRate.getRateType())) {
 
             ArrayNode intervalJson = (ArrayNode) mapper.readTree(parkingRate.getIntervalJson());
 
@@ -204,7 +204,9 @@ public class RateServiceImpl implements RateService {
                 hours++;
                 inCalendar.add(Calendar.HOUR, 1);
             }
-            result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValue() : parkingRate.getCashPaymentValue()).multiply(BigDecimal.valueOf(hours)));
+            if (parkingRate != null) {
+                result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValue() : parkingRate.getCashPaymentValue()).multiply(BigDecimal.valueOf(hours)));
+            }
             return result;
         }
     }
@@ -235,27 +237,28 @@ public class RateServiceImpl implements RateService {
     public int calculateFreeMinutes(Long parkingId, Date inDate, Date outDate, String payments) {
         ParkingRate parkingRate = getByParkingId(parkingId);
         int freeMinutes = 0;
+        if (parkingRate != null) {
+            Calendar inCalendar = Calendar.getInstance();
+            inCalendar.setTime(inDate);
+            inCalendar.add(Calendar.MINUTE, parkingRate.getBeforeFreeMinutes());
 
-        Calendar inCalendar = Calendar.getInstance();
-        inCalendar.setTime(inDate);
-        inCalendar.add(Calendar.MINUTE, parkingRate.getBeforeFreeMinutes());
+            Calendar outCalendar = Calendar.getInstance();
+            outCalendar.setTime(outDate);
 
-        Calendar outCalendar = Calendar.getInstance();
-        outCalendar.setTime(outDate);
+            if (outCalendar.getTime().before(inCalendar.getTime())) { // Еще не истекли время бесплатных минут
+                inCalendar.add(Calendar.MINUTE, (-1) * parkingRate.getBeforeFreeMinutes());
+                int seconds = (int) (outDate.getTime() - inDate.getTime()) / 1000;
+                int minutesPassed = seconds / 60;
 
-        if(outCalendar.getTime().before(inCalendar.getTime())){ // Еще не истекли время бесплатных минут
-            inCalendar.add(Calendar.MINUTE, (-1)*parkingRate.getBeforeFreeMinutes());
-            int seconds = (int) (outDate.getTime() - inDate.getTime()) / 1000;
-            int minutesPassed = seconds / 60;
-
-            freeMinutes = parkingRate.getBeforeFreeMinutes() - minutesPassed - 1;
-        } else {
-            Date lastPaymentDate = getLastPaymentDate(payments);
-            if(lastPaymentDate != null){
-                int seconds = (int) (outCalendar.getTime().getTime() - lastPaymentDate.getTime()) / 1000;
-                int minutesPassedAfterLastPay = seconds / 60;
-                if(minutesPassedAfterLastPay < parkingRate.getAfterFreeMinutes()){
-                   freeMinutes =  parkingRate.getAfterFreeMinutes() - minutesPassedAfterLastPay - 1;
+                freeMinutes = parkingRate.getBeforeFreeMinutes() - minutesPassed - 1;
+            } else {
+                Date lastPaymentDate = getLastPaymentDate(payments);
+                if (lastPaymentDate != null) {
+                    int seconds = (int) (outCalendar.getTime().getTime() - lastPaymentDate.getTime()) / 1000;
+                    int minutesPassedAfterLastPay = seconds / 60;
+                    if (minutesPassedAfterLastPay < parkingRate.getAfterFreeMinutes()) {
+                        freeMinutes = parkingRate.getAfterFreeMinutes() - minutesPassedAfterLastPay - 1;
+                    }
                 }
             }
         }
