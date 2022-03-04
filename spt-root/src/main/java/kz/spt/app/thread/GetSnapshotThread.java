@@ -54,8 +54,7 @@ public class GetSnapshotThread extends Thread {
                 Future<byte[]> future = armService.getSnapshot(ip, login, password, url);
                 while (true) {
                     if (future.isDone()) {
-                        String base64 = StringUtils.newStringUtf8(Base64.encodeBase64(future.get(), false));
-                        carImageService.saveSnapshot(base64,new Date(), ip);
+                        carImageService.saveSnapshot(future.get(),new Date(), ip);
                         break;
                     }
                 }

@@ -141,7 +141,6 @@
 <script th:inline="javascript">
     var locale = [[${#locale}]];
     var cameras = {};
-    let noImage = new Image();
 
     jQuery('.move-left').click(function (e) {
         var $div = $(this).closest('.item');
@@ -200,11 +199,14 @@
             cameras[messageBody.id].snapshot = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
             $(fancyImage).attr("data-src", cameras[messageBody.id].snapshot);
 
-            const image = new Image();
+            let image = new Image();
             image.src = cameras[messageBody.id].snapshot;
-            canvas.width = image.width + 1;
-            canvas.height = image.height + 1;
-            context.drawImage(image, 0, 0, image.width, image.height);
+            image.onload = function (){
+                canvas.width = image.width + 1;
+                canvas.height = image.height + 1;
+                context.drawImage(image, 0, 0, image.width, image.height);
+                image = null;
+            };
         } else if (messageBody.eventType == 'CarEvent') {
             $(logs).prepend(createPWithClassByStatus(messageBody.eventStatus, '[' + messageBody.plateNumber + ']' + logMessage));
             $(fancyImage).attr("data-caption", messageBody.plateNumber);
@@ -243,7 +245,6 @@
     }
 
     $(function () {
-        noImage.setAttribute('src', '[[#{arm.noImageLink}]]');
         connect();
         setTimeout(enableSnapshot, 1000);
     });
@@ -268,18 +269,20 @@
     }
 
     let updateSnapshotOnline = function (camera, ip) {
-        const image = new Image();
+        let image = new Image();
         const canvas = camera.canvas;
         const context = camera.context;
 
-        image.addEventListener('load', function () {
+        image.onload = function (){
             canvas.width = image.width + 1;
             canvas.height = image.height + 1;
             context.drawImage(image, 0, 0, image.width, image.height);
+
+            image = null;
             setTimeout(function () {
                 updateSnapshotOnline(camera, ip)
             }, 1000);
-        });
+        };
 
         const carImageExtension = ".jpeg";
         const carImageSmallAddon = "_resize_w_200_h_100";
@@ -292,11 +295,12 @@
         let s = d.getSeconds() > 9 ? d.getSeconds() : "0" + d.getSeconds();
         image.src = '/files/pictures/' + ip + "/" + year + "/" + month + "/" + day + "/" + h + m + s + carImageSmallAddon + carImageExtension + "?ver=" + Math.random();
 
-        image.addEventListener('error', function () {
+        image.onerror = function (){
+            image = null;
             setTimeout(function () {
                 updateSnapshotOnline(camera, ip)
             }, 1000);
-        });
+        };
     };
 
     function enableSnapshot() {

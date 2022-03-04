@@ -74,7 +74,7 @@ public class CarImageServiceImpl implements CarImageService {
     }
 
     @Override
-    public void saveSnapshot(String base64, Date eventDate, String ip) throws IOException {
+    public void saveSnapshot(byte[] image, Date eventDate, String ip) throws IOException {
         SimpleDateFormat format = new SimpleDateFormat("HHmmss");
 
         Calendar calendar = Calendar.getInstance();
@@ -96,20 +96,8 @@ public class CarImageServiceImpl implements CarImageService {
             theDir.mkdirs();
         }
 
-        List<String> base64imageTypes = new ArrayList<>();
-        base64imageTypes.add("data:image/jpeg;base64,");
-        base64imageTypes.add("data:image/jpg;base64,");
-
-        for(String imageType : base64imageTypes){
-            if(base64.startsWith(imageType)){
-                base64 = base64.replaceFirst(imageType, "");
-            }
-        }
-        String base64Raw = base64;
-        byte[] imageBytes = Base64.decodeBase64(base64Raw);
-
         String fullPath = path + fileName + StaticValues.carImageExtension;
-        Files.write(Path.of(fullPath), imageBytes);
+        Files.write(Path.of(fullPath), image);
 
         String resizedFileName = fileName + StaticValues.carImageSmallAddon;
         String resizedfullPath = path + resizedFileName + StaticValues.carImageExtension;
