@@ -7,7 +7,7 @@ Smartparking monolithic application
 
 == How to get started
 
-You need java version 11, maven 3.X.X or later, Mysql database with scheme 'crm'
+You need java version 11, maven 3.X.X or later, Mysql database with scheme 'crm' - for development and 'new_parking' for production
 
 ==== Default application start in development mode
 
@@ -22,4 +22,36 @@ java -jar spt-root-0.0.1-SNAPSHOT-standalone.jar
 ----
 
 ==== Application start in production mode inside docker container
+
+All compose yml files located inside docker-prod/compose folder
+
+Inside new server create new_parking folder:
+----
+mkdir new_parking && cd new_parking
+----
+also create nginx folder for nginx configuration
+----
+mkdir nginx
+----
+
+Copy suitable yml from docker-prod/compose of git to remote server
+----
+cd docker-prod/compose
+scp {suitable}.yml {user}@{server_ip}:~/new_parking/.
+----
+Next, copy enabled.txt from docker-prod to remote server
+----
+cd ..
+scp enabled.txt {user}@{server_ip}:~/new_parking/.
+----
+and nginx.conf from docker-prod/nginx to remote server
+----
+cd nginx
+scp nginx.cnf {user}@{server_ip}:~/new_parking/nginx/.
+----
+
+Then start docker containers by command
+----
+docker-compose -f {suitable}.yml up -d
+----
 

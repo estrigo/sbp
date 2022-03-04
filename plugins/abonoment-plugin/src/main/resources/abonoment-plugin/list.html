@@ -304,11 +304,10 @@
             "data": form
         };
         $.ajax(settings).done(function (response) {
-            console.log(response);
-            typesTable.ajax.reload(); //reload datatable
             $('#addAbonomentType').modal('hide');
             $('#addAbonomentType').find('#period').val(undefined);
             $('#addAbonomentType').find('#price').val(undefined);
+            window.location.reload();
         });
     }
 

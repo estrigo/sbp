@@ -15,6 +15,7 @@ import kz.spt.lib.model.dto.payment.CommandDto;
 import kz.spt.lib.service.*;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
+import org.pf4j.util.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -129,6 +130,22 @@ public class PaymentServiceImpl implements PaymentService {
                         JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
                         if(abonomentResultNode != null && abonomentResultNode.has("price")){
                             return payAbonoment(commandDto, carState, abonomentResultNode);
+                        }
+                        CarState lastDebtCarState = carStateService.getLastCarState(commandDto.account);
+                        if(lastDebtCarState != null && lastDebtCarState.getPaid() && lastDebtCarState.getAmount() == null){
+                            Object payment = savePayment(commandDto, lastDebtCarState, null, false);
+                            if (BillingInfoErrorDto.class.equals(payment.getClass())) {
+                                return payment;
+                            }
+                            JsonNode result = (JsonNode) payment;
+                            Long paymentId = result.get("paymentId").longValue();
+
+                            lastDebtCarState.setAmount(lastDebtCarState.getAmount() != null ? lastDebtCarState.getAmount().add(commandDto.sum) : commandDto.sum); // if he paid early we should add this amount
+                            lastDebtCarState.setPaymentId(paymentId);
+                            lastDebtCarState.setPaymentJson(result.get("paymentArray").toString());
+                            lastDebtCarState.setCashlessPayment(result.get("cashlessPayment").booleanValue());
+                            carStateService.save(lastDebtCarState);
+                            return successPayment(commandDto, paymentId);
                         }
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
                         dto.message = "Некорректный номер авто свяжитесь с оператором.";

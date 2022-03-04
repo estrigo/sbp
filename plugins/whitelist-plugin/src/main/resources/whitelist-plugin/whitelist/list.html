@@ -14,6 +14,7 @@
                     <div class="card-header" th:text="#{whitelist.title}"></div>
                     <div class="card-body">
                         <!-------------------->
+                        <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                         <span th:if="${fileUploadResult != null}" th:text="${fileUploadResult}"></span>
                         <div style="margin-bottom: 2%;">
                             <form method="POST" data-th-action="@{list}" enctype="multipart/form-data"
@@ -40,6 +41,7 @@
                                         th:text="#{whitelist.upload}"></button>
                             </form>
                         </div>
+                        </th:block>
                         <!-------------------->
                         <ul class="nav nav-tabs">
                             <li class="nav-item">

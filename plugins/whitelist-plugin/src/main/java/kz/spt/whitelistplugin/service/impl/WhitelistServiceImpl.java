@@ -67,7 +67,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         whitelist.setPlatenumber(whitelist.getPlatenumber().toUpperCase());
 
         if (whitelist.getGroupId() != null) {
-            WhitelistGroups group = whitelistGroupsRepository.getOne(whitelist.getGroupId());
+            WhitelistGroups group = whitelistGroupsRepository.findById(whitelist.getGroupId()).get();
             whitelist.setGroup(group);
             whitelist.setType(null);
             whitelist.setCustomJson(null);
@@ -107,8 +107,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         if(whitelist.getGroup() == null && AbstractWhitelist.Type.UNLIMITED.equals(whitelist.getType())){
             rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
         } else if(whitelist.getGroup() != null){
-            WhitelistGroups group = whitelistGroupsRepository.getOne(whitelist.getGroupId());
-            if (AbstractWhitelist.Type.UNLIMITED.equals(group)){
+            if (AbstractWhitelist.Type.UNLIMITED.equals(whitelist.getGroup().getType())){
                 rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
             }
         }

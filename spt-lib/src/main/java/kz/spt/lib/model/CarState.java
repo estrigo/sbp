@@ -1,6 +1,12 @@
 package kz.spt.lib.model;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.lib.extension.PluginRegister;
+import kz.spt.lib.service.PluginService;
+import kz.spt.lib.utils.StaticValues;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +17,7 @@ import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Entity
@@ -95,4 +102,46 @@ public class CarState {
 
     @UpdateTimestamp
     private Date updated;
+
+    private Boolean isEnoughBalanceToLeave(PluginService pluginService, Boolean cashlessPayment) throws Exception {
+        if(this.getPaid()){
+            if(pluginService != null){
+                PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+                if (ratePluginRegister != null) {
+                    SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    ObjectNode ratePluginNode = objectMapper.createObjectNode();
+                    ratePluginNode.put("parkingId", this.getParking().getId());
+                    ratePluginNode.put("inDate", format.format(this.getInTimestamp()));
+                    ratePluginNode.put("outDate", format.format(this.getOutTimestamp() != null ? this.outTimestamp : new Date()));
+                    ratePluginNode.put("cashlessPayment", cashlessPayment);
+                    ratePluginNode.put("isCheck", false);
+                    ratePluginNode.put("paymentsJson", this.getPaymentJson());
+
+                    JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
+                    BigDecimal rateResult = ratePluginResult.get("rateResult").decimalValue().setScale(2);
+
+                    PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+                    if (billingPluginRegister != null) {
+                        ObjectNode billinNode = objectMapper.createObjectNode();
+                        billinNode.put("command", "getCurrentBalance");
+                        billinNode.put("plateNumber", this.getCarNumber());
+                        JsonNode billingResult = billingPluginRegister.execute(billinNode);
+                        BigDecimal balance = billingResult.get("currentBalance").decimalValue().setScale(2);
+
+                        return balance.compareTo(rateResult) >= 0;
+                    } else {
+                        throw new RuntimeException("billingPluginRegister is null");
+                    }
+                } else {
+                    throw new RuntimeException("ratePluginRegister is null");
+                }
+            } else {
+                throw new RuntimeException("pluginService is null");
+            }
+        } else {
+            return true;
+        }
+    }
 }
