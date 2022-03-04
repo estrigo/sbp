@@ -190,14 +190,21 @@
         }
         const lp = cameras[messageBody.id].lp;
         const logs = cameras[messageBody.id].logs;
-        const image = cameras[messageBody.id].image;
         const fancyImage = cameras[messageBody.id].fancyImage;
+
+        const canvas = cameras[messageBody.id].canvas;
+        const context = canvas.getContext('2d');
 
         let logMessage = locale === "en" ? messageBody.messageEng : messageBody.message;
         if (messageBody.eventType == 'Photo') {
             cameras[messageBody.id].snapshot = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
-            $(image).attr("src", cameras[messageBody.id].snapshot);
             $(fancyImage).attr("data-src", cameras[messageBody.id].snapshot);
+
+            const image = new Image();
+            image.src = cameras[messageBody.id].snapshot;
+            canvas.width = image.width + 1;
+            canvas.height = image.height + 1;
+            context.drawImage(image, 0, 0, image.width, image.height);
         } else if (messageBody.eventType == 'CarEvent') {
             $(logs).prepend(createPWithClassByStatus(messageBody.eventStatus, '[' + messageBody.plateNumber + ']' + logMessage));
             $(fancyImage).attr("data-caption", messageBody.plateNumber);
