@@ -65,6 +65,10 @@ spring:
           writetimeout: 5000
           starttls:
             enable: true
+  task:
+    scheduling:
+      pool:
+        size: 10
 org:
   hibernate:
     envers:
@@ -95,6 +99,9 @@ parking:
     access:
       unknown:
         cases: false # Выпускать все авто где вьезд не найден
+  remove:
+    all:
+      debts: false
 parkomat.ip:
 cors:
   allowed:
@@ -105,3 +112,5 @@ telegram:
   bot:
     external:
       enabled: false
+
+

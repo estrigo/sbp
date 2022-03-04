@@ -61,6 +61,10 @@ spring:
           writetimeout: 5000
           starttls:
             enable: true
+  task:
+    scheduling:
+      pool:
+        size: 10
 org:
   hibernate:
     envers:
@@ -100,6 +104,9 @@ parking:
     access:
       unknown:
         cases: false # Выпускать все авто где вьезд не найден
+  remove:
+    all:
+      debts: false
 telegram:
   bot:
     external:
