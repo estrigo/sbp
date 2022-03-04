@@ -17,6 +17,7 @@ import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.EventLogRepository;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.app.utils.StringExtensions;
+import kz.spt.lib.utils.Utils;
 import lombok.extern.java.Log;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
@@ -206,7 +207,7 @@ public class EventLogServiceImpl implements EventLogService {
                     return EventsDto.builder()
                             .id(m.getId())
                             .created(m.getCreated())
-                            .plateNumber(m.getNullSafePlateNumber())
+                            .plateNumber((m.getProperties().containsKey("region") ? Utils.convertRegion(m.getProperties().get("region").toString()) + " " : "") + m.getNullSafePlateNumber() + (m.getProperties().containsKey("vecihleType") ? " [" + m.getProperties().get("vecihleType").toString() + "]" : ""))
                             .description(m.getNullSafeDescription())
                             .descriptionEn(m.getNullSafeDescriptionEn())
                             .eventType(type)

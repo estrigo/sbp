@@ -18,4 +18,19 @@ public class Utils {
                 .replace("К","K")
                 .replace(" ","");
     }
+
+    public static String convertRegion(String regionCode){
+        switch (regionCode){
+            case "ae-du" : return "Dubai";
+            case "ae-az" : return "Abu Dhabi";
+            case "ae-aj" : return "Ajman";
+            case "ae-fu" : return "Fujairah";
+            case "ae-rk" : return "Ras Al Khaimah";
+            case "ae-sh" : return "Sharjah";
+            case "ae-uq" : return "Umm Al Quwain";
+            case "qa" : return "Qatar";
+            case "sa" : return "Saudi Arabia";
+            default: return regionCode;
+        }
+    }
 }

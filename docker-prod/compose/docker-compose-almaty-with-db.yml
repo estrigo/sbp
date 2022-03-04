@@ -21,7 +21,7 @@ services:
     environment:
       - "TZ=Asia/Almaty"
       - "telegram_bot_external_enabled=false"
-      - "parkomat_ip=1.1.1.1"
+      - "parkomat_ip="
     volumes:
       - /var/www/parking/storage/new_parking:/files/pictures:rw
       - ./enabled.txt:/usr/local/plugins/enabled.txt:ro
