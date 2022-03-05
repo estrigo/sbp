@@ -44,6 +44,12 @@ public class StatusCheckJob {
             if(!isGatesProcessing.containsKey(gateStatusDto.gateId) || !isGatesProcessing.get(gateStatusDto.gateId)){
                 BarrierStatusDto barrier = gateStatusDto.barrier;
                 CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
+
+                if(barrier != null && Barrier.BarrierType.JETSON.equals(barrier.type)){
+                    gateStatusDto.lastTriggeredTime = System.currentTimeMillis();
+                    isGatesProcessing.put(gateStatusDto.gateId, true);
+                    return;
+                }
                 if(barrier != null && cameraStatusDto != null && Barrier.SensorsType.MANUAL.equals(barrier.sensorsType)) { // Данные шлагбаума и камеры заполнены
                     isGatesProcessing.put(gateStatusDto.gateId, true);
                     new GateStatusCheckThread(gateStatusDto, barrierService).start();

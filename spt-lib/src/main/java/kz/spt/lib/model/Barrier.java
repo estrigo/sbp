@@ -22,9 +22,10 @@ public class Barrier {
 
     public enum BarrierType {
         MODBUS,
-        SNMP;
+        SNMP,
+        JETSON;
 
-        public static final Barrier.BarrierType[] ALL = {SNMP, MODBUS};
+        public static final Barrier.BarrierType[] ALL = {SNMP, MODBUS, JETSON};
     }
 
     public enum SensorsType {

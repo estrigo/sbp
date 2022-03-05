@@ -1,4 +1,4 @@
-package kz.spt.lib.model.dto;
+package kz.spt.lib.model.dto.jetson;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SnapshotThreadDto {
-    private boolean isActive;
-    private Thread thread;
+public class JetsonResponse {
+    private String msg;
+    private Boolean success;
 }
