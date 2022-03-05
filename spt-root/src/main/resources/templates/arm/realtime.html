@@ -201,7 +201,7 @@
 
             let image = new Image();
             image.src = cameras[messageBody.id].snapshot;
-            image.onload = function (){
+            image.onload = function () {
                 canvas.width = image.width + 1;
                 canvas.height = image.height + 1;
                 context.drawImage(image, 0, 0, image.width, image.height);
@@ -251,7 +251,7 @@
 
     function initCamera(id) {
         const lp = document.getElementById('lp' + id);
-        const logs =document.getElementById('logs' + id);
+        const logs = document.getElementById('logs' + id);
 
         const canvas = document.getElementById('image' + id);
         const context = canvas.getContext('2d');
@@ -273,7 +273,7 @@
         const canvas = camera.canvas;
         const context = camera.context;
 
-        image.onload = function (){
+        image.onload = function () {
             canvas.width = image.width + 1;
             canvas.height = image.height + 1;
             context.drawImage(image, 0, 0, image.width, image.height);
@@ -290,12 +290,12 @@
         let year = d.getFullYear();
         let month = d.getMonth() + 1;
         let day = d.getDate();
-        let h = d.getHours();
+        let h = d.getHours() > 9 ? d.getHours() : "0" + d.getHours();
         let m = d.getMinutes() > 9 ? d.getMinutes() : "0" + d.getMinutes();
         let s = d.getSeconds() > 9 ? d.getSeconds() : "0" + d.getSeconds();
         image.src = '/files/pictures/' + ip + "/" + year + "/" + month + "/" + day + "/" + h + m + s + carImageSmallAddon + carImageExtension + "?ver=" + Math.random();
 
-        image.onerror = function (){
+        image.onerror = function () {
             image = null;
             setTimeout(function () {
                 updateSnapshotOnline(camera, ip)
