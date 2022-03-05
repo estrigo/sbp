@@ -40,4 +40,6 @@ public interface EventLogService {
     String getApplicationPropertyValue(String prortyName);
 
     String findLastNotEnoughFunds(Long gateId);
+
+    String findLastWithDebts(Long gateId);
 }

@@ -316,6 +316,26 @@ public class EventLogServiceImpl implements EventLogService {
         return null;
     }
 
+    @Override
+    public String findLastWithDebts(Long gateId) {
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE, -1);
+
+        List<EventLog> eventLogs = eventLogRepository.getEventsFromDate(calendar.getTime(), Gate.class.getSimpleName(), gateId);
+        if(eventLogs != null && eventLogs.size()>0){
+            EventLog eventLog = eventLogs.get(0);
+            if(eventLog.getDescription().startsWith("В проезде отказано: Авто") && eventLog.getDescription().contains("имеет задолженность")){
+                return eventLog.getPlateNumber();
+            } else if(eventLog.getDescription().startsWith("Зафиксирован новый номер авто")){
+                if(eventLogs.size()>1 && eventLogs.get(1).getDescription().startsWith("В проезде отказано: Авто") && eventLogs.get(1).getDescription().contains("имеет задолженность") && eventLog.getPlateNumber().equals(eventLogs.get(1).getPlateNumber())){
+                    return eventLog.getPlateNumber();
+                }
+            }
+        }
+        return null;
+    }
+
     private Page<EventsDto> getPage(List<EventsDto> events, PagingRequest pagingRequest) {
         List<EventsDto> filtered = events.stream()
                 .sorted(sortEvents(pagingRequest))
