@@ -340,7 +340,7 @@ public class CarEventServiceImpl implements CarEventService {
             }
         } else if (Parking.ParkingType.PREPAID.equals(camera.getGate().getParking().getParkingType())) {
             if(carState == null){
-                carStateService.createINState(eventDto.car_number,eventDto.event_time,camera,true,null, properties.get(StaticValues.carSmallImagePropertyName).toString());
+                carStateService.createINState(eventDto.car_number,eventDto.event_time,camera,true,null,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
                 carState = carStateService.getLastNotLeft(eventDto.car_number);
             }
             JsonNode currentBalanceResult = getCurrentBalance(eventDto.car_number, properties);
@@ -377,7 +377,7 @@ public class CarEventServiceImpl implements CarEventService {
                     if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
                         hasAccess = checkWhiteList(eventDto, camera, properties, whitelistCheckResults);
                         if (hasAccess) {
-                            carStateService.createOUTState(eventDto.car_number, new Date(), camera, carState, properties.get(StaticValues.carSmallImagePropertyName).toString());
+                            carStateService.createOUTState(eventDto.car_number, new Date(), camera, carState,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
                         }
                         // TODO: Close last entrance and open new one
                     } else {
@@ -408,9 +408,9 @@ public class CarEventServiceImpl implements CarEventService {
 
     private void saveCarInState(CarEventDto eventDto, Camera camera, JsonNode whitelistCheckResults, Map<String, Object> properties) {
         if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
-            carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, false, whitelistCheckResults != null ? whitelistCheckResults.toString() : null, properties.get(StaticValues.carSmallImagePropertyName).toString());
+            carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, false, whitelistCheckResults != null ? whitelistCheckResults.toString() : null,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
             properties.put("type", EventLog.StatusType.Allow);
-            carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, false, whitelistCheckResults != null ? whitelistCheckResults.toString() : null, properties.get(StaticValues.carSmallImagePropertyName).toString());
+            carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, false, whitelistCheckResults != null ? whitelistCheckResults.toString() : null,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа", "Permitted: Car with number " + eventDto.car_number + " from white list");
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа", "Permitted: Car with number " + eventDto.car_number + " from white list");
         } else if(Parking.ParkingType.PREPAID.equals(camera.getGate().getParking().getParkingType())){
@@ -421,8 +421,8 @@ public class CarEventServiceImpl implements CarEventService {
         }else {
             if (whitelistCheckResults == null) {
                 properties.put("type", EventLog.StatusType.Allow);
-                carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, true, null, properties.get(StaticValues.carSmallImagePropertyName).toString());
-                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), (eventDto.region != null ? Utils.convertRegion(eventDto.region) + " " : "") + eventDto.car_number + "["+ eventDto.vecihleType +"]", "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе", "Permitted: Car with number " + eventDto.car_number + " on paid basis");
+                carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, true, null,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), (eventDto.region != null ? Utils.convertRegion(eventDto.region) + " " : "") + eventDto.car_number + (eventDto.vecihleType != null ? "["+ eventDto.vecihleType +"]" :""), "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе", "Permitted: Car with number " + eventDto.car_number + " on paid basis");
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе", "Permitted: Car with number " + eventDto.car_number + " on paid basis");
             } else {
                 ArrayNode whitelistCheckResultArray = (ArrayNode) whitelistCheckResults;
@@ -439,12 +439,12 @@ public class CarEventServiceImpl implements CarEventService {
                 }
                 if (hasAccess) {
                     properties.put("type", EventLog.StatusType.Allow);
-                    carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, false, whitelistCheckResults != null ? whitelistCheckResults.toString() : null, properties.get(StaticValues.carSmallImagePropertyName).toString());
+                    carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, false, whitelistCheckResults != null ? whitelistCheckResults.toString() : null,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа", "Permitted: Car with number " + eventDto.car_number + " from white list");
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа", "Permitted: Car with number " + eventDto.car_number + " from white list");
                 } else {
                     properties.put("type", EventLog.StatusType.Allow);
-                    carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, true, whitelistCheckResults != null ? whitelistCheckResults.toString() : null, properties.get(StaticValues.carSmallImagePropertyName).toString());
+                    carStateService.createINState(eventDto.car_number, eventDto.event_time, camera, true, whitelistCheckResults != null ? whitelistCheckResults.toString() : null,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе. Все места для группы " + nodeDetails.get("groupName").textValue() + " заняты следующим списком " + nodeDetails.get("placeOccupiedCars").toString(), "Permitted: Car with license number " + eventDto.car_number + " on paid basis. " + (nodeDetails.has("placeName") ? nodeDetails.get("placeName") + " spot " : "Все места ") + "for the group " + nodeDetails.get("groupName").textValue() + " taken by the next list " + nodeDetails.get("placeOccupiedCars").toString());
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе. " + (nodeDetails.has("placeName") ? nodeDetails.get("placeName") + " место " : "Все места ") + "для группы " + nodeDetails.get("groupName").textValue() + " заняты следующим списком " + nodeDetails.get("placeOccupiedCars").toString(), "Permitted: Car with license number " + eventDto.car_number + " on paid basis. " + (nodeDetails.has("placeName") ? nodeDetails.get("placeName") + " spot " : "Все места ") + "for the group " + nodeDetails.get("groupName").textValue() + " taken by the next list " + nodeDetails.get("placeOccupiedCars").toString());
                 }
@@ -808,7 +808,7 @@ public class CarEventServiceImpl implements CarEventService {
 
     private void saveCarOutState(CarEventDto eventDto, Camera camera, CarState carState, Map<String, Object> properties, boolean isWhitelistCar, BigDecimal balance, BigDecimal rateResult, BigDecimal zerotouchValue, SimpleDateFormat format, StaticValues.CarOutBy carOutBy) throws Exception {
         if (StaticValues.CarOutBy.WHITELIST.equals(carOutBy)) {
-            carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState, properties.get(StaticValues.carSmallImagePropertyName).toString());
+            carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
 
             properties.put("type", EventLog.StatusType.Allow);
             if (isWhitelistCar) {
@@ -819,12 +819,12 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
             }
         } else if (StaticValues.CarOutBy.PREPAID.equals(carOutBy)) {
-            carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState, properties.get(StaticValues.carSmallImagePropertyName).toString());
+            carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
             properties.put("type", EventLog.StatusType.Allow);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто по предоплате: Авто с гос. номером" + eventDto.car_number, "For prepaid exit is allowed on prepaid basis. Car with license plate " + eventDto.car_number);
             eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Выпускаем авто по предоплате: Авто с гос. номером" + eventDto.car_number, "For prepaid exit is allowed on prepaid basis. Car with license plate " + eventDto.car_number);
         } else if (StaticValues.CarOutBy.ABONOMENT.equals(carOutBy)) {
-            carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState, properties.get(StaticValues.carSmallImagePropertyName).toString());
+            carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
             properties.put("type", EventLog.StatusType.Allow);
             String message_ru = "Пропускаем авто: Найдено действущий абономент на номер авто " + eventDto.car_number + ". Проезд разрешен.";
             String message_en = "Allowed: Found valid subscription for car late number " + eventDto.car_number + ". Allowed.";
@@ -833,14 +833,14 @@ public class CarEventServiceImpl implements CarEventService {
             carStateService.setAbonomentDetails(carState.getId(), getAbonomentDetails(eventDto.car_number, carState.getParking().getId()));
         } else if (StaticValues.CarOutBy.REGISTER.equals(carOutBy)) {
             if(carState != null){
-                carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState, properties.get(StaticValues.carSmallImagePropertyName).toString());
+                carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
                 properties.put("type", EventLog.StatusType.Allow);
                 String message_ru = "Пропускаем авто: Авто с номером " + eventDto.car_number + " выехал с паркинга";
                 String message_en = "Allowed: Car with plate number " + eventDto.car_number + " left the parking";
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, message_ru, message_en);
             } else {
-                carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, null, properties.get(StaticValues.carSmallImagePropertyName).toString());
+                carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, null,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
                 properties.put("type", EventLog.StatusType.Allow);
                 String message_ru = "Не найден запись о въезде: Авто с номером " + eventDto.car_number + " выехал с паркинга";
                 String message_en = "No record found about entering: Car with plate number " + eventDto.car_number + " left the parking";
@@ -850,7 +850,7 @@ public class CarEventServiceImpl implements CarEventService {
         } else {
             if (StaticValues.CarOutBy.ZERO_TOUCH.equals(carOutBy)) {
                 properties.put("type", EventLog.StatusType.Allow);
-                carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState, properties.get(StaticValues.carSmallImagePropertyName).toString());
+                carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
                 String message_ru = "Пропускаем авто: Безусловная оплата прошла удачно. Сумма к оплате: " + rateResult + ". Проезд разрешен.";
                 String message_en = "Allowed: Zero touch payment received. Total sum: " + rateResult + ". Allowed.";
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
@@ -874,7 +874,7 @@ public class CarEventServiceImpl implements CarEventService {
                 decreaseBalance(carState.getCarNumber(), carState.getParking().getName(), carState.getId(), rateResult, properties);
             }
             carState.setRateAmount(zerotouchValue != null ? rateResult.add(zerotouchValue) : rateResult);
-            carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState, properties.get(StaticValues.carSmallImagePropertyName).toString());
+            carStateService.createOUTState(eventDto.car_number, eventDto.event_time, camera, carState,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
 
             if (billingPluginRegister != null) {
                 ObjectNode addTimestampNode = this.objectMapper.createObjectNode();
