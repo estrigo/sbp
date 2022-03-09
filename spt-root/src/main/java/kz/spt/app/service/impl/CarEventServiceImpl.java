@@ -699,6 +699,9 @@ public class CarEventServiceImpl implements CarEventService {
                         } else if(hasValidAbonoment(eventDto.car_number, carState.getParking().getId())){ // Проверяем абономент, если валидна выпускаем
                             carOutBy = StaticValues.CarOutBy.ABONOMENT;
                             hasAccess = true;
+                        } else if(parkingOnlyRegisterCars){
+                            carOutBy = StaticValues.CarOutBy.REGISTER;
+                            hasAccess = true;
                         } else {
                             PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
                             if (ratePluginRegister != null) {
