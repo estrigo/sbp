@@ -401,7 +401,7 @@ public class BarrierServiceImpl implements BarrierService {
         return result;
     }
 
-    /*private enum Command {
+    private enum Command {
         Open, Close
-    }*/
+    }
 }
