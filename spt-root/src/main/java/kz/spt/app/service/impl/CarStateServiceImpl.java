@@ -14,6 +14,7 @@ import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.utils.Utils;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -25,6 +26,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -210,17 +212,6 @@ public class CarStateServiceImpl implements CarStateService {
 
         List<CarState> carStates = (List<CarState>) this.listByFilters(carStateFilterDto);
         List<CarStateDto> carStateDtos = CarStateDto.fromCarStates(carStates);
-        for(CarStateDto carStateDto:carStateDtos){
-            Cars car = carsService.findByPlatenumber(carStateDto.carNumber);
-            if(car != null){
-                if(car.getRegion() != null){
-                    carStateDto.carNumber = Utils.convertRegion(car.getRegion()) + " " + carStateDto.carNumber;
-                }
-                if(car.getType() != null){
-                    carStateDto.carNumber = carStateDto.carNumber + "["+ car.getType() +"]";
-                }
-            }
-        }
         return getPage(carStateDtos, pagingRequest);
     }
 
@@ -228,17 +219,6 @@ public class CarStateServiceImpl implements CarStateService {
     public Page<CarStateDto> getEntriesWithoutExit(PagingRequest pagingRequest, CarStateFilterDto carStateFilterDto) throws ParseException {
         List<CarState> carStates = (List<CarState>) this.listByFilters(carStateFilterDto);
         List<CarStateDto> carStateDtos = CarStateDto.fromCarStates(carStates);
-        for(CarStateDto carStateDto:carStateDtos){
-            Cars car = carsService.findByPlatenumber(carStateDto.carNumber);
-            if(car != null){
-                if(car.getRegion() != null){
-                    carStateDto.carNumber = Utils.convertRegion(car.getRegion()) + " " + carStateDto.carNumber;
-                }
-                if(car.getType() != null){
-                    carStateDto.carNumber = carStateDto.carNumber + "["+ car.getType() +"]";
-                }
-            }
-        }
         return getPage(carStateDtos, pagingRequest);
     }
 
@@ -246,17 +226,6 @@ public class CarStateServiceImpl implements CarStateService {
     public Page<CarStateDto> getExitsWithoutEntry(PagingRequest pagingRequest, CarStateFilterDto carStateFilterDto) throws ParseException {
         List<CarState> carStates = (List<CarState>) this.listExitsByFilters(carStateFilterDto);
         List<CarStateDto> carStateDtos = CarStateDto.fromCarStates(carStates);
-        for(CarStateDto carStateDto:carStateDtos){
-            Cars car = carsService.findByPlatenumber(carStateDto.carNumber);
-            if(car != null){
-                if(car.getRegion() != null){
-                    carStateDto.carNumber = Utils.convertRegion(car.getRegion()) + " " + carStateDto.carNumber;
-                }
-                if(car.getType() != null){
-                    carStateDto.carNumber = carStateDto.carNumber + "["+ car.getType() +"]";
-                }
-            }
-        }
         return getPage(carStateDtos, pagingRequest);
     }
 
@@ -371,6 +340,51 @@ public class CarStateServiceImpl implements CarStateService {
         long count = carStates.stream()
                 .filter(filterCarStates(pagingRequest))
                 .count();
+
+        for(CarStateDto carStateDto:filtered){
+            Cars car = carsService.findByPlatenumber(carStateDto.carNumber);
+            if(car != null){
+                if(car.getRegion() != null){
+                    carStateDto.carNumber = Utils.convertRegion(car.getRegion()) + " " + carStateDto.carNumber;
+                }
+                if(car.getType() != null){
+                    carStateDto.carNumber = carStateDto.carNumber + "["+ car.getType() +"]";
+                }
+            }
+
+            StringBuilder durationBuilder = new StringBuilder("");
+            if (carStateDto.inTimestamp != null) {
+                Locale locale = LocaleContextHolder.getLocale();
+                String language = locale.toString();
+
+                long time_difference = (carStateDto.outTimestamp == null ? (new Date()).getTime() : carStateDto.outTimestamp.getTime()) - carStateDto.inTimestamp.getTime();
+                long days_difference = TimeUnit.MILLISECONDS.toDays(time_difference) % 365;
+                if (days_difference > 0) {
+                    durationBuilder.append(days_difference + (language.equals("ru")?"д ":"d "));
+                }
+
+                long hours_difference = TimeUnit.MILLISECONDS.toHours(time_difference) % 24;
+                if (hours_difference > 0 || durationBuilder.length() > 0) {
+                    durationBuilder.append(hours_difference + (language.equals("ru")?"ч ":"h "));
+                }
+
+                long minutes_difference = TimeUnit.MILLISECONDS.toMinutes(time_difference) % 60;
+                if (minutes_difference > 0 || durationBuilder.length() > 0) {
+                    durationBuilder.append(minutes_difference + (language.equals("ru")?"м ":"m "));
+                }
+
+                long seconds_difference = TimeUnit.MILLISECONDS.toSeconds(time_difference) % 60;
+                if (seconds_difference > 0 || durationBuilder.length() > 0) {
+                    durationBuilder.append(seconds_difference + (language.equals("ru")?"с ":"s "));
+                }
+
+                if (carStateDto.outTimestamp == null &&
+                        (days_difference > 0 || (days_difference <= 0 && hours_difference >= 16))) {
+                    carStateDto.css = "table-danger";
+                }
+            }
+            carStateDto.duration = durationBuilder.toString();
+        }
 
         Page<CarStateDto> page = new Page<>(filtered);
         page.setRecordsFiltered((int) count);

@@ -45,7 +45,7 @@ public class RtaController {
             calendar.add(Calendar.MINUTE, 1);
             Date dateTo = calendar.getTime();
 
-            calendar.add(Calendar.MONTH, -1);
+            calendar.add(Calendar.DATE, -1);
             Date dateFrom = calendar.getTime();
 
             model.addAttribute("carStateFilterDto", CarStateFilterDto.builder()
@@ -94,7 +94,7 @@ public class RtaController {
             calendar.add(Calendar.MINUTE, 1);
             Date dateTo = calendar.getTime();
 
-            calendar.add(Calendar.MONTH, -1);
+            calendar.add(Calendar.DATE, -1);
             Date dateFrom = calendar.getTime();
 
             model.addAttribute("carStateFilterDto", CarStateFilterDto.builder()
@@ -137,7 +137,7 @@ public class RtaController {
             calendar.add(Calendar.MINUTE, 1);
             Date dateTo = calendar.getTime();
 
-            calendar.add(Calendar.MONTH, -1);
+            calendar.add(Calendar.DATE, -1);
             Date dateFrom = calendar.getTime();
 
             model.addAttribute("carStateFilterDto", CarStateFilterDto.builder()

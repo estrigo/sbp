@@ -79,38 +79,6 @@ public class CarStateDto {
         dto.inImageUrl  = carState.getInPhotoUrl();
         dto.outImageUrl  = carState.getOutPhotoUrl();
 
-        StringBuilder durationBuilder = new StringBuilder("");
-        if (carState.getInTimestamp() != null) {
-            Locale locale = LocaleContextHolder.getLocale();
-            String language = locale.toString();
-
-            long time_difference = (carState.getOutTimestamp() == null ? (new Date()).getTime() : carState.getOutTimestamp().getTime()) - carState.getInTimestamp().getTime();
-            long days_difference = TimeUnit.MILLISECONDS.toDays(time_difference) % 365;
-            if (days_difference > 0) {
-                durationBuilder.append(days_difference + (language.equals("ru")?"д ":"d "));
-            }
-
-            long hours_difference = TimeUnit.MILLISECONDS.toHours(time_difference) % 24;
-            if (hours_difference > 0 || durationBuilder.length() > 0) {
-                durationBuilder.append(hours_difference + (language.equals("ru")?"ч ":"h "));
-            }
-
-            long minutes_difference = TimeUnit.MILLISECONDS.toMinutes(time_difference) % 60;
-            if (minutes_difference > 0 || durationBuilder.length() > 0) {
-                durationBuilder.append(minutes_difference + (language.equals("ru")?"м ":"m "));
-            }
-
-            long seconds_difference = TimeUnit.MILLISECONDS.toSeconds(time_difference) % 60;
-            if (seconds_difference > 0 || durationBuilder.length() > 0) {
-                durationBuilder.append(seconds_difference + (language.equals("ru")?"с ":"s "));
-            }
-
-            if (carState.getOutTimestamp() == null &&
-                    (days_difference > 0 || (days_difference <= 0 && hours_difference >= 16))) {
-                dto.css = "table-danger";
-            }
-        }
-        dto.duration = durationBuilder.toString();
         return dto;
     }
 
