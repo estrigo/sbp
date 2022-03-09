@@ -14,9 +14,9 @@ import java.util.List;
 
 public interface CarStateService {
 
-    void createINState(String carNumber, Date inTimestamp, Camera camera, Boolean paid, String whitelistJson);
+    void createINState(String carNumber, Date inTimestamp, Camera camera, Boolean paid, String whitelistJson, String inPhotoUrl);
 
-    void createOUTState(String carNumber, Date outTimestamp, Camera camera, CarState carState);
+    void createOUTState(String carNumber, Date outTimestamp, Camera camera, CarState carState, String outPhotoUrl);
 
     void createOUTManual(String carNumber, Date outTimestamp, CarState carState);
 
@@ -32,6 +32,12 @@ public interface CarStateService {
 
     Page<CarStateDto> getAll(PagingRequest pagingRequest,
                              CarStateFilterDto carStateFilterDto) throws ParseException;
+
+    Page<CarStateDto> getEntriesWithoutExit(PagingRequest pagingRequest,
+                             CarStateFilterDto carStateFilterDto) throws ParseException;
+
+    Page<CarStateDto> getExitsWithoutEntry(PagingRequest pagingRequest,
+                                           CarStateFilterDto carStateFilterDto) throws ParseException;
 
     CarState save(CarState carState);
 

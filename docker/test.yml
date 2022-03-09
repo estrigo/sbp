@@ -106,7 +106,10 @@ parking:
         cases: false # Выпускать все авто где вьезд не найден
   remove:
     all:
-      debts: false
+      debts:
+  only:
+    register:
+      cars: false
 telegram:
   bot:
     external:

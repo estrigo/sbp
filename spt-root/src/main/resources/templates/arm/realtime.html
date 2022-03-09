@@ -4,6 +4,7 @@
 <link th:href="@{/assets/css/fancybox.css}" rel="stylesheet" type="text/css"/>
 <div class="content">
     <div class="container">
+        <th:block sec:authorize="!hasRole('ROLE_RTA')">
         <div class="row mb-1">
             <div class="col-12 text-right">
                 <span class="dropdown">
@@ -23,6 +24,7 @@
                 </button>
             </div>
         </div>
+        </th:block>
         <div class="row">
             <div class="col-sm-4 col-lg-4 col-xs-12 item" th:each="camera, iterStat : ${cameras}"
                  th:id="${'item_' + camera.id}"
@@ -60,55 +62,57 @@
                             <img th:id="${'lp' + camera.id}"/>
                         </div>
                     </div>
-                    <table class="w-100">
-                        <tbody>
-                        <tr>
-                            <td class="w-50"
-                                sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                <button type="button" class="btn btn-outline-success w-100"
-                                        th:cameraId="${camera.id}"
-                                        th:onclick="openGate(this.getAttribute('cameraId'))"
-                                        th:text="#{arm.open}"></button>
-                            </td>
-                            <td class="w-50"
-                                sec:authorize="!hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                            </td>
-                            <td class="w-50"
-                                sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                <button type="button" class="btn btn-outline-warning w-100"
-                                        th:cameraId="${camera.id}"
-                                        th:onclick="closeGate(this.getAttribute('cameraId'))"
-                                        th:text="#{arm.close}"></button>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    <table class="w-100">
-                        <tbody>
-                        <tr>
-                            <td class="w-50"
-                                sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
-                                       th:placeholder="#{arm.licensePlate}"
-                                       th:onkeydown="onTextEnter(this.getAttribute('cameraId'))"
-                                       class="form-control w-100">
-                            </td>
-                            <td class="w-25"
-                                sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
-                                        th:onclick="passCar(this.getAttribute('cameraId'))"
-                                        th:text="#{crm.letIn}"></button>
-                            </td>
-                            <td class="w-25"
-                                sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                <button type="button" class="btn btn-outline-primary w-100"
-                                        th:cameraId="${camera.id}"
-                                        th:onclick="checkBalance(this.getAttribute('cameraId'))"
-                                        th:text="#{crm.balance}"></button>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+                    <th:block sec:authorize="!hasRole('ROLE_RTA')">
+                        <table class="w-100">
+                            <tbody>
+                            <tr>
+                                <td class="w-50"
+                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                    <button type="button" class="btn btn-outline-success w-100"
+                                            th:cameraId="${camera.id}"
+                                            th:onclick="openGate(this.getAttribute('cameraId'))"
+                                            th:text="#{arm.open}"></button>
+                                </td>
+                                <td class="w-50"
+                                    sec:authorize="!hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                </td>
+                                <td class="w-50"
+                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                    <button type="button" class="btn btn-outline-warning w-100"
+                                            th:cameraId="${camera.id}"
+                                            th:onclick="closeGate(this.getAttribute('cameraId'))"
+                                            th:text="#{arm.close}"></button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <table class="w-100">
+                            <tbody>
+                            <tr>
+                                <td class="w-50"
+                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                    <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
+                                           th:placeholder="#{arm.licensePlate}"
+                                           th:onkeydown="onTextEnter(this.getAttribute('cameraId'))"
+                                           class="form-control w-100">
+                                </td>
+                                <td class="w-25"
+                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                    <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
+                                            th:onclick="passCar(this.getAttribute('cameraId'))"
+                                            th:text="#{crm.letIn}"></button>
+                                </td>
+                                <td class="w-25"
+                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                    <button type="button" class="btn btn-outline-primary w-100"
+                                            th:cameraId="${camera.id}"
+                                            th:onclick="checkBalance(this.getAttribute('cameraId'))"
+                                            th:text="#{crm.balance}"></button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </th:block>
                 </div>
                 <div class="m-b-10 border border-dark"
                      style="overflow-x:hidden;overflow-y:scroll; width: 100%;max-height: 150px;min-height: 100px;"

@@ -46,4 +46,32 @@ public class CarStateRestController {
     public Boolean removeDebt(@RequestParam String plateNumber) throws Exception {
         return carStateService.removeDebt(plateNumber);
     }
+
+    @PostMapping("/entries")
+    public Page<CarStateDto> listEntries(@RequestBody PagingRequest pagingRequest,
+                                  @RequestParam String plateNumber,
+                                  @RequestParam String dateFromString,
+                                  @RequestParam String dateToString,
+                                  @RequestParam Long inGateId) throws ParseException {
+        return carStateService.getEntriesWithoutExit(pagingRequest, CarStateFilterDto.builder()
+                .plateNumber(plateNumber)
+                .dateFromString(dateFromString)
+                .dateToString(dateToString)
+                .inGateId(inGateId)
+                .build());
+    }
+
+    @PostMapping("/exits")
+    public Page<CarStateDto> listExits(@RequestBody PagingRequest pagingRequest,
+                                  @RequestParam String plateNumber,
+                                  @RequestParam String dateFromString,
+                                  @RequestParam String dateToString,
+                                  @RequestParam Long outGateId) throws ParseException {
+        return carStateService.getExitsWithoutEntry(pagingRequest, CarStateFilterDto.builder()
+                .plateNumber(plateNumber)
+                .dateFromString(dateFromString)
+                .dateToString(dateToString)
+                .outGateId(outGateId)
+                .build());
+    }
 }

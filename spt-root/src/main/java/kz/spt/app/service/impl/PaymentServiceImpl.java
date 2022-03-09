@@ -15,7 +15,6 @@ import kz.spt.lib.model.dto.payment.CommandDto;
 import kz.spt.lib.service.*;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
-import org.pf4j.util.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -437,7 +436,7 @@ public class PaymentServiceImpl implements PaymentService {
                     billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
                 }
             }
-            carStateService.createOUTState(carNumber, new Date(), camera, carState);
+            carStateService.createOUTState(carNumber, new Date(), camera, carState, properties.get(StaticValues.carSmallImagePropertyName).toString());
 
             String descriptionRu = "Выпускаем авто: Авто с гос. номером " + carNumber + " с долгом -" + rateResult;
             String descriptionEn = "Releasing: Car with license plate " + carNumber + " with debt -" + rateResult;

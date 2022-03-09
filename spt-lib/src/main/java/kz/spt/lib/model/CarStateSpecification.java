@@ -15,8 +15,20 @@ public class CarStateSpecification {
         return (root, query, builder) -> builder.greaterThanOrEqualTo(root.get(CarState_.inTimestamp), date);
     }
 
+    public static Specification<CarState> lessEndDate(Date date) {
+        return (root, query, builder) -> builder.lessThanOrEqualTo(root.get(CarState_.outTimestamp), date);
+    }
+
+    public static Specification<CarState> greaterEndDate(Date date) {
+        return (root, query, builder) -> builder.greaterThanOrEqualTo(root.get(CarState_.outTimestamp), date);
+    }
+
     public static Specification<CarState> likePlateNumber(String plateNumber) {
         return (root, query, builder) -> builder.like(root.get(CarState_.carNumber), "%" + plateNumber + "%");
+    }
+
+    public static Specification<CarState> inTimestampIsNull() {
+        return (root, query, builder) -> builder.isNull(root.get(CarState_.inTimestamp));
     }
 
     public static Specification<CarState> equalAmount(BigDecimal amount) {

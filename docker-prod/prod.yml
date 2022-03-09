@@ -118,6 +118,9 @@ parking:
   remove:
     all:
       debts: false
+  only:
+    register:
+      cars: false
 webkassa:
   host: https://kkm.webkassa.kz
 telegram:

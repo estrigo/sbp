@@ -5,12 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 @Data
@@ -35,6 +37,8 @@ public class CarStateDto {
     public String parking;
     public String css;
     public String abonomentJson;
+    public String inImageUrl;
+    public String outImageUrl;
 
     public Date getNullSafeInTimestamp() {
         return this.inTimestamp == null ? new Date() : this.inTimestamp;
@@ -72,28 +76,33 @@ public class CarStateDto {
         if (carState.getOutGate() != null) {
             dto.outGate = carState.getOutGate().getName() + ", " + carState.getParking().getName();
         }
+        dto.inImageUrl  = carState.getInPhotoUrl();
+        dto.outImageUrl  = carState.getOutPhotoUrl();
 
         StringBuilder durationBuilder = new StringBuilder("");
         if (carState.getInTimestamp() != null) {
+            Locale locale = LocaleContextHolder.getLocale();
+            String language = locale.toString();
+
             long time_difference = (carState.getOutTimestamp() == null ? (new Date()).getTime() : carState.getOutTimestamp().getTime()) - carState.getInTimestamp().getTime();
             long days_difference = TimeUnit.MILLISECONDS.toDays(time_difference) % 365;
             if (days_difference > 0) {
-                durationBuilder.append(days_difference + "д. ");
+                durationBuilder.append(days_difference + (language.equals("ru")?"д ":"d "));
             }
 
             long hours_difference = TimeUnit.MILLISECONDS.toHours(time_difference) % 24;
             if (hours_difference > 0 || durationBuilder.length() > 0) {
-                durationBuilder.append(hours_difference + "ч. ");
+                durationBuilder.append(hours_difference + (language.equals("ru")?"ч ":"h "));
             }
 
             long minutes_difference = TimeUnit.MILLISECONDS.toMinutes(time_difference) % 60;
             if (minutes_difference > 0 || durationBuilder.length() > 0) {
-                durationBuilder.append(minutes_difference + "мин. ");
+                durationBuilder.append(minutes_difference + (language.equals("ru")?"м ":"m "));
             }
 
             long seconds_difference = TimeUnit.MILLISECONDS.toSeconds(time_difference) % 60;
             if (seconds_difference > 0 || durationBuilder.length() > 0) {
-                durationBuilder.append(seconds_difference + "сек. ");
+                durationBuilder.append(seconds_difference + (language.equals("ru")?"с ":"s "));
             }
 
             if (carState.getOutTimestamp() == null &&

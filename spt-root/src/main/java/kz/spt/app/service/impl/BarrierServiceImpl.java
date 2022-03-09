@@ -39,10 +39,6 @@ public class BarrierServiceImpl implements BarrierService {
     private final String BARRIER_ON = "1";
     private final String BARRIER_OFF = "0";
 
-    private enum Command {
-        Open, Close
-    }
-
     public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, BarrierRepository barrierRepository, EventLogService eventLogService){
         this.disableOpen = disableOpen;
         this.barrierRepository = barrierRepository;

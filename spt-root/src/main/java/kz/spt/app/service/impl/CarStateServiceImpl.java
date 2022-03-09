@@ -11,6 +11,7 @@ import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.*;
 import kz.spt.app.repository.CarStateRepository;
 import kz.spt.lib.utils.StaticValues;
+import kz.spt.lib.utils.Utils;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.springframework.data.domain.PageRequest;
@@ -49,7 +50,7 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
-    public void createINState(String carNumber, Date inTimestamp, Camera camera, Boolean paid, String whitelistJson) {
+    public void createINState(String carNumber, Date inTimestamp, Camera camera, Boolean paid, String whitelistJson, String inPhotoUrl) {
         CarState carState = new CarState();
         carState.setCarNumber(carNumber);
         carState.setInTimestamp(inTimestamp);
@@ -60,16 +61,30 @@ public class CarStateServiceImpl implements CarStateService {
         carState.setInBarrier(camera.getGate().getBarrier());
         carState.setWhitelistJson(whitelistJson);
         carState.setPaid(paid);
+        carState.setInPhotoUrl(inPhotoUrl);
         carStateRepository.save(carState);
     }
 
     @Override
-    public void createOUTState(String carNumber, Date outTimestamp, Camera camera, CarState carState) {
-        carState.setOutTimestamp(outTimestamp);
-        carState.setOutChannelIp(camera.getIp());
-        carState.setOutGate(camera.getGate());
-        carState.setOutBarrier(camera.getGate().getBarrier());
-        carStateRepository.save(carState);
+    public void createOUTState(String carNumber, Date outTimestamp, Camera camera, CarState carState, String outPhotoUrl) {
+        if(carState != null){
+            carState.setOutTimestamp(outTimestamp);
+            carState.setOutChannelIp(camera.getIp());
+            carState.setOutGate(camera.getGate());
+            carState.setOutBarrier(camera.getGate().getBarrier());
+            carState.setOutPhotoUrl(outPhotoUrl);
+            carStateRepository.save(carState);
+        } else {
+            carState = new CarState();
+            carState.setOutTimestamp(outTimestamp);
+            carState.setOutChannelIp(camera.getIp());
+            carState.setOutGate(camera.getGate());
+            carState.setCarNumber(carNumber);
+            carState.setParking(camera.getGate().getParking());
+            carState.setOutBarrier(camera.getGate().getBarrier());
+            carState.setOutPhotoUrl(outPhotoUrl);
+            carStateRepository.save(carState);
+        }
     }
 
     public void cancelPaid(CarState carState) {
@@ -167,12 +182,81 @@ public class CarStateServiceImpl implements CarStateService {
         return carStateRepository.findAll(specification);
     }
 
+    @SneakyThrows
+    public Iterable<CarState> listExitsByFilters(CarStateFilterDto filterDto) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+        Specification<CarState> specification = CarStateSpecification.inTimestampIsNull();
+
+        if (!StringUtils.isEmpty(filterDto.getPlateNumber())) {
+            specification = CarStateSpecification.likePlateNumber(filterDto.getPlateNumber());
+        }
+        if (!StringUtils.isEmpty(filterDto.getDateFromString())) {
+            specification = specification.and(CarStateSpecification.greaterEndDate(format.parse(filterDto.getDateFromString())));
+        }
+        if (!StringUtils.isEmpty(filterDto.getDateToString())) {
+            specification = specification.and(CarStateSpecification.lessEndDate(format.parse(filterDto.getDateToString())));
+        }
+        if (filterDto.getOutGateId() != null) {
+            specification = specification.and(CarStateSpecification.equalOutGateId(filterDto.getOutGateId()));
+        }
+
+        specification = specification.and(CarStateSpecification.orderById());
+        return carStateRepository.findAll(specification);
+    }
+
     @Override
     public Page<CarStateDto> getAll(PagingRequest pagingRequest,
                                     CarStateFilterDto carStateFilterDto) throws ParseException {
 
         List<CarState> carStates = (List<CarState>) this.listByFilters(carStateFilterDto);
         List<CarStateDto> carStateDtos = CarStateDto.fromCarStates(carStates);
+        for(CarStateDto carStateDto:carStateDtos){
+            Cars car = carsService.findByPlatenumber(carStateDto.carNumber);
+            if(car != null){
+                if(car.getRegion() != null){
+                    carStateDto.carNumber = Utils.convertRegion(car.getRegion()) + " " + carStateDto.carNumber;
+                }
+                if(car.getType() != null){
+                    carStateDto.carNumber = carStateDto.carNumber + "["+ car.getType() +"]";
+                }
+            }
+        }
+        return getPage(carStateDtos, pagingRequest);
+    }
+
+    @Override
+    public Page<CarStateDto> getEntriesWithoutExit(PagingRequest pagingRequest, CarStateFilterDto carStateFilterDto) throws ParseException {
+        List<CarState> carStates = (List<CarState>) this.listByFilters(carStateFilterDto);
+        List<CarStateDto> carStateDtos = CarStateDto.fromCarStates(carStates);
+        for(CarStateDto carStateDto:carStateDtos){
+            Cars car = carsService.findByPlatenumber(carStateDto.carNumber);
+            if(car != null){
+                if(car.getRegion() != null){
+                    carStateDto.carNumber = Utils.convertRegion(car.getRegion()) + " " + carStateDto.carNumber;
+                }
+                if(car.getType() != null){
+                    carStateDto.carNumber = carStateDto.carNumber + "["+ car.getType() +"]";
+                }
+            }
+        }
+        return getPage(carStateDtos, pagingRequest);
+    }
+
+    @Override
+    public Page<CarStateDto> getExitsWithoutEntry(PagingRequest pagingRequest, CarStateFilterDto carStateFilterDto) throws ParseException {
+        List<CarState> carStates = (List<CarState>) this.listExitsByFilters(carStateFilterDto);
+        List<CarStateDto> carStateDtos = CarStateDto.fromCarStates(carStates);
+        for(CarStateDto carStateDto:carStateDtos){
+            Cars car = carsService.findByPlatenumber(carStateDto.carNumber);
+            if(car != null){
+                if(car.getRegion() != null){
+                    carStateDto.carNumber = Utils.convertRegion(car.getRegion()) + " " + carStateDto.carNumber;
+                }
+                if(car.getType() != null){
+                    carStateDto.carNumber = carStateDto.carNumber + "["+ car.getType() +"]";
+                }
+            }
+        }
         return getPage(carStateDtos, pagingRequest);
     }
 

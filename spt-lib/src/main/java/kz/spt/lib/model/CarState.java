@@ -42,6 +42,12 @@ public class CarState {
     @Column(name = "out_timestamp")
     private Date outTimestamp;
 
+    @Column(name = "in_photo_url")
+    private String inPhotoUrl;
+
+    @Column(name = "out_photo_url")
+    private String outPhotoUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
     private Parking.ParkingType type;
@@ -143,5 +149,9 @@ public class CarState {
         } else {
             return true;
         }
+    }
+
+    private Boolean isCarLeft(){
+        return this.outTimestamp != null;
     }
 }

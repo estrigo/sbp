@@ -55,7 +55,7 @@
                         <a th:href="@{|/customers/list|}" class="waves-effect waves-primary"><i
                                 class="ti-home"></i><span th:text=" #{customer.customers}"></span></a>
                     </li>
-                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_OPERATOR')">
+                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_OPERATOR', 'ROLE_RTA')">
                         <a th:href="@{|/arm/realtime|}" class="waves-effect waves-primary"><i
                                 class="ti-desktop"></i><span th:text=" #{crm.arm} "></span></a>
                     </li>
@@ -63,44 +63,61 @@
                         <a th:href="@{|/events/list|}" class="waves-effect waves-primary"><i
                                 class="ti-files"></i><span th:text=" #{events.events} "></span></a>
                     </li>
-                    <li>
-                        <a th:href="@{|/journal/list|}" class="waves-effect waves-primary"><i
-                                class="ti-receipt"></i><span th:text=" #{carstate.journal} "></span></a>
-                    </li>
-                    <li th:each="template : ${@pluginServiceImpl.getTemplateMenus()}" th:if="${template != null}"
-                        th:class="${template['subMenus'] != null ? 'has_sub' : ''}">
-                        <a th:if="${template['subMenus'] == null}" th:href="@{|/${template['url']}|}"
-                           class="waves-effect waves-primary">
-                            <i th:class="${template['cssClass']}"></i><span th:text=" ${template['label']} "></span>
-                        </a>
+                    <th:block sec:authorize="!hasRole('ROLE_RTA')">
+                        <li>
+                            <a th:href="@{|/journal/list|}" class="waves-effect waves-primary"><i
+                                    class="ti-receipt"></i><span th:text=" #{carstate.journal} "></span></a>
+                        </li>
 
-                        <a th:if="${template['subMenus'] != null}" href="javascript:void(0);"
-                           class="waves-effect waves-primary">
-                            <i th:class="${template['cssClass']}"></i><span
-                                th:text=" ${template['label']} "></span><span class="menu-arrow"></span>
-                        </a>
-                        <ul th:if="${template['subMenus'] != null}" class="list-unstyled">
-                            <li th:each="submenu : ${template['subMenus']}"><a th:href="@{|/${submenu['url']}|}"
-                                                                               th:text=" ${submenu['label']} "></a></li>
-                        </ul>
-                    </li>
-                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_AUDIT')">
-                        <a th:href="@{|/parking/cars|}" class="waves-effect waves-primary"><i
-                                class="ti-files"></i><span th:text=" #{parking.cars} "></span></a>
-                    </li>
-                    <li class="menu-title" th:text="#{crm.service}"></li>
-                    <li>
-                        <a th:href="@{|/blacklist/list|}" class="waves-effect waves-primary"><i
-                                class="ti-list-ol"></i><span th:text=" #{blacklist.title} "></span></a>
-                    </li>
-                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
-                        <a th:href="@{|/balance/operation|}" class="waves-effect waves-primary"><i
-                                class="ti-list-ol"></i><span th:text=" #{balance.balance} "></span></a>
-                    </li>
-                    <li>
-                        <a class="waves-effect waves-primary" onclick="javascript:$('#helpModal').modal('show')">
-                            <i class="ti-heart"></i><span th:text=" #{crm.help} "></span></a>
-                    </li>
+                        <li th:each="template : ${@pluginServiceImpl.getTemplateMenus()}" th:if="${template != null}"
+                            th:class="${template['subMenus'] != null ? 'has_sub' : ''}">
+                            <a th:if="${template['subMenus'] == null}" th:href="@{|/${template['url']}|}"
+                               class="waves-effect waves-primary">
+                                <i th:class="${template['cssClass']}"></i><span th:text=" ${template['label']} "></span>
+                            </a>
+
+                            <a th:if="${template['subMenus'] != null}" href="javascript:void(0);"
+                               class="waves-effect waves-primary">
+                                <i th:class="${template['cssClass']}"></i><span
+                                    th:text=" ${template['label']} "></span><span class="menu-arrow"></span>
+                            </a>
+                            <ul th:if="${template['subMenus'] != null}" class="list-unstyled">
+                                <li th:each="submenu : ${template['subMenus']}"><a th:href="@{|/${submenu['url']}|}"
+                                                                                   th:text=" ${submenu['label']} "></a></li>
+                            </ul>
+                        </li>
+                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_AUDIT')">
+                            <a th:href="@{|/parking/cars|}" class="waves-effect waves-primary"><i
+                                    class="ti-files"></i><span th:text=" #{parking.cars} "></span></a>
+                        </li>
+                        <li class="menu-title" th:text="#{crm.service}"></li>
+                        <li>
+                            <a th:href="@{|/blacklist/list|}" class="waves-effect waves-primary"><i
+                                    class="ti-list-ol"></i><span th:text=" #{blacklist.title} "></span></a>
+                        </li>
+                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                            <a th:href="@{|/balance/operation|}" class="waves-effect waves-primary"><i
+                                    class="ti-list-ol"></i><span th:text=" #{balance.balance} "></span></a>
+                        </li>
+                        <li>
+                            <a class="waves-effect waves-primary" onclick="javascript:$('#helpModal').modal('show')">
+                                <i class="ti-heart"></i><span th:text=" #{crm.help} "></span></a>
+                        </li>
+                    </th:block>
+                    <th:block sec:authorize="hasRole('ROLE_RTA')">
+                        <li>
+                            <a th:href="@{|/rta/journal|}" class="waves-effect waves-primary"><i
+                                    class="ti-receipt"></i><span th:text=" #{rta.journal} "></span></a>
+                        </li>
+                        <li>
+                            <a th:href="@{|/rta/entries|}" class="waves-effect waves-primary"><i
+                                    class="mdi mdi-login-variant"></i><span th:text=" #{rta.entries} "></span></a>
+                        </li>
+                        <li>
+                            <a th:href="@{|/rta/exits|}" class="waves-effect waves-primary"><i
+                                    class="mdi mdi-logout-variant"></i><span th:text=" #{rta.exits} "></span></a>
+                        </li>
+                    </th:block>
                 </ul>
                 <ul sec:authorize="!isAuthenticated()">
                     <li class="menu-title">Main</li>

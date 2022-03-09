@@ -47,6 +47,7 @@ public class DefaultUrlAuthenticationSuccessHandler implements AuthenticationSuc
         Map<String, String> roleTargetUrlMap = new HashMap<>();
         roleTargetUrlMap.put("ROLE_ADMIN", "/arm/realtime");
         roleTargetUrlMap.put("ROLE_SUPERADMIN", "/arm/realtime");
+        roleTargetUrlMap.put("ROLE_RTA", "/arm/realtime");
         roleTargetUrlMap.put("ROLE_MANAGER", "/events/list");
 
         final Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();

@@ -21,7 +21,6 @@ public class CommandExecutor implements PluginRegister {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode node = objectMapper.createObjectNode();
         node.put("zeroTouchResult", false);
-        log.info("test1");
         if(command!=null && command.has("command") && "checkZeroTouch".equals(command.get("command").textValue())){
             if(command.has("plateNumber") && command.get("plateNumber").isTextual()
                     && command.has("rate") && command.get("rate").isBigDecimal()

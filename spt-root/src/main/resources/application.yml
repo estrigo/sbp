@@ -19,6 +19,10 @@ spring:
     controller:
       base-path: "/sbp/admin"
     disabled-plugins:
+      - "billing-plugin"
+      - "rate-plugin"
+      - "report-plugin"
+      - "whitelist-plugin"
       - "test-plugin"
       - "booking-plugin"
       - "zerotouch-plugin"
@@ -102,6 +106,9 @@ parking:
   remove:
     all:
       debts: false
+  only:
+    register:
+      cars: true
 parkomat.ip:
 cors:
   allowed:
