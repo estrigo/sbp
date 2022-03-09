@@ -12,4 +12,5 @@ public class CommandDto {
     public String txn_id;
     public BigDecimal sum;
     public Boolean prepaid = false;
+    public String clientId;
 }

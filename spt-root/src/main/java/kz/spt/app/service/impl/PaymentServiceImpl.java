@@ -605,7 +605,13 @@ public class PaymentServiceImpl implements PaymentService {
 
         Authentication a = SecurityContextHolder.getContext().getAuthentication();
         String clientId = ((OAuth2Authentication) a).getOAuth2Request().getClientId();
+        if (clientId.equals("gateway")) {
+            clientId = commandDto.clientId;
+        }
+
         node.put("clientId", clientId);
+
+        System.out.println(clientId);
 
         Cars cars = carService.findByPlatenumberWithCustomer(commandDto.account);
         if (cars != null && cars.getCustomer() != null) {
