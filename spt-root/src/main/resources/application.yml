@@ -24,7 +24,6 @@ spring:
       - "booking-plugin"
       - "zerotouch-plugin"
       - "tgbot-plugin"
-      - "abonoment-plugin"
     main:
       banner-mode: off
   datasource:
