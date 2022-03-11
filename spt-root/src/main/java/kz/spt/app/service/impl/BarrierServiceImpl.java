@@ -10,12 +10,14 @@ import com.intelligt.modbus.jlibmodbus.tcp.TcpParameters;
 import kz.spt.app.job.CarSimulateJob;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
+import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.SensorStatusDto;
 import kz.spt.app.repository.BarrierRepository;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.snmp.SNMPManager;
 import kz.spt.lib.model.Barrier;
+import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.dto.jetson.JetsonResponse;
 import kz.spt.lib.service.EventLogService;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -153,6 +156,23 @@ public class BarrierServiceImpl implements BarrierService {
             GateStatusDto gate = new GateStatusDto();
             gate.gateType = barrier.getGate().getGateType();
             gate.gateName = barrier.getGate().getName();
+            barrier.getGate().getCameraList().forEach(camera->{
+                if(Camera.CameraType.FRONT.equals(camera.getCameraType())){
+                    if(gate.frontCamera == null){
+                        gate.frontCamera = new CameraStatusDto();
+                        gate.frontCamera.id = camera.getId();
+                        gate.frontCamera.ip = camera.getIp();
+                    } else {
+                        gate.frontCamera2 = new CameraStatusDto();
+                        gate.frontCamera2.id = camera.getId();
+                        gate.frontCamera2.ip = camera.getIp();
+                    }
+                }
+                if(Camera.CameraType.BACK.equals(camera.getCameraType())){
+                    gate.backCamera = new CameraStatusDto();
+                    gate.backCamera.id = camera.getId();
+                }
+            });
 
             if(barrier.getBarrierType() == null){
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + ((String) properties.get("carNumber") != null ? " для номер авто " + (String) properties.get("carNumber") : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""));
@@ -382,23 +402,22 @@ public class BarrierServiceImpl implements BarrierService {
     }
 
     private Boolean jetsonChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) {
-        Boolean result = true;
         String cameraIp = gate.frontCamera != null ? gate.frontCamera.ip :
                 gate.frontCamera2 != null ? gate.frontCamera2.ip :
                         gate.backCamera != null ? gate.backCamera.ip : "";
 
         if (cameraIp.isEmpty()) {
-            result = false;
             eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null,
                     "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась определить камеру чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""),
                     "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't find camera for opening " + (carNumber != null ? " for car number " + carNumber : ""));
+            return false;
         }
 
         var restTemplate = new RestTemplateBuilder().build();
         var response = restTemplate.getForObject("http://" + barrier.ip + ":5000" + "/handle?ip_address=" + cameraIp, JetsonResponse.class);
-        result = response.getSuccess();
 
-        return result;
+        log.info(response.toString());
+        return response.getSuccess();
     }
 
     private enum Command {
