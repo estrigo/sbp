@@ -207,6 +207,10 @@ public class CommandExecutor implements PluginRegister {
                             });
                 }
                 node.set("payments", payments);
+            } else if("deleteAllDebts".equals(commandName)){
+                getBalanceService().deleteAllDebts();
+            } else {
+                throw new RuntimeException("Unknown command for billing operation");
             }
         } else {
             throw new RuntimeException("Unknown command for billing operation");

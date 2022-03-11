@@ -1,7 +1,13 @@
 package kz.spt.app.job;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.service.CarStateService;
+import kz.spt.lib.service.PluginService;
+import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +22,9 @@ public class CleanDebtAndPaidParkings {
 
     @Autowired
     private CarStateService carStateService;
+
+    @Autowired
+    private PluginService pluginService;
 
     @Value("${parking.remove.all.debts:false}")
     Boolean parkingRemoveAllDebts;
@@ -37,6 +46,15 @@ public class CleanDebtAndPaidParkings {
                         e.printStackTrace();
                     }
                 }
+            }
+            PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectNode jsonNode = objectMapper.createObjectNode();
+            try {
+                jsonNode.put("command", "deleteAllDebts");
+                billingPluginRegister.execute(jsonNode);
+            } catch (Exception e){
+                e.printStackTrace();
             }
         } else {
             log.info("Remove debt disabled");

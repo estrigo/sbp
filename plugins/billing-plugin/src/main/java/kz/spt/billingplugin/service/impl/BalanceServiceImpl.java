@@ -81,6 +81,15 @@ public class BalanceServiceImpl implements BalanceService {
         return getPage(allBalances, pagingRequest);
     }
 
+    @Override
+    public void deleteAllDebts() {
+        List<Balance> debtBalances = balanceRepository.debtBalances();
+        for(Balance balance : debtBalances){
+            balance.setBalance(BigDecimal.ZERO);
+            balanceRepository.save(balance);
+        }
+    }
+
     private Page<Balance> getPage(List<Balance> balancesList, PagingRequest pagingRequest) {
         List<Balance> filtered = balancesList.stream()
                 .sorted(sortBalance(pagingRequest))

@@ -19,4 +19,5 @@ public interface BalanceService {
 
     Page<Balance> getBalanceList(PagingRequest pagingRequest);
 
+    void deleteAllDebts();
 }
