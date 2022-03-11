@@ -19,6 +19,7 @@ public class ParkomatCommandDTO {
     String type;
     String parkomat;
     BigDecimal change;
+    String paymentType;
 
     public String getAccount() {
         return account!=null ? account.toUpperCase(Locale.ROOT) : "";

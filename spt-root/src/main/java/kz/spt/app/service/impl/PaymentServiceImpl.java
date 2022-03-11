@@ -394,10 +394,9 @@ public class PaymentServiceImpl implements PaymentService {
                 node.put("parkomatId", commandDto.getParkomat());
                 node.put("sum", commandDto.getSum());
                 node.put("change", commandDto.getChange());
-                node.put("change", commandDto.getChange());
                 node.put("txn_id", commandDto.getTxn_id());
                 node.put("operationName", "Оплата парковки");
-                node.put("paymentType", 0);
+                node.put("paymentType", "ikkm_payment".equals(commandDto.getPaymentType()) ? 1 : 0);
                 JsonNode checkResult = billingPluginRegister.execute(node);
                 return checkResult;
             } else if ("zReport".equals(commandDto.getCommand())) {
