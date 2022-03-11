@@ -73,7 +73,7 @@ public class CommandExecutor implements PluginRegister {
                     Customer customer = getRootServicesGetterService().getCustomerService().findById(command.get("customerId").longValue());
                     payment.setCustomer(customer);
                 }
-                payment.setInDate(format.parse(command.get("inDate").textValue()));
+                payment.setInDate(command.get("inDate").textValue() != null ?  format.parse(command.get("inDate").textValue()) : null);
                 payment.setRateDetails(command.has("rateName") ? command.get("rateName").textValue() : "");
                 payment.setCarStateId(command.has("carStateId") ? command.get("carStateId").longValue() : null);
 

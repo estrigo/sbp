@@ -106,7 +106,7 @@ public class CarEventServiceImpl implements CarEventService {
                 properties.put("gateType", camera.getGate().getGateType().toString());
                 properties.put("type", EventLog.StatusType.Allow);
 
-                if (eventDto.car_picture != null && !"null".equals(snapshot) && !"".equals(snapshot) && !"undefined".equals(snapshot)) {
+                if (eventDto.car_picture != null && !"null".equals(snapshot) && !"".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
                     String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_time, eventDto.car_number);
                     properties.put(StaticValues.carImagePropertyName, carImageUrl);
                     properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
