@@ -13,8 +13,9 @@ public class CarEventDto {
     @Pattern(regexp = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")
     public String ip_address;
 
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="dd:MM:yyyy HH:mm:ssZ")
-    public Date event_time;
+    public String event_time;
+
+    public Date event_date_time;
 
     @NotNull
     @Size(min = 3, max = 16)

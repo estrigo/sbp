@@ -1,16 +1,13 @@
 package kz.spt.app.service.impl;
 
 import kz.spt.app.component.HttpRequestFactoryDigestAuth;
-import kz.spt.app.job.CameraSnapshotJob;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.service.CameraService;
-import kz.spt.app.thread.GetSnapshotThread;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.dto.CarEventDto;
-import kz.spt.lib.model.dto.SnapshotThreadDto;
 import kz.spt.lib.service.*;
 import kz.spt.app.service.BarrierService;
 import kz.spt.lib.utils.StaticValues;
@@ -155,7 +152,7 @@ public class ArmServiceImpl implements ArmService {
                         }
 
                         CarEventDto eventDto = new CarEventDto();
-                        eventDto.event_time = new Date();
+                        eventDto.event_date_time = new Date();
                         eventDto.car_number = debtPlatenumber;
                         eventDto.ip_address = camera.getIp();
                         eventDto.lp_rect = null;

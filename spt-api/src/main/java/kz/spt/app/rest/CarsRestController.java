@@ -4,7 +4,6 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.dto.CarEventDto;
-import kz.spt.lib.model.dto.temp.CarTempReqBodyJsonDto;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.CarEventService;
 import org.springframework.http.HttpStatus;
@@ -33,7 +32,7 @@ public class CarsRestController {
     @ResponseBody
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addCarEvent(@Valid @RequestBody CarEventDto carEventDto) throws Exception{
-        carEventDto.event_time = new Date(); // Не можем полагаться на время камеры
+        carEventDto.event_date_time = new Date(); // Не можем полагаться на время камеры
         carEventService.saveCarEvent(carEventDto);
     }
 
