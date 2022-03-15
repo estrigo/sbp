@@ -9,6 +9,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -96,17 +98,16 @@ public class CarImageServiceImpl implements CarImageService {
             theDir.mkdirs();
         }
 
-        String fullPath = path + fileName + StaticValues.carImageExtension;
-        Files.write(Path.of(fullPath), image);
-
-        String resizedFileName = fileName + StaticValues.carImageSmallAddon;
-        String resizedfullPath = path + resizedFileName + StaticValues.carImageExtension;
-
-        Thumbnails.of(fullPath)
+        ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
+        Thumbnails.of(new ByteArrayInputStream(image))
                 .size(350, 350)
                 .outputFormat("JPEG")
                 .outputQuality(1)
-                .toFile(resizedfullPath);
+                .toOutputStream(resultStream);
+
+        String resizedFileName = fileName + StaticValues.carImageSmallAddon;
+        String resizedfullPath = path + resizedFileName + StaticValues.carImageExtension;
+        Files.write(Path.of(resizedfullPath), resultStream.toByteArray());
     }
 
     @Override
