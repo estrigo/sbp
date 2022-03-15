@@ -23,6 +23,12 @@ java -jar spt-root-0.0.1-SNAPSHOT-standalone.jar
 
 ==== Application start in production mode inside docker container
 
+For production master branch of https://github.com/Parqour-Inc/parking_management_software is used
+
+Firstly, build docker image by task spt-app-prod-image inside jenkins located at http://10.66.5.6:8080/
+
+=== If application about to run the for first time
+
 All compose yml files located inside docker-prod/compose folder
 
 Inside new server create new_parking folder:
@@ -50,8 +56,12 @@ cd nginx
 scp nginx.cnf {user}@{server_ip}:~/new_parking/nginx/.
 ----
 
-Then start docker containers by command
+Then start docker containers use command
 ----
 docker-compose -f {suitable}.yml up -d
 ----
+
+=== If application is updating
+
+Then change only doc.smartparking.kz/spt-app:x version to doc.smartparking.kz/spt-app:y version, where y is new built version of jenkins task.
 
