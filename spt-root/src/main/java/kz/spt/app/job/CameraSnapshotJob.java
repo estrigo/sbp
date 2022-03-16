@@ -43,9 +43,16 @@ public class CameraSnapshotJob {
     @Scheduled(fixedDelay = 5000)
     public void run() {
         cameraService.cameraList().forEach(camera->{
-            if (StringUtils.isEmpty(camera.getSnapshotUrl())) return;
-
             String name = "snapshot-camera-" + camera.getId().toString();
+            if (StringUtils.isEmpty(camera.getSnapshotUrl())) {
+                if(threads.containsKey(name)){
+                    threads.get(name).getThread().interrupt();
+                    threads.remove(name);
+                    log.info("Ending task:" + name);
+                }
+                return;
+            }
+
             if (CameraSnapshotJob.threads.containsKey(name)) {
                 return;
             }
