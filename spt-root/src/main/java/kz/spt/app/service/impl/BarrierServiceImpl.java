@@ -329,6 +329,7 @@ public class BarrierServiceImpl implements BarrierService {
             tcpParameters.setPort(Modbus.TCP_PORT);
 
             ModbusMaster m = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
+            m.setResponseTimeout(4000); // 4 seconds timeout
 
             int slaveId = 1;
             int offset = Command.Open.equals(command) ? barrier.modbusOpenRegister-1 : barrier.modbusCloseRegister-1;
