@@ -2,6 +2,7 @@ package kz.spt.billingplugin.service.impl;
 
 import kz.spt.billingplugin.BillingPlugin;
 import kz.spt.billingplugin.service.RootServicesGetterService;
+import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.CustomerService;
 import kz.spt.lib.service.ParkingService;
@@ -12,6 +13,7 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
 
     private ParkingService parkingService;
     private CustomerService customerService;
+    private CarStateService carStateService;
 
     @Override
     public ParkingService getParkingService() {
@@ -27,5 +29,13 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
             customerService = (CustomerService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("customerServiceImpl");
         }
         return customerService;
+    }
+
+    @Override
+    public CarStateService getCarStateService() {
+        if(this.carStateService == null){
+            carStateService = (CarStateService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("carStateServiceImpl");
+        }
+        return carStateService;
     }
 }

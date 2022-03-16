@@ -52,6 +52,11 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
+    public CarState findById(Long carStateId) {
+        return carStateRepository.findById(carStateId).get();
+    }
+
+    @Override
     public void createINState(String carNumber, Date inTimestamp, Camera camera, Boolean paid, String whitelistJson, String inPhotoUrl) {
         CarState carState = new CarState();
         carState.setCarNumber(carNumber);

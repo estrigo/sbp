@@ -14,6 +14,8 @@ import java.util.List;
 
 public interface CarStateService {
 
+    CarState findById(Long carStateId);
+
     void createINState(String carNumber, Date inTimestamp, Camera camera, Boolean paid, String whitelistJson, String inPhotoUrl);
 
     void createOUTState(String carNumber, Date outTimestamp, Camera camera, CarState carState, String outPhotoUrl);

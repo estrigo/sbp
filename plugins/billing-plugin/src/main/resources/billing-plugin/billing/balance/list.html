@@ -10,15 +10,45 @@
         <div class="row">
             <div class="col-12">
                 <div class="card table-responsive">
+                    <div class="card-header" th:text="#{menu.billing.billing}"></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-4">
+                                <label th:text="#{events.dateFrom}"></label>
+                                <input type="datetime-local" id="dateFromString" class="form-control filter" th:placeholder="#{events.dateFrom}">
+                            </div>
+                            <div class="col-4">
+                                <label th:text="#{events.dateTo}"></label>
+                                <input type="datetime-local" id="dateToString" class="form-control filter" placeholder="#{events.dateTo}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-4">
+                                <input type="text" id="platenumber" class="form-control" th:placeholder="#{car.platenumber}">
+                            </div>
+                            <div class="col-4">
+                                <input type="number" id="amount" class="form-control" th:placeholder="#{balance.amount}">
+                            </div>
+                        </div>
+
+                        <table id="billingTable" class="table table-bordered table-bordered">
+                            <thead>
+                            <tr>
+                                <th th:text="#{balance.date}"></th>
+                                <th th:text="#{balance.plateNumber}"></th>
+                                <th th:text="#{balance.amount}"></th>
+                                <th th:text="#{balance.period}"></th>
+                                <th th:text="#{balance.description}"></th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+
                     <div class="card-header" th:text="#{balance.balance}"></div>
                     <div class="card-body">
                         <table id="balanceTable" class="table table-bordered table-bordered">
-                            <thead>
-                            <tr>
-                                <th th:text="#{balance.plateNumber}"></th>
-                                <th th:text="#{balance.balance}"></th>
-                            </tr>
-                            </thead>
+                            <th th:text="#{balance.plateNumber}"></th>
+                            <th th:text="#{balance.balance}"></th>
                         </table>
                     </div>
                 </div>
@@ -49,11 +79,25 @@
     if (locale == "en") {
         address = "";
     }
-    const table = $('#balanceTable').DataTable({
+
+    let currentDate = [[${currentDate}]];
+    let oneMonthEarly = [[${oneMonthEarly}]];
+
+    $('#dateFromString').val(oneMonthEarly);
+    $('#dateToString').val(currentDate);
+
+    function buildAjaxUrl(){
+        return "/rest/balances/transactions?dateFromString=" + $('#dateFromString').val()
+            + "&dateToString=" + $('#dateToString').val()
+            + "&plateNumber=" + $('#platenumber').val()
+            + "&amount=" + $('#amount').val();
+    }
+
+    const billingTable = $('#billingTable').DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
-            "url": "/rest/balances",
+            "url": buildAjaxUrl(),
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",
@@ -62,8 +106,14 @@
             }
         },
         "columns": [
-            {"data": "plateNumber", "width" : "25%"},
-            {"data": "balance"}
+            {"data": "date"},
+            {"data": "plateNumber"},
+            {"data": "amount"},
+            {"data": "period"},
+            {"data": "description"}
+        ],
+        "order": [ //[[ in thymeleaf is inline script
+            [0, "desc"]
         ],
         "buttons": ['copy', 'excel', 'pdf', 'csv'],
         language: {
@@ -77,12 +127,50 @@
     });
 
     function showButtons(){
+        if(billingTable.buttons().container().length > 0){
+            clearInterval(interval);
+            billingTable.buttons().container().appendTo('#billingTable_wrapper .col-md-6:eq(0)');
+        }
         if(table.buttons().container().length > 0){
             clearInterval(interval);
-            table.buttons().container().appendTo('#customerTable_wrapper .col-md-6:eq(0)');
+            table.buttons().container().appendTo('#table_wrapper .col-md-6:eq(0)');
         }
     }
 
+    $('#platenumber').on('keyup', function () {
+        billingTable.ajax.url(buildAjaxUrl()).load();
+    });
+    $('#amount').on('keyup', function () {
+        billingTable.ajax.url(buildAjaxUrl()).load();
+    });
+    $('#dateFromString').on('change', function () {
+        billingTable.ajax.url(buildAjaxUrl()).load();
+    });
+    $('#dateToString').on('change', function () {
+        billingTable.ajax.url(buildAjaxUrl()).load();
+    });
+
+    const table = $('#balanceTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "/rest/balances",
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+                return JSON.stringify(d);
+            }
+        },
+        "columns": [
+            {"data": "plateNumber", "width": "25%"},
+            {"data": "balance"}
+        ],
+        "buttons": ['copy', 'excel', 'pdf', 'csv'],
+        language: {
+            url: address
+        }
+    });
 </script>
 
 </html>
