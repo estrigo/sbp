@@ -289,15 +289,7 @@
         };
 
         const carImageExtension = ".jpeg";
-        const carImageSmallAddon = "_resize_w_200_h_100";
-        let d = new Date();
-        let year = d.getFullYear();
-        let month = d.getMonth() + 1;
-        let day = d.getDate();
-        let h = d.getHours() > 9 ? d.getHours() : "0" + d.getHours();
-        let m = d.getMinutes() > 9 ? d.getMinutes() : "0" + d.getMinutes();
-        let s = d.getSeconds() > 9 ? d.getSeconds() : "0" + d.getSeconds();
-        image.src = '/files/pictures/' + ip + "/" + year + "/" + month + "/" + day + "/" + h + m + s + carImageSmallAddon + carImageExtension + "?ver=" + Math.random();
+        image.src = '/files/pictures/' + ip + "?ver=" + Math.random();
 
         image.onerror = function () {
             image = null;

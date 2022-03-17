@@ -76,38 +76,16 @@ public class CarImageServiceImpl implements CarImageService {
     }
 
     @Override
-    public void saveSnapshot(byte[] image, Date eventDate, String ip) throws IOException {
-        SimpleDateFormat format = new SimpleDateFormat("HHmmss");
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(eventDate);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;
-        int day = calendar.get(Calendar.DATE);
-
-        String cameraPath = imagePath +"/"+ip;
-        File cameraDir = new File(cameraPath);
-        if(!cameraDir.exists()){
-            cameraDir.mkdirs();
-        }
-
-        String fileName = format.format(calendar.getTime());
-        String path = cameraPath + "/" + year + "/" + month + "/" + day + "/";
+    public void saveSnapshot(byte[] image, String ip) throws IOException {
+        String fileName = ip.replace(".","-");
+        String path = imagePath;
         File theDir = new File(path);
         if (!theDir.exists()){
             theDir.mkdirs();
         }
 
-        ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
-        Thumbnails.of(new ByteArrayInputStream(image))
-                .size(350, 350)
-                .outputFormat("JPEG")
-                .outputQuality(1)
-                .toOutputStream(resultStream);
-
-        String resizedFileName = fileName + StaticValues.carImageSmallAddon;
-        String resizedfullPath = path + resizedFileName + StaticValues.carImageExtension;
-        Files.write(Path.of(resizedfullPath), resultStream.toByteArray());
+        String fullPath = path + fileName + StaticValues.carImageExtension;
+        Files.write(Path.of(fullPath), image);
     }
 
     @Override
