@@ -5,8 +5,8 @@
 <div class="content">
     <div class="container">
         <th:block sec:authorize="!hasRole('ROLE_RTA')">
-        <div class="row mb-1">
-            <div class="col-12 text-right">
+            <div class="row mb-1">
+                <div class="col-12 text-right">
                 <span class="dropdown">
                     <button class="btn btn-info dropdown-toggle" type="button" data-toggle="dropdown"
                             aria-expanded="false" th:text="#{parking.support}">
@@ -19,11 +19,11 @@
                         <a class="dropdown-item" href="#" th:text="#{support.cvNotWork}" onclick="support(this)"></a>
                     </div>
                 </span>
-                <button type="button" class="btn btn-primary" th:text="#{arm.restart}"
-                        th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart
-                </button>
+                    <button type="button" class="btn btn-primary" th:text="#{arm.restart}"
+                            th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart
+                    </button>
+                </div>
             </div>
-        </div>
         </th:block>
         <div class="row">
             <div class="col-sm-4 col-lg-4 col-xs-12 item" th:each="camera, iterStat : ${cameras}"
@@ -289,7 +289,7 @@
         };
 
         const carImageExtension = ".jpeg";
-        image.src = '/files/pictures/' + ip + "?ver=" + Math.random();
+        image.src = '/files/pictures/' + ip.replace(".", "-") + carImageExtension + "?ver=" + Math.random();
 
         image.onerror = function () {
             image = null;
