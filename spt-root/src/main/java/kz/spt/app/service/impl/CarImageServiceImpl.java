@@ -1,7 +1,7 @@
 package kz.spt.app.service.impl;
 
-import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.CarImageService;
+import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import net.coobird.thumbnailator.Thumbnails;
@@ -9,14 +9,15 @@ import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 @Log
 @Service
@@ -25,7 +26,7 @@ public class CarImageServiceImpl implements CarImageService {
     private String imagePath;
     private EventLogService eventLogService;
 
-    public CarImageServiceImpl(@Value("${images.file.path}") String imagePath, EventLogService eventLogService){
+    public CarImageServiceImpl(@Value("${images.file.path}") String imagePath, EventLogService eventLogService) {
         this.imagePath = imagePath;
         this.eventLogService = eventLogService;
     }
@@ -44,7 +45,7 @@ public class CarImageServiceImpl implements CarImageService {
         String fileName = carNumber + "_" + format.format(calendar.getTime());
         String path = imagePath + "/" + year + "/" + month + "/" + day + "/";
         File theDir = new File(path);
-        if (!theDir.exists()){
+        if (!theDir.exists()) {
             theDir.mkdirs();
         }
 
@@ -52,8 +53,8 @@ public class CarImageServiceImpl implements CarImageService {
         base64imageTypes.add("data:image/jpeg;base64,");
         base64imageTypes.add("data:image/jpg;base64,");
 
-        for(String imageType : base64imageTypes){
-            if(base64.startsWith(imageType)){
+        for (String imageType : base64imageTypes) {
+            if (base64.startsWith(imageType)) {
                 base64 = base64.replaceFirst(imageType, "");
             }
         }
@@ -72,19 +73,19 @@ public class CarImageServiceImpl implements CarImageService {
                 .outputQuality(1)
                 .toFile(resizedfullPath);
 
-        return fullPath.replace(imagePath,"");
+        return fullPath.replace(imagePath, "");
     }
 
     @Override
     public void saveSnapshot(byte[] image, String ip) throws IOException {
-        String fileName = ip.replace(".","-");
+        String fileName = ip.replace(".", "-");
         String path = imagePath;
         File theDir = new File(path);
-        if (!theDir.exists()){
+        if (!theDir.exists()) {
             theDir.mkdirs();
         }
 
-        String fullPath = path + fileName + StaticValues.carImageExtension;
+        String fullPath = path + "/" + fileName + StaticValues.carImageExtension;
         Files.write(Path.of(fullPath), image);
     }
 
