@@ -347,7 +347,7 @@ public class WhitelistServiceImpl implements WhitelistService {
                 objectNode.put("id", whitelist.getId());
                 objectNode.put("plateNumber", whitelist.getCar().getPlatenumber());
                 objectNode.put("type", whitelist.getType().toString());
-                if (AbstractWhitelist.Type.PERIOD.equals(whitelist.getType())) {
+                if (AbstractWhitelist.Type.PERIOD.equals(whitelist.getType()) || Whitelist.Type.BOTTAXI.equals(whitelist.getGroup().getType())) {
                     if (whitelist.getAccess_start() != null) {
                         objectNode.put("accessStart", format.format(whitelist.getAccess_start()));
                     }
@@ -365,7 +365,7 @@ public class WhitelistServiceImpl implements WhitelistService {
                 objectNode.put("groupId", whitelist.getGroup().getId());
                 objectNode.put("groupName", whitelist.getGroup().getName());
                 objectNode.put("type", whitelist.getGroup().getType().toString());
-                if (Whitelist.Type.PERIOD.equals(whitelist.getGroup().getType())) {
+                if (Whitelist.Type.PERIOD.equals(whitelist.getGroup().getType()) || Whitelist.Type.BOTTAXI.equals(whitelist.getGroup().getType())) {
                     if (whitelist.getGroup().getAccess_start() != null) {
                         objectNode.put("accessStart", format.format(whitelist.getGroup().getAccess_start()));
                     }
