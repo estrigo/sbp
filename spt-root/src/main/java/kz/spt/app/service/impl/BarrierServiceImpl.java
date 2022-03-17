@@ -97,17 +97,29 @@ public class BarrierServiceImpl implements BarrierService {
                     tcpParameters.setPort(Modbus.TCP_PORT);
 
                     ModbusMaster m = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
+                    m.setResponseTimeout(4000); // 4 seconds timeout
 
                     int slaveId = 1;
-                    int offset = sensor.modbusRegister-1;
-
                     try {
                         if (!m.isConnected()) {
                             m.connect();
                         }
-                        boolean[] changedValue = m.readCoils(slaveId, offset, 1);
-                        if(changedValue != null && changedValue.length > 0){
-                            result = changedValue[0] ? 0 : 1;
+
+                        if(sensor.modbusDeviceVersion != null && "210-301".equals(sensor.modbusDeviceVersion)){
+                            int offset = 51;
+                            int sensor_value = sensor.modbusRegister-1;
+                            int quantity = 1;
+
+                            int[] values = m.readHoldingRegisters(slaveId, offset, quantity);
+                            for (int value : values) {
+                                result = Integer.toBinaryString(value).charAt(sensor_value) == '1' ? 0 : 1;
+                            }
+                        } else {
+                            int offset = sensor.modbusRegister-1;
+                            boolean[] changedValue = m.readCoils(slaveId, offset, 1);
+                            if(changedValue != null && changedValue.length > 0){
+                                result = changedValue[0] ? 0 : 1;
+                            }
                         }
                     } catch (ModbusProtocolException e) {
                         e.printStackTrace();
@@ -332,50 +344,118 @@ public class BarrierServiceImpl implements BarrierService {
             m.setResponseTimeout(4000); // 4 seconds timeout
 
             int slaveId = 1;
-            int offset = Command.Open.equals(command) ? barrier.modbusOpenRegister-1 : barrier.modbusCloseRegister-1;
 
             try {
                 // since 1.2.8
                 if (!m.isConnected()) {
                     m.connect();
                 }
-
                 Boolean isOpenValueChanged = false;
-                m.writeSingleCoil(slaveId, offset, true);
-                boolean[] changedValue = m.readCoils(slaveId, offset, 1);
-                if(changedValue != null && changedValue.length > 0 && changedValue[0]){
-                    isOpenValueChanged = true;
-                }
-                log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
-                if (!isOpenValueChanged) {
-                    for (int i = 0; i < 3; i++) {
-                        m.writeSingleCoil(slaveId, offset, true);
-                        if(changedValue != null && changedValue.length > 0 && changedValue[0]){
+
+                int offset = Command.Open.equals(command) ? barrier.modbusOpenRegister-1 : barrier.modbusCloseRegister-1;
+                if(barrier.modbusDeviceVersion != null && "210-301".equals(barrier.modbusDeviceVersion)){
+                    offset = 470;
+                    int new_value = Command.Open.equals(command) ? (int) Math.pow(2, barrier.modbusOpenRegister-1) : (int) Math.pow(2, barrier.modbusCloseRegister-1);
+                    int quantity = 1;
+
+                    int[] new_values = new int[1];
+                    new_values[0] = new_value;
+                    m.writeMultipleRegisters(slaveId, offset, new_values);
+                    // at next string we receive ten registers from a slave with id of 1 at offset of 0.
+                    int[] registerValues = m.readHoldingRegisters(slaveId, offset, quantity);
+                    for (int value : registerValues) {
+                        if(value == new_value){
                             isOpenValueChanged = true;
-                            break;
                         }
                     }
+                    log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
                     if (!isOpenValueChanged) {
-                        result = false;
-                        eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение true чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
-                    }
-                } else {
-                    Thread.sleep(500);
-                    boolean[] currentValue = m.readCoils(slaveId, offset, 1);
-                    if(currentValue != null && currentValue.length > 0 && currentValue[0]){
-                        m.writeSingleCoil(slaveId, offset, false);
-                        currentValue = m.readCoils(slaveId, offset, 1);
-                        Boolean isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
-                        if(!isReturnValueChanged){
-                            for (int i = 0; i < 3; i++) {
-                                m.writeSingleCoil(slaveId, offset, false);
-                                isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
-                                if (isReturnValueChanged) {
-                                    break;
+                        for (int i = 0; i < 3; i++) {
+                            m.writeMultipleRegisters(slaveId, offset, new_values);
+                            registerValues = m.readHoldingRegisters(slaveId, offset, quantity);
+                            for (int value : registerValues) {
+                                if(value == new_value){
+                                    isOpenValueChanged = true;
                                 }
                             }
-                            if (!isReturnValueChanged) {
-                                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 0 for terminating opening process " + (carNumber != null ? " for car number " + carNumber : ""));
+                            if(isOpenValueChanged){
+                                break;
+                            }
+                        }
+                        if (!isOpenValueChanged) {
+                            result = false;
+                            eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение true чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
+                        }
+                    } else {
+                        Thread.sleep(500);
+                        registerValues = m.readHoldingRegisters(slaveId, offset, quantity);
+                        Boolean valueKeepHolding = false;
+                        for (int value : registerValues) {
+                            if(value == new_value){
+                                valueKeepHolding = true;
+                            }
+                        }
+                        if(valueKeepHolding){
+                            new_values[0] = 0; // turn off all holdings
+                            m.writeMultipleRegisters(slaveId, offset, new_values);
+                            registerValues = m.readHoldingRegisters(slaveId, offset, quantity);
+                            Boolean isReturnValueChanged = false;
+                            for (int value : registerValues) {
+                                isReturnValueChanged = value == 0;
+                            }
+                            if(!isReturnValueChanged){
+                                for (int i = 0; i < 3; i++) {
+                                    m.writeMultipleRegisters(slaveId, offset, new_values);
+                                    for (int value : registerValues) {
+                                        isReturnValueChanged = value == 0;
+                                    }
+                                    if (isReturnValueChanged) {
+                                        break;
+                                    }
+                                }
+                                if (!isReturnValueChanged) {
+                                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 0 for terminating opening process " + (carNumber != null ? " for car number " + carNumber : ""));
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    m.writeSingleCoil(slaveId, offset, true);
+                    boolean[] changedValue = m.readCoils(slaveId, offset, 1);
+                    if(changedValue != null && changedValue.length > 0 && changedValue[0]){
+                        isOpenValueChanged = true;
+                    }
+                    log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
+                    if (!isOpenValueChanged) {
+                        for (int i = 0; i < 3; i++) {
+                            m.writeSingleCoil(slaveId, offset, true);
+                            if(changedValue != null && changedValue.length > 0 && changedValue[0]){
+                                isOpenValueChanged = true;
+                                break;
+                            }
+                        }
+                        if (!isOpenValueChanged) {
+                            result = false;
+                            eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение true чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
+                        }
+                    } else {
+                        Thread.sleep(500);
+                        boolean[] currentValue = m.readCoils(slaveId, offset, 1);
+                        if(currentValue != null && currentValue.length > 0 && currentValue[0]){
+                            m.writeSingleCoil(slaveId, offset, false);
+                            currentValue = m.readCoils(slaveId, offset, 1);
+                            Boolean isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
+                            if(!isReturnValueChanged){
+                                for (int i = 0; i < 3; i++) {
+                                    m.writeSingleCoil(slaveId, offset, false);
+                                    isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
+                                    if (isReturnValueChanged) {
+                                        break;
+                                    }
+                                }
+                                if (!isReturnValueChanged) {
+                                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 0 for terminating opening process " + (carNumber != null ? " for car number " + carNumber : ""));
+                                }
                             }
                         }
                     }
@@ -398,7 +478,6 @@ public class BarrierServiceImpl implements BarrierService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return result;
     }
 

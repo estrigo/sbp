@@ -63,6 +63,9 @@ public class Barrier {
     @JoinColumn(name = "gate")
     private Gate gate;
 
+    @Column(name = "modbus_device_version")
+    private String modbusDeviceVersion;
+
     @Column(name = "modbus_open_register")
     private Integer modbusOpenRegister;
 

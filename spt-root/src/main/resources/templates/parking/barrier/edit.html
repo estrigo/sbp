@@ -71,13 +71,23 @@
     </div>
 
     <div class="row" id="modbusBarrierDiv" style="display: none;">
-        <div class="col-md-6">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="modbusDeviceVersion" class="control-label" th:text="#{barrier.modbusDeviceVersion}"></label>
+                <select th:field="*{modbusDeviceVersion}" th:value="*{modbusDeviceVersion}" class="form-control" id="modbusDeviceVersion">
+                    <option value="110-30">110-30</option>
+                    <option value="210-301">210-301</option>
+                    <option value="110-224">110-224</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4">
             <div class="form-group">
                 <label for="snmpVersion" class="control-label" th:text="#{barrier.modbusOpenRegister}"></label>
                 <input type="number" step="1" min="0" class="form-control" id="modbusOpenRegister" th:field="*{modbusOpenRegister}" th:value="*{modbusOpenRegister}">
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="form-group">
                 <label for="snmpVersion" class="control-label" th:text="#{barrier.modbusCloseRegister}"></label>
                 <input type="number" step="1" min="0" class="form-control" id="modbusCloseRegister" th:field="*{modbusCloseRegister}" th:value="*{modbusCloseRegister}">

@@ -12,5 +12,6 @@ public class SensorStatusDto {
     public Barrier.BarrierType type;
     public String sensorName; // For test only
     public Integer defaultValue = 0;
+    public String modbusDeviceVersion;
     public Integer modbusRegister;
 }

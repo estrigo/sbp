@@ -67,6 +67,7 @@ public class GateStatusDto {
                 gateStatusDto.loop.defaultValue = barrier.getLoopDefaultValue();
                 gateStatusDto.loop.sensorName = "loop";
                 gateStatusDto.loop.modbusRegister = barrier.getLoopModbusRegister();
+                gateStatusDto.loop.modbusDeviceVersion = barrier.getModbusDeviceVersion();
             }
             if(barrier.getPhotoElementIp() != null && barrier.getPhotoElementPassword() != null && barrier.getPhotoElementOid() != null && barrier.getPhotoElementType() != null){
                 gateStatusDto.photoElement = new SensorStatusDto();
@@ -79,7 +80,7 @@ public class GateStatusDto {
                 gateStatusDto.loop.defaultValue  = barrier.getPhotoElementDefaultValue();
                 gateStatusDto.photoElement.sensorName = "photoElement";
                 gateStatusDto.photoElement.modbusRegister = barrier.getPhotoElementModbusRegister();
-
+                gateStatusDto.photoElement.modbusDeviceVersion = barrier.getModbusDeviceVersion();
             }
         }
         List<Camera> cameraList = gate.getCameraList();
