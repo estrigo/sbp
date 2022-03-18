@@ -92,7 +92,7 @@ public class SnapshotSaver {
         address.append(camera.getSnapshotUrl());
         HttpEntity entity = new HttpEntity(headers);
         byte[] imageBytes = restTemplate.getForObject(address.toString(), byte[].class, entity);
-        Files.write(Paths.get(imagePath+"/"+ip.replace(".", "-") + ".jpg"), imageBytes);
+        Files.write(Paths.get(imagePath+"/"+ip.replace(".", "-") + ".jpeg"), imageBytes);
     }
 
     private CredentialsProvider provider(String login, String password) {
