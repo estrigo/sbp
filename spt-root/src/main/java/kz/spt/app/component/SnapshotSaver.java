@@ -47,7 +47,7 @@ public class SnapshotSaver {
 
     @Scheduled(fixedDelay = 2000)
     public void runner() {
-
+        log.info("Getting snapshot");
         List<Camera> cameraList = cameraService.cameraList();
         ExecutorService executorService = Executors.newCachedThreadPool();
         List<Future<Camera>> futures = new ArrayList<Future<Camera>>();
@@ -74,6 +74,7 @@ public class SnapshotSaver {
     private void getSnapshot(Camera camera) throws IOException {
 
         String ip = camera.getIp();
+        log.info("Getting snapshot from "+ ip);
         HttpHost host = new HttpHost(ip, 8080, "http");
         CloseableHttpClient client = HttpClientBuilder.create().
                 setDefaultCredentialsProvider(provider("admin", "campas123"))
