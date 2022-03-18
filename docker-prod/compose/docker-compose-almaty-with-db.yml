@@ -53,6 +53,8 @@ services:
       - "IMGPROXY_LOCAL_FILESYSTEM_ROOT=/tmp/snapshot"
     volumes:
       - "/var/www/parking/storage/new_parking:/tmp/snapshot"
+    networks:
+      - parking-net
 volumes:
   db_data:
 networks:
