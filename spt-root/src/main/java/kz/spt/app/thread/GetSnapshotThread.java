@@ -58,7 +58,7 @@ public class GetSnapshotThread extends Thread {
                         break;
                     }
                 }
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch (Exception ex) {
                 log.warning("Error task:" + getName() + "," +
                         "task id:" + getId() + "," +
