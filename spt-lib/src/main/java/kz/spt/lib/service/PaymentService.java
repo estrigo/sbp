@@ -13,6 +13,12 @@ public interface PaymentService {
 
     Object billingInteractions(CommandDto commandDto) throws Exception;
 
+    /**
+     * Обработка команды поступающих с паркомата
+     * @param parkomatCommandDto
+     * @return
+     * @throws Exception
+     */
     Object billingInteractions(ParkomatCommandDTO parkomatCommandDto) throws Exception;
 
     BigDecimal getRateValue(RateQueryDto rateQueryDto) throws Exception;

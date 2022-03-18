@@ -38,8 +38,13 @@ public class CameraSnapshotJob {
     private String imagePath;
 
     //@Scheduled(cron = "0 0 * * * *")
-    @Scheduled(fixedDelay = 5000)
+    //@Scheduled(fixedDelay = 5000)
     public void run() {
+
+
+
+/*
+
         cameraService.cameraList().forEach(camera -> {
             String name = "snapshot-camera-" + camera.getId().toString();
             if (StringUtils.isEmpty(camera.getSnapshotUrl())) {
@@ -76,7 +81,7 @@ public class CameraSnapshotJob {
                     snapshotTaskExecutor.initialize();
                 }
             }
-        });
+        });*/
     }
 
     //@Scheduled(cron = "0 1 1 * * ?")
