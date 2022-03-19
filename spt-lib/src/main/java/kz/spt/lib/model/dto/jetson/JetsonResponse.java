@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class JetsonResponse {
     private String msg;
     private Boolean success;
+    private Integer state;
 }

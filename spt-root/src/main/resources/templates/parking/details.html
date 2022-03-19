@@ -249,7 +249,21 @@
             $('#barrier-close-modal').find('#modbusBarrierDiv').hide();
             $('#barrier-close-modal').find('#loopModbusDiv').hide();
             $('#barrier-close-modal').find('#photoElementModbusDiv').hide();
-        } else {
+            $('#barrier-close-modal').find('#loopJetsonDiv').hide();
+            $('#barrier-close-modal').find('#photoElementJetsonDiv').hide();
+        } else if(!barrierType || "JETSON" === barrierType){
+            $('#barrier-close-modal').find('#snmpOpenOidDiv').show();
+            $('#barrier-close-modal').find('#snmpCloseOidDiv').show();
+            $('#barrier-close-modal').find('#snmpPassword').hide();
+            $('#barrier-close-modal').find('#snmpVersionDiv').hide();
+            $('#barrier-close-modal').find('#loopSnmpDiv').hide();
+            $('#barrier-close-modal').find('#photoElementSnmpDiv').hide();
+            $('#barrier-close-modal').find('#modbusBarrierDiv').hide();
+            $('#barrier-close-modal').find('#loopModbusDiv').hide();
+            $('#barrier-close-modal').find('#photoElementModbusDiv').hide();
+            $('#barrier-close-modal').find('#loopJetsonDiv').show();
+            $('#barrier-close-modal').find('#photoElementJetsonDiv').show();
+        }else {
             $('#barrier-close-modal').find('#snmpPassword').hide();
             $('#barrier-close-modal').find('#snmpOpenOidDiv').hide();
             $('#barrier-close-modal').find('#snmpCloseOidDiv').hide();
@@ -259,6 +273,8 @@
             $('#barrier-close-modal').find('#modbusBarrierDiv').show();
             $('#barrier-close-modal').find('#loopModbusDiv').show();
             $('#barrier-close-modal').find('#photoElementModbusDiv').show();
+            $('#barrier-close-modal').find('#loopJetsonDiv').hide();
+            $('#barrier-close-modal').find('#photoElementJetsonDiv').hide();
         }
     }
 </script>
