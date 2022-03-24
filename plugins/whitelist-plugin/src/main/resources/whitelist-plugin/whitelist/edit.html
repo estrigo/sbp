@@ -26,23 +26,21 @@
                                 </div>
                             </div>
                             <div class="form-group row">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.parking}"></label>
+                                <div class="col-10">
+                                    <select id="parkingId" th:field="*{parkingId}" class="form-control" onchange="checkSelectedParking(value)">
+                                        <option th:each="parking : ${parkingList}" th:text="${parking.name}" th:value="${parking.id}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
                                 <label class="col-2 col-form-label" th:text="#{whitelist.groupName}"></label>
                                 <div class="col-10">
                                     <select id="groupId" th:field="*{groupId}" th:value="*{groupId}" class="form-control" onchange="checkSelectedGroups(value)">
-                                        <option value="">Не выбрано</option>
-                                        <option th:each="group : ${groupList}" th:text="${group.name}" th:value="${group.id}"></option>
                                     </select>
                                 </div>
                             </div>
                             <div id="conditionsBlock" style="display: none">
-                                <div class="form-group row">
-                                    <label class="col-2 col-form-label" th:text="#{whitelist.parking}"></label>
-                                    <div class="col-10">
-                                        <select id="parkingId" th:field="*{parkingId}" class="form-control">
-                                            <option th:each="parking : ${parkingList}" th:text="${parking.name}" th:value="${parking.id}"></option>
-                                        </select>
-                                    </div>
-                                </div>
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label" th:text="#{whitelist.type}"></label>
                                     <div class="col-10">
@@ -91,6 +89,8 @@
 <script th:src="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js}"></script>
 <script th:src="@{/assets/js/week-hours-picker.js}"></script>
 <script type="text/javascript" th:inline="javascript">
+    let groupId = [[${whitelist.groupId}]];
+
     function checkSelectedTypes(value){
         if(value == 'PERIOD'){
             $('#beginDate').show();
@@ -118,16 +118,48 @@
             $('#conditionsBlock').show();
         }
     }
+
+    let firstLoadedGroupIds = [];
+
+    function checkSelectedParking(value){
+        let form = new FormData();
+        form.append("parkingId", value);
+
+        var settings = {
+            "url": "/rest/whitelist/group/by/parking",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (response) {
+            let html = '<option value="">Не выбрано</option>';
+            let firstLoadedGroupIdsLength = firstLoadedGroupIds.length;
+            for(let i=0; i < response.length; i++){
+                html = html + '<option value="' + response[i].id + '">' + response[i].name + '</option>';
+                if(firstLoadedGroupIdsLength === 0){
+                    firstLoadedGroupIds.push(response[i].id);
+                }
+            }
+            $('#groupId').html(html);
+            if(firstLoadedGroupIdsLength === 0 && firstLoadedGroupIds.indexOf(groupId) > -1){
+                $('#groupId').val(groupId);
+            } else {
+                $('#groupId').val(undefined);
+                checkSelectedGroups(undefined);
+            }
+        });
+    }
+
     $( document ).ready(function() {
         checkSelectedTypes($('#types').val());
-        checkSelectedGroups($('#groupId').val());
 
         let state = {};
         let customJson = $('#customJson').val();
         if(customJson){
             state = JSON.parse(customJson);
         }
-
 
         // change callback
         function handleStateChange(newState) {
@@ -169,6 +201,12 @@
             handleStateChange, // optional
             options, // optional
         )
+        checkSelectedParking($('#parkingId').val());
+        console.log(firstLoadedGroupIds);
+        console.log(firstLoadedGroupIds.indexOf(groupId));
+        if(firstLoadedGroupIds.indexOf(groupId) > 0){
+            checkSelectedGroups(groupId);
+        }
     });
 </script>
 </html>

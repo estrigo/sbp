@@ -192,6 +192,16 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
         return whitelistGroups;
     }
 
+    @Override
+    public List<WhiteListGroupDto> listByParkingId(Long parkingId) {
+        List<WhitelistGroups> parkingGroups = whitelistGroupsRepository.getWhitelistGroupByParkingId(parkingId);
+        return parkingGroups.stream().map(m -> WhiteListGroupDto.builder()
+                        .id(m.getId())
+                        .name(m.getName())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     private Page<WhiteListGroupDto> getPage(List<WhiteListGroupDto> list, PagingRequest pagingRequest) {
         var filtered = list.stream()
                 .sorted(sort(pagingRequest))

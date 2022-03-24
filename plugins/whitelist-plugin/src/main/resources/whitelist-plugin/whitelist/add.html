@@ -26,23 +26,21 @@
                                 </div>
                             </div>
                             <div class="form-group row">
+                                <label class="col-2 col-form-label" th:text="#{whitelist.parking}"></label>
+                                <div class="col-10">
+                                    <select id="parkingId" th:field="*{parkingId}" class="form-control" onchange="checkSelectedParking(value)">
+                                        <option th:each="parking : ${parkingList}" th:text="${parking.name}" th:value="${parking.id}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
                                 <label class="col-2 col-form-label" th:text="#{whitelist.groupName}"></label>
                                 <div class="col-10">
                                     <select id="groupId" th:field="*{groupId}" class="form-control" onchange="checkSelectedGroups(value)">
-                                        <option value="">Не выбрано</option>
-                                        <option th:each="group : ${groupList}" th:text="${group.name}" th:value="${group.id}"></option>
                                     </select>
                                 </div>
                             </div>
                             <div id="conditionsBlock">
-                                <div class="form-group row">
-                                    <label class="col-2 col-form-label" th:text="#{whitelist.parking}"></label>
-                                    <div class="col-10">
-                                        <select id="parkingId" th:field="*{parkingId}" class="form-control">
-                                            <option th:each="parking : ${parkingList}" th:text="${parking.name}" th:value="${parking.id}"></option>
-                                        </select>
-                                    </div>
-                                </div>
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label" th:text="#{whitelist.type}"></label>
                                     <div class="col-10">
@@ -115,6 +113,29 @@
         }
     }
 
+    function checkSelectedParking(value){
+        let form = new FormData();
+        form.append("parkingId", value);
+
+        var settings = {
+            "url": "/rest/whitelist/group/by/parking",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (response) {
+            let html = '<option value="">Не выбрано</option>';
+            for(let i=0; i < response.length; i++){
+                html = html + '<option value="' + response[i].id + '">' + response[i].name + '</option>';
+            }
+            $('#groupId').html(html);
+            $('#groupId').val(undefined);
+            checkSelectedGroups(undefined);
+        });
+    }
+
     function checkInvalidNumbers(){
         let plateNumber = $('#platenumberInput').val();
         if(!/^[a-zA-Z0-9]+$/.test(plateNumber)){
@@ -169,6 +190,7 @@
         )
 
         checkSelectedTypes($('#types').val());
+        checkSelectedParking($('#parkingId').val());
     });
 </script>
 </html>

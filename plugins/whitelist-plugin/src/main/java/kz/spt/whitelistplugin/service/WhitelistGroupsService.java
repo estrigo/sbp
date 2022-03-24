@@ -25,9 +25,11 @@ public interface WhitelistGroupsService {
 
     Iterable<WhitelistGroups> listAllWhitelistGroups() throws JsonProcessingException;
 
-    public Page<WhiteListGroupDto> listByPage(PagingRequest pagingRequest);
+    Page<WhiteListGroupDto> listByPage(PagingRequest pagingRequest);
 
     void deleteById(Long id);
 
     WhitelistGroups prepareById(Long id);
+
+    List<WhiteListGroupDto> listByParkingId(Long parkingId);
 }
