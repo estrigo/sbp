@@ -47,7 +47,6 @@ public class SnapshotSaver {
 
     @Scheduled(fixedDelay = 2000)
     public void runner() {
-        log.info("Getting snapshot");
         List<Camera> cameraList = cameraService.cameraList();
         ExecutorService executorService = Executors.newCachedThreadPool();
         List<Future<Camera>> futures = new ArrayList<Future<Camera>>();
@@ -71,13 +70,12 @@ public class SnapshotSaver {
     }
 
 
-    private void getSnapshot(Camera camera) throws IOException {
+    private void getSnapshot(Camera camera) throws Exception {
 
         String ip = camera.getIp();
-        log.info("Getting snapshot from "+ ip);
         HttpHost host = new HttpHost(ip, 8080, "http");
         CloseableHttpClient client = HttpClientBuilder.create().
-                setDefaultCredentialsProvider(provider("admin", "campas123"))
+                setDefaultCredentialsProvider(provider(camera.getLogin(), camera.getPassword()))
                 .useSystemProperties()
                 .build();
         HttpComponentsClientHttpRequestFactory requestFactory =
@@ -93,6 +91,7 @@ public class SnapshotSaver {
         HttpEntity entity = new HttpEntity(headers);
         byte[] imageBytes = restTemplate.getForObject(address.toString(), byte[].class, entity);
         Files.write(Paths.get(imagePath+"/"+ip.replace(".", "-") + ".jpeg"), imageBytes);
+        requestFactory.destroy();
     }
 
     private CredentialsProvider provider(String login, String password) {
