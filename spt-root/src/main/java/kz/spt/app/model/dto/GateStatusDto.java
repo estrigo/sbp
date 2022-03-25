@@ -3,6 +3,8 @@ package kz.spt.app.model.dto;
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.Gate;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.List;
 
 public class GateStatusDto {
@@ -52,42 +54,59 @@ public class GateStatusDto {
         gateStatusDto.gateType = gate.getGateType();
 
         Barrier barrier = gate.getBarrier();
-        if(barrier != null){
-            if(Barrier.SensorsType.AUTOMATIC.equals(barrier.getSensorsType()) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) &&  barrier.getIp() != null && barrier.getPassword() != null && barrier.getOpenOid() != null && barrier.getCloseOid() != null)){
+        if (barrier != null) {
+            if (Barrier.SensorsType.AUTOMATIC.equals(barrier.getSensorsType()) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) && barrier.getIp() != null && barrier.getPassword() != null && barrier.getOpenOid() != null && barrier.getCloseOid() != null)) {
                 gateStatusDto.barrier = BarrierStatusDto.fromBarrier(barrier);
             }
-            if(barrier.getLoopIp() != null && barrier.getLoopPassword() != null && barrier.getLoopOid() != null && barrier.getLoopType() != null){
+
+            if(!StringUtils.isEmpty(barrier.getLoopIp()) && !StringUtils.isEmpty(barrier.getLoopPassword()) && barrier.getLoopOid() != null && barrier.getLoopType() != null){
                 gateStatusDto.loop = new SensorStatusDto();
                 gateStatusDto.loop.barrierId = barrier.getId();
+                gateStatusDto.loop.sensorName = "loop";
+                gateStatusDto.loop.type = barrier.getLoopType();
                 gateStatusDto.loop.ip = barrier.getLoopIp();
                 gateStatusDto.loop.password = barrier.getLoopPassword();
                 gateStatusDto.loop.oid = barrier.getLoopOid();
                 gateStatusDto.loop.snmpVersion = barrier.getLoopSnmpVersion();
-                gateStatusDto.loop.type = barrier.getLoopType();
                 gateStatusDto.loop.defaultValue = barrier.getLoopDefaultValue();
-                gateStatusDto.loop.sensorName = "loop";
                 gateStatusDto.loop.modbusRegister = barrier.getLoopModbusRegister();
                 gateStatusDto.loop.modbusDeviceVersion = barrier.getModbusDeviceVersion();
+            }else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
+                gateStatusDto.loop = new SensorStatusDto();
+                gateStatusDto.loop.barrierId = barrier.getId();
+                gateStatusDto.loop.sensorName = "loop";
+                gateStatusDto.loop.type = barrier.getBarrierType();
+                gateStatusDto.loop.ip = barrier.getIp();
+                gateStatusDto.loop.oid = barrier.getLoopJetsonPin().toString();
             }
-            if(barrier.getPhotoElementIp() != null && barrier.getPhotoElementPassword() != null && barrier.getPhotoElementOid() != null && barrier.getPhotoElementType() != null){
+
+            if(!StringUtils.isEmpty(barrier.getPhotoElementIp()) && !StringUtils.isEmpty(barrier.getPhotoElementPassword()) && barrier.getPhotoElementOid() != null && barrier.getPhotoElementType() != null){
                 gateStatusDto.photoElement = new SensorStatusDto();
                 gateStatusDto.photoElement.barrierId = barrier.getId();
+                gateStatusDto.photoElement.sensorName = "photoElement";
+                gateStatusDto.photoElement.type = barrier.getPhotoElementType();
                 gateStatusDto.photoElement.ip = barrier.getPhotoElementIp();
                 gateStatusDto.photoElement.password = barrier.getPhotoElementPassword();
                 gateStatusDto.photoElement.oid = barrier.getPhotoElementOid();
                 gateStatusDto.photoElement.snmpVersion = barrier.getPhotoElementSnmpVersion();
-                gateStatusDto.photoElement.type = barrier.getPhotoElementType();
-                gateStatusDto.loop.defaultValue  = barrier.getPhotoElementDefaultValue();
-                gateStatusDto.photoElement.sensorName = "photoElement";
+                gateStatusDto.loop.defaultValue = barrier.getPhotoElementDefaultValue();
                 gateStatusDto.photoElement.modbusRegister = barrier.getPhotoElementModbusRegister();
                 gateStatusDto.photoElement.modbusDeviceVersion = barrier.getModbusDeviceVersion();
+            }else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
+                gateStatusDto.photoElement = new SensorStatusDto();
+                gateStatusDto.photoElement.barrierId = barrier.getId();
+                gateStatusDto.photoElement.sensorName = "photoElement";
+                gateStatusDto.photoElement.type = barrier.getBarrierType();
+                gateStatusDto.photoElement.ip = barrier.getIp();
+                gateStatusDto.photoElement.oid = barrier.getPhotoElementJetsonPin().toString();
             }
         }
+
         List<Camera> cameraList = gate.getCameraList();
-        if(cameraList.size() > 0){
-            for(Camera camera: cameraList){
-                if(Camera.CameraType.FRONT.equals(camera.getCameraType())){
-                    if(gateStatusDto.frontCamera == null){
+        if (cameraList.size() > 0) {
+            for (Camera camera : cameraList) {
+                if (Camera.CameraType.FRONT.equals(camera.getCameraType())) {
+                    if (gateStatusDto.frontCamera == null) {
                         gateStatusDto.frontCamera = new CameraStatusDto();
                         gateStatusDto.frontCamera.id = camera.getId();
                         gateStatusDto.frontCamera.ip = camera.getIp();
@@ -97,7 +116,7 @@ public class GateStatusDto {
                         gateStatusDto.frontCamera2.ip = camera.getIp();
                     }
                 }
-                if(Camera.CameraType.BACK.equals(camera.getCameraType())){
+                if (Camera.CameraType.BACK.equals(camera.getCameraType())) {
                     gateStatusDto.backCamera = new CameraStatusDto();
                     gateStatusDto.backCamera.id = camera.getId();
                 }

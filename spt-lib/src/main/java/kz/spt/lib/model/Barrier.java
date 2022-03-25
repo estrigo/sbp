@@ -95,6 +95,9 @@ public class Barrier {
     @Column(name = "loop_modbus_register")
     private Integer loopModbusRegister;
 
+    @Column(name = "loop_jetson_pin")
+    private Integer loopJetsonPin;
+
     // --- Данные фотоэлемента для проверки присуствия машины (До шлагбаума)
     @Enumerated(EnumType.STRING)
     @Column(name = "loop_type")
@@ -112,6 +115,9 @@ public class Barrier {
 
     @Column(name = "photo_element_modbus_register")
     private Integer photoElementModbusRegister;
+
+    @Column(name = "photo_element_jetson_pin")
+    private Integer photoElementJetsonPin;
 
     @CreationTimestamp
     private Date created;

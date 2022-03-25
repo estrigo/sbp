@@ -177,28 +177,12 @@
         <div class="row" id="loopJetsonDiv" style="display: none;">
             <div class="col-md-4">
                 <div class="form-group">
-                    <label class="control-label" th:text="#{barrier.type}"></label>
-                    <select th:field="*{loopType}" th:value="*{loopType}" class="form-control">
-                        <option th:each="barrierType : ${T(kz.spt.lib.model.Barrier.BarrierType).ALL}"
-                                th:value="${barrierType}" th:text="#{'barrier.barrierType.' + ${barrierType}}">
-                        </option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label class="control-label" th:text="#{barrier.ipAddress}"></label>
-                    <input type="text" class="form-control" th:field="*{loopIp}" th:value="*{loopIp}" placeholder="1.1.1.1">
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
                     <label class="control-label" th:text="#{barrier.loopOid}"></label>
-                    <select type="text" class="form-control" th:field="*{loopOid}" th:value="*{loopOid}">
-                        <option value="5">1</option>
-                        <option value="6">2</option>
-                        <option value="7">3</option>
-                        <option value="8">4</option>
+                    <select type="text" class="form-control" th:field="*{loopJetsonPin}" th:value="*{loopJetsonPin}">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
                     </select>
                 </div>
             </div>
@@ -273,28 +257,12 @@
         <div class="row" id="photoElementJetsonDiv">
             <div class="col-md-4">
                 <div class="form-group">
-                    <label class="control-label" th:text="#{barrier.type}"></label>
-                    <select th:field="*{photoElementType}" th:value="*{photoElementType}" class="form-control">
-                        <option th:each="barrierType : ${T(kz.spt.lib.model.Barrier.BarrierType).ALL}"
-                                th:value="${barrierType}" th:text="#{'barrier.barrierType.' + ${barrierType}}">
-                        </option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label class="control-label" th:text="#{barrier.ipAddress}"></label>
-                    <input type="text" class="form-control" th:field="*{photoElementIp}" th:value="*{photoElementIp}" placeholder="1.1.1.1">
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
                     <label class="control-label" th:text="#{barrier.loopOid}"></label>
-                    <select type="text" class="form-control" th:field="*{photoElementOid}" th:value="*{photoElementOid}">
-                        <option value="5">1</option>
-                        <option value="6">2</option>
-                        <option value="7">3</option>
-                        <option value="8">4</option>
+                    <select type="text" class="form-control" th:field="*{photoElementJetsonPin}" th:value="*{photoElementJetsonPin}">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
                     </select>
                 </div>
             </div>

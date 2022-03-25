@@ -36,7 +36,6 @@ public class BarrierServiceImpl implements BarrierService {
 
     private final BarrierRepository barrierRepository;
     private final EventLogService eventLogService;
-    private final RestTemplate restTemplate;
     private final String BARRIER_ON = "1";
     private final String BARRIER_OFF = "0";
     private Boolean disableOpen;
@@ -45,7 +44,6 @@ public class BarrierServiceImpl implements BarrierService {
         this.disableOpen = disableOpen;
         this.barrierRepository = barrierRepository;
         this.eventLogService = eventLogService;
-        this.restTemplate = new RestTemplateBuilder().build();
     }
 
     @Override
@@ -141,7 +139,7 @@ public class BarrierServiceImpl implements BarrierService {
                 }
                 return result;
             } else if (Barrier.BarrierType.JETSON.equals(sensor.type)) {
-                var response = restTemplate.getForObject("http://" + sensor.ip + ":9001" + "/sensor_status?pin=" + sensor.oid, JetsonResponse.class);
+                var response = new RestTemplateBuilder().build().getForObject("http://" + sensor.ip + ":9001" + "/sensor_status?pin=" + sensor.oid, JetsonResponse.class);
                 log.info(response.toString());
                 return response.getState();
             } else {
@@ -474,7 +472,7 @@ public class BarrierServiceImpl implements BarrierService {
 
     private Boolean jetsonChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) {
         String pin = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
-        var response = restTemplate.getForObject("http://" + barrier.ip + ":9001" + "/gate_action?pin=" + pin, JetsonResponse.class);
+        var response = new RestTemplateBuilder().build().getForObject("http://" + barrier.ip + ":9001" + "/gate_action?pin=" + pin, JetsonResponse.class);
 
         log.info(response.toString());
         return response.getSuccess();
