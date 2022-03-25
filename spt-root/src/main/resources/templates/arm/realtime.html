@@ -212,7 +212,7 @@
                 image = null;
             };
         } else if (messageBody.eventType == 'CarEvent') {
-            $(logs).prepend(createPWithClassByStatus(messageBody.eventStatus, '[' + messageBody.plateNumber + ']' + logMessage));
+            $(logs).prepend(content(messageBody.eventStatus, '[' + messageBody.plateNumber + ']' + logMessage));
             $(fancyImage).attr("data-caption", messageBody.plateNumber);
         } else if (messageBody.eventType == 'Lp' && !!messageBody.message) {
             $(lp).parent().show();
@@ -222,7 +222,7 @@
         }
     }
 
-    function createPWithClassByStatus(eventStatus, text) {
+    function content(eventStatus, text) {
         const p = document.createElement("p");
         p.innerText = text;
         p.style.padding = '0px';
@@ -231,7 +231,7 @@
         switch (eventStatus) {
             case "Deny":
             case "Error":
-                p.className += " bg-danger";
+                p.className += " bg-poop";
                 p.className += " text-white";
                 break;
             case "Debt":
