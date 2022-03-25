@@ -133,6 +133,10 @@ public class WhitelistServiceImpl implements WhitelistService {
                         .parkingName(m.getParking().getName())
                         .groupName(m.getGroup() != null ? m.getGroup().getName() : "")
                         .conditionDetail(m.getConditionDetail())
+                        .fullName(m.getFullName())
+                        .address(m.getAddress())
+                        .parkingNumber(m.getParkingNumber())
+                        .comment(m.getComment())
                         .build())
                 .collect(Collectors.toList());
         return getPage(list, pagingRequest);

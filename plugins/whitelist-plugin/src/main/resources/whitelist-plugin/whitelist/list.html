@@ -74,9 +74,13 @@
                                     <thead>
                                     <tr>
                                         <th><a th:text="#{car.platenumber}"></a></th>
+                                        <th th:text="#{car.fullName}"></th>
+                                        <th th:text="#{car.address}"></th>
+                                        <th th:text="#{car.parkingNumber}"></th>
                                         <th><a th:text="#{whitelist.parking}"></a></th>
                                         <th><a th:text="#{whitelist.groupName}"></a></th>
                                         <th><a th:text="#{whitelist.condition}"></a></th>
+                                        <th th:text="#{car.comment}"></th>
                                         <th></th>
                                         <th></th>
                                     </tr>
@@ -173,9 +177,13 @@
         },
         columns: [
             {"data": "plateNumber"},
+            {"data": "fullName"},
+            {"data": "address"},
+            {"data": "parkingNumber"},
             {"data": "parkingName"},
             {"data": "groupName"},
-            {"data": "conditionDetail", "orderable": false,},
+            {"data": "conditionDetail", "orderable": false},
+            {"data": "comment", "orderable": false},
             {
                 "data": "id",
                 "visible": [[${canEdit}]],

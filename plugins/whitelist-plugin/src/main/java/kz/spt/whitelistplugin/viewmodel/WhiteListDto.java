@@ -11,4 +11,8 @@ public class WhiteListDto {
     private String parkingName;
     private String groupName;
     private String conditionDetail;
+    private String fullName;
+    private String address;
+    private String parkingNumber;
+    private String comment;
 }

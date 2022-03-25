@@ -25,6 +25,30 @@
                                     <input type="text" id="platenumberInput" class="form-control" th:field="*{platenumber}" th:value="*{platenumber}" onkeyup="checkInvalidNumbers()">
                                 </div>
                             </div>
+                            <div class="form-group row" id="fullName">
+                                <label class="col-2 col-form-label" th:text="#{car.fullName}"></label>
+                                <div class="col-10">
+                                    <input type="text" class="form-control" th:field="*{fullName}" >
+                                </div>
+                            </div>
+                            <div class="form-group row" id="address">
+                                <label class="col-2 col-form-label" th:text="#{car.address}"></label>
+                                <div class="col-10">
+                                    <input type="text" class="form-control" th:field="*{address}">
+                                </div>
+                            </div>
+                            <div class="form-group row" id="parkingNumber">
+                                <label class="col-2 col-form-label" th:text="#{car.parkingNumber}"></label>
+                                <div class="col-10">
+                                    <input type="text" class="form-control" th:field="*{parkingNumber}">
+                                </div>
+                            </div>
+                            <div class="form-group row" id="comment">
+                                <label class="col-2 col-form-label" th:text="#{car.comment}"></label>
+                                <div class="col-10">
+                                    <input type="text" class="form-control" th:field="*{comment}">
+                                </div>
+                            </div>
                             <div class="form-group row">
                                 <label class="col-2 col-form-label" th:text="#{whitelist.parking}"></label>
                                 <div class="col-10">

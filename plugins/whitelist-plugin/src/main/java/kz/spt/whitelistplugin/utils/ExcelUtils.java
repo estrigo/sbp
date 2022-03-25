@@ -55,6 +55,15 @@ public class ExcelUtils {
                         if(cellIndex==1) { // group name
                             groupName = formatter.formatCellValue(currentCell);
                         }
+                        if(cellIndex==2) { // full name
+                            whitelist.setFullName(formatter.formatCellValue(currentCell));
+                        }
+                        if(cellIndex==3) { // address
+                            whitelist.setAddress(formatter.formatCellValue(currentCell));
+                        }
+                        if(cellIndex==3) { // parking Number
+                            whitelist.setParkingNumber(formatter.formatCellValue(currentCell));
+                        }
 
                         cellIndex++;
                     }
@@ -67,7 +76,7 @@ public class ExcelUtils {
 
                 return lstWhitelist;
             }
-            return new ArrayList<Pair<Whitelist, String>>();
+            return new ArrayList<>();
         } catch (IOException e) {
             throw new RuntimeException("FAIL! -> message = " + e.getMessage());
         }

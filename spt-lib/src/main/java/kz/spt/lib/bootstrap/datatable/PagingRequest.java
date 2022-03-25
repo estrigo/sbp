@@ -43,6 +43,8 @@ public class PagingRequest {
                     field.set(object, new BigDecimal(value));
                 }else if(Date.class.equals(field.getType())){
                     field.set(object, new SimpleDateFormat("yyyy-MM-dd").parse(value));
+                }else if(boolean.class.equals(field.getType())){
+                    field.set(object, Boolean.valueOf(value).booleanValue());
                 }
                 else{
                     field.set(object, value);

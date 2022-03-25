@@ -140,7 +140,7 @@ public class BarrierServiceImpl implements BarrierService {
                 return result;
             } else if (Barrier.BarrierType.JETSON.equals(sensor.type)) {
                 var response = new RestTemplateBuilder().build().getForObject("http://" + sensor.ip + ":9001" + "/sensor_status?pin=" + sensor.oid, JetsonResponse.class);
-                log.info(response.toString());
+                //log.info(response.toString());
                 return response.getState();
             } else {
                 return -1;
@@ -474,7 +474,7 @@ public class BarrierServiceImpl implements BarrierService {
         String pin = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
         var response = new RestTemplateBuilder().build().getForObject("http://" + barrier.ip + ":9001" + "/gate_action?pin=" + pin, JetsonResponse.class);
 
-        log.info(response.toString());
+        //log.info(response.toString());
         return response.getSuccess();
     }
 

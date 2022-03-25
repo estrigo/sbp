@@ -22,23 +22,9 @@ public class CarStateRestController {
     }
 
     @PostMapping
-    public Page<CarStateDto> list(@RequestBody PagingRequest pagingRequest,
-                                  @RequestParam String plateNumber,
-                                  @RequestParam String dateFromString,
-                                  @RequestParam String dateToString,
-                                  @RequestParam Long inGateId,
-                                  @RequestParam Long outGateId,
-                                  @RequestParam Integer amount,
-                                  @RequestParam boolean inParking) throws ParseException {
-        return carStateService.getAll(pagingRequest, CarStateFilterDto.builder()
-                .plateNumber(plateNumber)
-                .dateFromString(dateFromString)
-                .dateToString(dateToString)
-                .inGateId(inGateId)
-                .outGateId(outGateId)
-                .amount(amount)
-                .inParking(inParking)
-                .build());
+    public Page<CarStateDto> list(@RequestBody PagingRequest pagingRequest) throws ParseException {
+        CarStateFilterDto filter = pagingRequest.convertTo(CarStateFilterDto.builder().build());
+        return carStateService.getAll(pagingRequest, filter);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_OPERATOR_NO_REVENUE_SHARE')")

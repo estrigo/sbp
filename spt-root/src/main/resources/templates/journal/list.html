@@ -10,7 +10,7 @@
         <div class="card table-responsive table-striped">
             <div class="card-header" th:text="#{carstate.journal}"></div>
             <div class="card-body">
-                <form th:action="@{|/journal/list|}" th:object="${carStateFilterDto}" method="post">
+                <form th:action="@{|/journal/list|}" th:object="${carStateFilterDto}" method="post" id="filter">
                     <div class="row">
                         <div class="col-3">
                             <input type="datetime-local" class="form-control" id="dateFromString"
@@ -26,7 +26,7 @@
                         </div>
                         <div class="col-3">
                             <button type="submit" class="btn btn-success" th:text="#{crm.search}"></button>
-                            <button type="button" class="btn btn-secondary" th:text="#{crm.clear}"></button>
+                            <button type="button" class="btn btn-secondary clear" th:text="#{crm.clear}"></button>
                         </div>
                     </div>
                     <div class="row mt-1">
@@ -193,13 +193,20 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            "url": "/rest/carstate?plateNumber=" + $('#plateNumber').val() + "&dateFromString=" + $('#dateFromString').val() +
-                "&dateToString=" + $('#dateToString').val() + "&amount=" + $('#amount').val() + "&inGateId=" + $('#inGateId').val()
-                + "&outGateId=" + $('#outGateId').val() + "&inParking=" + $("input[name=inParking]").prop("checked"),
+            "url": "/rest/carstate",
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",
             "data": function (d) {
+                d.customFilters = {
+                    "dateFromString": $('#dateFromString').val(),
+                    "dateToString": $('#dateToString').val(),
+                    "plateNumber": $("#plateNumber").val(),
+                    "amount": $('#amount').val(),
+                    "inGateId": $('#inGateId').val(),
+                    "outGateId": $('#outGateId').val(),
+                    "inParking": $("input[name=inParking]").prop("checked")
+                };
                 return JSON.stringify(d);
             }
         },
@@ -386,6 +393,14 @@
         $('#editPlate').modal('hide');
     })
 
+    $(".clear").on('click',function (){
+        $(':input','#filter')
+            .not(':button, :submit, :reset, :hidden')
+            .val('')
+            .prop('checked', false)
+            .prop('selected', false);
+        table.ajax.reload();
+    })
 </script>
 
 </html>

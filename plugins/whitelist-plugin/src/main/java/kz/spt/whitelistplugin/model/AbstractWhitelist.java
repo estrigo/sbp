@@ -43,6 +43,11 @@ public class AbstractWhitelist {
     @Column(columnDefinition = "text")
     private String customJson;
 
+    private String fullName;
+    private String address;
+    private String parkingNumber;
+    private String comment;
+
     @CreationTimestamp
     private Date created;
 
