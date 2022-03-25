@@ -71,7 +71,7 @@ public class GateStatusDto {
                 gateStatusDto.loop.defaultValue = barrier.getLoopDefaultValue();
                 gateStatusDto.loop.modbusRegister = barrier.getLoopModbusRegister();
                 gateStatusDto.loop.modbusDeviceVersion = barrier.getModbusDeviceVersion();
-            }else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
+            }else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType()) && barrier.getLoopJetsonPin() != null) {
                 gateStatusDto.loop = new SensorStatusDto();
                 gateStatusDto.loop.barrierId = barrier.getId();
                 gateStatusDto.loop.sensorName = "loop";
@@ -92,7 +92,7 @@ public class GateStatusDto {
                 gateStatusDto.loop.defaultValue = barrier.getPhotoElementDefaultValue();
                 gateStatusDto.photoElement.modbusRegister = barrier.getPhotoElementModbusRegister();
                 gateStatusDto.photoElement.modbusDeviceVersion = barrier.getModbusDeviceVersion();
-            }else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
+            }else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType()) && barrier.getPhotoElementJetsonPin() != null) {
                 gateStatusDto.photoElement = new SensorStatusDto();
                 gateStatusDto.photoElement.barrierId = barrier.getId();
                 gateStatusDto.photoElement.sensorName = "photoElement";
