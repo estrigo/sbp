@@ -31,9 +31,10 @@
                             </div>
                         </div>
 
-                        <table id="billingTable" class="table table-bordered table-bordered">
+                        <table id="billingTable" class="table table-bordered">
                             <thead>
                             <tr>
+                                <th></th>
                                 <th th:text="#{balance.date}"></th>
                                 <th th:text="#{balance.plateNumber}"></th>
                                 <th th:text="#{balance.amount}"></th>
@@ -46,11 +47,29 @@
 
                     <div class="card-header" th:text="#{balance.balance}"></div>
                     <div class="card-body">
-                        <table id="balanceTable" class="table table-bordered table-bordered">
+                        <table id="balanceTable" class="table table-bordered">
                             <th th:text="#{balance.plateNumber}"></th>
                             <th th:text="#{balance.balance}"></th>
                         </table>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="hasEditAccess" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN')"></div>
+    <div class="modal fade" id="editAmount" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <input type="hidden" name="modalId" id="modalId" />
+                    <div class="col-md form-group">
+                        <label class="form-label" th:text="#{billing.amount}"></label>
+                        <input id="modalAmount" type="number" step="1" min="-1000000" max="1000000" class="form-control" name="amount" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success waves-effect waves-light" onclick="saveChangedTransaction()" th:text="#{crm.saveChanges}"></button>
+                    <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>
                 </div>
             </div>
         </div>
@@ -106,6 +125,18 @@
             }
         },
         "columns": [
+            {"data": function (billing) {
+                    var menu = '';
+                    if ($('#hasEditAccess').length) {
+                        menu = '<div class="dropdown">' +
+                            '<button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">' + [[#{crm.actions}]] + '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+                        menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="editAmount" data-number="' + billing.amount + '" data-id="' + billing.id + '">' + [[#{billing.editAmount}]] + '</button>';
+                    }
+                    menu += '</div></div>';
+                    return menu;
+                }
+            },
             {"data": "date"},
             {"data": "plateNumber"},
             {"data": "amount"},
@@ -171,6 +202,44 @@
             url: address
         }
     });
+
+    function showModalClick(e){
+        const $input = $(e);
+        const $modal = $input.data("modal");
+        const $number = $input.data("number");
+        const $id = $input.data("id");
+        showModal($modal,$number,$id);
+    }
+
+    function showModal(name, number, id) {
+        $("#"+name).modal('show');
+        $("#"+name).find('#modalAmount').val(number);
+        $("#"+name).find('#modalId').val(id);
+    }
+
+    function saveChangedTransaction(){
+        let amount = $("#editAmount").find('#modalAmount').val();
+        let id = $("#editAmount").find('#modalId').val();
+
+        var form = new FormData();
+        form.append("id", Number(id));
+        form.append("amount", Number(amount));
+
+        var settings = {
+            "url": "/rest/balances/transaction/change",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (response) {
+            if(response){
+                $('#editAmount').modal('hide');
+                billingTable.ajax.reload(); //reload datatable
+            }
+        });
+    }
 </script>
 
 </html>

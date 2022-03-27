@@ -12,4 +12,7 @@ public interface BalanceRepository  extends JpaRepository<Balance, String> {
 
     @Query("from Balance b where b.balance < 0")
     List<Balance> debtBalances();
+
+    @Query("from Balance b where b.plateNumber = ?1")
+    Balance getBalanceByPlateNumber(String plateNumber);
 }

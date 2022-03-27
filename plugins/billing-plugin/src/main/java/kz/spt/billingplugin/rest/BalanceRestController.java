@@ -6,8 +6,10 @@ import kz.spt.billingplugin.model.Balance;
 import kz.spt.billingplugin.service.BalanceService;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 
 @RestController
@@ -19,7 +21,6 @@ public class BalanceRestController {
     public BalanceRestController(BalanceService balanceService)
     {
         this.balanceService = balanceService;
-
     }
 
     @PostMapping
@@ -39,5 +40,12 @@ public class BalanceRestController {
         dto.amount = amount;
         dto.plateNumber = plateNumber;
         return balanceService.getTransactionList(pagingRequest, dto);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')")
+    @PostMapping("/transaction/change")
+    public Boolean changeTransaction(@RequestParam Long id,
+                                     @RequestParam BigDecimal amount){
+        return balanceService.changeTransactionAmount(id, amount);
     }
 }

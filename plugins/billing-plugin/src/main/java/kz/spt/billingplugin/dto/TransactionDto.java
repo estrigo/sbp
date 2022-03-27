@@ -7,6 +7,7 @@ import java.util.Date;
 
 public class TransactionDto {
 
+    public Long id;
     public String date;
     public String plateNumber;
     public BigDecimal amount;
@@ -15,6 +16,7 @@ public class TransactionDto {
 
     public static TransactionDto fromTransaction(Transaction transaction){
         TransactionDto transactionDto = new TransactionDto();
+        transactionDto.id = transaction.getId();
         transactionDto.amount = transaction.getAmount();
         transactionDto.description = transaction.getDescriptionRu();
         transactionDto.plateNumber = transaction.getPlateNumber();

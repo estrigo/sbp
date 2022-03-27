@@ -191,6 +191,33 @@ public class BalanceServiceImpl implements BalanceService {
         }
     }
 
+    @Override
+    public Boolean changeTransactionAmount(Long id, BigDecimal amount) {
+        Transaction transaction = transactionRepository.findById(id).get();
+        BigDecimal oldAmount = transaction.getAmount();
+
+        if(oldAmount.compareTo(BigDecimal.ZERO) <= 0 && amount.compareTo(BigDecimal.ZERO) > 0){
+            return false;
+        }
+        if(oldAmount.compareTo(BigDecimal.ZERO) >= 0 && amount.compareTo(BigDecimal.ZERO) < 0){
+            return false;
+        }
+
+        Balance balance = balanceRepository.getBalanceByPlateNumber(transaction.getPlateNumber());
+        if(oldAmount.compareTo(BigDecimal.ZERO) < 0){
+            balance.setBalance(balance.getBalance().add(oldAmount.multiply(BigDecimal.valueOf(-1))).add(amount));
+            transaction.setAmount(amount);
+        }
+        if(oldAmount.compareTo(BigDecimal.ZERO) > 0){
+            balance.setBalance(balance.getBalance().subtract(oldAmount).add(amount));
+            transaction.setAmount(amount);
+        }
+        balanceRepository.save(balance);
+        transactionRepository.save(transaction);
+
+        return true;
+    }
+
     private Page<TransactionDto> getTransactionPage(List<Transaction> transactionsList, PagingRequest pagingRequest) {
         List<Transaction> filtered = transactionsList.stream()
                 .sorted(sortTransaction(pagingRequest))
