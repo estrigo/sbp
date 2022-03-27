@@ -45,6 +45,14 @@ services:
         max-size: 50m
     networks:
       - parking-net
+  imgproxy:
+    image: darthsim/imgproxy
+    ports:
+      - "9980:8080"
+    environment:
+      - "IMGPROXY_LOCAL_FILESYSTEM_ROOT=/tmp/snapshot"
+    volumes:
+      - "/var/www/parking/storage/new_parking:/tmp/snapshot"
 volumes:
   db_data:
 networks:
