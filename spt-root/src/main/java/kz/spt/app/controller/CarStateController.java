@@ -68,7 +68,7 @@ public class CarStateController {
         }
         model.addAttribute("allInGates", allInGates);
         model.addAttribute("allOutGates", allOutGates);
-        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN").contains(m.getAuthority())));
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
         model.addAttribute("canRemove", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR_NO_REVENUE_SHARE").contains(m.getAuthority())));
         model.addAttribute("canKick", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR").contains(m.getAuthority())));
 
