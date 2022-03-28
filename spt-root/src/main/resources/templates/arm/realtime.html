@@ -53,7 +53,7 @@
                     <div class="row" style="position: relative">
                         <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event"
                            data-width="1800"
-                           th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}">
+                           th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}" data-width="1800">
                             <canvas th:id="${'image' + camera.id}" class="img-fluid m-b-10"
                                     style="height: 250px !important;"></canvas>
                         </a>

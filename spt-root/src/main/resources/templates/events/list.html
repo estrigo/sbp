@@ -122,10 +122,10 @@
                 "orderable": false,
                 "render": function (data, type, event) {
                     if(event.smallImgUrl){
-                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigImgUrl + '" data-caption="' + event.plateNumber + '">' +
+                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigImgUrl + '" data-caption="' + event.plateNumber + '" data-width="1800">' +
                             '<img class="thumb-img" alt src="/files/pictures' + event.smallImgUrl + '"></a>';
                     } else if(event.bigImgUrl){
-                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigImgUrl + '" data-caption="' + event.plateNumber + '">' +
+                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigImgUrl + '" data-caption="' + event.plateNumber + '" data-width="1800">' +
                             '<img class="thumb-img" alt src="/files/pictures' + event.bigImgUrl + '"></a>';
                     }
                     return '';
