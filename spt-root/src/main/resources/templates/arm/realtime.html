@@ -7,26 +7,35 @@
         <th:block sec:authorize="!hasRole('ROLE_RTA')">
             <div class="row mb-1">
                 <div class="col-12 text-right">
-                <span class="dropdown">
-                    <button class="btn btn-info dropdown-toggle" type="button" data-toggle="dropdown"
-                            aria-expanded="false" th:text="#{parking.support}">
-                    </button>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="#" th:text="#{support.cameraNotWork}"
-                           onclick="support(this)"></a>
-                        <a class="dropdown-item" href="#" th:text="#{support.barrierNotWork}"
-                           onclick="support(this)"></a>
-                        <a class="dropdown-item" href="#" th:text="#{support.cvNotWork}" onclick="support(this)"></a>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-secondary move-left" onclick="changeGrid(true)">
+                            <span> <i class="mdi mdi-plus"></i></span>
+                        </button>
+                        <button type="button" class="btn btn-secondary move-right" onclick="changeGrid(false)">
+                            <span><i class="mdi mdi-minus"></i></span>
+                        </button>
                     </div>
-                </span>
+                    <span class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" data-toggle="dropdown"
+                                aria-expanded="false" th:text="#{parking.support}">
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#" th:text="#{support.cameraNotWork}"
+                               onclick="support(this)"></a>
+                            <a class="dropdown-item" href="#" th:text="#{support.barrierNotWork}"
+                               onclick="support(this)"></a>
+                            <a class="dropdown-item" href="#" th:text="#{support.cvNotWork}" onclick="support(this)"></a>
+                        </div>
+                    </span>
                     <button type="button" class="btn btn-primary" th:text="#{arm.restart}"
                             th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart
                     </button>
                 </div>
+
             </div>
         </th:block>
         <div class="row">
-            <div class="col-sm-4 col-lg-4 col-xs-12 item" th:each="camera, iterStat : ${cameras}"
+            <div class="item" th:each="camera, iterStat : ${cameras}"
                  th:id="${'item_' + camera.id}"
                  th:attr="data-id=${camera.id},data-url=${camera.snapshotUrl},data-ip=${camera.ip}">
                 <div class="row">
@@ -54,7 +63,7 @@
                         <a class="col col--4" th:id="${'fancyImage' + camera.id}" data-fancybox="event"
                            th:data-src="@{#{arm.noImageLink}}" th:data-caption="#{arm.noData}" data-width="1800">
                             <canvas th:id="${'image' + camera.id}" class="img-fluid m-b-10"
-                                    style="height: 250px !important;"></canvas>
+                                    style="max-height: 250px !important;"></canvas>
                         </a>
                         <div class="align-content-center p-1"
                              style="background-color: rgba(74, 82, 95, .5); position: absolute; bottom: 0;right: 10px;display: none">
@@ -62,55 +71,44 @@
                         </div>
                     </div>
                     <th:block sec:authorize="!hasRole('ROLE_RTA')">
-                        <table class="w-100">
-                            <tbody>
-                            <tr>
-                                <td class="w-50"
-                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <button type="button" class="btn btn-outline-success w-100"
-                                            th:cameraId="${camera.id}"
-                                            th:onclick="openGate(this.getAttribute('cameraId'))"
-                                            th:text="#{arm.open}"></button>
-                                </td>
-                                <td class="w-50"
-                                    sec:authorize="!hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                </td>
-                                <td class="w-50"
-                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <button type="button" class="btn btn-outline-warning w-100"
-                                            th:cameraId="${camera.id}"
-                                            th:onclick="closeGate(this.getAttribute('cameraId'))"
-                                            th:text="#{arm.close}"></button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <table class="w-100">
-                            <tbody>
-                            <tr>
-                                <td class="w-50"
-                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
-                                           th:placeholder="#{arm.licensePlate}"
-                                           th:onkeydown="onTextEnter(this.getAttribute('cameraId'))"
-                                           class="form-control w-100">
-                                </td>
-                                <td class="w-25"
-                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
-                                            th:onclick="passCar(this.getAttribute('cameraId'))"
-                                            th:text="#{crm.letIn}"></button>
-                                </td>
-                                <td class="w-25"
-                                    sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
-                                    <button type="button" class="btn btn-outline-primary w-100"
-                                            th:cameraId="${camera.id}"
-                                            th:onclick="checkBalance(this.getAttribute('cameraId'))"
-                                            th:text="#{crm.balance}"></button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                        <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100">
+                            <div class="col-md-6 col-sm-12 col-xs-12"
+                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <button type="button" class="btn btn-outline-success w-100"
+                                        th:cameraId="${camera.id}"
+                                        th:onclick="openGate(this.getAttribute('cameraId'))"
+                                        th:text="#{arm.open}"></button>
+                            </div>
+                            <div class="col-md-6 col-sm-12 col-xs-12"
+                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <button type="button" class="btn btn-outline-warning w-100"
+                                        th:cameraId="${camera.id}"
+                                        th:onclick="closeGate(this.getAttribute('cameraId'))"
+                                        th:text="#{arm.close}"></button>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100">
+                            <div class="p-2 col-sm-12 col-xs-12"
+                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
+                                       th:placeholder="#{arm.licensePlate}"
+                                       th:onkeydown="onTextEnter(this.getAttribute('cameraId'))"
+                                       class="form-control w-100">
+                            </div>
+                            <div class="p-1 col-sm-12 col-xs-12"
+                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
+                                        th:onclick="passCar(this.getAttribute('cameraId'))"
+                                        th:text="#{crm.letIn}"></button>
+                            </div>
+                            <div class="p-1 col-sm-12 col-xs-12"
+                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                <button type="button" class="btn btn-outline-primary w-100"
+                                        th:cameraId="${camera.id}"
+                                        th:onclick="checkBalance(this.getAttribute('cameraId'))"
+                                        th:text="#{crm.balance}"></button>
+                            </div>
+                        </div>
                     </th:block>
                 </div>
                 <div class="m-b-10 border border-dark"
@@ -144,6 +142,8 @@
 <script th:inline="javascript">
     var locale = [[${#locale}]];
     var cameras = {};
+    var noImage = new Image();
+    var grid = 4;
 
     jQuery('.move-left').click(function (e) {
         var $div = $(this).closest('.item');
@@ -248,7 +248,9 @@
     }
 
     $(function () {
-        connect();
+        noImage.src = '[[#{arm.noImageLink}]]';
+        initGrid();
+        setTimeout(connect, 1000);
         setTimeout(enableSnapshot, 1000);
     });
 
@@ -269,6 +271,66 @@
             "snapshot": null,
             "fancyImage": fancyImage
         }
+    }
+
+    function initGrid(){
+        $(".item").each(function () {
+            const $input = $(this);
+            const id = $input.data("id");
+            switch (grid){
+                case 2:
+                    $("#item_"+id)
+                        .addClass("col-sm-2 col-lg-2 col-xs-2")
+                        .removeClass("col-sm-3 col-lg-3 col-xs-3")
+                        .removeClass("col-sm-4 col-lg-4 col-xs-4")
+                        .removeClass("col-sm-6 col-lg-6 col-xs-6")
+                        .removeClass("col-sm-12 col-lg-12 col-xs-12");
+                    break;
+                case 4:
+                    $("#item_"+id)
+                        .addClass("col-sm-4 col-lg-4 col-xs-4")
+                        .removeClass("col-sm-2 col-lg-2 col-xs-2")
+                        .removeClass("col-sm-3 col-lg-3 col-xs-3")
+                        .removeClass("col-sm-6 col-lg-6 col-xs-6")
+                        .removeClass("col-sm-12 col-lg-12 col-xs-12");
+                    break;
+                case 3:
+                    $("#item_"+id)
+                        .addClass("col-sm-3 col-lg-3 col-xs-3")
+                        .removeClass("col-sm-2 col-lg-2 col-xs-2")
+                        .removeClass("col-sm-4 col-lg-4 col-xs-4")
+                        .removeClass("col-sm-6 col-lg-6 col-xs-6")
+                        .removeClass("col-sm-12 col-lg-12 col-xs-12");
+                    break;
+                case 6:
+                    $("#item_"+id)
+                        .addClass("col-sm-6 col-lg-6 col-xs-6")
+                        .removeClass("col-sm-2 col-lg-2 col-xs-2")
+                        .removeClass("col-sm-3 col-lg-3 col-xs-3")
+                        .removeClass("col-sm-4 col-lg-4 col-xs-4")
+                        .removeClass("col-sm-12 col-lg-12 col-xs-12");
+                    break;
+                case 12:
+                    $("#item_"+id)
+                        .addClass("col-sm-12 col-lg-12 col-xs-12")
+                        .removeClass("col-sm-2 col-lg-2 col-xs-2")
+                        .removeClass("col-sm-3 col-lg-3 col-xs-3")
+                        .removeClass("col-sm-4 col-lg-4 col-xs-4")
+                        .removeClass("col-sm-6 col-lg-6 col-xs-6");
+                    break;
+            }
+        })
+    }
+
+    function changeGrid(value){
+        switch (grid){
+            case 2: grid = value ? 3 : 2; break;
+            case 3: grid = value ? 4 : 2; break;
+            case 4: grid = value ? 6 : 3; break;
+            case 6: grid = value ? 12 : 4; break;
+            case 12: grid = value ? 12 : 6; break;
+        }
+        initGrid();
     }
 
     let updateSnapshotOnline = function (camera, ip) {
