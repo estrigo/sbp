@@ -18,10 +18,7 @@ public class EventLogSpecification {
         return (root, query, builder) -> builder.like(root.get(EventLog_.plateNumber), "%" + plateNumber + "%");
     }
 
-    public static Specification<EventLog> orderById() {
-        return (root, query, builder) -> {
-            query.orderBy(builder.desc(root.get(EventLog_.id)));
-            return builder.isNotNull(root.get(EventLog_.id));
-        };
+    public static Specification<EventLog> equalGateId(Long gateId){
+        return (root, query, builder) -> builder.and(builder.equal(root.get(EventLog_.objectClass), "Gate"), builder.equal(root.get(EventLog_.objectId), gateId));
     }
 }

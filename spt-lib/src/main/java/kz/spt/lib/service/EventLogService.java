@@ -21,13 +21,7 @@ public interface EventLogService {
 
     void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long gateId, String plateNumber, String message, String messageEng);
 
-    Iterable<EventLog> listAllLogs();
-
-    Iterable<EventLog> listAllLogsDesc();
-
     Iterable<EventLog> listByType(EventLog.EventType type);
-
-    Iterable<EventLog> listByFilters(EventFilterDto eventFilterDo) throws ParseException;
 
     EventLog getById(Long id);
 

@@ -26,6 +26,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -143,23 +146,50 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
-    public Iterable<EventLog> listAllLogs() {
-        return eventLogRepository.listAllEvents();
-    }
-
-    @Override
-    public Iterable<EventLog> listAllLogsDesc() {
-        return eventLogRepository.listAllEvents();
-    }
-
-    @Override
     public Iterable<EventLog> listByType(EventLog.EventType type) {
         return eventLogRepository.listByType(type);
     }
 
-    @Override
-    public Iterable<EventLog> listByFilters(EventFilterDto eventFilterDto) throws ParseException {
+    public Long countByFilters(Specification<EventLog> eventLogSpecification) {
+        if (eventLogSpecification != null) {
+            return eventLogRepository.count(eventLogSpecification);
+        } else {
+            return eventLogRepository.count();
+        }
+    }
 
+    public org.springframework.data.domain.Page<EventLog> listByFilters(Specification<EventLog> eventLogSpecification, PagingRequest pagingRequest) {
+        Order order = pagingRequest.getOrder().get(0);
+
+        int columnIndex = order.getColumn();
+        Column column = pagingRequest.getColumns().get(columnIndex);
+        String columnName = column.getData(); //created, plateNumber
+        Direction dir = order.getDir();
+
+        Sort sort = null;
+        if("created".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("created").descending();
+            } else {
+                sort = Sort.by("created").ascending();
+            }
+        } else if("plateNumber".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("plateNumber").descending();
+            } else {
+                sort = Sort.by("plateNumber").ascending();
+            }
+        }
+
+        Pageable rows = PageRequest.of(pagingRequest.getStart() / pagingRequest.getLength(), pagingRequest.getLength(), sort);
+        if (eventLogSpecification != null) {
+            return eventLogRepository.findAll(eventLogSpecification, rows);
+        } else {
+            return eventLogRepository.findAll(rows);
+        }
+    }
+
+    private Specification<EventLog> getEventLogFilterSpecification(EventFilterDto eventFilterDto) throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         Specification<EventLog> specification = null;
 
@@ -172,12 +202,10 @@ public class EventLogServiceImpl implements EventLogService {
         if (eventFilterDto.plateNumber != null && !"".equals(eventFilterDto.plateNumber)) {
             specification = specification == null ? EventLogSpecification.likePlateNumber(eventFilterDto.plateNumber) : specification.and(EventLogSpecification.likePlateNumber(eventFilterDto.plateNumber));
         }
-        if (specification != null) {
-            specification = specification.and(EventLogSpecification.orderById());
-            return eventLogRepository.findAll(specification);
-        } else {
-            return eventLogRepository.findAll();
+        if (eventFilterDto.gateId != null && !"".equals(eventFilterDto.gateId)) {
+            specification = specification == null ? EventLogSpecification.equalGateId(eventFilterDto.gateId) : specification.and(EventLogSpecification.equalGateId(eventFilterDto.gateId));
         }
+        return specification;
     }
 
     @Override
@@ -187,22 +215,13 @@ public class EventLogServiceImpl implements EventLogService {
 
     @Override
     public Page<EventsDto> getEventLogs(PagingRequest pagingRequest, EventFilterDto eventFilterDto) throws ParseException {
-        List<EventLog> events = (List<EventLog>) this.listByFilters(eventFilterDto);
-        List<EventLog> filteredEvents = new ArrayList<>();
-        for (EventLog eventLog : events) {
-            Map<String, Object> properties = eventLog.getProperties();
-            if (eventFilterDto.gateId != null) {
-                if (properties.containsKey("gateId") && properties.get("gateId") != null && ((Integer) properties.get("gateId")).equals(eventFilterDto.gateId.intValue())) {
-                    filteredEvents.add(eventLog);
-                }
-            } else {
-                filteredEvents.add(eventLog);
-            }
-        }
+        Specification<EventLog> specification = getEventLogFilterSpecification(eventFilterDto);
+        Long eventLogFilterCount = countByFilters(specification);
+        org.springframework.data.domain.Page<EventLog> filteredEvents =  listByFilters(specification, pagingRequest);
 
         var eventDtos = filteredEvents.stream()
                 .map(m -> {
-                    String type = m.getProperties().get("type") != null ? StringExtensions.locale("events.".concat(m.getProperties().get("type").toString().toLowerCase())) : "";
+                    String type = m.getProperties().containsKey("type") && m.getProperties().get("type") != null ? StringExtensions.locale("events.".concat(m.getProperties().get("type").toString().toLowerCase())) : "";
                     String gate = m.getProperties().containsKey("gateName") ? m.getProperties().get("gateName").toString() : "";
                     return EventsDto.builder()
                             .id(m.getId())
@@ -212,24 +231,27 @@ public class EventLogServiceImpl implements EventLogService {
                             .descriptionEn(m.getNullSafeDescriptionEn())
                             .eventType(type)
                             .gate(gate)
-                            .smallImgUrl(m.getProperties().get("carSmallImageUrl") != null ? (String) m.getProperties().get("carSmallImageUrl") : "")
-                            .bigImgUrl(m.getProperties().get("carImageUrl") != null ? (String) m.getProperties().get("carImageUrl") : "")
+                            .smallImgUrl(m.getProperties().containsKey("carSmallImageUrl") && m.getProperties().get("carSmallImageUrl") != null ? (String) m.getProperties().get("carSmallImageUrl") : "")
+                            .bigImgUrl(m.getProperties().containsKey("carImageUrl") && m.getProperties().get("carImageUrl") != null ? (String) m.getProperties().get("carImageUrl") : "")
                             .build();
                 })
                 .collect(Collectors.toList());
-        return getPage(eventDtos, pagingRequest);
+
+        return getPage(eventLogFilterCount, eventDtos, pagingRequest);
     }
 
     @Override
     public String getEventExcel(EventFilterDto eventFilterDto) throws Exception {
+        Specification<EventLog> specification = getEventLogFilterSpecification(eventFilterDto);
 
-        List<EventLog> events = (List<EventLog>) this.listByFilters(eventFilterDto);
+        List<EventLog> events = (List<EventLog>) this.listByFilters(specification, new PagingRequest());
         Map<String, EventLogExcelDto> eventLogExcelDtoMap = new HashMap<>();
 
         Long parkingId = null;
 
         for (EventLog eventLog : events) {
-            EventLogExcelDto eventLogExcelDto = new EventLogExcelDto();
+            EventLogExcelDto eventLogExcelDto =
+                    new EventLogExcelDto();
             if (eventLogExcelDtoMap.containsKey(eventLog.getPlateNumber())) {
                 eventLogExcelDto = eventLogExcelDtoMap.get(eventLog.getPlateNumber());
             }
@@ -336,60 +358,14 @@ public class EventLogServiceImpl implements EventLogService {
         return null;
     }
 
-    private Page<EventsDto> getPage(List<EventsDto> events, PagingRequest pagingRequest) {
-        List<EventsDto> filtered = events.stream()
-                .sorted(sortEvents(pagingRequest))
-                .filter(filterEvents(pagingRequest))
-                .skip(pagingRequest.getStart())
-                .limit(pagingRequest.getLength())
-                .collect(Collectors.toList());
+    private Page<EventsDto> getPage(long count, List<EventsDto> events, PagingRequest pagingRequest) {
 
-        long count = events.stream()
-                .filter(filterEvents(pagingRequest))
-                .count();
-
-        Page<EventsDto> page = new Page<>(filtered);
+        Page<EventsDto> page = new Page<>(events);
         page.setRecordsFiltered((int) count);
         page.setRecordsTotal((int) count);
         page.setDraw(pagingRequest.getDraw());
 
         return page;
-    }
-
-    private Predicate<EventsDto> filterEvents(PagingRequest pagingRequest) {
-        if (pagingRequest.getSearch() == null || StringUtils.isEmpty(pagingRequest.getSearch()
-                .getValue())) {
-            return events -> true;
-        }
-        String value = pagingRequest.getSearch().getValue();
-
-        return events -> (events.getCreated() != null && events.getCreated().toString().toLowerCase().contains(value.toLowerCase())
-                || (events.getPlateNumber() != null && events.getPlateNumber().toLowerCase().contains(value.toLowerCase()))
-                || (events.getDescription() != null && events.getDescription().toLowerCase().contains(value.toLowerCase()))
-        );
-    }
-
-    private Comparator<EventsDto> sortEvents(PagingRequest pagingRequest) {
-        if (pagingRequest.getOrder() == null) {
-            return EMPTY_COMPARATOR;
-        }
-
-        try {
-            Order order = pagingRequest.getOrder()
-                    .get(0);
-
-            int columnIndex = order.getColumn();
-            Column column = pagingRequest.getColumns()
-                    .get(columnIndex);
-
-            Comparator<EventsDto> comparator = EventComparator.getComparator(column.getData(), order.getDir());
-            return Objects.requireNonNullElse(comparator, EMPTY_COMPARATOR);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return EMPTY_COMPARATOR;
     }
 
     private PluginRegister getPluginRegister(String pluginId) {

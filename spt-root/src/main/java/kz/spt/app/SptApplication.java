@@ -44,7 +44,7 @@ public class SptApplication {
         MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
         long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
         long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
-        log.info("Initial Memory (xmx) : " + xmx + "mb");
+        log.info("Maximum Memory (xmx) : " + xmx + "mb");
         log.info("Initial Memory (xms) : " + xms + "mb");
     }
 
