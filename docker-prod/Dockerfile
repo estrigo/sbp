@@ -11,6 +11,6 @@ ENV JAVA_TOOL_OPTIONS "-Dcom.sun.management.jmxremote.ssl=false \
  -Dcom.sun.management.jmxremote.rmi.port=5000 \
  -Dcom.sun.management.jmxremote.host=0.0.0.0 \
  -Djava.rmi.server.hostname=0.0.0.0"
-CMD java -jar -Xmx2048m -Xms1024m spt-root-0.0.1-SNAPSHOT-standalone.jar --spring.config.location=/usr/local/prod.yml
+CMD java -jar -Xmx4g -Xms1g spt-root-0.0.1-SNAPSHOT-standalone.jar --spring.config.location=/usr/local/prod.yml
 
 EXPOSE 8080 5000
