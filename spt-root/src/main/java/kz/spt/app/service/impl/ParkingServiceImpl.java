@@ -11,6 +11,7 @@ import kz.spt.lib.model.dto.ParkingDto;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.ParkingService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,6 +28,9 @@ public class ParkingServiceImpl implements ParkingService {
     private CameraService cameraService;
     private CarStateService carStateService;
     private CarsService carsService;
+
+    @Value("${parking.has.access.lcd}")
+    Boolean hasAccessLcd;
 
     public ParkingServiceImpl(ParkingRepository parkingRepository, GateService gateService, BarrierService barrierService,
                               ControllerService controllerService, CameraService cameraService, CarStateService carStateService, CarsService carsService) {
@@ -130,5 +134,10 @@ public class ParkingServiceImpl implements ParkingService {
     @Override
     public List<ParkingDto> getParkings() {
         return ParkingDto.fromParking(parkingRepository.findAll());
+    }
+
+    @Override
+    public Boolean isLcd() {
+        return hasAccessLcd;
     }
 }

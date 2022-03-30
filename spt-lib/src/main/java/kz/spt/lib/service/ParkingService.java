@@ -27,4 +27,6 @@ public interface ParkingService {
     Iterable<Parking> listPaymentParkings();
 
     List<ParkingDto> getParkings();
+
+    Boolean isLcd();
 }

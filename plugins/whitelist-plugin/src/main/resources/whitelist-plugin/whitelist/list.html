@@ -177,13 +177,17 @@
         },
         columns: [
             {"data": "plateNumber"},
-            {"data": "fullName"},
-            {"data": "address"},
-            {"data": "parkingNumber"},
+            {"data": "fullName", "visible": [[${hasAccessLcd}]] },
+            {"data": "address", "visible": [[${hasAccessLcd}]] },
+            {"data": "parkingNumber", "visible": [[${hasAccessLcd}]] },
             {"data": "parkingName"},
             {"data": "groupName"},
             {"data": "conditionDetail", "orderable": false},
-            {"data": "comment", "orderable": false},
+            {
+                "data": "comment",
+                "visible": [[${hasAccessLcd}]],
+                "orderable": false
+            },
             {
                 "data": "id",
                 "visible": [[${canEdit}]],
