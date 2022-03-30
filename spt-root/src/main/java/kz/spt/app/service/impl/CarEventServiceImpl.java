@@ -154,26 +154,24 @@ public class CarEventServiceImpl implements CarEventService {
         GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(camera.getGate().getId());
 
         if (camera != null) {
-            if (!eventDto.manualOpen) {
-                String secondCameraIp = (gate.frontCamera2 != null) ? (eventDto.ip_address.equals(gate.frontCamera.ip) ? gate.frontCamera2.ip : gate.frontCamera.ip) : null; // If there is two camera, then ignore second by timeout
+            String secondCameraIp = (gate.frontCamera2 != null) ? (eventDto.ip_address.equals(gate.frontCamera.ip) ? gate.frontCamera2.ip : gate.frontCamera.ip) : null; // If there is two camera, then ignore second by timeout
 
-                if (concurrentHashMap.containsKey(eventDto.ip_address) || (secondCameraIp != null && concurrentHashMap.containsKey(secondCameraIp))) {
-                    Long timeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(eventDto.ip_address) ? concurrentHashMap.get(eventDto.ip_address) : 0);
-                    int timeout = (camera.getTimeout() == null ? 0 : camera.getTimeout() * 1000);
-                    if (secondCameraIp != null) {
-                        Long secondCameraTimeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(secondCameraIp) ? concurrentHashMap.get(secondCameraIp) : 0);
-                        timeDiffInMillis = timeDiffInMillis < secondCameraTimeDiffInMillis ? timeDiffInMillis : secondCameraTimeDiffInMillis;
-                    }
+            if (concurrentHashMap.containsKey(eventDto.ip_address) || (secondCameraIp != null && concurrentHashMap.containsKey(secondCameraIp))) {
+                Long timeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(eventDto.ip_address) ? concurrentHashMap.get(eventDto.ip_address) : 0);
+                int timeout = (camera.getTimeout() == null ? 0 : camera.getTimeout() * 1000);
+                if (secondCameraIp != null) {
+                    Long secondCameraTimeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(secondCameraIp) ? concurrentHashMap.get(secondCameraIp) : 0);
+                    timeDiffInMillis = timeDiffInMillis < secondCameraTimeDiffInMillis ? timeDiffInMillis : secondCameraTimeDiffInMillis;
+                }
 
-                    if (timeDiffInMillis < timeout) { // If interval smaller than timeout then ignore else proceed
-                        log.info("Ignored event from camera: " + eventDto.ip_address + " time: " + timeDiffInMillis);
-                        return;
-                    } else {
-                        concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
-                    }
+                if (timeDiffInMillis < timeout) { // If interval smaller than timeout then ignore else proceed
+                    log.info("Ignored event from camera: " + eventDto.ip_address + " time: " + timeDiffInMillis);
+                    return;
                 } else {
                     concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
                 }
+            } else {
+                concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
             }
 
             log.info("handling event from camera: " + eventDto.ip_address + " for car: " + eventDto.car_number);
