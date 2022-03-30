@@ -134,8 +134,8 @@ public class PaymentServiceImpl implements PaymentService {
                         if(abonomentResultNode != null && abonomentResultNode.has("price")){
                             return payAbonoment(commandDto, carState, abonomentResultNode);
                         }
-                        CarState lastDebtCarState = carStateService.getLastCarState(commandDto.account);
-                        if(lastDebtCarState != null && lastDebtCarState.getPaid() && lastDebtCarState.getAmount() == null){
+                        CarState lastDebtCarState = carStateService.getLastCarState(commandDto.account); // Оплата долга
+                        if(lastDebtCarState != null){
                             Object payment = savePayment(commandDto, lastDebtCarState, null, false);
                             if (BillingInfoErrorDto.class.equals(payment.getClass())) {
                                 return payment;
@@ -148,18 +148,6 @@ public class PaymentServiceImpl implements PaymentService {
                             lastDebtCarState.setPaymentJson(result.get("paymentArray").toString());
                             lastDebtCarState.setCashlessPayment(result.get("cashlessPayment").booleanValue());
                             carStateService.save(lastDebtCarState);
-                            return successPayment(commandDto, paymentId);
-                        }
-                        // Оплата долга
-                        JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
-                        if (currentBalanceResult.has("currentBalance") && BigDecimal.ZERO.compareTo(currentBalanceResult.get("currentBalance").decimalValue()) == 1) {
-                            Object payment = saveDebtPayment(commandDto);
-                            if (BillingInfoErrorDto.class.equals(payment.getClass())) {
-                                return payment;
-                            }
-                            JsonNode result = (JsonNode) payment;
-                            Long paymentId = result.get("paymentId").longValue();
-
                             return successPayment(commandDto, paymentId);
                         }
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
