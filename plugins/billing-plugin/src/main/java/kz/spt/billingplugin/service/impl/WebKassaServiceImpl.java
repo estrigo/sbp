@@ -56,9 +56,10 @@ public class WebKassaServiceImpl implements WebKassaService {
             ObjectMapper mapper = new ObjectMapper();
             String requestBody = mapper.writeValueAsString(check);
             HttpEntity<String> request = new HttpEntity(requestBody, headers);
-            CheckResponse checkResponse =
-                    restTemplate.postForObject(webkassaHost+"/api/Check", request, CheckResponse.class);
-            return checkResponse;
+            String checkResponse =
+                    restTemplate.postForObject(webkassaHost+"/api/Check", request, String.class);
+            System.out.println(checkResponse);
+            return null;
         } catch (Exception ex) {
             log.error(ex.getMessage(),ex);
         }

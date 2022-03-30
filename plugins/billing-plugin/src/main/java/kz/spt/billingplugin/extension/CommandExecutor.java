@@ -152,10 +152,10 @@ public class CommandExecutor implements PluginRegister {
                 AuthRequestDTO authRequestDTO = new AuthRequestDTO();
                 authRequestDTO.setPassword(provider.getWebKassaPassword());
                 authRequestDTO.setLogin(provider.getWebKassaLogin());
-
+                log.info("Request for chech number for txn " + txn_id);
                 CheckResponse checkResponse = getWebKassaService().registerCheck(check, authRequestDTO);
-
-                if (checkResponse != null) {
+                log.info("Check Response " + checkResponse.toString());
+                if (checkResponse != null && checkResponse.data!= null) {
                     node.put("checkNumber", checkResponse.data.checkNumber);
                     node.put("ticketUrl", checkResponse.data.ticketUrl);
 
