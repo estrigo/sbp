@@ -22,8 +22,6 @@ public interface CarStateService {
 
     void createOUTManual(String carNumber, Date outTimestamp, CarState carState);
 
-    Boolean checkIsLastEnteredNotLeft(String carNumber);
-
     CarState getLastNotLeft(String carNumber);
 
     Iterable<CarState> getAllNotLeft();
@@ -34,12 +32,6 @@ public interface CarStateService {
 
     Page<CarStateDto> getAll(PagingRequest pagingRequest,
                              CarStateFilterDto carStateFilterDto) throws ParseException;
-
-    Page<CarStateDto> getEntriesWithoutExit(PagingRequest pagingRequest,
-                             CarStateFilterDto carStateFilterDto) throws ParseException;
-
-    Page<CarStateDto> getExitsWithoutEntry(PagingRequest pagingRequest,
-                                           CarStateFilterDto carStateFilterDto) throws ParseException;
 
     CarState save(CarState carState);
 

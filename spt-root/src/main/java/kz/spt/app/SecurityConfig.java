@@ -58,7 +58,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.httpBasic().and().authorizeRequests()
-                .antMatchers("/rta/**").fullyAuthenticated()
                 .antMatchers("/users/delete/**", "/balance/**").hasAnyRole("ADMIN", "SUPERADMIN")
                 .antMatchers( "/events/**", "/journal/**", "/arm/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN", "OPERATOR", "OPERATOR_NO_REVENUE_SHARE","RTA")
                 .antMatchers( "/customers/**", "/register/**", "/cars/**", "/parking/**", "/customer/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN")

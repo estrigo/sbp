@@ -17,6 +17,7 @@ import lombok.extern.java.Log;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -106,11 +107,6 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
-    public Boolean checkIsLastEnteredNotLeft(String carNumber) {
-        return getLastNotLeft(carNumber) != null;
-    }
-
-    @Override
     public CarState getLastNotLeft(String carNumber) {
         Pageable first = PageRequest.of(0, 1);
         List<CarState> carStates = carStateRepository.getCarStateNotLeft(carNumber, first);
@@ -160,6 +156,15 @@ public class CarStateServiceImpl implements CarStateService {
     @SneakyThrows
     @Override
     public Iterable<CarState> listByFilters(CarStateFilterDto filterDto) {
+        Specification<CarState> specification = getCarStateSpecification(filterDto);
+        Sort sort = Sort.by("id").descending();
+        if(specification != null){
+            return carStateRepository.findAll(specification, sort);
+        }
+        return carStateRepository.findAll(sort);
+    }
+
+    private Specification<CarState> getCarStateSpecification(CarStateFilterDto filterDto) throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         Specification<CarState> specification = null;
 
@@ -184,54 +189,59 @@ public class CarStateServiceImpl implements CarStateService {
         if (filterDto.isInParking()) {
             specification = specification != null ? specification.and(CarStateSpecification.emptyOutGateTime()) : CarStateSpecification.emptyOutGateTime();
         }
-
-        specification = specification != null ? specification.and(CarStateSpecification.orderById()) : CarStateSpecification.orderById();
-        return carStateRepository.findAll(specification);
+        return specification;
     }
 
-    @SneakyThrows
-    public Iterable<CarState> listExitsByFilters(CarStateFilterDto filterDto) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-        Specification<CarState> specification = CarStateSpecification.inTimestampIsNull();
+    private org.springframework.data.domain.Page<CarState> listByFilters(Specification<CarState> carStateSpecification, PagingRequest pagingRequest) {
+        Order order = pagingRequest.getOrder().get(0);
 
-        if (!StringUtils.isEmpty(filterDto.getPlateNumber())) {
-            specification = CarStateSpecification.likePlateNumber(filterDto.getPlateNumber());
-        }
-        if (!StringUtils.isEmpty(filterDto.getDateFromString())) {
-            specification = specification.and(CarStateSpecification.greaterEndDate(format.parse(filterDto.getDateFromString())));
-        }
-        if (!StringUtils.isEmpty(filterDto.getDateToString())) {
-            specification = specification.and(CarStateSpecification.lessEndDate(format.parse(filterDto.getDateToString())));
-        }
-        if (filterDto.getOutGateId() != null) {
-            specification = specification.and(CarStateSpecification.equalOutGateId(filterDto.getOutGateId()));
+        int columnIndex = order.getColumn();
+        Column column = pagingRequest.getColumns().get(columnIndex);
+        String columnName = column.getData();
+        Direction dir = order.getDir();
+
+        Sort sort = null;
+        if("carNumber".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("carNumber").descending();
+            } else {
+                sort = Sort.by("carNumber").ascending();
+            }
+        } else if("inTimestampString".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("inTimestamp").descending();
+            } else {
+                sort = Sort.by("inTimestamp").ascending();
+            }
+        } else if("inTimestampString".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("outTimestamp").descending();
+            } else {
+                sort = Sort.by("outTimestamp").ascending();
+            }
+        } else if("paid".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("paid").descending();
+            } else {
+                sort = Sort.by("paid").ascending();
+            }
         }
 
-        specification = specification.and(CarStateSpecification.orderById());
-        return carStateRepository.findAll(specification);
+        Pageable rows = PageRequest.of(pagingRequest.getStart() / pagingRequest.getLength(), pagingRequest.getLength(), sort);
+        if (carStateSpecification != null) {
+            return carStateRepository.findAll(carStateSpecification, rows);
+        } else {
+            return carStateRepository.findAll(rows);
+        }
     }
 
     @Override
     public Page<CarStateDto> getAll(PagingRequest pagingRequest,
                                     CarStateFilterDto carStateFilterDto) throws ParseException {
 
-        List<CarState> carStates = (List<CarState>) this.listByFilters(carStateFilterDto);
-        List<CarStateDto> carStateDtos = CarStateDto.fromCarStates(carStates);
-        return getPage(carStateDtos, pagingRequest);
-    }
-
-    @Override
-    public Page<CarStateDto> getEntriesWithoutExit(PagingRequest pagingRequest, CarStateFilterDto carStateFilterDto) throws ParseException {
-        List<CarState> carStates = (List<CarState>) this.listByFilters(carStateFilterDto);
-        List<CarStateDto> carStateDtos = CarStateDto.fromCarStates(carStates);
-        return getPage(carStateDtos, pagingRequest);
-    }
-
-    @Override
-    public Page<CarStateDto> getExitsWithoutEntry(PagingRequest pagingRequest, CarStateFilterDto carStateFilterDto) throws ParseException {
-        List<CarState> carStates = (List<CarState>) this.listExitsByFilters(carStateFilterDto);
-        List<CarStateDto> carStateDtos = CarStateDto.fromCarStates(carStates);
-        return getPage(carStateDtos, pagingRequest);
+        Specification<CarState> specification = getCarStateSpecification(carStateFilterDto);
+        org.springframework.data.domain.Page<CarState> filteredCarStates =  listByFilters(specification, pagingRequest);
+        return getPage(filteredCarStates, pagingRequest);
     }
 
     @Override
@@ -334,19 +344,12 @@ public class CarStateServiceImpl implements CarStateService {
         carStateRepository.save(carState);
     }
 
-    private Page<CarStateDto> getPage(List<CarStateDto> carStates, PagingRequest pagingRequest) {
-        List<CarStateDto> filtered = carStates.stream()
-                .sorted(sortCarStates(pagingRequest))
-                .filter(filterCarStates(pagingRequest))
-                .skip(pagingRequest.getStart())
-                .limit(pagingRequest.getLength())
-                .collect(Collectors.toList());
+    private Page<CarStateDto> getPage(org.springframework.data.domain.Page<CarState> carStates, PagingRequest pagingRequest) {
+        long count = carStates.getTotalElements();
 
-        long count = carStates.stream()
-                .filter(filterCarStates(pagingRequest))
-                .count();
-
-        for(CarStateDto carStateDto:filtered){
+        List<CarStateDto> carStateDtoList = new ArrayList<>(carStates.getSize());
+        for(CarState carState:carStates){
+            CarStateDto carStateDto = CarStateDto.fromCarState(carState);
             Cars car = carsService.findByPlatenumber(carStateDto.carNumber);
             if(car != null){
                 if(car.getRegion() != null){
@@ -389,49 +392,14 @@ public class CarStateServiceImpl implements CarStateService {
                 }
             }
             carStateDto.duration = durationBuilder.toString();
+            carStateDtoList.add(carStateDto);
         }
 
-        Page<CarStateDto> page = new Page<>(filtered);
+        Page<CarStateDto> page = new Page<>(carStateDtoList);
         page.setRecordsFiltered((int) count);
         page.setRecordsTotal((int) count);
         page.setDraw(pagingRequest.getDraw());
 
         return page;
-    }
-
-    private Predicate<CarStateDto> filterCarStates(PagingRequest pagingRequest) {
-        if (pagingRequest.getSearch() == null || StringUtils.isEmpty(pagingRequest.getSearch().getValue())) {
-            return CarState -> true;
-        }
-        String value = pagingRequest.getSearch().getValue();
-
-        return carState -> ((carState.getCarNumber() != null && carState.getCarNumber().contains(value))
-                || carState.getInTimestampString().contains(value)
-                || carState.getOutTimestampString().contains(value)
-                || carState.getDuration().contains(value)
-                || (carState.getPayment() != null && carState.getPayment().toString().contains(value))
-        );
-    }
-
-    private Comparator<CarStateDto> sortCarStates(PagingRequest pagingRequest) {
-        if (pagingRequest.getOrder() == null) {
-            return EMPTY_COMPARATOR;
-        }
-
-        try {
-            Order order = pagingRequest.getOrder().get(0);
-
-            int columnIndex = order.getColumn();
-            Column column = pagingRequest.getColumns()
-                    .get(columnIndex);
-
-            Comparator<CarStateDto> comparator = CarStateDtoComparators.getComparator(column.getData(), order.getDir());
-            return Objects.requireNonNullElse(comparator, EMPTY_COMPARATOR);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return EMPTY_COMPARATOR;
     }
 }

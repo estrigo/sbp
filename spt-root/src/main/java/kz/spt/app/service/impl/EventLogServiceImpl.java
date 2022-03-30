@@ -322,7 +322,7 @@ public class EventLogServiceImpl implements EventLogService {
     public String findLastNotEnoughFunds(Long gateId) {
 
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MINUTE, -1);
+        calendar.add(Calendar.MINUTE, -2);
 
         List<EventLog> eventLogs = eventLogRepository.getEventsFromDate(calendar.getTime(), Gate.class.getSimpleName(), gateId);
         if(eventLogs != null && eventLogs.size()>0){
@@ -342,7 +342,7 @@ public class EventLogServiceImpl implements EventLogService {
     public String findLastWithDebts(Long gateId) {
 
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MINUTE, -1);
+        calendar.add(Calendar.MINUTE, -2);
 
         List<EventLog> eventLogs = eventLogRepository.getEventsFromDate(calendar.getTime(), Gate.class.getSimpleName(), gateId);
         if(eventLogs != null && eventLogs.size()>0){

@@ -70,6 +70,7 @@
                         <table id="carStateTable" class="table table-bordered">
                             <thead>
                             <tr>
+                                <th></th>
                                 <th><a th:text="#{car.platenumber}"></a></th>
                                 <th><a th:text="#{carState.inTimestamp}"></a></th>
                                 <th><a th:text="#{carState.inGate}"></a></th>
@@ -79,7 +80,6 @@
                                 <th><a th:text="#{carState.toPay}"></a></th>
                                 <th><a th:text="#{carState.rate}"></a></th>
                                 <th><a th:text="#{carState.payment}"></a></th>
-                                <th></th>
                             </tr>
                             </thead>
                         </table>
@@ -215,12 +215,49 @@
             "targets": "_all"
         }],
         "columns": [
+            {
+                "data": function (carState) {
+                    const canEdit = [[${canEdit}]];
+                    const canRemove = [[${canRemove}]];
+                    const canKick = [[${canKick}]];
+
+                    const outTime = carState["outTimestamp"]
+                    const paid = carState["paid"];
+
+                    var menu = '<div class="dropdown">' +
+                        '<button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown"><i class="ion-edit"></i></button>' +
+                        '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+
+
+                    if (!outTime || outTime === "") {
+                        if (canEdit) {
+                            menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="editPlate" data-number="' + carState.carNumber + '" data-id="' + carState.id + '">' + [[#{carState.editPlate}]] + '</button>';
+                        }
+
+                        if (canRemove && paid) {
+                            menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="removeDebt" data-number="' + carState.carNumber + '" data-id="' + carState.id + '">' + [[#{crm.deleteDebt}]] + '</button>';
+                        }
+
+                        if (canKick) {
+                            menu += '<a class="dropdown-item" href="out/' + carState.carNumber + '">' + [[#{carState.manualOut}]] + '</a>';
+                        }
+                    }
+
+                    if (canKick) {
+                        menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="addBlacklist" data-number="' + carState.carNumber + '" data-id="' + carState.id + '">' + [[#{carState.toBlackList}]] + '</button>';
+                    }
+
+                    menu += '</div></div>';
+
+                    return menu;
+                }, "orderable": false
+            },
             {"data": "carNumber", "width": "10%"},
             {"data": "inTimestampString", "width": "12%"},
-            {"data": "inGate", "width": "10%"},
+            {"data": "inGate", "width": "10%", "orderable": false},
             {"data": "outTimestampString", "width": "13%"},
-            {"data": "outGate", "width": "10%"},
-            {"data": "duration", "width": "15%"},
+            {"data": "outGate", "width": "10%", "orderable": false},
+            {"data": "duration", "width": "15%", "orderable": false},
             {
                 "data": function (carState) {
                     if (carState.paid) {
@@ -228,9 +265,9 @@
                     } else {
                         return [[#{carState.free}]];
                     }
-                }, "width": "5%"
+                }, "width": "5%", "orderable": false
             },
-            {"data": "rateAmount", "width": "5%"},
+            {"data": "rateAmount", "width": "5%", "orderable": false},
             {
                 "data": function (carState) {
                     if (!carState.paid && carState.whitelistJson) {
@@ -256,44 +293,7 @@
                     } else {
                         return carState.payment;
                     }
-                }, "width": "30%"
-            },
-            {
-                "data": function (carState) {
-                    const canEdit = [[${canEdit}]];
-                    const canRemove = [[${canRemove}]];
-                    const canKick = [[${canKick}]];
-
-                    const outTime = carState["outTimestamp"]
-                    const paid = carState["paid"];
-
-                    var menu = '<div class="dropdown">' +
-                        '<button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">' + [[#{crm.actions}]] + '</button>' +
-                        '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
-
-
-                    if (!outTime || outTime === "") {
-                        if (canEdit) {
-                            menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="editPlate" data-number="' + carState.carNumber + '" data-id="' + carState.id + '">' + [[#{carState.editPlate}]] + '</button>';
-                        }
-
-                        if (canRemove && paid) {
-                            menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="removeDebt" data-number="' + carState.carNumber + '" data-id="' + carState.id + '">' + [[#{crm.deleteDebt}]] + '</button>';
-                        }
-
-                        if (canKick) {
-                            menu += '<a class="dropdown-item" href="out/' + carState.carNumber + '">' + [[#{carState.manualOut}]] + '</a>';
-                        }
-                    }
-
-                    if (canKick) {
-                        menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="addBlacklist" data-number="' + carState.carNumber + '" data-id="' + carState.id + '">' + [[#{carState.toBlackList}]] + '</button>';
-                    }
-
-                    menu += '</div></div>';
-
-                    return menu;
-                }
+                }, "width": "30%", "orderable": false
             }
         ],
         "fnRowCallback": function (nRow, carState, iDisplayIndex) {
@@ -301,7 +301,7 @@
             $(nRow).addClass(css);
         },
         "order": [ //[[ in thymeleaf is inline script
-            [1, "desc"]
+            [2, "desc"]
         ],
         buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {

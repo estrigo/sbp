@@ -53,11 +53,4 @@ public class CarStateSpecification {
     public static Specification<CarState> emptyOutGateTime() {
         return (root, query, builder) -> builder.isNull(root.get(CarState_.outTimestamp));
     }
-
-    public static Specification<CarState> orderById() {
-        return (root, query, builder) -> {
-            query.orderBy(builder.desc(root.get(CarState_.id)));
-            return builder.isNotNull(root.get(CarState_.id));
-        };
-    }
 }
