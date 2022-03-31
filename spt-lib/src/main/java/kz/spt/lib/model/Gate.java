@@ -59,4 +59,6 @@ public class Gate {
 
     @UpdateTimestamp
     private Date updated;
+
+    private String qrPanelIp;
 }

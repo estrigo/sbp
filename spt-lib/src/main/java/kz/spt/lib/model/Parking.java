@@ -54,4 +54,13 @@ public class Parking {
 
     @UpdateTimestamp
     private Date updated;
+
+    /* Название объекта в ссылки */
+    private String kaspiServiceName;
+
+    /* Значение service_id в ссылке Каспи*/
+    private String kaspiServiceId;
+
+    /* Значение ключа через который передается номер авто */
+    private String kaspiPlateParam;
 }

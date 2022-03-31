@@ -30,6 +30,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 @Log
 @Service
@@ -45,6 +46,7 @@ public class CarEventServiceImpl implements CarEventService {
     private final BlacklistService blacklistService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final PluginService pluginService;
+    private final QrPanelService qrPanelService;
 
     @Value("${parking.has.access.unknown.cases}")
     Boolean parkingHasAccessUnknownCases;
@@ -57,7 +59,7 @@ public class CarEventServiceImpl implements CarEventService {
 
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                CarStateService carStateService, CarImageService carImageService,
-                               BarrierService barrierService, BlacklistService blacklistService, PluginService pluginService) {
+                               BarrierService barrierService, BlacklistService blacklistService, PluginService pluginService, QrPanelService qrPanelService) {
         this.carsService = carsService;
         this.cameraService = cameraService;
         this.eventLogService = eventLogService;
@@ -66,6 +68,7 @@ public class CarEventServiceImpl implements CarEventService {
         this.barrierService = barrierService;
         this.blacklistService = blacklistService;
         this.pluginService = pluginService;
+        this.qrPanelService = qrPanelService;
     }
 
     @Override
@@ -623,7 +626,11 @@ public class CarEventServiceImpl implements CarEventService {
         BigDecimal zerotouchValue = null;
         StaticValues.CarOutBy carOutBy = null;
         Boolean leftFromThisSecondsBefore = false;
-
+        try {
+            qrPanelService.clear(camera.getGate());
+        } catch (Exception ex) {
+            log.log(Level.WARNING, "Error while clearing qrpanel for gate " + gate.gateName);
+        }
         // проверить если машины выезжала или заезжала 20 секунд назад
         Calendar now = Calendar.getInstance();
         now.add(Calendar.SECOND, -20);
@@ -801,6 +808,12 @@ public class CarEventServiceImpl implements CarEventService {
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
                 }
+            }
+        } else {
+            try {
+                qrPanelService.display(camera.getGate(), eventDto.car_number);
+            } catch (Exception ex) {
+                log.log(Level.WARNING, "Error while display qrpanel for gate " + gate.gateName);
             }
         }
     }

@@ -6,6 +6,9 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+/**
+ *
+ */
 @Data
 public class ParkomatBillingInfoSuccessDto {
     String txn_id;              // уникальны номер транзакции бил-ой системы
@@ -15,9 +18,9 @@ public class ParkomatBillingInfoSuccessDto {
     int left_free_time_minutes; // Кол-во оставшихся 15 минут на выезд.
     String tariff;              // 100 тг/ч - Текстовое представление текущего тарифа.
     String in_date;             // 2019-05-06 08:30:12 - Дата время последнего ВЪЕЗДА на паркинг.
-    BigDecimal onlineSum;
-    String payed_till;
-    int hours;
+    BigDecimal onlineSum;       // сумма платежа через онлайн-провайдеры
+    String payed_till;          // дата и время до которого оплачено
+    int hours;                  // количество часов проведенных на парковке
 
 
     public static ParkomatBillingInfoSuccessDto convert(BillingInfoSuccessDto billingPaymentSuccessDto) {

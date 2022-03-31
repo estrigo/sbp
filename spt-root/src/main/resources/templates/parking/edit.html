@@ -43,6 +43,27 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <h4 th:text="#{kaspiQR.settings}"></h4>
+
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label" th:text="#{kaspi.objectName}"></label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{kaspiServiceName}" th:value="*{kaspiServiceName}" >
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label" th:text="#{kaspi.serviceId}"></label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{kaspiServiceId}" th:value="*{kaspiServiceId}" >
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label" th:text="#{kaspi.plateKeyName}"></label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" th:field="*{kaspiPlateParam}" th:value="*{kaspiPlateParam}" >
+                                        </div>
+                                    </div>
+
                                     <div class="form-group row">
                                         <label class="col-2 col-form-label"></label>
                                         <div class="col-10">
