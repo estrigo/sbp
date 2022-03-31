@@ -3,10 +3,12 @@ package kz.spt.app.model.dto;
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.Gate;
+import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
+@Log
 public class GateStatusDto {
 
     public enum GateStatus {Open,Closed};
@@ -46,7 +48,7 @@ public class GateStatusDto {
         sensor2 = loopStatus;
     }
 
-    public static GateStatusDto fromGate(Gate gate){
+    public static GateStatusDto fromGate(Gate gate, List<Gate> allGates){
         GateStatusDto gateStatusDto = new GateStatusDto();
         gateStatusDto.gateId = gate.getId();
         gateStatusDto.gateName = gate.getName();
@@ -123,6 +125,17 @@ public class GateStatusDto {
             }
         }
         gateStatusDto.isSimpleWhitelist = (Gate.GateType.REVERSE.equals(gate.getGateType()) && gateStatusDto.backCamera == null) || (Gate.GateType.OUT.equals(gate.getGateType()) && gateStatusDto.frontCamera == null);
+        if(Gate.GateType.IN.equals(gate.getGateType()) && !gateStatusDto.isSimpleWhitelist){
+            Gate outGate = null;
+            for(Gate checkOutGate : allGates){
+                if(gate.getParking().getId() == checkOutGate.getParking().getId() && Gate.GateType.OUT.equals(checkOutGate.getGateType())){
+                    outGate = checkOutGate;
+                }
+            }
+            if(outGate == null){
+                gateStatusDto.isSimpleWhitelist = true;
+            }
+        }
 
         return gateStatusDto;
     }

@@ -58,7 +58,7 @@ public class StatusCheckJob {
         List<Gate> allGates = (List<Gate>) gateService.listAllGatesWithDependents();
         for (Gate gate : allGates){
             if(!isGatesProcessing.containsKey(gate.getId())){
-                globalGateDtos.add(GateStatusDto.fromGate(gate));
+                globalGateDtos.add(GateStatusDto.fromGate(gate, allGates));
                 isGatesProcessing.put(gate.getId(), false);
             }
         }
