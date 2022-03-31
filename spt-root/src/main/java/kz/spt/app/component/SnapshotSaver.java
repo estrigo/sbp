@@ -80,7 +80,9 @@ public class SnapshotSaver {
                 .build();
         HttpComponentsClientHttpRequestFactory requestFactory =
                 new HttpRequestFactoryDigestAuth(host, client);
-
+        requestFactory.setConnectTimeout(2000);
+        requestFactory.setConnectionRequestTimeout(2000);
+        requestFactory.setReadTimeout(2000);
         var restTemplate = new RestTemplate(requestFactory);
         val headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_JPEG);
