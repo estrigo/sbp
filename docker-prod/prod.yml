@@ -127,3 +127,5 @@ telegram:
   bot:
     external:
       enabled: false
+kaspi:
+  qr-link: https://kaspi.kz/pay/%s?service_id=%s&%s=
