@@ -113,6 +113,7 @@ zero:
 parking:
   has:
     access:
+      lcd: false
       unknown:
         cases: false # Выпускать все авто где вьезд не найден
   remove:
