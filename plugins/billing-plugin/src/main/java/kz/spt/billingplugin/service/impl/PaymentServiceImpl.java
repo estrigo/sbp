@@ -1,6 +1,5 @@
 package kz.spt.billingplugin.service.impl;
 
-import kz.spt.billingplugin.bootstrap.datatable.PaymentDtoComparators;
 import kz.spt.billingplugin.dto.FilterPaymentDTO;
 import kz.spt.billingplugin.dto.PaymentLogDTO;
 import kz.spt.billingplugin.model.Payment;
@@ -9,20 +8,17 @@ import kz.spt.billingplugin.model.PaymentSpecification;
 import kz.spt.billingplugin.repository.PaymentRepository;
 import kz.spt.billingplugin.service.PaymentService;
 import kz.spt.lib.bootstrap.datatable.*;
-import kz.spt.lib.model.CarStateSpecification;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Service("paymentService")
 public class PaymentServiceImpl implements PaymentService {
@@ -59,12 +55,12 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Page<PaymentLogDTO> getPaymentDtoList(PagingRequest pagingRequest) {
         FilterPaymentDTO filterPayment = pagingRequest.convertTo(FilterPaymentDTO.builder().build());
-        List<Payment> allPayments = listByFilters(filterPayment);
-        return getPage(PaymentLogDTO.convertToDto(allPayments), pagingRequest);
+        org.springframework.data.domain.Page<Payment> payments = listLimitedByFilters(filterPayment, pagingRequest);
+        return getPage(payments.getTotalElements(), PaymentLogDTO.convertToDto(payments.getContent()), pagingRequest);
     }
 
     @Override
-    public List<PaymentLogDTO> getPaymentDtoList(FilterPaymentDTO filter) throws ParseException {
+    public List<PaymentLogDTO> getPaymentDtoList(FilterPaymentDTO filter){
         List<Payment> allPayments = listByFilters(filter);
         return PaymentLogDTO.convertToDto(allPayments);
     }
@@ -79,8 +75,93 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentRepository.findByTransaction(transaction);
     }
 
-    @SneakyThrows
     private List<Payment> listByFilters(FilterPaymentDTO filterDto) {
+        Specification<Payment> specification = getPaymentSpecification(filterDto);
+
+        Sort sort = Sort.by("id").descending();
+
+        return paymentRepository.findAll(specification, sort);
+    }
+
+    private  org.springframework.data.domain.Page<Payment> listLimitedByFilters(FilterPaymentDTO filterDto, PagingRequest pagingRequest) {
+        Specification<Payment> specification = getPaymentSpecification(filterDto);
+
+        Order order = pagingRequest.getOrder().get(0);
+
+        int columnIndex = order.getColumn();
+        Column column = pagingRequest.getColumns().get(columnIndex);
+        String columnName = column.getData();
+        Direction dir = order.getDir();
+
+        Sort sort = null;
+        if("id".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("id").descending();
+            } else {
+                sort = Sort.by("id").ascending();
+            }
+        } else if("parking".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("parking").descending();
+            } else {
+                sort = Sort.by("parking").ascending();
+            }
+        } else if("carNumber".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("carNumber").descending();
+            } else {
+                sort = Sort.by("carNumber").ascending();
+            }
+        } else if("inDate".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("inDate").descending();
+            } else {
+                sort = Sort.by("inDate").ascending();
+            }
+        } else if("outDate".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("outDate").descending();
+            } else {
+                sort = Sort.by("outDate").ascending();
+            }
+        } else if("created".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("created").descending();
+            } else {
+                sort = Sort.by("created").ascending();
+            }
+        } else if("price".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("price").descending();
+            } else {
+                sort = Sort.by("price").ascending();
+            }
+        } else if("rateDetails".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("rateDetails").descending();
+            } else {
+                sort = Sort.by("rateDetails").ascending();
+            }
+        } else if("provider".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("provider").descending();
+            } else {
+                sort = Sort.by("provider").ascending();
+            }
+        } else if("transaction".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("transaction").descending();
+            } else {
+                sort = Sort.by("transaction").ascending();
+            }
+        }
+
+        Pageable rows = PageRequest.of(pagingRequest.getStart() / pagingRequest.getLength(), pagingRequest.getLength(), sort);
+
+        return paymentRepository.findAll(specification, rows);
+    }
+
+    private Specification<Payment> getPaymentSpecification(FilterPaymentDTO filterDto){
         Specification<Payment> specification = null;
 
         if (!StringUtils.isEmpty(filterDto.getCarNumber())) {
@@ -98,68 +179,15 @@ public class PaymentServiceImpl implements PaymentService {
         if (filterDto.getPaymentProvider() != null) {
             specification = specification != null ? specification.and(PaymentSpecification.equalProvider(filterDto.getPaymentProvider())) : PaymentSpecification.equalProvider(filterDto.getPaymentProvider());
         }
-
-        specification = specification != null ? specification.and(PaymentSpecification.orderById()) : PaymentSpecification.orderById();
-        return paymentRepository.findAll(specification);
+        return specification;
     }
 
-    private Page<PaymentLogDTO> getPage(List<PaymentLogDTO> paymentLogDTOList, PagingRequest pagingRequest) {
-        List<PaymentLogDTO> filtered = paymentLogDTOList.stream()
-                .sorted(sortPaymentLogDTO(pagingRequest))
-                .filter(filterPaymentLogDTOs(pagingRequest))
-                .skip(pagingRequest.getStart())
-                .limit(pagingRequest.getLength())
-                .collect(Collectors.toList());
-
-        long count = paymentLogDTOList.stream()
-                .filter(filterPaymentLogDTOs(pagingRequest))
-                .count();
-
-        Page<PaymentLogDTO> page = new Page<>(filtered);
+    private Page<PaymentLogDTO> getPage(long count, List<PaymentLogDTO> paymentLogDTOList, PagingRequest pagingRequest) {
+        Page<PaymentLogDTO> page = new Page<>(paymentLogDTOList);
         page.setRecordsFiltered((int) count);
         page.setRecordsTotal((int) count);
         page.setDraw(pagingRequest.getDraw());
 
         return page;
-    }
-
-    private Predicate<PaymentLogDTO> filterPaymentLogDTOs(PagingRequest pagingRequest) {
-        if (pagingRequest.getSearch() == null || StringUtils.isEmpty(pagingRequest.getSearch().getValue())) {
-            return paymentLogDTOs -> true;
-        }
-        String value = pagingRequest.getSearch().getValue();
-
-        return paymentLogDTOs -> (paymentLogDTOs.getParking() != null && paymentLogDTOs.getParking().toLowerCase().contains(value.toLowerCase())
-                || (paymentLogDTOs.getInDate() != null && paymentLogDTOs.getInDate().toString().toLowerCase().contains(value.toLowerCase()))
-                || (paymentLogDTOs.getOutDate() != null && paymentLogDTOs.getOutDate().toString().toLowerCase().contains(value.toLowerCase()))
-                || (paymentLogDTOs.getCreated() != null && paymentLogDTOs.getCreated().toString().toLowerCase().contains(value.toLowerCase()))
-                || (paymentLogDTOs.getRateDetails() != null && paymentLogDTOs.getRateDetails().toLowerCase().contains(value.toLowerCase()))
-                || (paymentLogDTOs.getPrice() != null && paymentLogDTOs.getPrice().toString().toLowerCase().contains(value.toLowerCase()))
-                || (paymentLogDTOs.getProvider() != null && paymentLogDTOs.getProvider().toLowerCase().contains(value.toLowerCase()))
-                || (paymentLogDTOs.getTransaction() != null && paymentLogDTOs.getTransaction().toLowerCase().contains(value.toLowerCase()))
-                || (paymentLogDTOs.getCarNumber() != null && paymentLogDTOs.getCarNumber().toLowerCase().contains(value.toLowerCase()))
-                || (paymentLogDTOs.getCustomerDetail() != null && paymentLogDTOs.getCustomerDetail().toLowerCase().contains(value.toLowerCase()))
-        );
-    }
-
-    private Comparator<PaymentLogDTO> sortPaymentLogDTO(PagingRequest pagingRequest) {
-        if (pagingRequest.getOrder() == null) {
-            return EMPTY_COMPARATOR;
-        }
-
-        try {
-            Order order = pagingRequest.getOrder().get(0);
-
-            int columnIndex = order.getColumn();
-            Column column = pagingRequest.getColumns().get(columnIndex);
-
-            Comparator<PaymentLogDTO> comparator = PaymentDtoComparators.getComparator(column.getData(), order.getDir());
-            return Objects.requireNonNullElse(comparator, EMPTY_COMPARATOR);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return EMPTY_COMPARATOR;
     }
 }
