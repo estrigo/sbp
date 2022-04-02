@@ -184,7 +184,7 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("gateDescription", camera.getGate().getDescription());
             properties.put("gateType", camera.getGate().getGateType().toString());
 
-            if (eventDto.car_picture != null) {
+            if (eventDto.car_picture != null && !"".equals(eventDto.car_picture) && !"null".equals(eventDto.car_picture) && !"undefined".equals(eventDto.car_picture)) {
                 String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_date_time, eventDto.car_number);
                 properties.put(StaticValues.carImagePropertyName, carImageUrl);
                 properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
@@ -302,8 +302,13 @@ public class CarEventServiceImpl implements CarEventService {
 
         CarState carState = carStateService.getLastNotLeft(eventDto.car_number);
         if (carState != null) {
-            carStateService.createOUTManual(eventDto.car_number, new Date(), carState); // Принудительная закрытие предыдущей сессий
-            carState = null;
+            Calendar current = Calendar.getInstance();
+            if(carState.getParking().equals(camera.getGate().getParking()) && (current.getTime().getTime() - carState.getInTimestamp().getTime() <= 5*60*1000)){
+                return;
+            } else {
+                carStateService.createOUTManual(eventDto.car_number, new Date(), carState); // Принудительная закрытие предыдущей сессий
+                carState = null;
+            }
         }
 
         // Проверка долга
