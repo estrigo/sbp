@@ -26,6 +26,9 @@
                                 <a class="dropdown-item" href="#" onclick="toolsChanged(this)"
                                    th:text="#{camera.mask}" data-tool="mask"
                                    th:attr="data-title=#{camera.mask}">Mask</a>
+                                <a class="dropdown-item" href="#" onclick="toolsChanged(this)"
+                                   th:text="#{camera.mask2}" data-tool="mask2"
+                                   th:attr="data-title=#{camera.mask2}">Mask 2</a>
                             </div>
                         </div>
                         <button type="button" class="btn btn-secondary mr-2" th:text="#{crm.close}" onclick="reset()">
@@ -65,6 +68,11 @@
                                 [[#{camera.mask}]]: <label class="text-inverse" id="maskValue">mask</label>
                             </label>
                         </div>
+                        <div class="form-group">
+                            <label>
+                                [[#{camera.mask2}]]: <label class="text-inverse" id="mask2Value">mask</label>
+                            </label>
+                        </div>
                     </fieldset>
                 </form>
             </div>
@@ -98,7 +106,9 @@
             image64: null
         },
         mask: [],
-        maskImage64: null
+        mask2: [],
+        maskImage64: null,
+        mask2Image64: null
     };
     let startState = {
         max: {
@@ -114,6 +124,7 @@
             height: 0,
         },
         mask: [],
+        mask2: [],
     };
     let currentTool;
 
@@ -193,9 +204,27 @@
                 isLoading(false);
                 setState(data);
                 setStartState(data);
+                alert("Saved");
             },
-            error: function (){
+            error: function (jqXHR, exception){
                 isLoading(false);
+                var msg = '';
+                if (jqXHR.status === 0) {
+                    msg = 'Not connect.\n Verify Network.';
+                } else if (jqXHR.status == 404) {
+                    msg = 'Requested page not found. [404]';
+                } else if (jqXHR.status == 500) {
+                    msg = 'Internal Server Error [500].';
+                } else if (exception === 'parsererror') {
+                    msg = 'Requested JSON parse failed.';
+                } else if (exception === 'timeout') {
+                    msg = 'Time out error.';
+                } else if (exception === 'abort') {
+                    msg = 'Ajax request aborted.';
+                } else {
+                    msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                }
+                alert(msg);
             }
         });
     }
@@ -246,6 +275,17 @@
                     currentCanvasTool.update(image);
                 }
                 break;
+            case 'mask2':
+                currentCanvasTool = PolygonTool(canvas, context, image);
+                currentCanvasTool.onPolygonDrawed = onMask2Draw;
+                currentCanvasTool.drawingStateChanged = toolDrawingStateChange;
+                if (state.mask2.length > 0) {
+                    currentCanvasTool.setAvailableCoords(state.mask2);
+                    updateSnapshot(state.mask2Image64);
+                } else {
+                    currentCanvasTool.update(image);
+                }
+                break;
             default:
                 currentCanvasTool = null;
                 break;
@@ -283,6 +323,13 @@
         });
     };
 
+    const onMask2Draw = function (points, image64) {
+        setTimeout(function () {
+            //setState({mask: points, maskImage64: image64});
+            setState({mask2: points});
+        });
+    };
+
     const toolDrawingStateChange = function (state) {
         isDisabled(state);
     };
@@ -291,6 +338,7 @@
         integer($('#maxValue'), state.max.width);
         integer($('#minValue'), state.min.width);
         string($('#maskValue'), state.mask)
+        string($('#mask2Value'), state.mask2)
     };
 
     function integer(e, value) {
@@ -335,6 +383,8 @@
                 return !!state.min.image64;
             case 'mask':
                 return !!state.maskImage64;
+            case 'mask2':
+                return !!state.mask2Image64;
             default:
                 return false;
         }
