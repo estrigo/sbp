@@ -210,7 +210,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         BigDecimal current_balance = BigDecimal.ZERO;
-        JsonNode currentBalanceResult = getCurrentBalance(carState.getCarNumber());
+        JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
         if (currentBalanceResult.has("currentBalance")) {
             current_balance = currentBalanceResult.get("currentBalance").decimalValue().setScale(2);
         }
