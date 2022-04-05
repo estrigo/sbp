@@ -88,6 +88,7 @@ public class WhitelistController {
         model.addAttribute("whitelist", new Whitelist());
         model.addAttribute("groupList", whitelistGroupsService.listAllWhitelistGroups());
         model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
+        model.addAttribute("hasAccessLcd", parkingService.isLcd());
         return "whitelist/add";
     }
 
