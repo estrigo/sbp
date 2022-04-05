@@ -175,26 +175,7 @@ public class RateServiceImpl implements RateService {
                 } else {
                     result = result.add(BigDecimal.valueOf(intervalParkomatHours));
                 }
-
-                Calendar nextInCalendar = Calendar.getInstance();
-                nextInCalendar.setTime(inCalendar.getTime());
-                nextInCalendar.add(Calendar.HOUR, 1);
-
-                Calendar checkIntervalBorder = Calendar.getInstance();
-
-                checkIntervalBorder.set(Calendar.HOUR_OF_DAY, intervalTo);
-                checkIntervalBorder.set(Calendar.MINUTE, 0);
-                checkIntervalBorder.set(Calendar.SECOND, 0);
-                checkIntervalBorder.set(Calendar.MILLISECOND, 0);
-
-                if (intervalFrom > intervalTo && inCalendar.get(Calendar.HOUR_OF_DAY) >= intervalFrom) {
-                    checkIntervalBorder.add(Calendar.DATE, 1);
-                }
-                if (intervalFrom != intervalTo && nextInCalendar.after(checkIntervalBorder)) {
-                    inCalendar.setTime(checkIntervalBorder.getTime());
-                } else {
-                    inCalendar.add(Calendar.HOUR, 1);
-                }
+                inCalendar.add(Calendar.HOUR, 1);
             }
 
             return result;
