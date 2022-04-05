@@ -91,7 +91,7 @@ public class CarEventServiceImpl implements CarEventService {
                 eventDto.ip_address = camera.getIp();
                 eventDto.lp_rect = null;
                 eventDto.lp_picture = null;
-                eventDto.manualOpen = true;
+                eventDto.manualEnter = true;
 
                 if (snapshot != null && !"".equals(snapshot) && !"undefined".equals(snapshot) && !"null".equals(snapshot)) {
                     eventDto.car_picture = snapshot;
@@ -159,22 +159,24 @@ public class CarEventServiceImpl implements CarEventService {
         if (camera != null) {
             String secondCameraIp = (gate.frontCamera2 != null) ? (eventDto.ip_address.equals(gate.frontCamera.ip) ? gate.frontCamera2.ip : gate.frontCamera.ip) : null; // If there is two camera, then ignore second by timeout
 
-            if (concurrentHashMap.containsKey(eventDto.ip_address) || (secondCameraIp != null && concurrentHashMap.containsKey(secondCameraIp))) {
-                Long timeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(eventDto.ip_address) ? concurrentHashMap.get(eventDto.ip_address) : 0);
-                int timeout = (camera.getTimeout() == null ? 0 : camera.getTimeout() * 1000);
-                if (secondCameraIp != null) {
-                    Long secondCameraTimeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(secondCameraIp) ? concurrentHashMap.get(secondCameraIp) : 0);
-                    timeDiffInMillis = timeDiffInMillis < secondCameraTimeDiffInMillis ? timeDiffInMillis : secondCameraTimeDiffInMillis;
-                }
+            if(!eventDto.manualOpen){
+                if (concurrentHashMap.containsKey(eventDto.ip_address) || (secondCameraIp != null && concurrentHashMap.containsKey(secondCameraIp))) {
+                    Long timeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(eventDto.ip_address) ? concurrentHashMap.get(eventDto.ip_address) : 0);
+                    int timeout = (camera.getTimeout() == null ? 0 : camera.getTimeout() * 1000);
+                    if (secondCameraIp != null) {
+                        Long secondCameraTimeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(secondCameraIp) ? concurrentHashMap.get(secondCameraIp) : 0);
+                        timeDiffInMillis = timeDiffInMillis < secondCameraTimeDiffInMillis ? timeDiffInMillis : secondCameraTimeDiffInMillis;
+                    }
 
-                if (timeDiffInMillis < timeout) { // If interval smaller than timeout then ignore else proceed
-                    log.info("Ignored event from camera: " + eventDto.ip_address + " time: " + timeDiffInMillis);
-                    return;
+                    if (timeDiffInMillis < timeout) { // If interval smaller than timeout then ignore else proceed
+                        log.info("Ignored event from camera: " + eventDto.ip_address + " time: " + timeDiffInMillis);
+                        return;
+                    } else {
+                        concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
+                    }
                 } else {
                     concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
                 }
-            } else {
-                concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
             }
 
             log.info("handling event from camera: " + eventDto.ip_address + " for car: " + eventDto.car_number);
@@ -199,7 +201,7 @@ public class CarEventServiceImpl implements CarEventService {
                 gate.backCamera.properties = properties;
             }
 
-            if (eventDto.manualOpen || isAllow(eventDto, camera, properties, gate)) {
+            if (eventDto.manualEnter || isAllow(eventDto, camera, properties, gate)) {
                 log.info("Gate type: " + camera.getGate().getGateType());
                 createNewCarEvent(camera, eventDto, properties);
 
@@ -314,7 +316,7 @@ public class CarEventServiceImpl implements CarEventService {
         // Проверка долга
         Boolean hasDebt = false;
         BigDecimal debt = BigDecimal.ZERO;
-        if(!eventDto.manualOpen && (Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType()) || Parking.ParkingType.WHITELIST_PAYMENT.equals(camera.getGate().getParking().getParkingType()))){
+        if(!eventDto.manualEnter && (Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType()) || Parking.ParkingType.WHITELIST_PAYMENT.equals(camera.getGate().getParking().getParkingType()))){
             PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
             if (billingPluginRegister != null) {
                 ObjectNode billinNode = this.objectMapper.createObjectNode();

@@ -19,6 +19,6 @@ public interface EventLogRepository extends JpaRepository<EventLog, Long>, JpaSp
     @Query("from EventLog el where el.eventType = :type order by el.id desc")
     Iterable<EventLog> listByType(@Param("type") EventLog.EventType type);
 
-    @Query("from EventLog el where el.created > :fromDate and el.objectClass = :className and el.objectId = :gateId order by el.id desc")
+    @Query("from EventLog el where el.created >= :fromDate and el.objectClass = :className and el.objectId = :gateId order by el.id desc")
     List<EventLog> getEventsFromDate(@Param("fromDate") Date fromDate, @Param("className") String className, @Param("gateId") Long gateId);
 }

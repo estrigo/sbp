@@ -1,7 +1,5 @@
 package kz.spt.lib.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -30,7 +28,9 @@ public class CarEventDto {
     @NotNull
     public String lp_rect;
 
-    public Boolean manualOpen = false;
+    public Boolean manualEnter = false; //Ручной запуск авто через набор номера
+
+    public Boolean manualOpen = false; //Ручное открытие шлагбаума
 
     public String region;
 
