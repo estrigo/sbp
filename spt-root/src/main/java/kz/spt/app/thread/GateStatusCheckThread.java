@@ -1,5 +1,8 @@
 package kz.spt.app.thread;
 
+import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.CameraStatusDto;
@@ -158,7 +161,7 @@ public class GateStatusCheckThread extends Thread {
         return System.currentTimeMillis() - gateStatusDto.lastTriggeredTime > 10000;  // больше 10ти секунд
     }
 
-    private int getSensorStatus(SensorStatusDto sensor){
+    private int getSensorStatus(SensorStatusDto sensor) throws ModbusProtocolException, ModbusNumberException, ModbusIOException {
         int status = SENSOR_UNDEFINED;
         try {
             status = barrierService.getSensorStatus(sensor);
@@ -166,7 +169,7 @@ public class GateStatusCheckThread extends Thread {
         return status;
     }
 
-    private boolean openGateForCarOut(CameraStatusDto camera, GateStatusDto gate, Boolean isSimple) {
+    private boolean openGateForCarOut(CameraStatusDto camera, GateStatusDto gate, Boolean isSimple) throws ModbusProtocolException, ModbusNumberException, ModbusIOException {
         boolean result = false;
         if(isSimple){
             try {

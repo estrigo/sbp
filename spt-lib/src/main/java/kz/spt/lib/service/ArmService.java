@@ -1,5 +1,8 @@
 package kz.spt.lib.service;
 
+import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.lib.model.Camera;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -9,11 +12,11 @@ import java.util.concurrent.Future;
 
 public interface ArmService {
 
-    Boolean openGate(Long cameraId) throws IOException, ParseException, InterruptedException;
+    Boolean openGate(Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
 
     Boolean openGate(Long cameraId, String snapshot) throws Exception;
 
-    Boolean closeGate(Long cameraId) throws IOException, ParseException, InterruptedException;
+    Boolean closeGate(Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
 
     Boolean restartParkomat(String ip);
 

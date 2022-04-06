@@ -1,5 +1,6 @@
 package kz.spt.app.job;
 
+import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
 import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -36,7 +38,7 @@ public class StatusCheckJob {
     public static Queue<GateStatusDto> globalGateDtos = new ConcurrentLinkedQueue<>();
 
     @Scheduled(fixedDelayString = "${status.check.fixedDelay}", initialDelay = 20000)
-    public void scheduleFixedDelayTask() {
+    public void scheduleFixedDelayTask() throws UnknownHostException, ModbusIOException {
         if(globalGateDtos.isEmpty()){
             refreshGlobalGateIds();
         }
@@ -53,12 +55,12 @@ public class StatusCheckJob {
         }
     }
 
-    private void refreshGlobalGateIds(){
+    private void refreshGlobalGateIds() throws UnknownHostException, ModbusIOException {
         globalGateDtos = new ConcurrentLinkedQueue<>();
         List<Gate> allGates = (List<Gate>) gateService.listAllGatesWithDependents();
         for (Gate gate : allGates){
             if(!isGatesProcessing.containsKey(gate.getId())){
-                globalGateDtos.add(GateStatusDto.fromGate(gate, allGates));
+                globalGateDtos.add(GateStatusDto.fromGate(gate, allGates, barrierService));
                 isGatesProcessing.put(gate.getId(), false);
             }
         }

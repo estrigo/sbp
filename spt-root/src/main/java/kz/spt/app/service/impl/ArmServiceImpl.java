@@ -1,5 +1,8 @@
 package kz.spt.app.service.impl;
 
+import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.app.component.HttpRequestFactoryDigestAuth;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.service.CameraService;
@@ -66,7 +69,7 @@ public class ArmServiceImpl implements ArmService {
     }
 
     @Override
-    public Boolean openGate(Long cameraId) throws IOException, ParseException, InterruptedException {
+    public Boolean openGate(Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
 
         Camera camera = cameraService.getCameraById(cameraId);
         if (camera != null && camera.getGate() != null && camera.getGate().getBarrier() != null) {
@@ -179,7 +182,7 @@ public class ArmServiceImpl implements ArmService {
     }
 
     @Override
-    public Boolean closeGate(Long cameraId) throws IOException, ParseException, InterruptedException {
+    public Boolean closeGate(Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
 
         Camera camera = cameraService.getCameraById(cameraId);
         if (camera != null && camera.getGate() != null && camera.getGate().getBarrier() != null) {

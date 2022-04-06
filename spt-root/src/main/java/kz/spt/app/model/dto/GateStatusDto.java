@@ -1,11 +1,14 @@
 package kz.spt.app.model.dto;
 
+import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
+import kz.spt.app.service.BarrierService;
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.Gate;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.UnknownHostException;
 import java.util.List;
 
 @Log
@@ -48,7 +51,7 @@ public class GateStatusDto {
         sensor2 = loopStatus;
     }
 
-    public static GateStatusDto fromGate(Gate gate, List<Gate> allGates){
+    public static GateStatusDto fromGate(Gate gate, List<Gate> allGates, BarrierService barrierService) throws UnknownHostException, ModbusIOException {
         GateStatusDto gateStatusDto = new GateStatusDto();
         gateStatusDto.gateId = gate.getId();
         gateStatusDto.gateName = gate.getName();
@@ -59,6 +62,9 @@ public class GateStatusDto {
         if (barrier != null) {
             if (Barrier.SensorsType.AUTOMATIC.equals(barrier.getSensorsType()) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) && barrier.getIp() != null && barrier.getPassword() != null && barrier.getOpenOid() != null && barrier.getCloseOid() != null)) {
                 gateStatusDto.barrier = BarrierStatusDto.fromBarrier(barrier);
+            }
+            if(Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType()) && barrier.getIp()!= null && barrier.getIp().contains(".")){
+                barrierService.addGlobalModbusMaster(barrier);
             }
 
             if(!StringUtils.isEmpty(barrier.getLoopIp()) && !StringUtils.isEmpty(barrier.getLoopPassword()) && barrier.getLoopOid() != null && barrier.getLoopType() != null){

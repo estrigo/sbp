@@ -1,5 +1,8 @@
 package kz.spt.app.rest;
 
+import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.lib.service.ArmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,13 +22,13 @@ public class ExternalRestController {
 
     @PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_OPERATOR')")
     @GetMapping(value = "/open/{cameraId}")
-    public Boolean openGate(@PathVariable("cameraId") Long cameraId) throws IOException, ParseException, InterruptedException {
+    public Boolean openGate(@PathVariable("cameraId") Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
         return armService.openGate(cameraId);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_OPERATOR')")
     @GetMapping(value = "/close/{cameraId}")
-    public Boolean closeGate(@PathVariable("cameraId") Long cameraId) throws IOException, ParseException, InterruptedException {
+    public Boolean closeGate(@PathVariable("cameraId") Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
         return armService.closeGate(cameraId);
     }
 }
