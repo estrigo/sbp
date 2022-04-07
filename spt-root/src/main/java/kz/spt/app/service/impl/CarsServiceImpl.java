@@ -62,11 +62,11 @@ public class CarsServiceImpl implements CarsService {
 
     @Override
     public Cars createCar(String platenumber){
-        return createCar(platenumber, null, null);
+        return createCar(platenumber, null, null, null);
     }
 
     @Override
-    public Cars createCar(String platenumber, String region, String type){
+    public Cars createCar(String platenumber, String region, String type, String car_model){
         platenumber = platenumber.toUpperCase();
 
         Boolean contains = Pattern.matches(".*\\p{InCyrillic}.*", platenumber);
@@ -80,6 +80,8 @@ public class CarsServiceImpl implements CarsService {
             car.setPlatenumber(platenumber);
             car.setRegion(region);
             car.setType(type);
+            car.setModel(car_model);
+
             car = saveCars(car);
             Map<String, Object> properties = new HashMap<>();
             properties.put("carNumber", platenumber);
@@ -89,8 +91,16 @@ public class CarsServiceImpl implements CarsService {
         } else if(region != null && car.getRegion() == null){
             car.setRegion(region);
             car.setType(type);
-            car = saveCars(car);
+
         }
+        if(car.getModel() == null){
+            if(car_model != null){
+                car.setModel(car_model);
+            } else {
+                car.setModel("unrecognized");
+            }
+        }
+        car = saveCars(car);
         return car;
     }
 

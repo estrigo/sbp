@@ -20,7 +20,7 @@ public interface CarsService {
 
     Cars saveCars(Cars cars);
 
-    Cars createCar(String platenumber, String region, String type);
+    Cars createCar(String platenumber, String region, String type, String car_model);
 
     Cars createCar(String platenumber);
 

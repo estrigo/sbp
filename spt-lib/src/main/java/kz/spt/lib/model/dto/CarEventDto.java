@@ -35,4 +35,6 @@ public class CarEventDto {
     public String region;
 
     public String vecihleType;
+
+    public String car_model;
 }

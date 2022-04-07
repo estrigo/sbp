@@ -38,6 +38,8 @@ public class Cars {
 
     private String type;
 
+    private String model;
+
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "customer_id")
