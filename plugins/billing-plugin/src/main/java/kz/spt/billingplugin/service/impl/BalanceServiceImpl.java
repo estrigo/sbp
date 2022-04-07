@@ -1,7 +1,6 @@
 package kz.spt.billingplugin.service.impl;
 
 import kz.spt.billingplugin.bootstrap.datatable.BalanceComparators;
-import kz.spt.billingplugin.bootstrap.datatable.TransactionComparators;
 import kz.spt.billingplugin.dto.TransactionDto;
 import kz.spt.billingplugin.dto.TransactionFilterDto;
 import kz.spt.billingplugin.model.Balance;
@@ -11,16 +10,13 @@ import kz.spt.billingplugin.repository.BalanceRepository;
 import kz.spt.billingplugin.repository.TransactionRepository;
 import kz.spt.billingplugin.service.BalanceService;
 import kz.spt.billingplugin.service.RootServicesGetterService;
-import kz.spt.lib.bootstrap.datatable.Column;
-import kz.spt.lib.bootstrap.datatable.Order;
-import kz.spt.lib.bootstrap.datatable.Page;
-import kz.spt.lib.bootstrap.datatable.PagingRequest;
+import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.model.CarState;
-import kz.spt.lib.model.EventLog;
-import kz.spt.lib.model.EventLogSpecification;
-import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.service.CarStateService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -106,7 +102,7 @@ public class BalanceServiceImpl implements BalanceService {
 
     @Override
     public Page<TransactionDto> getTransactionList(PagingRequest pagingRequest, TransactionFilterDto dto) throws ParseException {
-        List<Transaction> transactions = (List<Transaction>) this.listByFilters(dto);
+        org.springframework.data.domain.Page<Transaction> transactions = listByFilters(dto, pagingRequest);
         return getTransactionPage(transactions, pagingRequest);
     }
 
@@ -165,9 +161,42 @@ public class BalanceServiceImpl implements BalanceService {
         return transactionRepository.findAll();
     }
 
-    @Override
-    public Iterable<Transaction> listByFilters(TransactionFilterDto transactionFilterDto) throws ParseException {
+    public org.springframework.data.domain.Page<Transaction> listByFilters(TransactionFilterDto transactionFilterDto, PagingRequest pagingRequest) throws ParseException {
+        Specification<Transaction> specification = getTransactionSpecification(transactionFilterDto);
 
+        Order order = pagingRequest.getOrder().get(0);
+
+        int columnIndex = order.getColumn();
+        Column column = pagingRequest.getColumns().get(columnIndex);
+        String columnName = column.getData();  // Дата и время, ГНРЗ, сумма, Описание
+        Direction dir = order.getDir();
+
+        Sort sort = null;
+        if("plateNumber".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("plateNumber").descending();
+            } else {
+                sort = Sort.by("plateNumber").ascending();
+            }
+        } else if("amount".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("amount").descending();
+            } else {
+                sort = Sort.by("amount").ascending();
+            }
+        } else if("date".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("date").descending();
+            } else {
+                sort = Sort.by("date").ascending();
+            }
+        }
+
+        Pageable rows = PageRequest.of(pagingRequest.getStart() / pagingRequest.getLength(), pagingRequest.getLength(), sort);
+        return transactionRepository.findAll(specification, rows);
+    }
+
+    private Specification<Transaction> getTransactionSpecification(TransactionFilterDto transactionFilterDto) throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         Specification<Transaction> specification = null;
 
@@ -183,12 +212,7 @@ public class BalanceServiceImpl implements BalanceService {
         if (transactionFilterDto.amount != null && !"".equals(transactionFilterDto.amount)) {
             specification = specification == null ? TransactionSpecification.equalAmount(transactionFilterDto.amount) : specification.and(TransactionSpecification.equalAmount(transactionFilterDto.amount));
         }
-        specification = specification == null ? TransactionSpecification.orderById() : specification.and(TransactionSpecification.orderById());
-        if (specification != null) {
-            return transactionRepository.findAll(specification);
-        } else {
-            return transactionRepository.findAll();
-        }
+        return specification;
     }
 
     @Override
@@ -218,19 +242,13 @@ public class BalanceServiceImpl implements BalanceService {
         return true;
     }
 
-    private Page<TransactionDto> getTransactionPage(List<Transaction> transactionsList, PagingRequest pagingRequest) {
-        List<Transaction> filtered = transactionsList.stream()
-                .sorted(sortTransaction(pagingRequest))
-                .filter(filterTransaction(pagingRequest))
-                .skip(pagingRequest.getStart())
-                .limit(pagingRequest.getLength())
-                .collect(Collectors.toList());
+    private Page<TransactionDto> getTransactionPage(org.springframework.data.domain.Page<Transaction> transactionsList, PagingRequest pagingRequest) {
 
         CarStateService carStateService = rootServicesGetterService.getCarStateService();
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
         List<TransactionDto> filteredDto = new ArrayList<>();
-        for(Transaction transaction : filtered){
+        for(Transaction transaction : transactionsList.toList()){
             TransactionDto transactionDto = TransactionDto.fromTransaction(transaction);
             if(transaction.getCarStateId() != null){
                 CarState carState = carStateService.findById(transaction.getCarStateId());
@@ -240,46 +258,11 @@ public class BalanceServiceImpl implements BalanceService {
             filteredDto.add(transactionDto);
         }
 
-        long count = transactionsList.stream()
-                .filter(filterTransaction(pagingRequest))
-                .count();
-
         Page<TransactionDto> page = new Page<>(filteredDto);
-        page.setRecordsFiltered((int) count);
-        page.setRecordsTotal((int) count);
+        page.setRecordsFiltered((int) transactionsList.getTotalElements());
+        page.setRecordsTotal((int) transactionsList.getTotalElements());
         page.setDraw(pagingRequest.getDraw());
 
         return page;
-    }
-
-    private Predicate<Transaction> filterTransaction(PagingRequest pagingRequest) {
-        if (pagingRequest.getSearch() == null || StringUtils.isEmpty(pagingRequest.getSearch().getValue())) {
-            return transactionDtos -> true;
-        }
-        String value = pagingRequest.getSearch().getValue();
-
-        return transactions -> (transactions.getPlateNumber() !=  null && transactions.getPlateNumber().toLowerCase().contains(value.toLowerCase())
-                || (transactions.getAmount() != null && transactions.getAmount().toString().toLowerCase().contains(value.toLowerCase())));
-    }
-
-    private Comparator<Transaction> sortTransaction(PagingRequest pagingRequest) {
-        if (pagingRequest.getOrder() == null) {
-            return TRANSACTION_EMPTY_COMPARATOR;
-        }
-
-        try {
-            Order order = pagingRequest.getOrder().get(0);
-
-            int columnIndex = order.getColumn();
-            Column column = pagingRequest.getColumns().get(columnIndex);
-
-            Comparator<Transaction> comparator = TransactionComparators.getComparator(column.getData(), order.getDir());
-            return Objects.requireNonNullElse(comparator, TRANSACTION_EMPTY_COMPARATOR);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return TRANSACTION_EMPTY_COMPARATOR;
     }
 }

@@ -27,7 +27,5 @@ public interface BalanceService {
 
     Page<TransactionDto> getTransactionList(PagingRequest pagingRequest, TransactionFilterDto dto) throws ParseException;
 
-    Iterable<Transaction> listByFilters(TransactionFilterDto transactionFilterDto) throws ParseException;
-
     Boolean changeTransactionAmount(Long id, BigDecimal amount);
 }

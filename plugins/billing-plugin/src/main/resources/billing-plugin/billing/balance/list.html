@@ -124,6 +124,10 @@
                 return JSON.stringify(d);
             }
         },
+        columnDefs: [{
+            "defaultContent": "-",
+            "targets": "_all"
+        }],
         "columns": [
             {"data": function (billing) {
                     var menu = '';
@@ -140,11 +144,11 @@
             {"data": "date"},
             {"data": "plateNumber"},
             {"data": "amount"},
-            {"data": "period"},
-            {"data": "description"}
+            {"data": "period", "orderable": false},
+            {"data": "description", "orderable": false}
         ],
         "order": [ //[[ in thymeleaf is inline script
-            [0, "desc"]
+            [1, "desc"]
         ],
         "buttons": ['copy', 'excel', 'pdf', 'csv'],
         language: {
@@ -165,6 +169,9 @@
         if(table.buttons().container().length > 0){
             clearInterval(interval);
             table.buttons().container().appendTo('#table_wrapper .col-md-6:eq(0)');
+        }
+        if (!$("#billingTable_filter").hasClass("d-none")) {
+            $("#billingTable_filter").addClass("d-none");
         }
     }
 
