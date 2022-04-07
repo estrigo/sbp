@@ -70,6 +70,7 @@ public class GateStatusDto {
             if(!StringUtils.isEmpty(barrier.getLoopIp()) && !StringUtils.isEmpty(barrier.getLoopPassword()) && barrier.getLoopOid() != null && barrier.getLoopType() != null){
                 gateStatusDto.loop = new SensorStatusDto();
                 gateStatusDto.loop.barrierId = barrier.getId();
+                gateStatusDto.loop.barrierIp = barrier.getIp();
                 gateStatusDto.loop.sensorName = "loop";
                 gateStatusDto.loop.type = barrier.getLoopType();
                 gateStatusDto.loop.ip = barrier.getLoopIp();
@@ -91,6 +92,7 @@ public class GateStatusDto {
             if(!StringUtils.isEmpty(barrier.getPhotoElementIp()) && !StringUtils.isEmpty(barrier.getPhotoElementPassword()) && barrier.getPhotoElementOid() != null && barrier.getPhotoElementType() != null){
                 gateStatusDto.photoElement = new SensorStatusDto();
                 gateStatusDto.photoElement.barrierId = barrier.getId();
+                gateStatusDto.photoElement.barrierIp = barrier.getIp();
                 gateStatusDto.photoElement.sensorName = "photoElement";
                 gateStatusDto.photoElement.type = barrier.getPhotoElementType();
                 gateStatusDto.photoElement.ip = barrier.getPhotoElementIp();

@@ -42,7 +42,7 @@ public class BarrierServiceImpl implements BarrierService {
     private final String BARRIER_OFF = "0";
     private Boolean disableOpen;
 
-    private Map<Long, ModbusMaster> modbusMasterMap = new HashMap<>();
+    private Map<String, ModbusMaster> modbusMasterMap = new HashMap<>();
 
     public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, BarrierRepository barrierRepository, EventLogService eventLogService) {
         this.disableOpen = disableOpen;
@@ -90,7 +90,7 @@ public class BarrierServiceImpl implements BarrierService {
                 }
             } else if (Barrier.BarrierType.MODBUS.equals(sensor.type)) {
                 int result = -1;
-                ModbusMaster m = modbusMasterMap.get(sensor.barrierId);
+                ModbusMaster m = modbusMasterMap.get(sensor.barrierIp);
 
                 int slaveId = 1;
 
@@ -218,21 +218,23 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public void addGlobalModbusMaster(Barrier barrier) throws ModbusIOException, UnknownHostException {
-        TcpParameters tcpParameters = new TcpParameters();
-        tcpParameters.setHost(InetAddress.getByName(barrier.getIp()));
-        tcpParameters.setKeepAlive(true);
-        tcpParameters.setPort(Modbus.TCP_PORT);
+        if(!modbusMasterMap.containsKey(barrier.getIp())){
+            TcpParameters tcpParameters = new TcpParameters();
+            tcpParameters.setHost(InetAddress.getByName(barrier.getIp()));
+            tcpParameters.setKeepAlive(true);
+            tcpParameters.setPort(Modbus.TCP_PORT);
 
-        ModbusMaster m = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
-        m.setResponseTimeout(4000); // 4 seconds timeout
+            ModbusMaster m = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
+            m.setResponseTimeout(4000); // 4 seconds timeout
 
-        log.info("Connecting barrier.getIp(): " + barrier.getIp());
+            log.info("Connecting barrier.getIp(): " + barrier.getIp());
 
-        if (!m.isConnected()) {
-            m.connect();
+            if (!m.isConnected()) {
+                m.connect();
+            }
+
+            modbusMasterMap.put(barrier.getIp(), m);
         }
-
-        modbusMasterMap.put(barrier.getId(), m);
     }
 
     private Boolean snmpChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException, ParseException {
@@ -318,7 +320,7 @@ public class BarrierServiceImpl implements BarrierService {
     private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException {
         Boolean result = true;
 
-        ModbusMaster m = modbusMasterMap.get(barrier.id);
+        ModbusMaster m = modbusMasterMap.get(barrier.ip);
 
         int slaveId = 1;
             // since 1.2.8

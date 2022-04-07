@@ -5,6 +5,7 @@ import kz.spt.lib.model.Barrier;
 public class SensorStatusDto {
 
     public Long barrierId;
+    public String barrierIp;
     public String ip;
     public String password;
     public String oid;
