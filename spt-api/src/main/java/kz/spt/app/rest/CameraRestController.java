@@ -3,6 +3,7 @@ package kz.spt.app.rest;
 import kz.spt.lib.model.dto.CalibrationDto;
 import kz.spt.lib.service.CalibrationService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,7 +19,7 @@ public class CameraRestController {
 
     @GetMapping(value = "/getCalibrationByIp/{ip}")
     public String getCalibrationByIp(@PathVariable("ip") String ip) {
-        return calibrationService.findByIp(ip).map(m -> m.getJson()).orElse("");
+        return calibrationService.findByIp(ip).map(m -> StringUtils.isEmpty(m.getJson()) ? "{}" : m.getJson()).orElse("{}");
     }
 
     @PostMapping(value = "/calibration/save/{cameraId}")
