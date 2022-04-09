@@ -78,27 +78,19 @@ public class CarsServiceImpl implements CarsService {
         if(car == null){
             car = new Cars();
             car.setPlatenumber(platenumber);
-            car.setRegion(region);
-            car.setType(type);
-            car.setModel(car_model);
 
-            car = saveCars(car);
             Map<String, Object> properties = new HashMap<>();
             properties.put("carNumber", platenumber);
 
             properties.put("type", EventLog.StatusType.Success);
             eventLogService.createEventLog(Cars.class.getSimpleName(), car.getId(), properties, "Новый номер авто " + car.getPlatenumber() + " сохранен в системе ", "New car number " + car.getPlatenumber() + " added to the system ");
-        } else if(region != null && car.getRegion() == null){
+        }
+        if(region != null){
             car.setRegion(region);
             car.setType(type);
-
         }
-        if(car.getModel() == null){
-            if(car_model != null){
-                car.setModel(car_model);
-            } else {
-                car.setModel("unrecognized");
-            }
+        if(car_model != null){
+            car.setModel(car_model);
         }
         car = saveCars(car);
         return car;

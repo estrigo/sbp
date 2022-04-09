@@ -157,9 +157,10 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("car_model", eventDto.car_model);
         }
 
-        GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(camera.getGate().getId());
-
         if (camera != null) {
+
+            GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(camera.getGate().getId());
+
             String secondCameraIp = (gate.frontCamera2 != null) ? (eventDto.ip_address.equals(gate.frontCamera.ip) ? gate.frontCamera2.ip : gate.frontCamera.ip) : null; // If there is two camera, then ignore second by timeout
 
             if(!eventDto.manualOpen){
@@ -920,7 +921,7 @@ public class CarEventServiceImpl implements CarEventService {
         eventLogService.sendSocketMessage(ArmEventType.Photo, EventLog.StatusType.Success, camera.getId(), eventDto.car_number, eventDto.car_picture, null);
         eventLogService.sendSocketMessage(ArmEventType.Lp, EventLog.StatusType.Success, camera.getId(), eventDto.car_number, eventDto.lp_picture, null);
         eventLogService.createEventLog(Camera.class.getSimpleName(), camera.getId(), properties, "Зафиксирован новый номер авто " + eventDto.car_number, "New license plate number identified " + eventDto.car_number);
-        carsService.createCar(eventDto.car_number, eventDto.region, eventDto.vecihleType, eventDto.car_model);
+        carsService.createCar(eventDto.car_number, eventDto.region, eventDto.vecihleType, Gate.GateType.OUT.equals(camera.getGate().getGateType()) ? null : eventDto.car_model); // При выезде не сохранять тип авто
     }
 
     private boolean hasValidAbonoment(String plateNumber, Long parkingId) throws Exception {
