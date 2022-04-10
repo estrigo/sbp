@@ -87,6 +87,9 @@ images:
 barrier:
   open:
     disabled: false
+  modbus:
+    keep:
+      connected: false
 car:
   movement:
     simulate: false

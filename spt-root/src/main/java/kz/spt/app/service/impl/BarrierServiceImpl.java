@@ -41,13 +41,16 @@ public class BarrierServiceImpl implements BarrierService {
     private final String BARRIER_ON = "1";
     private final String BARRIER_OFF = "0";
     private Boolean disableOpen;
+    private Boolean modbusKeepConnected;
 
     private Map<String, ModbusMaster> modbusMasterMap = new HashMap<>();
 
-    public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, BarrierRepository barrierRepository, EventLogService eventLogService) {
+    public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, @Value("${barrier.modbus.keep.connected}") Boolean modbusKeepConnected,
+                              BarrierRepository barrierRepository, EventLogService eventLogService) {
         this.disableOpen = disableOpen;
         this.barrierRepository = barrierRepository;
         this.eventLogService = eventLogService;
+        this.modbusKeepConnected = modbusKeepConnected;
     }
 
     @Override
@@ -90,7 +93,13 @@ public class BarrierServiceImpl implements BarrierService {
                 }
             } else if (Barrier.BarrierType.MODBUS.equals(sensor.type)) {
                 int result = -1;
-                ModbusMaster m = modbusMasterMap.get(sensor.barrierIp);
+
+                ModbusMaster m;
+                if(modbusKeepConnected){
+                    m = modbusMasterMap.get(sensor.barrierIp);
+                }  else {
+                    m = getConnectedInstance(sensor.barrierIp);
+                }
 
                 int slaveId = 1;
 
@@ -114,7 +123,9 @@ public class BarrierServiceImpl implements BarrierService {
                         result = changedValue[0] ? 0 : 1;
                     }
                 }
-
+                if(!modbusKeepConnected){
+                    m.disconnect();
+                }
                 return result;
             } else if (Barrier.BarrierType.JETSON.equals(sensor.type)) {
                 var response = new RestTemplateBuilder().build().getForObject("http://" + sensor.ip + ":9001" + "/sensor_status?pin=" + sensor.oid, JetsonResponse.class);
@@ -218,23 +229,26 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public void addGlobalModbusMaster(Barrier barrier) throws ModbusIOException, UnknownHostException {
-        if(!modbusMasterMap.containsKey(barrier.getIp())){
-            TcpParameters tcpParameters = new TcpParameters();
-            tcpParameters.setHost(InetAddress.getByName(barrier.getIp()));
-            tcpParameters.setKeepAlive(true);
-            tcpParameters.setPort(Modbus.TCP_PORT);
-
-            ModbusMaster m = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
-            m.setResponseTimeout(4000); // 4 seconds timeout
-
-            log.info("Connecting barrier.getIp(): " + barrier.getIp());
-
-            if (!m.isConnected()) {
-                m.connect();
-            }
-
-            modbusMasterMap.put(barrier.getIp(), m);
+        if(modbusKeepConnected && !modbusMasterMap.containsKey(barrier.getIp())){
+            modbusMasterMap.put(barrier.getIp(), getConnectedInstance(barrier.getIp()));
         }
+    }
+
+    private ModbusMaster getConnectedInstance(String ip) throws ModbusIOException, UnknownHostException {
+        TcpParameters tcpParameters = new TcpParameters();
+        tcpParameters.setHost(InetAddress.getByName(ip));
+        tcpParameters.setKeepAlive(true);
+        tcpParameters.setPort(Modbus.TCP_PORT);
+
+        ModbusMaster m = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
+        m.setResponseTimeout(4000); // 4 seconds timeout
+
+        log.info("Connecting barrier.getIp(): " + ip);
+
+        if (!m.isConnected()) {
+            m.connect();
+        }
+        return m;
     }
 
     private Boolean snmpChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException, ParseException {
@@ -317,10 +331,15 @@ public class BarrierServiceImpl implements BarrierService {
         return result;
     }
 
-    private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException {
+    private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException, UnknownHostException {
         Boolean result = true;
 
-        ModbusMaster m = modbusMasterMap.get(barrier.ip);
+        ModbusMaster m;
+        if(modbusKeepConnected){
+            m = modbusMasterMap.get(barrier.ip);
+        }  else {
+            m = getConnectedInstance(barrier.ip);
+        }
 
         int slaveId = 1;
             // since 1.2.8
@@ -437,6 +456,9 @@ public class BarrierServiceImpl implements BarrierService {
                     }
                 }
             }
+        }
+        if(!modbusKeepConnected){
+            m.disconnect();
         }
         return result;
     }
