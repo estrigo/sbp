@@ -59,7 +59,7 @@ public class PaymentServiceImpl implements PaymentService {
                     } else {
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
                         dto.message = "Паркинг по предоплате не найден";
-                        dto.result = 4;
+                        dto.result = 1;
                         dto.sum = commandDto.sum;
                         dto.txn_id = commandDto.txn_id;
                         return dto;
