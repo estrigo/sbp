@@ -27,7 +27,7 @@
                             <tr th:each="item : ${blacklists}">
                                 <td th:text="${item.plateNumber}"></td>
                                 <td th:text="${item.type}"></td>
-                                <td sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')">
+                                <td sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_OPERATOR')">
                                     <a th:text="#{crm.delete}"
                                        th:href="@{/blacklist/delete(id=${item.id})}"></a>
                                 </td>
