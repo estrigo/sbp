@@ -76,8 +76,8 @@ public class CommandExecutor implements PluginRegister {
                 payment.setInDate(command.get("inDate").textValue() != null ?  format.parse(command.get("inDate").textValue()) : null);
                 payment.setRateDetails(command.has("rateName") ? command.get("rateName").textValue() : "");
                 payment.setCarStateId(command.has("carStateId") ? command.get("carStateId").longValue() : null);
-
-                payment.setIkkm(command.get("paymentType").intValue()==1);
+                if (command.get("paymentType")!=null)
+                    payment.setIkkm(command.get("paymentType").intValue()==1);
 
                 Payment savedPayment = getPaymentService().savePayment(payment);
                 node.put("paymentId", savedPayment.getId());
