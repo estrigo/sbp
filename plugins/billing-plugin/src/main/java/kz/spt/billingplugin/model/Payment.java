@@ -68,4 +68,10 @@ public class Payment {
     private Date updated;
 
     String checkNumber;
+
+    private boolean ikkm;
+
+
+
+    
 }

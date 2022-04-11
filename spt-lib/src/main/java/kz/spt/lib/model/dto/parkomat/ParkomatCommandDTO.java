@@ -42,5 +42,7 @@ public class ParkomatCommandDTO {
     public String getAccount() {
         return account!=null ? account.toUpperCase(Locale.ROOT) : "";
     }
+
+
 }
 
