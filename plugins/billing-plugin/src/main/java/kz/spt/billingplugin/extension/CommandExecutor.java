@@ -56,7 +56,7 @@ public class CommandExecutor implements PluginRegister {
 
                 if (oldPayments.size() > 0) {
                     node.put("paymentError", "txn_id уже зарегистрирован");
-                    node.put("paymentErrorCode", 4);
+                    node.put("paymentErrorCode", 1);
                     return node;
                 }
 
