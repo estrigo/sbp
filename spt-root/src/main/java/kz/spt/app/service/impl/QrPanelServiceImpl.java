@@ -6,11 +6,19 @@ import kz.spt.lib.service.QrPanelService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+
 @Log
 @Service
 public class QrPanelServiceImpl implements QrPanelService {
@@ -21,6 +29,7 @@ public class QrPanelServiceImpl implements QrPanelService {
     @Override
     public void display(Gate gate, String car_number) {
         if (gate != null && gate.getGateType().equals(Gate.GateType.OUT) && gate.getQrPanelIp()!=null && !gate.getQrPanelIp().isEmpty()) {
+            try {
             String serviceName = gate.getParking().getKaspiServiceName();
             String serviceId = gate.getParking().getKaspiServiceId();
             String plateParam = gate.getParking().getKaspiPlateParam();
@@ -31,7 +40,12 @@ public class QrPanelServiceImpl implements QrPanelService {
             address.append(gate.getQrPanelIp());
             address.append("/qr="+qrUrl+car_number);
             log.info("QRPanel display: " + address.toString());
-            restTemplate.getForEntity(address.toString(),String.class);
+
+            URI uri = new URI(address.toString());
+            restTemplate.getForEntity(uri,String.class);
+            } catch (Exception ex) {
+                this.clear(gate);
+            }
         }
     }
 

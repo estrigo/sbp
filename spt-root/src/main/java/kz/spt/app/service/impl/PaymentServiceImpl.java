@@ -332,6 +332,7 @@ public class PaymentServiceImpl implements PaymentService {
                         node.put("carStateId", carState.getId());
                         node.put("inDate", format.format(carState.getInTimestamp()));
                         node.put("clientId", clientId);
+                        node.put("paymentType", "ikkm_payment".equals(commandDto.getType()) ? 1 : 0);
 
                         Cars cars = carService.findByPlatenumberWithCustomer(commandDto.getAccount());
                         if (cars != null && cars.getCustomer() != null) {
@@ -375,7 +376,7 @@ public class PaymentServiceImpl implements PaymentService {
                     }
                 }
             } else if ("getCheck".equals(commandDto.getCommand())) {
-
+                log.info("Webkassa check request " + commandDto.toString());
                 PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                 ObjectNode node = this.objectMapper.createObjectNode();
                 node.put("command", "getCheck");

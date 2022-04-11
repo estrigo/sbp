@@ -77,6 +77,8 @@ public class CommandExecutor implements PluginRegister {
                 payment.setRateDetails(command.has("rateName") ? command.get("rateName").textValue() : "");
                 payment.setCarStateId(command.has("carStateId") ? command.get("carStateId").longValue() : null);
 
+                payment.setIkkm(command.get("paymentType").intValue()==1);
+
                 Payment savedPayment = getPaymentService().savePayment(payment);
                 node.put("paymentId", savedPayment.getId());
                 node.put("cashlessPayment", payment.getProvider().getCashlessPayment() != null ? payment.getProvider().getCashlessPayment() : false);
@@ -162,7 +164,8 @@ public class CommandExecutor implements PluginRegister {
                     List<Payment> paymentList = getPaymentService().findByTransactionAndProvider(txn_id, provider);
                     if (!paymentList.isEmpty()) {
                         paymentList.get(0).setCheckNumber(checkResponse.data.checkNumber);
-                        getPaymentService().savePayment( paymentList.get(0));
+                        paymentList.get(0).setIkkm(paymentType==1);
+                        getPaymentService().savePayment(paymentList.get(0));
                     }
 
                 }
