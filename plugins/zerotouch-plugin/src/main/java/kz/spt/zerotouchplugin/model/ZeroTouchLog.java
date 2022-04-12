@@ -1,13 +1,16 @@
 package kz.spt.zerotouchplugin.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Entity
 @Data
@@ -40,4 +43,8 @@ public class ZeroTouchLog {
     private Boolean isPaid;
 
     private Long txtID;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = JsonFormat.DEFAULT_TIMEZONE)
+    @CreationTimestamp
+    private Date created;
 }
