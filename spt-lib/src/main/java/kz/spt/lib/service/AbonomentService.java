@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 public interface AbonomentService {
 
-    JsonNode createAbonomentType(int period, int price) throws Exception;
+    JsonNode createAbonomentType(int period,String customJson,String type, int price) throws Exception;
 
     JsonNode deleteAbonomentType(Long id) throws Exception;
 

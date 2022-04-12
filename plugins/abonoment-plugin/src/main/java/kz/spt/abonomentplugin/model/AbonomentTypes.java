@@ -26,6 +26,13 @@ public class AbonomentTypes {
     @Column(name = "period")
     private Integer period;
 
+
+    @Column(columnDefinition = "text")
+    private String customJson;
+
+    @Column(name = "type")
+    private String type;
+
     @Column(name = "price")
     private Integer price = 0;
 

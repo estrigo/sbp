@@ -1,5 +1,6 @@
 package kz.spt.abonomentplugin.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import kz.spt.abonomentplugin.dto.AbonomentDTO;
 import kz.spt.abonomentplugin.dto.AbonomentTypeDTO;
@@ -13,7 +14,7 @@ import java.util.List;
 
 public interface AbonomentPluginService {
 
-    AbonomentTypes createType(int period, int price);
+    AbonomentTypes createType(int period,String customJson, String type, int price) throws JsonProcessingException;
 
     void deleteType(Long id);
 

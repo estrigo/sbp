@@ -23,7 +23,7 @@ public class AbonomentServiceImpl implements AbonomentService {
     }
 
     @Override
-    public JsonNode createAbonomentType(int period, int price) throws Exception {
+    public JsonNode createAbonomentType(int period,String customJson, String type, int price) throws Exception {
         ObjectNode result = objectMapper.createObjectNode();
         result.put("result", false);
 
@@ -32,6 +32,8 @@ public class AbonomentServiceImpl implements AbonomentService {
             ObjectNode command = objectMapper.createObjectNode();
             command.put("command", "createType");
             command.put("period", period);
+            command.put("customJson", customJson);
+            command.put("type", type);
             command.put("price", price);
             JsonNode abonomentResult = abonomentPluginRegister.execute(command);
             result.put("result", abonomentResult.get("result").booleanValue());

@@ -40,7 +40,7 @@
                                     <th><a th:text="#{car.platenumber}"></a></th>
                                     <th><a th:text="#{abonoment.begin}"></a></th>
                                     <th><a th:text="#{abonoment.end}"></a></th>
-                                    <th><a th:text="#{abonoment.months}"></a></th>
+                                    <th><a th:text="#{abonoment.Type.DAYS}"></a></th>
                                     <th><a th:text="#{abonoment.price}"></a></th>
                                     <th><a th:text="#{abonoment.paid}"></a></th>
                                     <th><a th:text="#{abonoment.parking}"></a></th>
@@ -62,7 +62,7 @@
                                 <thead>
                                 <tr>
                                     <th></th>
-                                    <th><a th:text="#{abonoment.typePeriod}"></a></th>
+                                    <th><a th:text="#{abonoment.Type.DAYS}"></a></th>
                                     <th><a th:text="#{abonoment.typePrice}"></a></th>
                                 </tr>
                                 </thead>
@@ -77,17 +77,48 @@
     <div id="addAbonomentType" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
          aria-hidden="true" style="display: none;">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content" style="width: 800px; left: -100px"   >
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <div class="modal-header">
                     <h4 class="modal-title"></h4>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
+                    <div class="row" >
                         <div class="col-md-12">
                             <div class="form-group">
+                                <label class="control-label" th:text="#{abonoment.typeName}" ></label>
+                                <select id="abonementTypes" class="form-control" onchange="checkSelectedTypes(value)" >
+                                    <option th:value="DAYS" th:text="#{abonoment.days}"></option>
+                                    <option th:value="MONTH" th:text="#{abonoment.months}"></option>
+                                    <option th:value="CUSTOM" th:text="#{abonoment.Type.CUSTOM}"></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group" id="daysRow">
+                                <label class="control-label" th:text="#{abonoment.Type.DAYS}"></label>
+                                <input type="number" step="0" min="1" max="36" class="form-control" name="days" id="days">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group" id="periodRow" style="display: none">
                                 <label class="control-label" th:text="#{abonoment.typePeriod}"></label>
-                                <input type="number" step="0" min="1" max="36" class="form-control" name="period" id="period">
+                                <input type="number" step="0" min="1" max="36" value="1" class="form-control" name="period" id="period">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group" id="custom" style="display: none">
+                                <div class="col-10">
+                                    <label class="control-label" th:text="#{abonoment.Type.CUSTOM.TEXT}"></label>
+                                    <div id="timeDayPicker" data-name="pickerValue"></div>
+                                    <input type="hidden" id="customJson" field="*{customJson}" value="*{customJson}">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -146,9 +177,16 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label class="control-label" th:text="#{abonoment.types}"></label>
-                                <select id="typeId" class="form-control">
-                                    <option th:each="type : ${typeList}" th:text="${type.description}" th:value="${type.id}"></option>
+                                <select id="typeId" class="form-control" onchange="checkSelectedOption();" >
+                                    <option id="typeOption" th:each="type : ${typeList}" th:text="${type.description}" th:value="${type.id}" th:data-message="${type.customJson}" ></option>
                                 </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id = "optionRow">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label" id="typeDescription" text="#{abonoment.allDaysinWeek}" style="width: 230px"></label>
                             </div>
                         </div>
                     </div>
@@ -172,6 +210,8 @@
     </div>
 </div>
 
+<script th:src="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js}"></script>
+<script th:src="@{/assets/js/week-hours-picker.js}"></script>
 <!-- Required datatable js -->
 <script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
 <script th:src="@{/plugins/datatables/dataTables.bootstrap4.min.js}"></script>
@@ -198,6 +238,37 @@
     if (locale == "en") {
         address = "";
     }
+    function checkSelectedTypes(value){
+        if(value === 'DAYS'){
+            $('#daysRow').show();
+        } else {
+            $('#daysRow').hide();
+        }
+
+        if(value === 'MONTH'){
+            $('#periodRow').show();
+        } else {
+            $('#periodRow').hide();
+        }
+
+        if(value === 'CUSTOM'){
+            $('#custom').show();
+            $('#periodRow').show();
+        } else {
+            $('#custom').hide();
+        }
+        // if(value === 'UNLIMITED'){
+        //     $('#periodRow').hide();
+        //     $('#custom').hide();
+        //     $('#daysRow').hide();
+        // }
+    }
+    function checkSelectedOption(){
+        // var id = $('#typeId').val();
+        var list = $('#typeOption').attr('data-message');
+        $('#typeDescription').text(list);
+    }
+
     const abonomentTable = $('#abonomentTable').DataTable({
         "processing": true,
         "serverSide": true,
@@ -292,8 +363,23 @@
 
     function saveAbonomentType(){
         var form = new FormData();
-        form.append("period", $('#addAbonomentType').find('#period').val());
+        var periodInDays = 0;
+        var type = "UNLIMITED";
+        console.log($('#addAbonomentType').find('#period').val());
+        if ($('#addAbonomentType').find('#days').val()===""){
+            periodInDays = $('#addAbonomentType').find('#period').val() * 31;
+        }
+        else {
+            periodInDays = $('#addAbonomentType').find('#days').val();
+        }
+        form.append("period", periodInDays);
+        form.append("customJson", $('#addAbonomentType').find('#customJson').val());
+        if ($('#addAbonomentType').find('#abonementTypes').val()==="CUSTOM"){
+            type = "CUSTOM";
+        }
+        form.append("abonementTypes", type);
         form.append("price", $('#addAbonomentType').find('#price').val());
+
 
         var settings = {
             "url": "/rest/abonoment/type/create",
@@ -306,10 +392,62 @@
         $.ajax(settings).done(function (response) {
             $('#addAbonomentType').modal('hide');
             $('#addAbonomentType').find('#period').val(undefined);
+            $('#addAbonomentType').find('#customJson').val(undefined);
+            $('#addAbonomentType').find('#abonementTypes').val(undefined);
             $('#addAbonomentType').find('#price').val(undefined);
             window.location.reload();
         });
     }
+
+    $(document).ready(function() {
+        // initialState { [row]: [hours] }
+
+        let state = {};
+
+        // change callback
+        function handleStateChange(newState) {
+            $("#customJson").val(JSON.stringify(newState));
+        }
+
+        const options = {
+            // custom days names (it's default values)
+            days: {
+                0: 'Понедельник',
+                1: 'Вторник',
+                2: 'Среда',
+                3: 'Четверг',
+                4: 'Пятница',
+                5: 'Суббота',
+                6: 'Воскресенье',
+            },
+
+            // custom class names for dom elements (it's default values)
+            classes: {
+                active: '',
+                aside: '',
+                body: '',
+                container: '',
+                day: '',
+                grid: '',
+                header: '',
+                headerHour: '',
+                hour: '',
+                input: '',
+                node: '',
+                row: '',
+            },
+        }
+
+        weekHoursPicker(
+            document.querySelector('#timeDayPicker'), // required
+            state, // optional
+            handleStateChange, // optional
+            options, // optional
+        )
+
+        checkSelectedTypes($('#abonementTypes').val());
+
+    });
 
     function deleteAbonomentType(id){
         var form = new FormData();

@@ -1,5 +1,6 @@
 package kz.spt.abonomentplugin.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -41,6 +42,16 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     private final AbonomentRepository abonomentRepository;
     private final RootServicesGetterService rootServicesGetterService;
     private ObjectMapper objectMapper = new ObjectMapper();
+    private static final Map<String, String> dayValues = new HashMap<>() {{
+        put("0", "Понедельник");
+        put("1", "Вторник");
+        put("2", "Среда");
+        put("3", "Четверг");
+        put("4", "Пятница");
+        put("5", "Суббота");
+        put("6", "Воскресенье");
+    }};
+
 
     private static final Comparator<AbonomentTypeDTO> EMPTY_COMPARATOR = (e1, e2) -> 0;
     private static final Comparator<AbonomentDTO> ABONOMENT_EMPTY_COMPARATOR = (e1, e2) -> 0;
@@ -52,9 +63,65 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     }
 
     @Override
-    public AbonomentTypes createType(int period, int price) {
+    public AbonomentTypes createType(int period,String customJson,String type, int price) throws JsonProcessingException {
         AbonomentTypes abonomentTypes = new AbonomentTypes();
+
+        String custom = customJson;
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru-RU";
+        } else {
+            dayValues.put("0", "Monday");
+            dayValues.put("1", "Tuesday");
+            dayValues.put("2", "Wednesday");
+            dayValues.put("3", "Thursday");
+            dayValues.put("4", "Friday");
+            dayValues.put("5", "Saturday");
+            dayValues.put("6", "Sunday");
+        }
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
+        if (type.equals("CUSTOM")) {
+            if (custom != null) {
+                JsonNode values = objectMapper.readTree(customJson);
+                StringBuilder details = new StringBuilder();
+                for (int day = 0; day < 7; day++) {
+                    if (values.has("" + day)) {
+                        details.append(dayValues.get(day + "") + ":");
+
+                        TreeSet<Integer> sortedHours = new TreeSet<>();
+                        for (final JsonNode hour : values.get("" + day)) {
+                            sortedHours.add(hour.intValue());
+                        }
+                        int prev = -1, count = 0, size = sortedHours.size();
+                        for (int i : sortedHours) {
+                            if (count == 0) {
+                                details.append(bundle.getString("abonoment.from") + i + bundle.getString("abonoment.until"));
+                            } else if (i - 1 > prev) {
+                                details.append((prev + 1) + ":00. " + bundle.getString("abonoment.from") + i + bundle.getString("abonoment.until"));
+                            }
+                            prev = i;
+                            if (count == size - 1) {
+                                details.append((i + 1) + ":00. ");
+                            }
+                            count++;
+                        }
+                    }
+                }
+                custom = details.toString();
+            }
+            abonomentTypes.setCustomJson(custom);
+        }
+        else {
+            if (locale.toString().equals("ru")) {
+                abonomentTypes.setCustomJson("Все дни недели");
+            }else {
+                abonomentTypes.setCustomJson("All days of the week");
+            }
+        }
+
         abonomentTypes.setPeriod(period);
+        abonomentTypes.setType(type);
         abonomentTypes.setPrice(price);
         AbonomentTypes savedAbonomentTypes = abonomentTypesRepository.save(abonomentTypes);
 
@@ -77,11 +144,29 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         Locale locale = LocaleContextHolder.getLocale();
 
         List<AbonomentTypes> allAbonomentTypes = abonomentTypesRepository.findAll();
-        for(AbonomentTypes abonomentType: allAbonomentTypes){
-            if (locale.toString().equals("ru")) {
-                abonomentType.setDescription("На " + abonomentType.getPeriod() + (abonomentType.getPeriod() == 1 ? " месяц" : (abonomentType.getPeriod() < 5 ? " месяца" : " месяцев")) +  " (" + abonomentType.getPeriod()*30 + " дней, " + abonomentType.getPrice() + " в местной валюте)");
-            } else {
-                abonomentType.setDescription("For " + abonomentType.getPeriod() + (abonomentType.getPeriod() == 1 ? " month" : " months") +  " (" + abonomentType.getPeriod()*30 + " days, " + abonomentType.getPrice() + " in local currency)");
+        for(AbonomentTypes abonomentType: allAbonomentTypes) {
+            if (abonomentType.getType()!= null) {
+                if(abonomentType.getType().equals("CUSTOM")) {
+                    if (locale.toString().equals("ru")) {
+                        abonomentType.setDescription("На " + abonomentType.getPeriod() + " дней, " + abonomentType.getPrice() + " в местной валюте" + "(выборочные дни)");
+                    } else {
+                        abonomentType.setDescription("For " + abonomentType.getPeriod() + " days, " + abonomentType.getPrice() + " in local currency" + "(custom days)");
+                    }
+                }
+                else {
+                    if (locale.toString().equals("ru")) {
+                        abonomentType.setDescription("На " + abonomentType.getPeriod() + " дней, " + abonomentType.getPrice() + " в местной валюте");
+                    } else {
+                        abonomentType.setDescription("For " + abonomentType.getPeriod() + " days, " + abonomentType.getPrice() + " in local currency");
+                    }
+                }
+            }
+            else {
+                if (locale.toString().equals("ru")) {
+                    abonomentType.setDescription("На " + abonomentType.getPeriod() + " дней, " + abonomentType.getPrice() + " в местной валюте");
+                } else {
+                    abonomentType.setDescription("For " + abonomentType.getPeriod() + " days, " + abonomentType.getPrice() + " in local currency");
+                }
             }
         }
         return allAbonomentTypes;
@@ -107,12 +192,9 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(format.parse(dateStart));
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
         abonoment.setBegin(calendar.getTime());
 
-        calendar.add(Calendar.DATE, type.getPeriod() * 30);
+        calendar.add(Calendar.DATE, type.getPeriod());
         abonoment.setEnd(calendar.getTime());
         Abonoment savedAbonoment = abonomentRepository.save(abonoment);
 
@@ -186,12 +268,9 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(format.parse(dateStart));
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
         Date begin = calendar.getTime();
 
-        calendar.add(Calendar.DATE, type.getPeriod() * 30);
+        calendar.add(Calendar.DATE, type.getPeriod());
         Date end = calendar.getTime();
 
         Long count = abonomentRepository.findIntersectionAbonoment(platenumber, parkingId, begin, end);

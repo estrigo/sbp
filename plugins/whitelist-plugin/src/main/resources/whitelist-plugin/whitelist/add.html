@@ -164,8 +164,32 @@
 
     function checkInvalidNumbers(){
         let plateNumber = $('#platenumberInput').val();
+        plateNumber = plateNumber.toUpperCase();
+            for (var i = 0; i < plateNumber.length; i++) {
+                var asciiValue = plateNumber.charCodeAt(i);
+                console.log("asciiValue: " + asciiValue);
+                if (asciiValue > 1000) {
+                    plateNumber = plateNumber.replace('У', 'Y');
+                    plateNumber = plateNumber.replace('К', 'K');
+                    plateNumber = plateNumber.replace('О', 'O');
+                    plateNumber = plateNumber.replace('Е', 'E');
+                    plateNumber = plateNumber.replace('Р', 'P');
+                    plateNumber = plateNumber.replace('Х', 'X');
+                    plateNumber = plateNumber.replace('В', 'B');
+                    plateNumber = plateNumber.replace('А', 'A');
+                    plateNumber = plateNumber.replace('С', 'C');
+                    plateNumber = plateNumber.replace('М', 'M');
+                    plateNumber = plateNumber.replace('Т', 'T');
+                    plateNumber = plateNumber.replace('Н', 'H');
+                }
+            }
+            console.log("plateNumber after: "+ JSON.parse(JSON.stringify(plateNumber)));
+        console.log(JSON.parse(JSON.stringify(plateNumber)));
         if(!/^[a-zA-Z0-9]+$/.test(plateNumber)){
             alert([[#{crm.onlyLatinAndNumbersAllowed}]]);
+        }
+        if (/^(?!\s*$).+/.test(plateNumber)){
+            alert("Заполните поле для ГРНЗ");
         }
     }
 

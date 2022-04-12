@@ -19,8 +19,10 @@ public class AbonomentRestController {
 
     @RequestMapping(value = "/type/create", method = RequestMethod.POST, consumes = "multipart/form-data")
     public JsonNode createAbonomentType(@RequestParam("period") int period,
+                                        @RequestParam("customJson") String customJson,
+                                        @RequestParam("abonementTypes") String type,
                                     @RequestParam("price") int price) throws Exception {
-        return abonomentService.createAbonomentType(period, price);
+        return abonomentService.createAbonomentType(period, customJson, type, price);
     }
 
     @RequestMapping(value = "/type/delete", method = RequestMethod.POST, consumes = "multipart/form-data")

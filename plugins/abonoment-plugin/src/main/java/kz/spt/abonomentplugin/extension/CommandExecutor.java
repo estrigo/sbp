@@ -30,7 +30,9 @@ public class CommandExecutor implements PluginRegister {
             if("createType".equals(command)){
                 int period = jsonCommand.get("period").intValue();
                 int price = jsonCommand.get("price").intValue();
-                AbonomentTypes abonomentTypes = getAbonomentPluginService().createType(period, price);
+                String customJson = jsonCommand.get("customJson").textValue();
+                String type = jsonCommand.get("type").textValue();
+                AbonomentTypes abonomentTypes = getAbonomentPluginService().createType(period, customJson, type, price);
                 node.put("result", true);
             } else if("deleteType".equals(command)){
                 Long typeId = jsonCommand.get("id").longValue();
