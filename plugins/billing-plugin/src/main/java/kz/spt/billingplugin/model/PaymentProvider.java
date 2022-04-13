@@ -15,8 +15,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Audited
 @Table(name = "payment_provider")
-public class PaymentProvider {
-
+public class PaymentProvider extends PaymentProviderAbstract {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -38,8 +37,12 @@ public class PaymentProvider {
     @Transient
     private String password;
 
+
+
+    /* Для Вебкассы - ID кассы, для ReKassa API TOKEN */
     String webKassaID;
 
+    /*  */
     String webKassaLogin;
 
     String webKassaPassword;

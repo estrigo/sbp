@@ -7,19 +7,27 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.billingplugin.BillingPlugin;
 import kz.spt.billingplugin.model.Payment;
 import kz.spt.billingplugin.model.PaymentProvider;
+import kz.spt.billingplugin.model.dto.OfdCheckData;
 import kz.spt.billingplugin.model.dto.PaymentDto;
+import kz.spt.billingplugin.model.dto.rekassa.Date;
+import kz.spt.billingplugin.model.dto.rekassa.DateTime;
+import kz.spt.billingplugin.model.dto.rekassa.RekassaCheckRequest;
+import kz.spt.billingplugin.model.dto.rekassa.Time;
 import kz.spt.billingplugin.model.dto.webkassa.*;
 import kz.spt.billingplugin.service.*;
+import kz.spt.billingplugin.service.impl.ReKassaServiceImpl;
 import kz.spt.billingplugin.service.impl.WebKassaServiceImpl;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.Customer;
 import kz.spt.lib.model.Parking;
+import kz.spt.lib.model.dto.payment.CommandDto;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 @Log
@@ -31,6 +39,7 @@ public class CommandExecutor implements PluginRegister {
     private RootServicesGetterService rootServicesGetterService;
     private BalanceService balanceService;
     private WebKassaService webKassaService;
+    private WebKassaService reKassaService;
 
     @Override
     public JsonNode execute(JsonNode command) throws Exception {
@@ -73,11 +82,11 @@ public class CommandExecutor implements PluginRegister {
                     Customer customer = getRootServicesGetterService().getCustomerService().findById(command.get("customerId").longValue());
                     payment.setCustomer(customer);
                 }
-                payment.setInDate(command.get("inDate").textValue() != null ?  format.parse(command.get("inDate").textValue()) : null);
+                payment.setInDate(command.get("inDate").textValue() != null ? format.parse(command.get("inDate").textValue()) : null);
                 payment.setRateDetails(command.has("rateName") ? command.get("rateName").textValue() : "");
                 payment.setCarStateId(command.has("carStateId") ? command.get("carStateId").longValue() : null);
-                if (command.get("paymentType")!=null)
-                    payment.setIkkm(command.get("paymentType").intValue()==1);
+
+                payment.setIkkm(command.has("paymentType") ? command.get("paymentType").intValue() == 1 : false);
 
                 Payment savedPayment = getPaymentService().savePayment(payment);
                 node.put("paymentId", savedPayment.getId());
@@ -86,9 +95,9 @@ public class CommandExecutor implements PluginRegister {
                 String carNumber = command.get("carNumber").textValue();
                 BigDecimal sum = command.get("sum").decimalValue();
                 Long carStateId = command.has("carStateId") ? command.get("carStateId").longValue() : null;
-                getBalanceService().addBalance(carNumber,sum,carStateId, "Received payment from " + payment.getProvider().getName(),  "Получен платеж от " + payment.getProvider().getName());
+                getBalanceService().addBalance(carNumber, sum, carStateId, "Received payment from " + payment.getProvider().getName(), "Получен платеж от " + payment.getProvider().getName());
 
-                if(savedPayment.getCarStateId()!=null){
+                if (savedPayment.getCarStateId() != null) {
                     List<Payment> carStatePayments = getPaymentService().getPaymentsByCarStateId(savedPayment.getCarStateId());
                     ArrayNode paymentArray = PaymentDto.arrayNodeFromPayments(carStatePayments);
                     node.set("paymentArray", paymentArray);
@@ -100,11 +109,11 @@ public class CommandExecutor implements PluginRegister {
                 } else {
                     throw new RuntimeException("Not all getCurrentBalance parameters set");
                 }
-            } else if("decreaseCurrentBalance".equals(commandName)){
-                if(command.has("plateNumber") && command.has("amount") && command.has("reason") && command.has("reasonEn")){
+            } else if ("decreaseCurrentBalance".equals(commandName)) {
+                if (command.has("plateNumber") && command.has("amount") && command.has("reason") && command.has("reasonEn")) {
                     String reason = command.get("reason").textValue();
                     String reasonEn = command.get("reasonEn").textValue();
-                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), command.has("carStateId") ? command.get("carStateId").longValue() : null,  reasonEn,  reason));
+                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), command.has("carStateId") ? command.get("carStateId").longValue() : null, reasonEn, reason));
                 } else {
                     throw new RuntimeException("Not all decreaseCurrentBalance parameters set");
                 }
@@ -114,12 +123,12 @@ public class CommandExecutor implements PluginRegister {
                     BigDecimal amount = command.get("amount").decimalValue();
                     String reason = command.get("reason").textValue();
                     String reasonEn = command.get("reasonEn").textValue();
-                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reason,  reasonEn));
+                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reason, reasonEn));
                 } else {
                     throw new RuntimeException("Not all increaseCurrentBalance parameters set");
                 }
-            } else if("addOutTimestampToPayments".equals(commandName)){
-                if(command.has("outTimestamp") && command.has("carStateId")){
+            } else if ("addOutTimestampToPayments".equals(commandName)) {
+                if (command.has("outTimestamp") && command.has("carStateId")) {
                     getPaymentService().updateOutTimestamp(command.get("carStateId").longValue(), format.parse(command.get("outTimestamp").textValue()));
                 } else {
                     throw new RuntimeException("Not all addOutTimestampToPayments parameters set");
@@ -130,59 +139,34 @@ public class CommandExecutor implements PluginRegister {
             } else if ("getCheck".equals(commandName)) {
 
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("parkomatId").textValue());
-                String cashboxNumber = provider.getWebKassaID();
-                int sum = command.get("sum").intValue();
-                int change = command.get("change").intValue();
-                String operationName = command.get("operationName").textValue();
                 int paymentType = command.get("paymentType").intValue();
                 String txn_id = command.get("txn_id").textValue();
-                Check check = new Check();
-                check.setCashboxUniqueNumber(cashboxNumber);
 
-                Position position = new Position();
-                position.price = sum - change;
-                position.positionName = operationName;
-                check.getPositions().add(position);
+                OfdCheckData ofdCheckData = registerCheck(provider, command);
 
-                kz.spt.billingplugin.model.dto.webkassa.Payment payment = new kz.spt.billingplugin.model.dto.webkassa.Payment();
-                payment.paymentType = paymentType;
-                payment.sum = String.valueOf(sum);
-                check.getPayments().add(payment);
-                check.setChange(String.valueOf(change));
-                check.setExternalCheckNumber(txn_id + "-" + provider.getId());
+                log.info("Check Response " + ofdCheckData.toString());
 
-                AuthRequestDTO authRequestDTO = new AuthRequestDTO();
-                authRequestDTO.setPassword(provider.getWebKassaPassword());
-                authRequestDTO.setLogin(provider.getWebKassaLogin());
-                log.info("Request for chech number for txn " + txn_id);
-                CheckResponse checkResponse = getWebKassaService().registerCheck(check, authRequestDTO);
-                log.info("Check Response " + checkResponse.toString());
-                if (checkResponse != null && checkResponse.data!= null) {
-                    node.put("checkNumber", checkResponse.data.checkNumber);
-                    node.put("ticketUrl", checkResponse.data.ticketUrl);
-
+                if (ofdCheckData != null && ofdCheckData.getCheckNumber() != null) {
+                    node.put("checkNumber", ofdCheckData.getCheckNumber());
+                    node.put("ticketUrl", ofdCheckData.getCheckUrl());
                     List<Payment> paymentList = getPaymentService().findByTransactionAndProvider(txn_id, provider);
                     if (!paymentList.isEmpty()) {
-                        paymentList.get(0).setCheckNumber(checkResponse.data.checkNumber);
-                        paymentList.get(0).setIkkm(paymentType==1);
+                        paymentList.get(0).setCheckNumber(ofdCheckData.getCheckNumber());
+                        paymentList.get(0).setCheckUrl(ofdCheckData.getCheckUrl());
+                        paymentList.get(0).setIkkm(paymentType == 1);
                         getPaymentService().savePayment(paymentList.get(0));
                     }
 
                 }
 
 
-            }else if ("zReport".equals(commandName)) {
+            } else if ("zReport".equals(commandName)) {
 
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("parkomatId").textValue());
 
                 ZReport zReport = new ZReport();
                 zReport.setCashboxUniqueNumber(provider.getWebKassaID());
-
-                AuthRequestDTO authRequestDTO = new AuthRequestDTO();
-                authRequestDTO.setPassword(provider.getWebKassaPassword());
-                authRequestDTO.setLogin(provider.getWebKassaLogin());
-
-                String checkResponse = getWebKassaService().closeOperationDay(zReport, authRequestDTO);
+                String checkResponse = getWebKassaService().closeOperationDay(zReport, provider);
 
                 if (checkResponse != null) {
                     node.put("result", checkResponse);
@@ -210,7 +194,7 @@ public class CommandExecutor implements PluginRegister {
                             });
                 }
                 node.set("payments", payments);
-            } else if("deleteAllDebts".equals(commandName)){
+            } else if ("deleteAllDebts".equals(commandName)) {
                 getBalanceService().deleteAllDebts();
             } else {
                 throw new RuntimeException("Unknown command for billing operation");
@@ -255,5 +239,53 @@ public class CommandExecutor implements PluginRegister {
             webKassaService = (WebKassaServiceImpl) BillingPlugin.INSTANCE.getApplicationContext().getBean("webKassaServiceImpl");
         }
         return webKassaService;
+    }
+
+    private WebKassaService getReKassaService() {
+        if (reKassaService == null) {
+            reKassaService = (ReKassaServiceImpl) BillingPlugin.INSTANCE.getApplicationContext().getBean("reKassaServiceImpl");
+        }
+        return reKassaService;
+    }
+
+    private OfdCheckData registerCheck(PaymentProvider provider, JsonNode command) {
+
+        int sum = command.get("sum").intValue();
+        int change = command.get("change").intValue();
+        String operationName = command.get("operationName").textValue();
+        int paymentType = command.get("paymentType").intValue();
+        String txn_id = command.get("txn_id").textValue();
+        OfdCheckData ofdCheckData = null;
+        if (provider.getOfdProviderType().equals(PaymentProvider.OFD_PROVIDER_TYPE.WebKassa)) {
+            String cashboxNumber = provider.getWebKassaID();
+            Check check = new Check();
+            check.setCashboxUniqueNumber(cashboxNumber);
+            Position position = new Position();
+            position.price = sum - change;
+            position.positionName = operationName;
+            check.getPositions().add(position);
+
+            kz.spt.billingplugin.model.dto.webkassa.Payment payment = new kz.spt.billingplugin.model.dto.webkassa.Payment();
+            payment.paymentType = paymentType;
+            payment.sum = String.valueOf(sum);
+            check.getPayments().add(payment);
+            check.setChange(String.valueOf(change));
+            check.setExternalCheckNumber(txn_id + "-" + provider.getId());
+            AuthRequestDTO authRequestDTO = new AuthRequestDTO();
+            authRequestDTO.setPassword(provider.getWebKassaPassword());
+            authRequestDTO.setLogin(provider.getWebKassaLogin());
+            log.info("[WebKassa] Request for check number for txn " + txn_id);
+            ofdCheckData = getWebKassaService().registerCheck(check, provider);
+            log.info("[WebKassa] Result " + ofdCheckData.getCheckNumber());
+        } else if (provider.getOfdProviderType().equals(PaymentProvider.OFD_PROVIDER_TYPE.ReKassa)) {
+            RekassaCheckRequest checkRequest = new RekassaCheckRequest();
+            checkRequest.fillPayment(sum, change,paymentType==1);
+            log.info("[ReKassa] Request for check number for txn " + txn_id);
+            ofdCheckData = getReKassaService().registerCheck(checkRequest, provider);
+            log.info("[ReKassa] Result " + ofdCheckData.getCheckNumber());
+
+
+        }
+        return ofdCheckData;
     }
 }

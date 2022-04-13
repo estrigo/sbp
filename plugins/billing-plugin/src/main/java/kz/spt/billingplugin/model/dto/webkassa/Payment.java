@@ -8,5 +8,5 @@ public class Payment{
     @JsonProperty("PaymentType") 
     public int paymentType = TYPE_CASH;
     @JsonProperty("Sum") 
-    public String sum ;
+    public String sum;
 }

@@ -47,7 +47,18 @@
         </div>
         <div class="col-md-12">
             <div class="form-group">
-                <label for="webKassaID" class="control-label">ID кассы (WebKassa)</label>
+                <label for="webKassaID" class="control-label">Тип онлайн-кассы</label>
+                <div class="checkbox-primary">
+                    <select class="form-control" th:field="*{ofdProviderType}">
+                        <option th:value="WebKassa">WebKassa</option>
+                        <option th:value="ReKassa">ReKassa</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="webKassaID" class="control-label">ID кассы (WebKassa) / Номер кассы ReKassa</label>
                 <div class="checkbox-primary">
                     <input id="webKassaID" type="text" class="form-control" th:field="*{webKassaID}" th:value="*{webKassaID}">
                 </div>
@@ -55,7 +66,7 @@
         </div>
         <div class="col-md-12">
             <div class="form-group">
-                <label for="webKassaLogin" class="control-label">Логин (WebKassa)</label>
+                <label for="webKassaLogin" class="control-label">Логин (WebKassa) / API-key ReKassa</label>
                 <div class="checkbox-primary">
                     <input id="webKassaLogin" type="text" class="form-control" th:field="*{webKassaLogin}" th:value="*{webKassaLogin}">
                 </div>
@@ -63,7 +74,7 @@
         </div>
         <div class="col-md-12">
             <div class="form-group">
-                <label for="webKassaPassword" class="control-label">Пароль (WebKassa)</label>
+                <label for="webKassaPassword" class="control-label">Пароль (WebKassa) / Пароль (ReKassa)</label>
                 <div class="checkbox-primary">
                     <input id="webKassaPassword" type="text" class="form-control" th:field="*{webKassaPassword}" th:value="*{webKassaPassword}">
                 </div>

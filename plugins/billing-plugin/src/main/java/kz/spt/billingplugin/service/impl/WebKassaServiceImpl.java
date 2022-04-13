@@ -2,6 +2,8 @@ package kz.spt.billingplugin.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kz.spt.billingplugin.model.PaymentProvider;
+import kz.spt.billingplugin.model.dto.OfdCheckData;
 import kz.spt.billingplugin.model.dto.webkassa.AuthRequestDTO;
 import kz.spt.billingplugin.model.dto.webkassa.Check;
 import kz.spt.billingplugin.model.dto.webkassa.CheckResponse;
@@ -30,23 +32,20 @@ public class WebKassaServiceImpl implements WebKassaService {
     @Value("${webkassa.host}")
     private String webkassaHost;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     long tokenExpireTime = 10000;
-
-    private static String zeroTouchToken;
-    private static Long lastTokenCheck;
-    private static Long tokenTimeToLive;
 
     public WebKassaServiceImpl() {
     }
 
     @Override
-    public CheckResponse registerCheck(Check check, AuthRequestDTO authRequestDTO) {
-
+    public OfdCheckData registerCheck(Object check, PaymentProvider provider) {
+        OfdCheckData ofdCheckData = new OfdCheckData();
         try {
-
-            check.token = getToken(authRequestDTO);
+            Check webcheck = (Check) check;
+            AuthRequestDTO authRequestDTO = new AuthRequestDTO();
+            authRequestDTO.setLogin(provider.getWebKassaLogin());
+            authRequestDTO.setPassword(provider.getWebKassaPassword());
+            webcheck.token = getToken(authRequestDTO);
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
@@ -54,21 +53,28 @@ public class WebKassaServiceImpl implements WebKassaService {
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
             ObjectMapper mapper = new ObjectMapper();
-            String requestBody = mapper.writeValueAsString(check);
+            String requestBody = mapper.writeValueAsString(webcheck);
             HttpEntity<String> request = new HttpEntity(requestBody, headers);
             CheckResponse checkResponse =
                     restTemplate.postForObject(webkassaHost+"/api/Check", request, CheckResponse.class);
-            return checkResponse;
+            if (checkResponse != null && checkResponse.data != null) {
+                ofdCheckData = new OfdCheckData();
+                ofdCheckData.setCheckNumber(checkResponse.data.checkNumber);
+                ofdCheckData.setCheckUrl(checkResponse.data.ticketUrl);
+            }
+            return ofdCheckData;
         } catch (Exception ex) {
             log.error(ex.getMessage(),ex);
         }
-        return null;
+        return ofdCheckData;
     }
 
     @Override
-    public String closeOperationDay(ZReport zReport, AuthRequestDTO authRequestDTO) {
+    public String closeOperationDay(ZReport zReport, PaymentProvider provider) {
         try {
-
+            AuthRequestDTO authRequestDTO = new AuthRequestDTO();
+            authRequestDTO.setLogin(provider.getWebKassaLogin());
+            authRequestDTO.setPassword(provider.getWebKassaPassword());
             String token = getToken(authRequestDTO);
             zReport.token = token;
 

@@ -69,6 +69,8 @@ public class Payment {
 
     String checkNumber;
 
+    String checkUrl;
+
     private boolean ikkm;
 
 

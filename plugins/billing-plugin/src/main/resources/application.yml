@@ -22,3 +22,5 @@ spring:
     basename: billing-plugin
 webkassa:
   host: https://devkkm.webkassa.kz
+rekassa:
+  host: https://api-test.rekassa.kz/api
