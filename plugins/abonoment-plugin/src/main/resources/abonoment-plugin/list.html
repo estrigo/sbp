@@ -177,8 +177,8 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label class="control-label" th:text="#{abonoment.types}"></label>
-                                <select id="typeId" class="form-control" onchange="checkSelectedOption();" >
-                                    <option id="typeOption" th:each="type : ${typeList}" th:text="${type.description}" th:value="${type.id}" th:data-message="${type.customJson}" ></option>
+                                <select id="typeId" class="form-control" onchange="checkSelectedOption();" onfocus="this.selectedIndex = -1;">
+                                    <option th:each="type : ${typeList}" th:text="${type.description}" th:value="${type.id}" th:data-message="${type.customJson}" ></option>
                                 </select>
                             </div>
                         </div>
@@ -235,6 +235,7 @@
     var notPaidStatus = [[#{abonoment.notPaid}]];
     let canEdit = [[${canEdit}]];
     var del = [[#{crm.delete}]];
+
     if (locale == "en") {
         address = "";
     }
@@ -257,16 +258,14 @@
         } else {
             $('#custom').hide();
         }
-        // if(value === 'UNLIMITED'){
-        //     $('#periodRow').hide();
-        //     $('#custom').hide();
-        //     $('#daysRow').hide();
-        // }
     }
+
+
     function checkSelectedOption(){
-        // var id = $('#typeId').val();
-        var list = $('#typeOption').attr('data-message');
-        $('#typeDescription').text(list);
+        let element = document.getElementById("typeId");
+        const json = element.options[element.selectedIndex].getAttribute("data-message");
+        console.log(json);
+        $('#typeDescription').text(json);
     }
 
     const abonomentTable = $('#abonomentTable').DataTable({
