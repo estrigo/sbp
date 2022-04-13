@@ -165,32 +165,6 @@ public class ParkingController {
         return "parking/gate/edit";
     }
 
-    @GetMapping("/controller/{controllerId}")
-    public String getEditingControllerId(Model model, @PathVariable Long controllerId) {
-        model.addAttribute("controller", controllerService.getControllerById(controllerId));
-        return "parking/controller/edit";
-    }
-
-    @PostMapping("/controller/{gateId}")
-    public String barrierEdit(@PathVariable Long gateId, @Valid Controller controller, BindingResult bindingResult){
-
-        if (!bindingResult.hasErrors()) {
-            Gate gate = gateService.getById(gateId);
-            controller.setGate(gate);
-            controllerService.saveController(controller);
-        }
-        return "redirect:/parking/details/" + controller.getGate().getParking().getId();
-    }
-
-    @GetMapping("/{gateId}/new/controller")
-    public String getEditingControllerId(@PathVariable Long gateId, Model model) {
-        Controller controller = new Controller();
-        controller.setGate(gateService.getById(gateId));
-        model.addAttribute("controller", controller);
-        return "parking/controller/edit";
-    }
-
-
     @GetMapping("/cars")
     public String showCurrentStatus(Model model)
     {

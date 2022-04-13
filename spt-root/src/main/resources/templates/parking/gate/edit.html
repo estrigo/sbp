@@ -27,10 +27,16 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6">
             <div class="form-group">
                 <label for="qrPanelIp" class="control-label" th:text="#{gate.qrPanelIp}"></label>
                 <input type="text" class="form-control" id="qrPanelIp" th:field="*{qrPanelIp}" th:value="*{qrPanelIp}">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="notControlBarrier" th:text="#{gate.notControlBarrier}"></label>
+                <input type="checkbox" id="notControlBarrier" th:field="*{notControlBarrier}">
             </div>
         </div>
     </div>
