@@ -196,10 +196,10 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <form name="myForm">
-                                <input type="radio" name="myRadios" value="true" checked><label class="control-label" id="paidDate" th:text="#{abonoment.paidDate}"></label>
+                                <input type="radio" name="myRadios" value="true" checked><label class="control-label" id="paidDate" th:text="#{abonoment.paidDate}" style="margin-left: 20px"></label>
                                     <div class="form-group">
                                     </div>
-                                <input type="radio" name="myRadios" value="false"><label class="control-label" id="beginDate" th:text="#{abonoment.begin.text}" style="opacity: 0.5"></label>
+                                <input type="radio" name="myRadios" value="false"><label class="control-label" id="beginDate" th:text="#{abonoment.begin.text}" style="opacity: 0.5; margin-left: 20px"></label>
                                 </form>
                             </div>
                         </div>
@@ -333,7 +333,7 @@
                 }
             },
             {"data": "parking"},
-            {"data": "type"}
+            {"data": "type", "width" : "230px"}
         ],
         "order": [ //[[ in thymeleaf is inline script
             [2, "desc"]

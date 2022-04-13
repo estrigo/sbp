@@ -199,7 +199,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             abonoment.setType(bundle.getString("abonoment.allDaysinWeek"));
         }
         else {
-            abonoment.setType(bundle.getString("abonoment.Type.CUSTOM"));
+            abonoment.setType(type.getCustomJson());
         }
 
 
