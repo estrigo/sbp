@@ -30,6 +30,7 @@ public class ParkingRate {
         STANDARD,   // Одинаковая сумма для всех часов.  например 200 тенге за каждый час
         PROGRESSIVE, // Сумма за каждый час увеличивается или уменьшается. например 1 час 200mг, второй час 300тг, дальше по 400тг
         INTERVAL, // Разные суммы в зависимости от часов заезд. например каждый час между 08.00 - 16.00 по 500тг, между 16.00 - 08.00 по 1000тг
+        DIMENSIONS, //тариф по габаритам - легковые,микроавтобусы, грузовики
         PREPAID // Работает по предоплате
     }
 
@@ -59,6 +60,24 @@ public class ParkingRate {
 
     @Column(name = "online_payment_value")
     private Integer onlinePaymentValue;
+
+    @Column(name = "cash_payment_passenger")
+    private Integer cashPaymentValuePassenger;
+
+    @Column(name = "online_payment_passenger")
+    private Integer onlinePaymentValuePassenger;
+
+    @Column(name = "cash_payment_van")
+    private Integer cashPaymentValueVan;
+
+    @Column(name = "online_payment_van")
+    private Integer onlinePaymentValueVan;
+
+    @Column(name = "cash_payment_truck")
+    private Integer cashPaymentValueTruck;
+
+    @Column(name = "online_payment_truck")
+    private Integer onlinePaymentValueTruck;
 
     @Column(name = "day_payment_value")
     private Integer dayPaymentValue;

@@ -4,21 +4,28 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.extension.PluginRegister;
+import kz.spt.lib.model.CarModel;
 import kz.spt.lib.model.Parking;
+
+import kz.spt.lib.service.CarModelService;
 import kz.spt.rateplugin.RatePlugin;
 import kz.spt.rateplugin.model.ParkingRate;
 import kz.spt.rateplugin.service.RateService;
+import lombok.extern.java.Log;
 import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Extension
 public class CommandExecutor implements PluginRegister {
 
     private RateService rateService;
+
 
     @Override
     public JsonNode execute(JsonNode command) throws Exception {
@@ -53,7 +60,11 @@ public class CommandExecutor implements PluginRegister {
                         Boolean isCheck = command.has("isCheck") ? command.get("isCheck").booleanValue() : false;
                         String paymentsJson = command.has("paymentsJson") && command.get("paymentsJson")!=null ? command.get("paymentsJson").textValue() : null;
 
-                        node.put("rateResult", getRateService().calculatePayment(parkingId, inDate, outDate, cashlessPayment, isCheck, paymentsJson));
+                        String carType = "";
+                        if (command.has("carType")) { //for dimensions tariffs
+                            carType = command.get("carType").asText();
+                        }
+                        node.put("rateResult", getRateService().calculatePayment(parkingId, inDate, outDate, cashlessPayment, isCheck, paymentsJson, carType));
                         node.put("rateFreeMinutes", getRateService().calculateFreeMinutes(parkingId, inDate, outDate, paymentsJson));
                         long timeDiff = Math.abs(outDate.getTime() - inDate.getTime());
                         long hours = TimeUnit.HOURS.convert(timeDiff, TimeUnit.MILLISECONDS);

@@ -63,8 +63,13 @@ public class CommandExecutor implements PluginRegister {
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue());
                 List<Payment> oldPayments = getPaymentService().findByTransactionAndProvider(command.get("transaction").textValue(), provider);
 
+                for (Payment p : oldPayments) {
+                    log.info(p.getTransaction());
+                }
+                log.info("PAID for car");
                 if (oldPayments.size() > 0) {
                     node.put("paymentError", "txn_id уже зарегистрирован");
+                    log.info("it is here");
                     node.put("paymentErrorCode", 1);
                     return node;
                 }

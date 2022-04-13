@@ -35,16 +35,18 @@ public class PaymentServiceImpl implements PaymentService {
     private final CarStateService carStateService;
     private final CarsService carService;
     private final ParkingService parkingService;
+    private final CarModelService carModelService;
     private final EventLogService eventLogService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
-    public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService, ParkingService parkingService, EventLogService eventLogService) {
+    public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService, ParkingService parkingService, EventLogService eventLogService, CarModelService carModelService) {
         this.pluginService = pluginService;
         this.carStateService = carStateService;
         this.carService = carService;
         this.parkingService = parkingService;
         this.eventLogService = eventLogService;
+        this.carModelService = carModelService;
     }
 
     @Override
@@ -105,7 +107,7 @@ public class PaymentServiceImpl implements PaymentService {
                 if (commandDto.txn_id == null || "".equals(commandDto.txn_id)) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
                     dto.message = "Пустое значение для поля txn_id";
-                    dto.result = 2;
+                    dto.result = 4;
                     dto.sum = commandDto.sum;
                     dto.txn_id = commandDto.txn_id;
                     return dto;
@@ -113,7 +115,7 @@ public class PaymentServiceImpl implements PaymentService {
                 if (commandDto.sum == null || BigDecimal.ZERO.compareTo(commandDto.sum) > -1) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
                     dto.message = "Некорректное значение для sum";
-                    dto.result = 3;
+                    dto.result = 5;
                     dto.sum = commandDto.sum;
                     dto.txn_id = commandDto.txn_id;
                     return dto;
@@ -293,7 +295,7 @@ public class PaymentServiceImpl implements PaymentService {
                 if (commandDto.getTxn_id() == null || "".equals(commandDto.getTxn_id().isEmpty())) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
                     dto.message = "Пустое значение для поля txn_id";
-                    dto.result = 2;
+                    dto.result = 4;
                     dto.sum = commandDto.getSum();
                     dto.txn_id = commandDto.getTxn_id();
                     return dto;
@@ -301,7 +303,7 @@ public class PaymentServiceImpl implements PaymentService {
                 if (commandDto.getSum() == null || BigDecimal.ZERO.compareTo(commandDto.getSum()) > -1) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
                     dto.message = "Некорректное значение для sum";
-                    dto.result = 3;
+                    dto.result = 5;
                     dto.sum = commandDto.getSum();
                     dto.txn_id = commandDto.getTxn_id();
                     return dto;
@@ -477,6 +479,19 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
             node.put("paymentsJson", paymentsJson);
 
+            Cars cars = carService.findByPlatenumber(carState.getCarNumber());
+            if (cars.getModel() != null && !cars.getModel().equals("")) {
+            node.put("carModel", cars.getModel());
+            if (carModelService.getByModel(cars.getModel()) != null) {
+                CarModel carModel = carModelService.getByModel(cars.getModel());
+                node.put("carType", carModel.getType());
+            } else {
+                log.info("This model doesn't exist in db - " + cars.getModel());
+            }
+            } else {
+                log.info("Car record doesn't exist in database");
+            }
+            log.info("it checks in payment service imple " + node.get("carModel"));
             JsonNode result = ratePluginRegister.execute(node);
             BigDecimal rateResult = result.get("rateResult").decimalValue();
 

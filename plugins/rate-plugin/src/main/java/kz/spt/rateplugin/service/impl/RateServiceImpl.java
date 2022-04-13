@@ -45,7 +45,7 @@ public class RateServiceImpl implements RateService {
     }
 
     @Override
-    public BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment, Boolean isCheck, String paymentsJson) throws JsonProcessingException {
+    public BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment, Boolean isCheck, String paymentsJson, String carType) throws JsonProcessingException {
 
         ParkingRate parkingRate = getByParkingId(parkingId);
 
@@ -179,7 +179,28 @@ public class RateServiceImpl implements RateService {
             }
 
             return result;
-        } else {
+        } else if (parkingRate != null && ParkingRate.RateType.DIMENSIONS.equals(parkingRate.getRateType())) {
+            int hours = 0;
+            while (inCalendar.before(outCalendar)) {
+                hours++;
+                inCalendar.add(Calendar.HOUR, 1);
+            }
+            log.info("it checks dimensions" + carType);
+            if (!carType.equals("")) {
+                if (parkingRate != null && carType.equals("1")) {
+                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValuePassenger() : parkingRate.getCashPaymentValuePassenger()).multiply(BigDecimal.valueOf(hours)));
+                } else if (parkingRate != null && carType.equals("2")) {
+                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValueVan() : parkingRate.getCashPaymentValueVan()).multiply(BigDecimal.valueOf(hours)));
+                } else {
+                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValueTruck() : parkingRate.getCashPaymentValueTruck()).multiply(BigDecimal.valueOf(hours)));
+                }
+            } else {
+                result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValuePassenger() : parkingRate.getCashPaymentValuePassenger()).multiply(BigDecimal.valueOf(hours)));
+            }
+
+            return result;
+        }
+        else {
             int hours = 0;
             while (inCalendar.before(outCalendar)) {
                 hours++;

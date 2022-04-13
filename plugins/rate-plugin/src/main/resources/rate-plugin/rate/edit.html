@@ -42,6 +42,7 @@
                                             <option th:value="STANDARD" th:text="#{'rate.Type.STANDARD'}"></option>
                                             <option th:value="PROGRESSIVE" th:text="#{'rate.Type.PROGRESSIVE'}"></option>
                                             <option th:value="INTERVAL" th:text="#{'rate.Type.INTERVAL'}"></option>
+                                            <option th:value="DIMENSIONS" th:text="#{'rate.Type.DIMENSIONS'}"></option>
                                             <option th:value="PREPAID" th:text="#{'rate.Type.PREPAID'}"></option>
                                         </select>
                                     </div>
@@ -91,6 +92,7 @@
                                     </div>
                                 </div>
                             </div>
+
                             <div id="progressive" class="row" style="display: none;">
                                 <input id="progressiveJson" type="hidden" th:field="*{progressiveJson}" th:value="*{progressiveJson}">
                                 <div class="col-md-12">
@@ -171,6 +173,49 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!------------------------------------------------->
+                            <div id="dimensions" class="row" style="display: none;">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="cashPaymentValuePassenger" class="control-label" th:text="#{rate.cashPassengerCar}"></label>
+                                        <input type="number" class="form-control" th:field="*{cashPaymentValuePassenger}" th:value="*{cashPaymentValuePassenger}" id="cashPaymentValuePassenger" placeholder="100">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="onlinePaymentValuePassenger" class="control-label" th:text="#{rate.onlinePassengerCar}"></label>
+                                        <input type="number" class="form-control" th:field="*{onlinePaymentValuePassenger}" th:value="*{onlinePaymentValuePassenger}" id="onlinePaymentValuePassenger" placeholder="100">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="cashPaymentValueVan" class="control-label" th:text="#{rate.cashVanCar}"></label>
+                                        <input type="number" class="form-control" th:field="*{cashPaymentValueVan}" th:value="*{cashPaymentValueVan}" id="cashPaymentValueVan" placeholder="100">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="onlinePaymentValueVan" class="control-label" th:text="#{rate.onlineVanCar}"></label>
+                                        <input type="number" class="form-control" th:field="*{onlinePaymentValueVan}" th:value="*{onlinePaymentValueVan}" id="onlinePaymentValueVan" placeholder="100">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="cashPaymentValueTruck" class="control-label" th:text="#{rate.cashTruckCar}"></label>
+                                        <input type="number" class="form-control" th:field="*{cashPaymentValueTruck}" th:value="*{cashPaymentValueTruck}" id="cashPaymentValueTruck" placeholder="100">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="onlinePaymentValueTruck" class="control-label" th:text="#{rate.onlineTruckCar}"></label>
+                                        <input type="number" class="form-control" th:field="*{onlinePaymentValueTruck}" th:value="*{onlinePaymentValueTruck}" id="onlinePaymentValueTruck" placeholder="100">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!------------------------------------------------->
+
                             <div class="form-group row">
                                 <div class="col-12" sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')">
                                     <button type="submit" class="btn btn-info waves-effect waves-light" th:text="#{crm.saveChanges}"></button>
@@ -242,6 +287,12 @@
             drawInterval();
         } else {
             $('#interval').hide();
+        }
+        if(val === 'DIMENSIONS'){
+            $('#dimensions').show();
+            drawInterval();
+        } else {
+            $('#dimensions').hide();
         }
         if(val === 'PREPAID'){
             $('#prepaid').show();

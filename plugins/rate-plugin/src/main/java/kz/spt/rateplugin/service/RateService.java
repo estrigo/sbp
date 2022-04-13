@@ -15,7 +15,7 @@ public interface RateService {
 
     ParkingRate getByParkingId(Long parkingId);
 
-    BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment, Boolean isCheck, String payments) throws JsonProcessingException;
+    BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment, Boolean isCheck, String payments, String carType) throws JsonProcessingException;
 
     int calculateFreeMinutes(Long parkingId, Date inDate, Date outDate, String payments);
 
