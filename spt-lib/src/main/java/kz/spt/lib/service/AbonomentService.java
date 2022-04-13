@@ -11,7 +11,7 @@ public interface AbonomentService {
 
     JsonNode deleteAbonomentType(Long id) throws Exception;
 
-    JsonNode createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart) throws Exception;
+    JsonNode createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws Exception;
 
     JsonNode deleteAbonoment(Long id) throws Exception;
 

@@ -34,8 +34,9 @@ public class AbonomentRestController {
     public JsonNode createAbonoment(@RequestParam("platenumber") String platenumber,
                                     @RequestParam("parkingId") Long parkingId,
                                     @RequestParam("typeId") Long typeId,
-                                    @RequestParam("dateStart") String dateStart) throws Exception {
-        return abonomentService.createAbonoment(platenumber, parkingId, typeId, dateStart);
+                                    @RequestParam("dateStart") String dateStart,
+                                    @RequestParam("checked") Boolean checked) throws Exception {
+        return abonomentService.createAbonoment(platenumber, parkingId, typeId, dateStart, checked);
     }
 
     @RequestMapping(value = "/delete", method = RequestMethod.POST, consumes = "multipart/form-data")

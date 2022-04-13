@@ -125,6 +125,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         abonomentTypes.setPeriod(period);
         abonomentTypes.setType(type);
         abonomentTypes.setPrice(price);
+        abonomentTypes.setCustomNumbers(customJson);
         AbonomentTypes savedAbonomentTypes = abonomentTypesRepository.save(abonomentTypes);
 
         return savedAbonomentTypes;
@@ -175,7 +176,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     }
 
     @Override
-    public Abonoment createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart) throws ParseException {
+    public Abonoment createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws ParseException {
 
         final String dateTimeFormat = "yyyy-MM-dd'T'HH:mm";
 
@@ -191,10 +192,26 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         abonoment.setPrice(BigDecimal.valueOf(type.getPrice()));
         abonoment.setPaid(false);
         abonoment.setMonths(type.getPeriod());
+        abonoment.setChecked(checked);
+        Locale locale = LocaleContextHolder.getLocale();
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(locale.toString()));
+        if (type.getType().equals("UNLIMITED")){
+            abonoment.setType(bundle.getString("abonoment.allDaysinWeek"));
+        }
+        else {
+            abonoment.setType(bundle.getString("abonoment.Type.CUSTOM"));
+        }
+
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(format.parse(dateStart));
+        if (dateStart.equals("")){
+            calendar.setTime(new Date());
+        }
+        else {
+            calendar.setTime(format.parse(dateStart));
+        }
         abonoment.setBegin(calendar.getTime());
+
 
         calendar.add(Calendar.DATE, type.getPeriod());
         abonoment.setEnd(calendar.getTime());
@@ -258,7 +275,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     }
 
     @Override
-    public Boolean checkAbonomentIntersection(String platenumber, Long parkingId, Long typeId, String dateStart) throws ParseException {
+    public Boolean checkAbonomentIntersection(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws ParseException {
         final String dateTimeFormat = "yyyy-MM-dd'T'HH:mm";
 
         platenumber = platenumber.toUpperCase();
@@ -266,8 +283,14 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         SimpleDateFormat format = new SimpleDateFormat(dateTimeFormat);
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(format.parse(dateStart));
-        Date begin = calendar.getTime();
+        System.out.println(dateStart);
+        if (dateStart.equals("")){
+            calendar.setTime(new Date());
+        }
+        else {
+            calendar.setTime(format.parse(dateStart));
+        }
+        Date begin = calendar.getTime();;
 
         calendar.add(Calendar.DATE, type.getPeriod());
         Date end = calendar.getTime();

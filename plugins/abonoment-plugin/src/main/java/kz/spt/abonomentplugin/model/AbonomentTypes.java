@@ -36,6 +36,9 @@ public class AbonomentTypes {
     @Column(name = "price")
     private Integer price = 0;
 
+    @Column(columnDefinition = "text")
+    private String customNumbers;
+
     @Transient
     private String description;
 }

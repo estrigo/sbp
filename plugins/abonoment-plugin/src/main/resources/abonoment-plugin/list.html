@@ -44,6 +44,7 @@
                                     <th><a th:text="#{abonoment.price}"></a></th>
                                     <th><a th:text="#{abonoment.paid}"></a></th>
                                     <th><a th:text="#{abonoment.parking}"></a></th>
+                                    <th><a th:text="#{abonoment.types}"></a></th>
                                 </tr>
                                 </thead>
                             </table>
@@ -63,6 +64,7 @@
                                 <tr>
                                     <th></th>
                                     <th><a th:text="#{abonoment.Type.DAYS}"></a></th>
+                                    <th><a th:text="#{abonoment.days}"></a></th>
                                     <th><a th:text="#{abonoment.typePrice}"></a></th>
                                 </tr>
                                 </thead>
@@ -186,14 +188,25 @@
                     <div class="row" id = "optionRow">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label class="control-label" id="typeDescription" text="#{abonoment.allDaysinWeek}" style="width: 230px"></label>
+                                <label class="control-label" id="typeDescription" th:text="#{abonoment.allDaysinWeek}" style="width: 230px"></label>
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label class="control-label" th:text="#{abonoment.begin}"></label>
+                                <form name="myForm">
+                                <input type="radio" name="myRadios" value="true" checked><label class="control-label" id="paidDate" th:text="#{abonoment.paidDate}"></label>
+                                    <div class="form-group">
+                                    </div>
+                                <input type="radio" name="myRadios" value="false"><label class="control-label" id="beginDate" th:text="#{abonoment.begin.text}" style="opacity: 0.5"></label>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id = "beginRow" style="display: none">
+                        <div class="col-md-12">
+                            <div class="form-group">
                                 <input type="datetime-local" class="form-control" id="dateStart">
                             </div>
                         </div>
@@ -235,10 +248,11 @@
     var notPaidStatus = [[#{abonoment.notPaid}]];
     let canEdit = [[${canEdit}]];
     var del = [[#{crm.delete}]];
+    let checked = true;
 
     if (locale == "en") {
         address = "";
-    }
+    };
     function checkSelectedTypes(value){
         if(value === 'DAYS'){
             $('#daysRow').show();
@@ -258,15 +272,31 @@
         } else {
             $('#custom').hide();
         }
-    }
+    };
+    var rad = document.myForm.myRadios;
+    for (var i = 0; i < rad.length; i++) {
+        rad[i].addEventListener('change', function() {
+            if (this.value === 'true') {
+                $('#beginRow').hide();
+                checked = true;
+                $('#paidDate').css({'opacity':'1'});
+                $('#beginDate').css({'opacity':'0.5'});
+            }
+            if (this.value === 'false') {
+                $('#beginRow').show();
+                checked = false;
+                $('#paidDate').css({'opacity':'0.5'});
+                $('#beginDate').css({'opacity':'1'});
+            }
+        });
+    };
 
 
     function checkSelectedOption(){
         let element = document.getElementById("typeId");
         const json = element.options[element.selectedIndex].getAttribute("data-message");
-        console.log(json);
         $('#typeDescription').text(json);
-    }
+    };
 
     const abonomentTable = $('#abonomentTable').DataTable({
         "processing": true,
@@ -302,7 +332,8 @@
                         return '<span>' + notPaidStatus + '</span>';
                 }
             },
-            {"data": "parking"}
+            {"data": "parking"},
+            {"data": "type"}
         ],
         "order": [ //[[ in thymeleaf is inline script
             [2, "desc"]
@@ -340,8 +371,9 @@
                     }
                 }
             },
-            {"data": "period", "width" : "33%"},
-            {"data": "price", "width" : "33%"}
+            {"data": "period", "width" : "20%"},
+            {"data": "custom", "width" : "230px"},
+            {"data": "price", "width" : "20%"}
         ],
         "buttons": ['copy', 'excel', 'pdf', 'csv'],
         language: {
@@ -494,6 +526,7 @@
             form.append("parkingId", parkingId);
             form.append("typeId", typeId);
             form.append("dateStart", dateStart);
+            form.append("checked", checked);
 
             var settings = {
                 "url": "/rest/abonoment/create",
@@ -512,6 +545,7 @@
                     $('#addAbonoment').find('#parkingId').val(undefined);
                     $('#addAbonoment').find('#typeId').val(undefined);
                     $('#addAbonoment').find('#dateStart').val(undefined);
+                    $('#addAbonoment').find('#paidDate').val(undefined);
                     $('#abonomentErrors').hide();
                 } else {
                     errorLiHtml = errorLiHtml + "<li>" + response.error + "</li>";

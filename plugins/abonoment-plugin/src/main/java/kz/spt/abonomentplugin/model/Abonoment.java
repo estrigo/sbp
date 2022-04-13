@@ -45,6 +45,12 @@ public class Abonoment {
     @Column(name = "price")
     private BigDecimal price;
 
+    @Column(name = "checked")
+    private Boolean checked;
+
+    @Column(name = "type")
+    private String type;
+
     @ManyToOne
     @JoinColumn(name = "parking_id")
     private Parking parking;

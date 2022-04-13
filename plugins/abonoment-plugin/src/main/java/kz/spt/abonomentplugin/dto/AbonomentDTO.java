@@ -5,12 +5,15 @@ import kz.spt.abonomentplugin.model.AbonomentTypes;
 import kz.spt.lib.utils.StaticValues;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.beans.SimpleBeanInfo;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 @Data @NoArgsConstructor
 public class AbonomentDTO {
@@ -23,6 +26,7 @@ public class AbonomentDTO {
     public Boolean paid;
     public BigDecimal price;
     public String parking;
+    public String type;
 
     public static AbonomentDTO convertToDto(Abonoment abonoment){
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
@@ -36,6 +40,7 @@ public class AbonomentDTO {
         dto.parking = abonoment.getParking().getName();
         dto.price = abonoment.getPrice();
         dto.paid = abonoment.getPaid();
+        dto.type = abonoment.getType();
         return dto;
     }
 

@@ -73,7 +73,7 @@ public class AbonomentServiceImpl implements AbonomentService {
     }
 
     @Override
-    public JsonNode createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart) throws Exception {
+    public JsonNode createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws Exception {
 
         ObjectNode result = objectMapper.createObjectNode();
         result.put("result", false);
@@ -86,6 +86,7 @@ public class AbonomentServiceImpl implements AbonomentService {
             command.put("parkingId", parkingId);
             command.put("typeId", typeId);
             command.put("dateStart", dateStart);
+            command.put("checked", checked);
             JsonNode abonomentResult = abonomentPluginRegister.execute(command);
             result.put("result", abonomentResult.get("result").booleanValue());
             if(abonomentResult.has("error")){

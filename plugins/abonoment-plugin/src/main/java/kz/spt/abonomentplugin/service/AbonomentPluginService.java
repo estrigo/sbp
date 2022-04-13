@@ -23,7 +23,7 @@ public interface AbonomentPluginService {
 
     List<AbonomentTypes> getAllAbonomentTypes();
 
-    Abonoment createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart) throws ParseException;
+    Abonoment createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws ParseException;
 
     void deleteAbonoment(Long id);
 
@@ -35,6 +35,6 @@ public interface AbonomentPluginService {
 
     JsonNode getPaidNotExpiredAbonoment(String plateNumber, Long parkingId, Date carInDate);
 
-    Boolean checkAbonomentIntersection(String platenumber, Long parkingId, Long typeId, String dateStart) throws ParseException;
+    Boolean checkAbonomentIntersection(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws ParseException;
 
 }

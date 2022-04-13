@@ -15,12 +15,16 @@ public class AbonomentTypeDTO {
     public Long id;
     public int period;
     public int price;
+    public String type;
+    public String custom;
 
     public static AbonomentTypeDTO convertToDto(AbonomentTypes abonomentType){
         AbonomentTypeDTO dto = new AbonomentTypeDTO();
         dto.period = abonomentType.getPeriod();
         dto.price = abonomentType.getPrice();
         dto.id = abonomentType.getId();
+        dto.type = abonomentType.getType();
+        dto.custom =abonomentType.getCustomJson();
         return dto;
     }
 
