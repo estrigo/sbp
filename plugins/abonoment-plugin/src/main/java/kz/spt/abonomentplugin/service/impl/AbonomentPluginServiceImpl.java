@@ -283,7 +283,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         SimpleDateFormat format = new SimpleDateFormat(dateTimeFormat);
 
         Calendar calendar = Calendar.getInstance();
-        System.out.println(dateStart);
+
         if (dateStart.equals("")){
             calendar.setTime(new Date());
         }
