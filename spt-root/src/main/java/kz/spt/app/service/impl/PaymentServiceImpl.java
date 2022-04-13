@@ -51,6 +51,7 @@ public class PaymentServiceImpl implements PaymentService {
     public Object billingInteractions(CommandDto commandDto) throws Exception {
         if (commandDto.account != null) {
             commandDto.account = commandDto.account.toUpperCase();
+            commandDto.account = commandDto.account.replaceAll("\\s","");
             if ("check".equals(commandDto.command)) {
                 if (commandDto.prepaid != null && commandDto.prepaid) {
                     Parking parking = parkingService.findByType(Parking.ParkingType.PREPAID);
