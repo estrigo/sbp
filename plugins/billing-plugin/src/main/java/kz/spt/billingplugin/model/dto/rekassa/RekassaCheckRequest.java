@@ -41,8 +41,8 @@ public class RekassaCheckRequest {
         //calc taxes
         Tax tax = new Tax();
         tax.sum = new BillsCoins();
-        tax.sum.bills = Math.round( ((amount -change)/112*12)*100)/100;
-        tax.sum.coins = Math.round( ((amount -change)/112*12)*100)%100;
+        tax.sum.bills = (int)Math.round( (((double)amount -(double)change)/112*12)*100)/100;
+        tax.sum.coins = (int)Math.round( (((double)amount -(double)change)/112*12)*100)%100;
 
         commodity.taxes.add(tax);
 
