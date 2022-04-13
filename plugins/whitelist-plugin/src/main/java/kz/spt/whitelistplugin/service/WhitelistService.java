@@ -23,7 +23,7 @@ public interface WhitelistService {
 
     List<Whitelist> listByGroupId(Long groupId);
 
-    List<Whitelist> listByGroupName(String groupName);
+    List<Whitelist> whitelistByGroupName(String groupName) throws JsonProcessingException;
 
     ArrayNode hasAccess(Long parkingId, String plateNumber, Date enterDate) throws JsonProcessingException;
 
@@ -43,6 +43,5 @@ public interface WhitelistService {
 
     List<WhiteListDto> listAllWhitelistForExcel() throws JsonProcessingException;
 
-    List<WhiteListDto> groupWhitelistForExcel(String groupName) throws JsonProcessingException;
-
+    List<WhiteListDto> listByGroupName(String groupName) throws JsonProcessingException;
 }
