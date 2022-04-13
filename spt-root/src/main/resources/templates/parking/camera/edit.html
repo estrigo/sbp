@@ -62,6 +62,17 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="login" class="control-label" th:text="#{camera.enabled}"></label>
+                <select th:field="*{enabled}"  class="form-control" >
+                    <option th:value="true" th:text="#{crm.yes}"></option>
+                    <option th:value="false" th:text="#{crm.no}"></option>
+                </select>
+            </div>
+        </div>
+    </div>
     <div class="modal-footer">
         <button type="submit" class="btn btn-success waves-effect waves-light" th:text="#{crm.saveChanges}"></button>
         <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>

@@ -59,4 +59,7 @@ public class Camera {
     private Date updated;
 
     private String snapshotUrl;
+
+    @Column(columnDefinition="tinyint(1) default 1")
+    private boolean enabled = true;
 }

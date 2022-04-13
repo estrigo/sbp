@@ -142,6 +142,11 @@ public class CarEventServiceImpl implements CarEventService {
         eventDto.car_number = eventDto.car_number.toUpperCase();
 
         Camera camera = cameraService.findCameraByIp(eventDto.ip_address);
+
+        //Если камера не зайдействована, то не фиксировать события по ней. Задача #170
+        if (!camera.isEnabled())
+            return;
+
         Map<String, Object> properties = new HashMap<>();
         properties.put("carNumber", eventDto.car_number);
         properties.put("eventTime", format.format(eventDto.event_date_time));

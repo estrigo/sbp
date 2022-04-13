@@ -29,7 +29,7 @@ public class CameraServiceImpl implements CameraService {
 
     @Override
     public List<Camera> cameraList() {
-        return cameraRepository.findAll();
+        return cameraRepository.findEnabledCameras();
     }
 
     @Override
