@@ -37,6 +37,8 @@ public class Gate {
 
     private String description;
 
+    private Boolean notControlBarrier = false;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "gate_type")
     private GateType gateType;

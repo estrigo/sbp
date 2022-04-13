@@ -23,6 +23,7 @@ public class GateStatusDto {
     public Gate.GateType gateType;
     public Long parkingId;
     public Boolean isSimpleWhitelist;
+    public Boolean notControlBarrier = false;
     public BarrierStatusDto barrier;
     public SensorStatusDto loop;
     public SensorStatusDto photoElement;
@@ -57,6 +58,7 @@ public class GateStatusDto {
         gateStatusDto.gateName = gate.getName();
         gateStatusDto.parkingId = gate.getParking().getId();
         gateStatusDto.gateType = gate.getGateType();
+        gateStatusDto.notControlBarrier = gate.getNotControlBarrier();
 
         Barrier barrier = gate.getBarrier();
         if (barrier != null) {
