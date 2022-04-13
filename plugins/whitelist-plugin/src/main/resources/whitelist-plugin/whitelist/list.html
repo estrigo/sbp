@@ -15,32 +15,32 @@
                     <div class="card-body">
                         <!-------------------->
                         <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
-                        <span th:if="${fileUploadResult != null}" th:text="${fileUploadResult}"></span>
-                        <div style="margin-bottom: 2%;">
-                            <form method="POST" data-th-action="@{list}" enctype="multipart/form-data"
-                                  id="fileUploadForm">
-                                <div class="row">
-                                    <div class="col">
-                                        <label class="control-label" for="uploadfile"
-                                               th:text="#{whitelist.uploadExcelFile}"></label>
-                                        <input type="file" class="form-control" id="uploadfile"
-                                               th:placeholder="#{whitelist.uploadExcelFile}" name="uploadfile"
-                                               th:required="required">
+                            <span th:if="${fileUploadResult != null}" th:text="${fileUploadResult}"></span>
+                            <div style="margin-bottom: 2%;">
+                                <form method="POST" data-th-action="@{list}" enctype="multipart/form-data"
+                                      id="fileUploadForm">
+                                    <div class="row">
+                                        <div class="col">
+                                            <label class="control-label" for="uploadfile"
+                                                   th:text="#{whitelist.uploadExcelFile}"></label>
+                                            <input type="file" class="form-control" id="uploadfile"
+                                                   th:placeholder="#{whitelist.uploadExcelFile}" name="uploadfile"
+                                                   th:required="required">
+                                        </div>
+                                        <div class="col">
+                                            <label class="control-label" th:text="#{whitelist.chooseParking}"></label>
+                                            <select class="form-control" id="dropParking" name="selectedParking"
+                                                    th:required="required">
+                                                <option value="" th:text="#{whitelist.chooseParking}"></option>
+                                                <option th:each="parking : ${parkings}" th:value="${parking.id}"
+                                                        th:text="${parking.name}"></option>
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div class="col">
-                                        <label class="control-label" th:text="#{whitelist.chooseParking}"></label>
-                                        <select class="form-control" id="dropParking" name="selectedParking"
-                                                th:required="required">
-                                            <option value="" th:text="#{whitelist.chooseParking}"></option>
-                                            <option th:each="parking : ${parkings}" th:value="${parking.id}"
-                                                    th:text="${parking.name}"></option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <button type="submit" style="margin-top: 1%;" class="btn btn-success" id="btnSubmit"
-                                        th:text="#{whitelist.upload}"></button>
-                            </form>
-                        </div>
+                                    <button type="submit" style="margin-top: 1%;" class="btn btn-success" id="btnSubmit"
+                                            th:text="#{whitelist.upload}"></button>
+                                </form>
+                            </div>
                         </th:block>
                         <!-------------------->
                         <ul class="nav nav-tabs">
@@ -79,6 +79,8 @@
                                         <th th:text="#{car.parkingNumber}"></th>
                                         <th><a th:text="#{whitelist.parking}"></a></th>
                                         <th><a th:text="#{whitelist.groupName}"></a></th>
+                                        <th th:text="#{whitelist.createdUser}"></th>
+                                        <th th:text="#{whitelist.createdDate}"></th>
                                         <th><a th:text="#{whitelist.condition}"></a></th>
                                         <th th:text="#{car.comment}"></th>
                                         <th></th>
@@ -182,6 +184,8 @@
             {"data": "parkingNumber", "visible": [[${hasAccessLcd}]] },
             {"data": "parkingName"},
             {"data": "groupName"},
+            {"data": "createdUser"},
+            {"data": "createdDate"},
             {"data": "conditionDetail", "orderable": false},
             {
                 "data": "comment",
@@ -283,5 +287,37 @@
             }
         });
     }
+    function testConsole(){
+
+        let select = document.getElementById('whitelistGroup');
+        let value = select.options[select.selectedIndex].value;
+        console.log("value: " + value); // en
+
+    }
+    function testConsole2(){
+        let selectedGroupName;
+        console.log("selectedGroupName: " + selectedGroupName); // en
+
+    }
+
+    function excelForWhitelistGroups(){
+        $.get("/rest/whitelist/groupList/excel/", function (data) {
+            try {
+                let arr = [];
+                for (let i = 0; i < data.length; i++) {
+                    arr.push(data[i]);
+                }
+
+                let ws = XLSX.utils.json_to_sheet(arr);
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Whitelist');
+                XLSX.writeFile(wb, "whitelist.xls", { type: "buffer" });
+            } catch(e){
+                console.log(e);
+            }
+        });
+    }
+
 </script>
 </html>

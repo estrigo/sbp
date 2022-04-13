@@ -133,6 +133,8 @@ public class WhitelistServiceImpl implements WhitelistService {
                         .parkingName(m.getParking().getName())
                         .groupName(m.getGroup() != null ? m.getGroup().getName() : "")
                         .conditionDetail(m.getConditionDetail())
+                        .createdDate(m.getCreated().toString())
+                        .createdUser(m.getGroup() != null ? m.getGroup().getUpdatedUser() : m.getCreatedUser())
                         .fullName(m.getFullName())
                         .address(m.getAddress())
                         .parkingNumber(m.getParkingNumber())
@@ -333,7 +335,9 @@ public class WhitelistServiceImpl implements WhitelistService {
             }
         }
         whitelist.setParking(parking);
-        rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
+        if(!AbstractWhitelist.Type.PERIOD.equals(group.getType())) {
+            rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
+        }
         whitelistRepository.save(whitelist);
     }
 
@@ -410,10 +414,33 @@ public class WhitelistServiceImpl implements WhitelistService {
                         .plateNumber(m.getCar().getPlatenumber())
                         .parkingName(m.getParking().getName())
                         .groupName(m.getGroup() != null ? m.getGroup().getName() : "")
+                        .createdDate(m.getCreated().toString())
+                        .createdUser(m.getGroup() != null ? m.getGroup().getUpdatedUser() : m.getCreatedUser())
                         .conditionDetail(m.getConditionDetail())
                         .build())
                 .collect(Collectors.toList());
         return list;
+    }
+
+    @Override
+    public List<WhiteListDto> groupWhitelistForExcel(String groupName) {
+        var list = listByGroupName(groupName).stream()
+                .map(m -> WhiteListDto.builder()
+                        .id(m.getId())
+                        .plateNumber(m.getCar().getPlatenumber())
+                        .parkingName(m.getParking().getName())
+                        .groupName(m.getGroup() != null ? m.getGroup().getName() : "")
+                        .createdDate(m.getCreated().toString())
+                        .createdUser(m.getGroup() != null ? m.getGroup().getUpdatedUser() : m.getCreatedUser())
+                        .conditionDetail(m.getConditionDetail())
+                        .build())
+                .collect(Collectors.toList());
+        return list;
+    }
+
+    @Override
+    public List<Whitelist> listByGroupName(String groupName) {
+        return whitelistRepository.findByGroupName(groupName);
     }
 
     public static String formConditionDetails(AbstractWhitelist w, String name) throws JsonProcessingException {
