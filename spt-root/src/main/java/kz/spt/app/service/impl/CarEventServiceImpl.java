@@ -722,7 +722,8 @@ public class CarEventServiceImpl implements CarEventService {
                         if (isWhitelistCar || Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
                             carOutBy = StaticValues.CarOutBy.WHITELIST;
                             hasAccess = true;
-                        } else if(hasValidAbonoment(eventDto.car_number, carState.getParking().getId())){ // Проверяем абономент, если валидна выпускаем
+                        } else if(hasValidAbonoment(eventDto.car_number, carState)){ // Проверяем абономент, если валидна выпускаем
+
                             carOutBy = StaticValues.CarOutBy.ABONOMENT;
                             hasAccess = true;
                         } else if(parkingOnlyRegisterCars){
@@ -925,13 +926,14 @@ public class CarEventServiceImpl implements CarEventService {
         carsService.createCar(eventDto.car_number, eventDto.region, eventDto.vecihleType, Gate.GateType.OUT.equals(camera.getGate().getGateType()) ? null : eventDto.car_model); // При выезде не сохранять тип авто
     }
 
-    private boolean hasValidAbonoment(String plateNumber, Long parkingId) throws Exception {
+    private Boolean hasValidAbonoment(String plateNumber, CarState carState) throws Exception {
         PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
         if (abonomentPluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("command", "hasPaidNotExpiredAbonoment");
             node.put("plateNumber", plateNumber);
-            node.put("parkingId", parkingId);
+            node.put("parkingId", carState.getParking().getId());
+            node.put("parkingId", carState.getParking().getId());
 
             JsonNode result = abonomentPluginRegister.execute(node);
             if(result.has("hasPaidNotExpiredAbonoment")){

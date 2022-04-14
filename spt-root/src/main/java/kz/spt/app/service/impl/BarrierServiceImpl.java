@@ -6,6 +6,7 @@ import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import com.intelligt.modbus.jlibmodbus.master.ModbusMaster;
 import com.intelligt.modbus.jlibmodbus.master.ModbusMasterFactory;
+import com.intelligt.modbus.jlibmodbus.serial.SerialParameters;
 import com.intelligt.modbus.jlibmodbus.tcp.TcpParameters;
 import kz.spt.app.job.CarSimulateJob;
 import kz.spt.app.job.StatusCheckJob;
@@ -41,16 +42,13 @@ public class BarrierServiceImpl implements BarrierService {
     private final String BARRIER_ON = "1";
     private final String BARRIER_OFF = "0";
     private Boolean disableOpen;
-    private Boolean modbusKeepConnected;
 
     private Map<String, ModbusMaster> modbusMasterMap = new HashMap<>();
 
-    public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, @Value("${barrier.modbus.keep.connected}") Boolean modbusKeepConnected,
-                              BarrierRepository barrierRepository, EventLogService eventLogService) {
+    public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, BarrierRepository barrierRepository, EventLogService eventLogService) {
         this.disableOpen = disableOpen;
         this.barrierRepository = barrierRepository;
         this.eventLogService = eventLogService;
-        this.modbusKeepConnected = modbusKeepConnected;
     }
 
     @Override
@@ -95,11 +93,7 @@ public class BarrierServiceImpl implements BarrierService {
                 int result = -1;
 
                 ModbusMaster m;
-                if(modbusKeepConnected){
-                    m = modbusMasterMap.get(sensor.barrierIp);
-                }  else {
-                    m = getConnectedInstance(sensor.barrierIp);
-                }
+                m = modbusMasterMap.get(sensor.barrierIp);
 
                 int slaveId = 1;
 
@@ -123,7 +117,7 @@ public class BarrierServiceImpl implements BarrierService {
                         result = changedValue[0] ? 0 : 1;
                     }
                 }
-                if(!modbusKeepConnected){
+                if(sensor.modbusDeviceVersion != null && "icpdas".equals(sensor.modbusDeviceVersion)){
                     m.disconnect();
                 }
                 return result;
@@ -229,7 +223,7 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public void addGlobalModbusMaster(Barrier barrier) throws ModbusIOException, UnknownHostException {
-        if(modbusKeepConnected && !modbusMasterMap.containsKey(barrier.getIp())){
+        if(!modbusMasterMap.containsKey(barrier.getIp())){
             modbusMasterMap.put(barrier.getIp(), getConnectedInstance(barrier.getIp()));
         }
     }
@@ -335,16 +329,12 @@ public class BarrierServiceImpl implements BarrierService {
         Boolean result = true;
 
         ModbusMaster m;
-        if(modbusKeepConnected){
-            m = modbusMasterMap.get(barrier.ip);
-        }  else {
-            m = getConnectedInstance(barrier.ip);
-        }
+        m = modbusMasterMap.get(barrier.ip);
 
         int slaveId = 1;
             // since 1.2.8
         if (!m.isConnected()) {
-            log.info("!m.isConnected()");
+            log.info("barrier.ip: " + barrier.ip + " !m.isConnected()");
             m.connect();
         }
         Boolean isOpenValueChanged = false;
@@ -421,10 +411,6 @@ public class BarrierServiceImpl implements BarrierService {
             }
         } else {
             m.writeSingleCoil(slaveId, offset, true);
-            if(barrier.modbusDeviceVersion != null && "icpdas".equals(barrier.modbusDeviceVersion)){
-                Thread.sleep(500);
-                m.writeSingleCoil(slaveId, offset, true);
-            }
             boolean[] changedValue = m.readCoils(slaveId, offset, 1);
             if (changedValue != null && changedValue.length > 0 && changedValue[0]) {
                 isOpenValueChanged = true;
@@ -468,7 +454,7 @@ public class BarrierServiceImpl implements BarrierService {
                 }
             }
         }
-        if(!modbusKeepConnected){
+        if(barrier.modbusDeviceVersion != null && "icpdas".equals(barrier.modbusDeviceVersion)){
             m.disconnect();
         }
         return result;

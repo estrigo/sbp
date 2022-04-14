@@ -84,9 +84,6 @@ images:
 barrier:
   open:
     disabled: true #Для локальной работы без подключения к сенсорам и шлагбаумам
-  modbus:
-    keep:
-      connected: false
 status:
   check:
     fixedDelay: 250 # Период проверки статуса сенсоров в милисекундах
