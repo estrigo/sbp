@@ -99,7 +99,7 @@
                             <a th:href="@{|/balance/operation|}" class="waves-effect waves-primary"><i
                                     class="ti-list-ol"></i><span th:text=" #{balance.balance} "></span></a>
                         </li>
-                        <li>
+                        <li sec:authorize="!hasRole('ROLE_ACCOUNTANT')">
                             <a class="waves-effect waves-primary" onclick="javascript:$('#helpModal').modal('show')">
                                 <i class="ti-heart"></i><span th:text=" #{crm.help} "></span></a>
                         </li>
