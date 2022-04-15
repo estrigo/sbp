@@ -59,19 +59,19 @@
                         <a th:href="@{|/arm/realtime|}" class="waves-effect waves-primary"><i
                                 class="ti-desktop"></i><span th:text=" #{crm.arm} "></span></a>
                     </li>
-                    <li>
+                    <li sec:authorize="!hasRole('ROLE_ACCOUNTANT')">
                         <a th:href="@{|/events/list|}" class="waves-effect waves-primary"><i
                                 class="ti-files"></i><span th:text=" #{events.events} "></span></a>
                     </li>
                     <th:block sec:authorize="!hasRole('ROLE_RTA')">
-                        <li>
+                        <li sec:authorize="!hasRole('ROLE_ACCOUNTANT')">
                             <a th:href="@{|/journal/list|}" class="waves-effect waves-primary"><i
                                     class="ti-receipt"></i><span th:text=" #{carstate.journal} "></span></a>
                         </li>
 
                         <li th:each="template : ${@pluginServiceImpl.getTemplateMenus()}" th:if="${template != null}"
                             th:class="${template['subMenus'] != null ? 'has_sub' : ''}">
-                            <a th:if="${template['subMenus'] == null}" th:href="@{|/${template['url']}|}"
+                            <a sec:authorize="!hasRole('ROLE_ACCOUNTANT')" th:if="${template['subMenus'] == null}" th:href="@{|/${template['url']}|}"
                                class="waves-effect waves-primary">
                                 <i th:class="${template['cssClass']}"></i><span th:text=" ${template['label']} "></span>
                             </a>
@@ -86,16 +86,16 @@
                                                                                    th:text=" ${submenu['label']} "></a></li>
                             </ul>
                         </li>
-                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_AUDIT')">
+                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_AUDIT') && !hasRole('ROLE_ACCOUNTANT')">
                             <a th:href="@{|/parking/cars|}" class="waves-effect waves-primary"><i
                                     class="ti-files"></i><span th:text=" #{parking.cars} "></span></a>
                         </li>
-                        <li class="menu-title" th:text="#{crm.service}"></li>
-                        <li>
+                        <li sec:authorize="!hasRole('ROLE_ACCOUNTANT')" class="menu-title" th:text="#{crm.service}"></li>
+                        <li sec:authorize="!hasRole('ROLE_ACCOUNTANT')">
                             <a th:href="@{|/blacklist/list|}" class="waves-effect waves-primary"><i
                                     class="ti-list-ol"></i><span th:text=" #{blacklist.title} "></span></a>
                         </li>
-                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN') && !hasRole('ROLE_ACCOUNTANT')">
                             <a th:href="@{|/balance/operation|}" class="waves-effect waves-primary"><i
                                     class="ti-list-ol"></i><span th:text=" #{balance.balance} "></span></a>
                         </li>
@@ -104,7 +104,7 @@
                                 <i class="ti-heart"></i><span th:text=" #{crm.help} "></span></a>
                         </li>
                     </th:block>
-                    <th:block sec:authorize="hasRole('ROLE_RTA')">
+                    <th:block sec:authorize="hasRole('ROLE_RTA') && !hasRole('ROLE_ACCOUNTANT')">
                         <li>
                             <a th:href="@{|/rta/journal|}" class="waves-effect waves-primary"><i
                                     class="ti-receipt"></i><span th:text=" #{rta.journal} "></span></a>
