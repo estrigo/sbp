@@ -167,7 +167,13 @@ public class EventLogServiceImpl implements EventLogService {
         Direction dir = order.getDir();
 
         Sort sort = null;
-        if("created".equals(columnName)){
+        if("id".equals(columnName)){
+            if(Direction.desc.equals(dir)){
+                sort = Sort.by("id").descending();
+            } else {
+                sort = Sort.by("id").ascending();
+            }
+        } else if("created".equals(columnName)){
             if(Direction.desc.equals(dir)){
                 sort = Sort.by("created").descending();
             } else {

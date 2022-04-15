@@ -54,6 +54,7 @@
                                 <table id="eventTable" class="table table-bordered table-striped">
                                     <thead>
                                     <tr>
+                                        <th style="display: none;"><a></a></th>
                                         <th><a th:text="#{car.platenumber}"></a></th>
                                         <th><a th:text="#{events.date}"></a></th>
                                         <th><a th:text="#{parking.description}"></a></th>
@@ -114,8 +115,14 @@
         columnDefs: [{
             "defaultContent": "-",
             "targets": "_all"
+        },
+        {
+            "targets": [0],
+            "visible": false,
+            "searchable": false
         }],
         "columns": [
+            {"data": "id"},
             {"data": "plateNumber", "width": "10%"},
             {"data": "created", "width": "20%"},
             {"data": descriptionColumn, "orderable": false},
@@ -138,7 +145,7 @@
             }
         ],
         "order": [ //[[ in thymeleaf is inline script
-            [1, "desc"]
+            [0, "desc"]
         ],
         buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
