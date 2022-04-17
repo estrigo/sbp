@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/assets/css/fancybox.css}" rel="stylesheet" type="text/css"/>
+
+<div class="content">
+    <div class="container">
+        <div class="card table-responsive table-striped">
+            <div class="card-header" th:text="#{carmodel.title}"></div>
+            <div class="card-body">
+                <form th:action="@{|/carmodel/list|}" th:object="${CarmodelDto}" method="post" id="filter">
+                    <div class="row">
+                        <div class="col-3">
+                            <input type="datetime-local" class="form-control" id="dateFromString"
+                                   th:field="*{dateFromString}">
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class="form-control" id="plateNumber" th:field="*{plateNumber}"
+                                   th:placeholder="#{car.platenumber}">
+                        </div>
+                        <div class="col-3">
+                            <button type="submit" class="btn btn-success" th:text="#{crm.search}"></button>
+                        </div>
+                    </div>
+                </form>
+                <div class="mb-5"></div>
+
+
+                <div class="row">
+                    <div class="table-responsive" data-pattern="priority-columns">
+                        <table id="CarmodelTable" class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th><a th:text="#{car.platenumber}"></a></th>
+                                <th><a th:text="#{carState.inTimestamp}"></a></th>
+                                <th><a th:text="#{carState.inGate}"></a></th>
+                                <th><a th:text="#{carmodel.dimension}"></a></th>
+                                <th><a th:text="#{events.photo}"></a></th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="modal fade" id="editModel" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form >
+                    <input type="hidden" name="id"/>
+                    <div class="modal-body">
+                        <div class="col-md form-group">
+                            <label class="form-label" th:text="#{carmodel.dimension}"></label>
+                            <input type="text" class="form-control" name="carModel" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div th:replace="partial/_form-footer :: hypertext('plate-save','plate-close',null)"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+</div>
+
+
+
+
+<!-- Required datatable js -->
+<script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
+<script th:src="@{/plugins/datatables/dataTables.bootstrap4.min.js}"></script>
+<!-- Buttons examples -->
+<script th:src="@{/plugins/datatables/dataTables.buttons.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.bootstrap4.min.js}"></script>
+<script th:src="@{/plugins/datatables/jszip.min.js}"></script>
+<script th:src="@{/plugins/datatables/pdfmake.min.js}"></script>
+<script th:src="@{/plugins/datatables/vfs_fonts.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.html5.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.print.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.colVis.min.js}"></script>
+<!-- Responsive examples -->
+<script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
+<script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+<script th:src="@{/assets/js/fancybox.umd.js}"></script>
+<script th:src="@{/assets/js/xlsx.js}"></script>
+
+<script th:inline="javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    var edit = [[#{crm.edit}]];
+    var del = [[#{crm.delete}]];
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+    }
+
+    function buildAjaxUrl(){
+        return "/rest/carmodel/list?dateFromString=" + $('#dateFromString').val() +
+            "&plateNumber=" + $('#plateNumber').val();
+    }
+
+    const table = $('#CarmodelTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            // "url": "/rest/carmodel/list",
+            "url": buildAjaxUrl(),
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+                return JSON.stringify(d);
+            }
+        },
+        columnDefs: [{
+            "defaultContent": "",
+            "targets": "_all"
+        }],
+        "columns": [
+            {
+                "data": function (carmodel) {
+                    const canEdit = [[${canEdit}]];
+                    var menu = '<div class="dropdown">' +
+                        '<button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown"><i class="ion-edit"></i></button>' +
+                        '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+
+                    // menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="editModel" data-id="' + carmodel.id + '">' + [[#{carState.editModel}]] + '</button>';
+
+                    menu += '<button class="dropdown-item" onclick="checkEdit(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.passengerCar}]] + '">' + [[#{carmodel.passengerCar}]] + '</button>';
+                    menu += '<button class="dropdown-item" onclick="checkEdit(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.gazelle}]] + '">' + [[#{carmodel.gazelle}]] + '</button>';
+                    menu += '<button class="dropdown-item" onclick="checkEdit(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.truck}]] + '">' + [[#{carmodel.truck}]] + '</button>';
+
+
+                    menu += '</div></div>';
+
+                    return menu;
+                }, "orderable": false
+            },
+            {"data": "plateNumber", "width": "15%"},
+            {"data": "entryDate", "width": "20%"},
+            {"data": "inGateId", "width": "10%", "orderable": false},
+            {"data": "dimension", "width": "15%"},
+            {
+                "data": "imgUrl",
+                "orderable": false,
+                "render": function (data, type, event) {
+                    if(event.photo){
+                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.photo + '" data-caption="' + event.plateNumber + '" data-width="1800">' +
+                            '<img class="thumb-img" alt src="/files/pictures' + event.photo + '"></a>';
+                    } else if(event.bigPhoto){
+                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigPhoto + '" data-caption="' + event.plateNumber + '" data-width="1800">' +
+                            '<img class="thumb-img" style="width:500px;height:500px;" alt src="/files/pictures' + event.bigPhoto + '"></a>';
+                    }
+                    return '';
+                },
+                "width": "25%"
+            }
+            // {"data": "photo", "width": "25%"}
+        ],
+        "fnRowCallback": function (nRow, carmodel, iDisplayIndex) {
+            var css = carmodel["css"];
+            $(nRow).addClass(css);
+        },
+        "order": [ //[[ in thymeleaf is inline script
+            [2, "desc"]
+        ],
+        language: {
+            url: address
+        },
+        searching: false
+    });
+
+    // var table = $('#datatable-buttons').DataTable({
+    //     lengthChange: false,
+    //     buttons: ['copy', 'excel', 'pdf', 'csv'],
+    //     language: {
+    //         url: '/plugins/datatables/json/ru.json'
+    //     }
+    // });
+    //
+    // table.buttons().container()
+    //     .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+
+    $(".clear").on('click',function (){
+        $(':input','#filter')
+            .not(':button, :submit, :reset, :hidden')
+            .val('')
+            .prop('checked', false)
+            .prop('selected', false);
+        table.ajax.reload();
+    })
+
+    function reloadTable(){
+        table.ajax.reload();
+    }
+    function checkEdit(e) {
+        console.log("showModalClick(e): " + e);
+        const $input = $(e);
+        if (confirm('Вы уверены что хотите изменить габариты этого автомобиля?')) {
+            $.post("/carmodel/editType?plateNumber=" + $input.data("number") + "&dimension=" + $input.data("type"), function (data) {
+            });
+            table.ajax.reload();
+            console.log('Успешно изменен!');
+        } else {
+            // Do nothing!
+            console.log('Что то пошло не так!');
+        }
+    }
+
+    function showModalClick(e){
+        console.log("showModalClick(e): " + e);
+        const $input = $(e);
+        const $modal = $input.data("modal");
+        console.log("input.data(id): " + $input.data("id"));
+        const $id = $input.data("id");
+        showModal($modal,$id);
+    }
+    var activeCarState = {};
+    function showModal(name, id) {
+        console.log("showModal: "+ name);
+        activeCarState["id"] = id;
+        $("#"+name).modal('show');
+    }
+
+</script>
+
+</html>

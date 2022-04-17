@@ -25,6 +25,7 @@
         <module>tgbot-plugin</module>
         <module>abonoment-plugin</module>
         <module>report-plugin</module>
+        <module>carmodel-plugin</module>
     </modules>
 
     <build>
