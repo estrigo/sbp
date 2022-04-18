@@ -60,7 +60,9 @@ public class CarmodelServiceImpl implements CarmodelService {
                 carmodelDto.setInGateId(ss.longValue());
             }
             if (mp.get("in_photo_url") != null) {
+                String replacedUrl = mp.get("in_photo_url").toString().replace("_resize_w_200_h_100.jpeg", ".jpeg");
                 carmodelDto.setPhoto((String) mp.get("in_photo_url"));
+                carmodelDto.setBigPhoto(replacedUrl);
             } else {
                 carmodelDto.setPhoto("NO Photo!");
             }

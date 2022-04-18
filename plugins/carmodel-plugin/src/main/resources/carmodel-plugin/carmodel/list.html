@@ -24,6 +24,9 @@
                         <div class="col-3">
                             <button type="submit" class="btn btn-success" th:text="#{crm.search}"></button>
                         </div>
+                        <div class="col-3">
+                            <button type="submit" class="btn btn-rounded" onclick="reloadTable()" th:text="reload"></button>
+                        </div>
                     </div>
                 </form>
                 <div class="mb-5"></div>
@@ -140,9 +143,9 @@
 
                     // menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="editModel" data-id="' + carmodel.id + '">' + [[#{carState.editModel}]] + '</button>';
 
-                    menu += '<button class="dropdown-item" onclick="checkEdit(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.passengerCar}]] + '">' + [[#{carmodel.passengerCar}]] + '</button>';
-                    menu += '<button class="dropdown-item" onclick="checkEdit(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.gazelle}]] + '">' + [[#{carmodel.gazelle}]] + '</button>';
-                    menu += '<button class="dropdown-item" onclick="checkEdit(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.truck}]] + '">' + [[#{carmodel.truck}]] + '</button>';
+                    menu += '<button class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.passengerCar}]] + '">' + [[#{carmodel.passengerCar}]] + '</button>';
+                    menu += '<button class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.gazelle}]] + '">' + [[#{carmodel.gazelle}]] + '</button>';
+                    menu += '<button class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.truck}]] + '">' + [[#{carmodel.truck}]] + '</button>';
 
 
                     menu += '</div></div>';
@@ -158,12 +161,12 @@
                 "data": "imgUrl",
                 "orderable": false,
                 "render": function (data, type, event) {
-                    if(event.photo){
+                    if(event.bigPhoto){
+                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigPhoto + '" data-caption="' + event.plateNumber + '" data-width="1800">' +
+                            '<img class="thumb-img" alt src="/files/pictures' + event.bigPhoto + '"></a>';
+                    } else if(event.photo){
                         return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.photo + '" data-caption="' + event.plateNumber + '" data-width="1800">' +
                             '<img class="thumb-img" alt src="/files/pictures' + event.photo + '"></a>';
-                    } else if(event.bigPhoto){
-                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigPhoto + '" data-caption="' + event.plateNumber + '" data-width="1800">' +
-                            '<img class="thumb-img" style="width:500px;height:500px;" alt src="/files/pictures' + event.bigPhoto + '"></a>';
                     }
                     return '';
                 },
@@ -184,17 +187,6 @@
         searching: false
     });
 
-    // var table = $('#datatable-buttons').DataTable({
-    //     lengthChange: false,
-    //     buttons: ['copy', 'excel', 'pdf', 'csv'],
-    //     language: {
-    //         url: '/plugins/datatables/json/ru.json'
-    //     }
-    // });
-    //
-    // table.buttons().container()
-    //     .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
-
     $(".clear").on('click',function (){
         $(':input','#filter')
             .not(':button, :submit, :reset, :hidden')
@@ -205,16 +197,20 @@
     })
 
     function reloadTable(){
+        console.log("reload Table function")
         table.ajax.reload();
     }
-    function checkEdit(e) {
+    function editDimension(e) {
         console.log("showModalClick(e): " + e);
         const $input = $(e);
         if (confirm('Вы уверены что хотите изменить габариты этого автомобиля?')) {
             $.post("/carmodel/editType?plateNumber=" + $input.data("number") + "&dimension=" + $input.data("type"), function (data) {
+                if (data && data == true) {
+                    table.ajax.reload(); //reload datatable
+                } else {
+                    table.ajax.reload();
+                }
             });
-            table.ajax.reload();
-            console.log('Успешно изменен!');
         } else {
             // Do nothing!
             console.log('Что то пошло не так!');
@@ -222,16 +218,13 @@
     }
 
     function showModalClick(e){
-        console.log("showModalClick(e): " + e);
         const $input = $(e);
         const $modal = $input.data("modal");
-        console.log("input.data(id): " + $input.data("id"));
         const $id = $input.data("id");
         showModal($modal,$id);
     }
     var activeCarState = {};
     function showModal(name, id) {
-        console.log("showModal: "+ name);
         activeCarState["id"] = id;
         $("#"+name).modal('show');
     }
