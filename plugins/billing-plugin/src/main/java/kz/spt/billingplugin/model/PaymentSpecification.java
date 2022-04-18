@@ -32,4 +32,8 @@ public class PaymentSpecification {
     public static Specification<Payment> equalProvider(Long id) {
         return (root, query, builder) -> builder.equal(root.get(Payment_.provider).get(PaymentProvider_.id), id);
     }
+
+    public static Specification<Payment> equalTransaction(String transaction) {
+        return (root, query, builder) -> builder.like(root.get(Payment_.transaction), "%" + transaction + "%");
+    }
 }

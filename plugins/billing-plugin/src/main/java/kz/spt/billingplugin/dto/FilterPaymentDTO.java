@@ -18,4 +18,5 @@ public class FilterPaymentDTO {
     private Long paymentProvider;
     private String carNumber;
     private BigDecimal total;
+    private String transaction;
 }

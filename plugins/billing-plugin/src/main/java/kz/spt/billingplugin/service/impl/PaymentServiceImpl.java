@@ -179,6 +179,9 @@ public class PaymentServiceImpl implements PaymentService {
         if (filterDto.getPaymentProvider() != null) {
             specification = specification != null ? specification.and(PaymentSpecification.equalProvider(filterDto.getPaymentProvider())) : PaymentSpecification.equalProvider(filterDto.getPaymentProvider());
         }
+        if (filterDto.getTransaction() != null) {
+            specification = specification != null ? specification.and(PaymentSpecification.equalTransaction(filterDto.getTransaction())) : PaymentSpecification.equalTransaction(filterDto.getTransaction());
+        }
         return specification;
     }
 
