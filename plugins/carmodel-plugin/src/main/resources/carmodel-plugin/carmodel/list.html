@@ -24,9 +24,6 @@
                         <div class="col-3">
                             <button type="submit" class="btn btn-success" th:text="#{crm.search}"></button>
                         </div>
-                        <div class="col-3">
-                            <button type="submit" class="btn btn-rounded" onclick="reloadTable()" th:text="reload"></button>
-                        </div>
                     </div>
                 </form>
                 <div class="mb-5"></div>
@@ -138,7 +135,7 @@
                 "data": function (carmodel) {
                     const canEdit = [[${canEdit}]];
                     var menu = '<div class="dropdown">' +
-                        '<button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown"><i class="ion-edit"></i></button>' +
+                        '<button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown"><i class="fa fa-truck"></i></button>' +
                         '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
 
                     // menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="editModel" data-id="' + carmodel.id + '">' + [[#{carState.editModel}]] + '</button>';
