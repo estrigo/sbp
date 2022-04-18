@@ -182,10 +182,32 @@
             success: function(data){
                 try {
                     let arr = [];
+
+
                     for (let i = 0; i < data.length; i++) {
+                        delete data[i]['updated'];
+                        delete data[i]['description'];
+                        delete data[i]['customerDetail'];
+                        delete data[i]['nullSafeOutDate'];
+                        delete data[i]['nullSafeInDate'];
+                        var stringified = JSON.stringify(data[i]);
+                        stringified = stringified.replace("id", "№");
+                        stringified = stringified.replace("inDate", "Дата заезда");
+                        stringified = stringified.replace("outDate", "Дата выезда");
+                        stringified = stringified.replace("created", "Дата оплаты");
+                        stringified = stringified.replace("parking", "Паркинг");
+                        stringified = stringified.replace("transaction", "Транзакция");
+                        stringified = stringified.replace("price", "Сумма");
+                        stringified = stringified.replace("provider", "Провайдер");
+                        stringified = stringified.replace("carNumber", "Номер");
+                        stringified = stringified.replace("rateDetails", "Тариф");
+                        data[i] = JSON.parse(stringified);
                         arr.push(data[i]);
                     }
-                    let ws = XLSX.utils.json_to_sheet(arr);
+
+                    arr.forEach(element => console.log(element));
+                    let ws = XLSX.utils.json_to_sheet(arr, {header:["№","Номер","Паркинг","Дата заезда","Дата выезда","Дата оплаты","Тариф", "Сумма", "Провайдер", "Транзакция"]});
+
                     const wb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(wb, ws, 'Payments');
                     XLSX.writeFile(wb, "payments.xls", {type: "buffer"});
