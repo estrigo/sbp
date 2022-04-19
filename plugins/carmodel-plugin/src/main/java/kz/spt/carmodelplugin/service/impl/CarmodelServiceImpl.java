@@ -69,9 +69,9 @@ public class CarmodelServiceImpl implements CarmodelService {
             if (mp.get("car_model") != null) {
                 carmodelDto.setCarModel((String) mp.get("car_model"));
             }
+            String dimension="Нераспознанный";
             if (mp.get("dimension") != null) {
                 Integer type = (Integer) mp.get("dimension");
-                String dimension;
                 if (type==1) {
                     dimension="Легковая";
                 } else if (type==2) {
@@ -81,8 +81,8 @@ public class CarmodelServiceImpl implements CarmodelService {
                 } else {
                     dimension="Нераспознанный";
                 }
-                carmodelDto.setDimension(dimension);
             }
+            carmodelDto.setDimension(dimension);
             resultList.add(carmodelDto);
         }
         return getPage(resultList, pagingRequest);
