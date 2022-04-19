@@ -34,7 +34,7 @@
                         <table id="CarmodelTable" class="table table-bordered">
                             <thead>
                             <tr>
-                                <th></th>
+                                <th><a th:text="#{carmodel.editDimension}"></a></th>
                                 <th><a th:text="#{car.platenumber}"></a></th>
                                 <th><a th:text="#{carState.inTimestamp}"></a></th>
                                 <th><a th:text="#{carState.inGate}"></a></th>
@@ -143,7 +143,6 @@
                     menu += '<button class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.passengerCar}]] + '">' + [[#{carmodel.passengerCar}]] + '</button>';
                     menu += '<button class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.gazelle}]] + '">' + [[#{carmodel.gazelle}]] + '</button>';
                     menu += '<button class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.truck}]] + '">' + [[#{carmodel.truck}]] + '</button>';
-
 
                     menu += '</div></div>';
 
