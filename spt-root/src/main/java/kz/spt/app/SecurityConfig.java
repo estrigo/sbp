@@ -58,11 +58,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.httpBasic().and().authorizeRequests()
-                .antMatchers("/users/delete/**", "/balance/**").hasAnyRole("ADMIN", "SUPERADMIN", "OPERATOR")
-                .antMatchers( "/events/**", "/journal/**", "/arm/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN", "OPERATOR", "OPERATOR_NO_REVENUE_SHARE","RTA","ACCOUNTANT")
-                .antMatchers( "/customers/**", "/register/**", "/cars/**", "/parking/**", "/customer/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN")
+                .antMatchers("/users/delete/**", "/balance/**").hasAnyRole("ADMIN", "SUPERADMIN", "OPERATOR", "GREENMALL")
+                .antMatchers( "/events/**", "/journal/**", "/arm/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN", "OPERATOR", "OPERATOR_NO_REVENUE_SHARE","RTA","ACCOUNTANT", "GREENMALL")
+                .antMatchers( "/customers/**", "/register/**", "/cars/**", "/parking/**", "/customer/**").hasAnyRole("AUDIT", "ADMIN", "MANAGER", "SUPERADMIN", "GREENMALL")
                 .antMatchers("/customer/edit/**", "/users/**", "/cars/edit/**","/parking/edit/**","/parking/details/**").hasAnyRole( "ADMIN", "MANAGER", "SUPERADMIN")
-                .antMatchers("/parking/**").hasAnyRole("ADMIN", "SUPERADMIN", "OPERATOR_NO_REVENUE_SHARE")
+                .antMatchers("/parking/**").hasAnyRole("ADMIN", "SUPERADMIN", "OPERATOR_NO_REVENUE_SHARE", "GREENMALL")
                 .antMatchers("/rest/external/**").fullyAuthenticated();
 
         List<PluginWrapper> plugins = pluginManager.getPlugins();
