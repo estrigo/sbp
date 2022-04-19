@@ -49,17 +49,23 @@ public class PluginServiceImpl implements PluginService {
         List<Map<String, Object>> menus = new ArrayList<>();
 
         List<PluginWrapper> plugins = pluginManager.getStartedPlugins();
+        CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         for (PluginWrapper pluginWrapper : plugins) {
             if (pluginWrapper.getPlugin() instanceof CustomPlugin) {
                 CustomPlugin plugin = (CustomPlugin) pluginWrapper.getPlugin();
-
                 if (plugin.getLinks() != null) {
                     for (Map<String, Object> link : plugin.getLinks()) {
-                        menus.add(link);
+                        if(currentUser.getUser().getRoles().get(0).getName().equals("ROLE_ACCOUNTANT")){
+                            if (plugin.toString().substring(7,20).equals("billingplugin")) {
+                                menus.add(link);
+                            }
+                        }
+                        else {
+                            menus.add(link);
+                        }
                     }
                 }
-
             }
         }
         return menus;
