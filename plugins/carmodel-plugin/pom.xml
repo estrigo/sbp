@@ -18,7 +18,7 @@
     <properties>
         <java.version>11</java.version>
         <plugin.id>carmodel-plugin</plugin.id>
-        <plugin.class>kz.spt.carmodel.CarmodelPlugin</plugin.class>
+        <plugin.class>kz.spt.carmodelplugin.CarmodelPlugin</plugin.class>
         <plugin.version>0.0.1-SNAPSHOT</plugin.version>
         <plugin.provider>spt-sbp-carmodel</plugin.provider>
         <plugin.dependencies />
