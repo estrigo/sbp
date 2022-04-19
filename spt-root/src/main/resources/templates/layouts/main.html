@@ -51,7 +51,7 @@
                         <a th:href="@{|/users/list|}" class="waves-effect waves-primary"><i
                                 class="ti-user"></i><span th:text=" #{user.users} "></span></a>
                     </li>
-                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_GREENMALL')">
+                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_READ')">
                         <a th:href="@{|/customers/list|}" class="waves-effect waves-primary"><i
                                 class="ti-home"></i><span th:text=" #{customer.customers}"></span></a>
                     </li>
@@ -86,7 +86,7 @@
                                                                                    th:text=" ${submenu['label']} "></a></li>
                             </ul>
                         </li>
-                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_AUDIT', 'ROLE_GREENMALL') && !hasRole('ROLE_ACCOUNTANT')">
+                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_AUDIT', 'ROLE_READ') && !hasRole('ROLE_ACCOUNTANT')">
                             <a th:href="@{|/parking/cars|}" class="waves-effect waves-primary"><i
                                     class="ti-files"></i><span th:text=" #{parking.cars} "></span></a>
                         </li>
@@ -95,7 +95,7 @@
                             <a th:href="@{|/blacklist/list|}" class="waves-effect waves-primary"><i
                                     class="ti-list-ol"></i><span th:text=" #{blacklist.title} "></span></a>
                         </li>
-                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_GREENMALL') && !hasRole('ROLE_ACCOUNTANT')">
+                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_READ') && !hasRole('ROLE_ACCOUNTANT')">
                             <a th:href="@{|/balance/operation|}" class="waves-effect waves-primary"><i
                                     class="ti-list-ol"></i><span th:text=" #{balance.balance} "></span></a>
                         </li>
@@ -196,7 +196,7 @@
                                target="_blank"></a>
                         </p>
                     </th:block>
-                    <th:block sec:authorize="hasAnyRole('ROLE_GREENMALL')">
+                    <th:block sec:authorize="hasAnyRole('ROLE_READ')">
                         <p>
                             <a th:href="@{/assets/pdf/instructions.pdf}" th:text="#{crm.instructions}"
                                target="_blank"></a>
