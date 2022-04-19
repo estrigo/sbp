@@ -53,7 +53,6 @@ public class CarmodelController {
     @PostMapping("/list")
     public String postCarmodelList(Model model, @Valid @ModelAttribute("CarmodelDto")CarmodelDto carmodelDto,
                          @AuthenticationPrincipal UserDetails currentUser) throws ParseException {
-        log.info("postCarmodelList request started!");
         if(carmodelDto != null) {
             model.addAttribute("carmodelDto", carmodelDto);
         }

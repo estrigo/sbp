@@ -40,7 +40,6 @@ public class CarmodelRestController {
         CarmodelDto filter = new CarmodelDto();
         filter.setPlateNumber(plateNumber);
         filter.setDateFromString(dateFromString);
-        log.info("getCarmodelDtoList request started");
         Page<CarmodelDto> resultList;
         resultList = carmodelService.listCarsBy(pagingRequest, filter);
         return resultList;

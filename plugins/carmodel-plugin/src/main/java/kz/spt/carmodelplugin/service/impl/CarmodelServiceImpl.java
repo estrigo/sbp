@@ -141,15 +141,14 @@ public class CarmodelServiceImpl implements CarmodelService {
         Cars cars = rootServicesGetterService.getCarsService().findByPlatenumber(plateNumber);
         String oldModel = cars.getModel();
         if (dimension != null && (dimension.equals("carmodel.passengerCar") || dimension.equals("Легковая"))) {
-            cars.setModel("Camry");
+            cars.setModel("Toyota_Camry");
         } else if (dimension != null && (dimension.equals("carmodel.gazelle") || dimension.equals("Газель"))){
-            cars.setModel("Gazelle");
+            cars.setModel("Hyundai_Bus");
         } else if (dimension != null && (dimension.equals("carmodel.truck") || dimension.equals("Грузовик"))){
-            cars.setModel("Truck");
+            cars.setModel("Zil_Truck");
         } else {
-            cars.setModel("Passenger");
+            cars.setModel("Toyota_Camry");
         }
-        log.info("carmodel: " + cars.getModel() + ", and dimension: " + dimension);
         rootServicesGetterService.getCarsService().saveCars(cars);
 
 
