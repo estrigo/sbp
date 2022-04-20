@@ -181,25 +181,58 @@ public class RateServiceImpl implements RateService {
             return result;
         } else if (parkingRate != null && ParkingRate.RateType.DIMENSIONS.equals(parkingRate.getRateType())) {
             int hours = 0;
+            int nightHours = 0;
+
             while (inCalendar.before(outCalendar)) {
-                hours++;
+                int inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY);
+                int intervalFrom = 22;
+                int intervalTo = 7;
+                if (intervalFrom == intervalTo || (intervalFrom < intervalTo && inCalendarHour >= intervalFrom && inCalendarHour < intervalTo) || (intervalFrom > intervalTo && (inCalendarHour >= intervalFrom || inCalendarHour < intervalTo))) {
+                    nightHours++;
+                    log.info("Night Time Dimension ----- " + nightHours);
+                } else {
+                    hours++;
+                    log.info("Time Dimension ----- " + hours);
+                }
                 inCalendar.add(Calendar.HOUR, 1);
+
             }
             log.info("it checks dimensions for car model" + carType);
-            if (!carType.equals("")) {
-                if (parkingRate != null && carType.equals("1")) {
-                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValuePassenger() : parkingRate.getCashPaymentValuePassenger()).multiply(BigDecimal.valueOf(1)));
-                } else if (parkingRate != null && carType.equals("2")) {
-                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValueVan() : parkingRate.getCashPaymentValueVan()).multiply(BigDecimal.valueOf(1)));
+
+            if (hours > 0) {
+
+                if (!carType.equals("")) {
+                    if (parkingRate != null && carType.equals("1")) {
+                        result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValuePassenger() : parkingRate.getCashPaymentValuePassenger()).multiply(BigDecimal.valueOf(1)));
+                    } else if (parkingRate != null && carType.equals("2")) {
+                        result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValueVan() : parkingRate.getCashPaymentValueVan()).multiply(BigDecimal.valueOf(1)));
+                    } else {
+                        result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValueTruck() : parkingRate.getCashPaymentValueTruck()).multiply(BigDecimal.valueOf(1)));
+                    }
                 } else {
-                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValueTruck() : parkingRate.getCashPaymentValueTruck()).multiply(BigDecimal.valueOf(1)));
+                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValuePassenger() : parkingRate.getCashPaymentValuePassenger()).multiply(BigDecimal.valueOf(1)));
                 }
-            } else {
-                result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValuePassenger() : parkingRate.getCashPaymentValuePassenger()).multiply(BigDecimal.valueOf(1)));
+            }
+
+            if (nightHours > 0) {
+                log.info("night hours " + nightHours);
+                if (!carType.equals("")) {
+                    if (parkingRate != null && carType.equals("1")) {
+                        result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValuePassengerNight() : parkingRate.getCashPaymentValuePassengerNight()).multiply(BigDecimal.valueOf(nightHours)));
+                    } else if (parkingRate != null && carType.equals("2")) {
+                        result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValueVanNight() : parkingRate.getCashPaymentValueVanNight()).multiply(BigDecimal.valueOf(nightHours)));
+                    } else {
+                        result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValueTruckNight() : parkingRate.getCashPaymentValueTruckNight()).multiply(BigDecimal.valueOf(nightHours)));
+                    }
+                }
+                else {
+                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValuePassengerNight() : parkingRate.getCashPaymentValuePassengerNight()).multiply(BigDecimal.valueOf(nightHours)));
+                }
             }
 
             return result;
-        }
+            }
+
         else {
             int hours = 0;
             while (inCalendar.before(outCalendar)) {
@@ -212,6 +245,15 @@ public class RateServiceImpl implements RateService {
             return result;
         }
     }
+
+    private Calendar convertToCalendarTime(String time) throws Exception {
+        Date time1 = new SimpleDateFormat("HH:mm:ss").parse(time);
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(time1);
+        calendar1.add(Calendar.DATE, 1);
+        return calendar1;
+    }
+
 
     private Date getLastPaymentDate(String paymentsJson) {
         Date lastPaymentDate = null;

@@ -80,6 +80,24 @@ public class ParkingRate {
     @Column(name = "online_payment_truck")
     private Integer onlinePaymentValueTruck;
 
+    @Column(name = "cash_payment_passenger_night")
+    private Integer cashPaymentValuePassengerNight;
+
+    @Column(name = "online_payment_passenger_night")
+    private Integer onlinePaymentValuePassengerNight;
+
+    @Column(name = "cash_payment_van_night")
+    private Integer cashPaymentValueVanNight;
+
+    @Column(name = "online_payment_van_night")
+    private Integer onlinePaymentValueVanNight;
+
+    @Column(name = "cash_payment_truck_night")
+    private Integer cashPaymentValueTruckNight;
+
+    @Column(name = "online_payment_truck_night")
+    private Integer onlinePaymentValueTruckNight;
+
     @Column(name = "day_payment_value")
     private Integer dayPaymentValue;
 
