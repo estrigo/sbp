@@ -10,6 +10,7 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 
 import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 
 public interface AbonomentPluginService {
@@ -32,9 +33,7 @@ public interface AbonomentPluginService {
 
     void setAbonomentPaid(Long id);
 
-    Boolean hasPaidNotExpiredAbonoment(String plateNumber, Long parkingId);
-
-    JsonNode getPaidNotExpiredAbonoment(String plateNumber, Long parkingId);
+    JsonNode getPaidNotExpiredAbonoment(String plateNumber, Long parkingId, Date carInDate);
 
     Boolean checkAbonomentIntersection(String platenumber, Long parkingId, Long typeId, String dateStart) throws ParseException;
 

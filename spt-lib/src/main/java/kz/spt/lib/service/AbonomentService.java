@@ -1,7 +1,9 @@
 package kz.spt.lib.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.springframework.web.bind.annotation.RequestParam;
+import kz.spt.lib.model.CarState;
+
+import java.text.SimpleDateFormat;
 
 public interface AbonomentService {
 
@@ -12,4 +14,6 @@ public interface AbonomentService {
     JsonNode createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart) throws Exception;
 
     JsonNode deleteAbonoment(Long id) throws Exception;
+
+    JsonNode getAbonomentsDetails(String plateNumber, CarState carState, SimpleDateFormat format) throws Exception;
 }

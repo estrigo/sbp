@@ -2,9 +2,12 @@ package kz.spt.app.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.app.model.dto.Period;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
+import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.model.dto.RateQueryDto;
 import kz.spt.lib.model.dto.parkomat.ParkomatBillingInfoSuccessDto;
 import kz.spt.lib.model.dto.parkomat.ParkomatCommandDTO;
@@ -21,10 +24,9 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Log
@@ -37,16 +39,19 @@ public class PaymentServiceImpl implements PaymentService {
     private final ParkingService parkingService;
     private final CarModelService carModelService;
     private final EventLogService eventLogService;
+    private final AbonomentService abonomentService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
-    public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService, ParkingService parkingService, EventLogService eventLogService, CarModelService carModelService) {
+    public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService, ParkingService parkingService, EventLogService eventLogService,
+                              CarModelService carModelService, AbonomentService abonomentService) {
         this.pluginService = pluginService;
         this.carStateService = carStateService;
         this.carService = carService;
         this.parkingService = parkingService;
         this.eventLogService = eventLogService;
         this.carModelService = carModelService;
+        this.abonomentService = abonomentService;
     }
 
     @Override
@@ -86,12 +91,19 @@ public class PaymentServiceImpl implements PaymentService {
                         return dto;
                     } else {
                         BillingInfoSuccessDto dto = new BillingInfoSuccessDto();
+                        dto.txn_id = commandDto.txn_id;
                         dto.sum = BigDecimal.ZERO;
                         dto.current_balance = BigDecimal.ZERO;
                         dto.in_date = format.format(carState.getInTimestamp());
                         dto.result = 0;
                         dto.left_free_time_minutes = 15;
                         carState.setCashlessPayment(true);
+
+                        JsonNode abonements = abonomentService.getAbonomentsDetails(commandDto.account, carState, format);
+                        if(abonements != null){
+                            log.info("test1");
+                            return checkAbonomentExtraPayment(commandDto, carState, format, abonements, dto);
+                        }
 
                         if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())) {
                             return fillPayment(carState, format, commandDto, carState.getPaymentJson());
@@ -429,7 +441,6 @@ public class PaymentServiceImpl implements PaymentService {
             PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
             BigDecimal rateResult = BigDecimal.ZERO;
             if (ratePluginRegister != null) {
-                log.info("ratePluginRegister: " + ratePluginRegister);
                 SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
                 ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
@@ -736,5 +747,84 @@ public class PaymentServiceImpl implements PaymentService {
 
             abonomentPluginRegister.execute(node);
         }
+    }
+
+    private BillingInfoSuccessDto checkAbonomentExtraPayment(CommandDto commandDto, CarState carState, SimpleDateFormat format, JsonNode abonementJson, BillingInfoSuccessDto dto) throws Exception {
+        ArrayNode abonements = (ArrayNode) abonementJson;
+
+        final String dateFormat = "dd.MM.yyyy HH:mm";
+        SimpleDateFormat abonementFormat = new SimpleDateFormat(dateFormat);
+
+        Date inDate = carState.getInTimestamp();
+        Date outDate = new Date();
+
+        Iterator<JsonNode> iterator = abonements.iterator();
+        List<Period> periods = new ArrayList<>();
+        JsonNode prevAbonoment = null;
+        while (iterator.hasNext()) {
+            JsonNode abonoment = iterator.next();
+            Date start = abonementFormat.parse(abonoment.get("begin").textValue());
+            Date end = abonementFormat.parse(abonoment.get("end").textValue());
+
+            if(prevAbonoment == null){
+                if(inDate.before(start)){
+                    Period period = new Period();
+                    period.setStart(inDate);
+                    period.setEnd(start);
+                    periods.add(period);
+                }
+            } else {
+                if(abonementFormat.parse(prevAbonoment.get("end").textValue()).getTime() - start.getTime() > 1000*60*5){ // Если промежуток больше 5 минут добавляем
+                    Period period = new Period();
+                    period.setStart(inDate);
+                    period.setEnd(start);
+                    periods.add(period);
+                }
+            }
+            if(!iterator.hasNext()){
+                if(outDate.after(end)){
+                    Period period = new Period();
+                    period.setStart(end);
+                    period.setEnd(outDate);
+                    periods.add(period);
+                }
+            } else {
+                prevAbonoment = abonoment;
+            }
+        }
+        if(periods.size() == 0){
+            return dto;
+        } else {
+            BigDecimal totalRate = null;
+            for(Period p:periods){
+                BigDecimal rate = null;
+                PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+                if (ratePluginRegister != null) {
+                    ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
+                    ratePluginNode.put("parkingId", carState.getParking().getId());
+                    ratePluginNode.put("inDate", format.format(p.getStart()));
+                    ratePluginNode.put("outDate", format.format(p.getEnd()));
+                    ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
+                    ratePluginNode.put("isCheck", false);
+                    ratePluginNode.put("paymentsJson", carState.getPaymentJson());
+
+                    JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
+                    rate = ratePluginResult.get("rateResult").decimalValue().setScale(2);
+                    dto.tariff = ratePluginResult.get("rateName") != null ? ratePluginResult.get("rateName").textValue() : "";
+                    dto.hours = ratePluginResult.get("payed_till") != null ? (int) ratePluginResult.get("payed_till").longValue() : 0;
+                }
+                if(rate != null){
+                    totalRate = totalRate != null ? totalRate.add(rate) : rate;
+                }
+            }
+            if(totalRate == null){
+                return dto;
+            } else {
+                JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
+                dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue();
+                dto.sum = totalRate;
+            }
+        }
+        return dto;
     }
 }

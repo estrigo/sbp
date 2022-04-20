@@ -270,29 +270,50 @@
             {"data": "rateAmount", "width": "5%", "orderable": false},
             {
                 "data": function (carState) {
+                    let text = '';
                     if (!carState.paid && carState.whitelistJson) {
                         const whitelists = JSON.parse(carState.whitelistJson);
-                        let text = '';
+
                         for (const w of whitelists) {
                             text = text + '<span>' + (w.groupName ? w.groupName : [[#{carstate.individual}]]) + ' ([[#{whitelist.title}]])</><br/>';
                             if (w.conditionDetails) {
                                 text = text + '<small class="text-muted">' + w.conditionDetails + '</small><br/>';
                             }
                         }
-                        return text;
-                    } else if (carState.paymentJson && carState.paymentJson !== "") {
+                    }
+                    if (carState.paymentJson && carState.paymentJson !== "") {
+                        if(text !== ''){
+                            text = text + '<br/>';
+                        }
                         const payments = JSON.parse(carState.paymentJson);
-                        let text = '<span>' + carState.payment + '</span>';
+                        text = text + '<span>' + carState.payment + '</span>';
                         for (const p of payments) {
                             text = text + '<br/><small class="text-muted">[[#{rate.sum}]] ' + p.price + ' [[#{billing.provider}]] ' + p.providerPaymentName + '. [[#{rate.date}]] ' + p.created + '</small>';
                         }
-                        return text;
-                    } else if (carState.abonomentJson && carState.abonomentJson !== "") {
-                        const a = JSON.parse(carState.abonomentJson);
-                        return '<br/><small class="text-muted">' + [[#{abonoment.title}]] + ': ' + [[#{abonoment.begin}]] + '-' + a.begin + ' '+ [[#{abonoment.end}]] + ' - ' + a.end;
-                    } else {
-                        return carState.payment;
                     }
+                    if (carState.abonomentJson && carState.abonomentJson !== "") {
+                        if(text !== ''){
+                            text = text + '<br/>';
+                        }
+                        const a = JSON.parse(carState.abonomentJson);
+                        if(Array.isArray(a)){
+                            text = text + '<small class="text-muted">' + [[#{abonoment.title}]] + ': ';
+                            let count = 0;
+                            for (const arr of a) {
+                                count++;
+                                text = text + '<br/>' + count +'. ' + [[#{abonoment.begin}]] + '-' + arr.begin + ' '+ [[#{abonoment.end}]] + ' - ' + arr.end
+                            }
+                        } else {
+                            text = text + '<small class="text-muted">' + [[#{abonoment.title}]] + ': ' + [[#{abonoment.begin}]] + '-' + a.begin + ' '+ [[#{abonoment.end}]] + ' - ' + a.end;
+                        }
+                    }
+                    if(text === ''){
+                        return carState.payment;
+                    } else {
+                        return text;
+                    }
+
+
                 }, "width": "30%", "orderable": false
             }
         ],

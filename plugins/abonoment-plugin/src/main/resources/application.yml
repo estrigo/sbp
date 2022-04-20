@@ -16,5 +16,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL55Dialect
+        jdbc:
+          time_zone: UTC
   flyway:
     enabled: false

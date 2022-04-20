@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.GateStatusDto;
+import kz.spt.app.model.dto.Period;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.BlacklistService;
 import kz.spt.app.service.CameraService;
@@ -47,6 +48,7 @@ public class CarEventServiceImpl implements CarEventService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final PluginService pluginService;
     private final QrPanelService qrPanelService;
+    private final AbonomentService abonomentService;
 
     @Value("${parking.has.access.unknown.cases}")
     Boolean parkingHasAccessUnknownCases;
@@ -59,7 +61,8 @@ public class CarEventServiceImpl implements CarEventService {
 
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                CarStateService carStateService, CarImageService carImageService,
-                               BarrierService barrierService, BlacklistService blacklistService, PluginService pluginService, QrPanelService qrPanelService) {
+                               BarrierService barrierService, BlacklistService blacklistService, PluginService pluginService, QrPanelService qrPanelService,
+                               AbonomentService abonomentService) {
         this.carsService = carsService;
         this.cameraService = cameraService;
         this.eventLogService = eventLogService;
@@ -69,6 +72,7 @@ public class CarEventServiceImpl implements CarEventService {
         this.blacklistService = blacklistService;
         this.pluginService = pluginService;
         this.qrPanelService = qrPanelService;
+        this.abonomentService = abonomentService;
     }
 
     @Override
@@ -317,7 +321,7 @@ public class CarEventServiceImpl implements CarEventService {
             Calendar current = Calendar.getInstance();
             if(carState.getParking().equals(camera.getGate().getParking()) && (current.getTime().getTime() - carState.getInTimestamp().getTime() <= 5*60*1000)){
                 enteredFromThisSecondsBefore = true;
-            } else {
+            } else if(carState.getPaid() != null && !carState.getPaid()) {
                 carStateService.createOUTManual(eventDto.car_number, new Date(), carState); // Принудительная закрытие предыдущей сессий
                 carState = null;
             }
@@ -638,11 +642,12 @@ public class CarEventServiceImpl implements CarEventService {
         BigDecimal zerotouchValue = null;
         StaticValues.CarOutBy carOutBy = null;
         Boolean leftFromThisSecondsBefore = false;
+        JsonNode abonements = null;
 
         if(gate.notControlBarrier != null && gate.notControlBarrier){
             carState = carStateService.getLastNotLeft(eventDto.car_number);
             carOutBy = StaticValues.CarOutBy.REGISTER;
-            saveCarOutState(eventDto, camera, carState, properties, isWhitelistCar, balance, rateResult, zerotouchValue, format, carOutBy);
+            saveCarOutState(eventDto, camera, carState, properties, isWhitelistCar, balance, rateResult, zerotouchValue, format, carOutBy, abonements);
             return;
         }
 
@@ -722,46 +727,46 @@ public class CarEventServiceImpl implements CarEventService {
                         if (isWhitelistCar || Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
                             carOutBy = StaticValues.CarOutBy.WHITELIST;
                             hasAccess = true;
-                        } else if(hasValidAbonoment(eventDto.car_number, carState)){ // Проверяем абономент, если валидна выпускаем
-
-                            carOutBy = StaticValues.CarOutBy.ABONOMENT;
-                            hasAccess = true;
                         } else if(parkingOnlyRegisterCars){
                             carOutBy = StaticValues.CarOutBy.REGISTER;
                             hasAccess = true;
                         } else {
-                            PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
-                            if (ratePluginRegister != null) {
-                                ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
-                                ratePluginNode.put("parkingId", camera.getGate().getParking().getId());
-                                ratePluginNode.put("inDate", format.format(carState.getInTimestamp()));
-                                ratePluginNode.put("outDate", format.format(eventDto.event_date_time));
-                                ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
-                                ratePluginNode.put("isCheck", false);
-                                ratePluginNode.put("paymentsJson", carState.getPaymentJson());
+                            PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+                            if (billingPluginRegister != null) {
+                                ObjectNode billinNode = this.objectMapper.createObjectNode();
+                                billinNode.put("command", "getCurrentBalance");
+                                billinNode.put("plateNumber", carState.getCarNumber());
+                                JsonNode billingResult = billingPluginRegister.execute(billinNode);
+                                balance = billingResult.get("currentBalance").decimalValue().setScale(2);
 
-                                JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
-                                rateResult = ratePluginResult.get("rateResult").decimalValue().setScale(2);
-
-                                if (rateResult == null) {
-                                    properties.put("type", EventLog.StatusType.Error);
-                                    String descriptionRu = "Ошибка расчета плагина вычисления стоимости парковки. Авто с гос. номером " + eventDto.car_number;
-                                    String descriptionEn = "Error calculating the parking cost calculation plugin. Car with number " + eventDto.car_number;
-                                    eventLogService.createEventLog("Rate", null, properties, descriptionRu, descriptionEn);
-                                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-                                    hasAccess = false;
-                                } else if (BigDecimal.ZERO.compareTo(rateResult) == 0) {
-                                    carOutBy = StaticValues.CarOutBy.PAYMENT_PROVIDER;
-                                    hasAccess = true;
+                                abonements = abonomentService.getAbonomentsDetails(eventDto.car_number, carState, format);
+                                if(abonements != null){
+                                    carOutBy = StaticValues.CarOutBy.ABONOMENT;
+                                    rateResult = calculateAbonomentExtraPayment(camera, carState, eventDto, abonements, format, properties);
+                                    if(balance.compareTo(rateResult) >= 0){
+                                        hasAccess = true;
+                                    } else {
+                                        properties.put("type", EventLog.StatusType.Deny);
+                                        String description = "В проезде отказано: Не достаточно средств для списания оплаты за паркинг вне рамки абонемента. Сумма к оплате: " + rateResult + ". Баланс: " + balance;
+                                        String descriptionEn = "Not allowed to exit: Not enough balance to pay for parking outside the scope of the subscription. Total sum to pay: " + rateResult + ". Balance: " + balance;
+                                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, description, descriptionEn);
+                                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, description, descriptionEn);
+                                        hasAccess = false;
+                                    }
+                                    log.info("abonements hasAccess = " + hasAccess);
                                 } else {
-                                    PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
-                                    if (billingPluginRegister != null) {
-                                        ObjectNode billinNode = this.objectMapper.createObjectNode();
-                                        billinNode.put("command", "getCurrentBalance");
-                                        billinNode.put("plateNumber", carState.getCarNumber());
-                                        JsonNode billingResult = billingPluginRegister.execute(billinNode);
-                                        balance = billingResult.get("currentBalance").decimalValue().setScale(2);
-
+                                    rateResult = calculateRate(carState.getInTimestamp(), eventDto.event_date_time, camera, carState, eventDto, format, properties);
+                                    if (rateResult == null) {
+                                        properties.put("type", EventLog.StatusType.Error);
+                                        String descriptionRu = "Ошибка расчета плагина вычисления стоимости парковки. Авто с гос. номером " + eventDto.car_number;
+                                        String descriptionEn = "Error calculating the parking cost calculation plugin. Car with number " + eventDto.car_number;
+                                        eventLogService.createEventLog("Rate", null, properties, descriptionRu, descriptionEn);
+                                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
+                                        hasAccess = false;
+                                    } else if (BigDecimal.ZERO.compareTo(rateResult) == 0) {
+                                        carOutBy = StaticValues.CarOutBy.PAYMENT_PROVIDER;
+                                        hasAccess = true;
+                                    } else {
                                         if (balance.compareTo(rateResult) >= 0) {
                                             carOutBy = StaticValues.CarOutBy.PAYMENT_PROVIDER;
                                             hasAccess = true;
@@ -790,20 +795,13 @@ public class CarEventServiceImpl implements CarEventService {
                                             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
                                             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
                                         }
-                                    } else {
-                                        properties.put("type", EventLog.StatusType.Error);
-                                        String descriptionRu = "Плагин работы с балансами не найден или не запущен. Авто с гос. номером " + eventDto.car_number;
-                                        String descriptionEn = "Balance plugin not found or not launched. Car with license number " + eventDto.car_number;
-                                        eventLogService.createEventLog("Billing", null, properties, descriptionRu, descriptionEn);
-                                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-                                        hasAccess = false;
                                     }
                                 }
                             } else {
                                 properties.put("type", EventLog.StatusType.Error);
-                                String descriptionRu = "Плагин вычисления стоимости парковки не найден или не запущен. Авто с гос. номером " + eventDto.car_number;
-                                String descriptionEn = "Plugin for calculating total sum not found or not launched. Car with number " + eventDto.car_number;
-                                eventLogService.createEventLog("Rate", null, properties, descriptionRu, descriptionEn);
+                                String descriptionRu = "Плагин работы с балансами не найден или не запущен. Авто с гос. номером " + eventDto.car_number;
+                                String descriptionEn = "Balance plugin not found or not launched. Car with license number " + eventDto.car_number;
+                                eventLogService.createEventLog("Billing", null, properties, descriptionRu, descriptionEn);
                                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
                                 hasAccess = false;
                             }
@@ -823,7 +821,7 @@ public class CarEventServiceImpl implements CarEventService {
                 gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
                 gate.lastTriggeredTime = System.currentTimeMillis();
                 if (!gate.isSimpleWhitelist && !leftFromThisSecondsBefore && carState != null) {
-                    saveCarOutState(eventDto, camera, carState, properties, isWhitelistCar, balance, rateResult, zerotouchValue, format, carOutBy);
+                    saveCarOutState(eventDto, camera, carState, properties, isWhitelistCar, balance, rateResult, zerotouchValue, format, carOutBy, abonements);
                 } else if (leftFromThisSecondsBefore) {
                     properties.put("type", EventLog.StatusType.Allow);
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
@@ -839,7 +837,7 @@ public class CarEventServiceImpl implements CarEventService {
         }
     }
 
-    private void saveCarOutState(CarEventDto eventDto, Camera camera, CarState carState, Map<String, Object> properties, boolean isWhitelistCar, BigDecimal balance, BigDecimal rateResult, BigDecimal zerotouchValue, SimpleDateFormat format, StaticValues.CarOutBy carOutBy) throws Exception {
+    private void saveCarOutState(CarEventDto eventDto, Camera camera, CarState carState, Map<String, Object> properties, boolean isWhitelistCar, BigDecimal balance, BigDecimal rateResult, BigDecimal zerotouchValue, SimpleDateFormat format, StaticValues.CarOutBy carOutBy, JsonNode abonements) throws Exception {
         if (StaticValues.CarOutBy.WHITELIST.equals(carOutBy)) {
             carStateService.createOUTState(eventDto.car_number, eventDto.event_date_time, camera, carState,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
 
@@ -863,7 +861,20 @@ public class CarEventServiceImpl implements CarEventService {
             String message_en = "Allowed: Found valid subscription for car late number " + eventDto.car_number + ". Allowed.";
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, message_ru, message_en);
-            carStateService.setAbonomentDetails(carState.getId(), getAbonomentDetails(eventDto.car_number, carState.getParking().getId()));
+            carStateService.setAbonomentDetails(carState.getId(), abonements);
+
+            PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+            if (billingPluginRegister != null && BigDecimal.ZERO.compareTo(rateResult) != 0) {
+                decreaseBalance(carState.getCarNumber(), carState.getParking().getName(), carState.getId(), rateResult, properties);
+            }
+            carState.setRateAmount(zerotouchValue != null ? rateResult.add(zerotouchValue) : rateResult);
+            if (billingPluginRegister != null) {
+                ObjectNode addTimestampNode = this.objectMapper.createObjectNode();
+                addTimestampNode.put("command", "addOutTimestampToPayments");
+                addTimestampNode.put("outTimestamp", format.format(eventDto.event_date_time));
+                addTimestampNode.put("carStateId", carState.getId());
+                billingPluginRegister.execute(addTimestampNode);
+            }
         } else if (StaticValues.CarOutBy.REGISTER.equals(carOutBy)) {
             if(carState != null){
                 carStateService.createOUTState(eventDto.car_number, eventDto.event_date_time, camera, carState,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
@@ -926,36 +937,89 @@ public class CarEventServiceImpl implements CarEventService {
         carsService.createCar(eventDto.car_number, eventDto.region, eventDto.vecihleType, Gate.GateType.OUT.equals(camera.getGate().getGateType()) ? null : eventDto.car_model); // При выезде не сохранять тип авто
     }
 
-    private Boolean hasValidAbonoment(String plateNumber, CarState carState) throws Exception {
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
-        if (abonomentPluginRegister != null) {
-            ObjectNode node = this.objectMapper.createObjectNode();
-            node.put("command", "hasPaidNotExpiredAbonoment");
-            node.put("plateNumber", plateNumber);
-            node.put("parkingId", carState.getParking().getId());
-            node.put("parkingId", carState.getParking().getId());
+    private BigDecimal calculateRate(Date inDate, Date outDate, Camera camera, CarState carState, CarEventDto eventDto, SimpleDateFormat format,Map<String, Object> properties) throws Exception {
+        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+        if (ratePluginRegister != null) {
+            ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
+            ratePluginNode.put("parkingId", camera.getGate().getParking().getId());
+            ratePluginNode.put("inDate", format.format(inDate));
+            ratePluginNode.put("outDate", format.format(outDate));
+            ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
+            ratePluginNode.put("isCheck", false);
+            ratePluginNode.put("paymentsJson", carState.getPaymentJson());
 
-            JsonNode result = abonomentPluginRegister.execute(node);
-            if(result.has("hasPaidNotExpiredAbonoment")){
-                return result.get("hasPaidNotExpiredAbonoment").booleanValue();
-            }
+            JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
+            return ratePluginResult.get("rateResult").decimalValue().setScale(2);
+        } else {
+            properties.put("type", EventLog.StatusType.Error);
+            String descriptionRu = "Плагин вычисления стоимости парковки не найден или не запущен. Авто с гос. номером " + eventDto.car_number;
+            String descriptionEn = "Plugin for calculating total sum not found or not launched. Car with number " + eventDto.car_number;
+            eventLogService.createEventLog("Rate", null, properties, descriptionRu, descriptionEn);
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
+            return null;
         }
-        return false;
     }
 
-    private JsonNode getAbonomentDetails(String plateNumber, Long parkingId) throws Exception {
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
-        if (abonomentPluginRegister != null) {
-            ObjectNode node = this.objectMapper.createObjectNode();
-            node.put("command", "getPaidNotExpiredAbonomentDetails");
-            node.put("plateNumber", plateNumber);
-            node.put("parkingId", parkingId);
+    private BigDecimal calculateAbonomentExtraPayment(Camera camera, CarState carState, CarEventDto eventDto, JsonNode jsonNode, SimpleDateFormat format, Map<String, Object> properties) throws Exception {
+        ArrayNode abonements = (ArrayNode) jsonNode;
 
-            JsonNode result = abonomentPluginRegister.execute(node);
-            if(result.has("abonomentDetails")){
-                return result.get("abonomentDetails");
+        final String dateFormat = "dd.MM.yyyy HH:mm";
+        SimpleDateFormat abonementFormat = new SimpleDateFormat(dateFormat);
+
+        Date inDate = carState.getInTimestamp();
+        Date outDate = eventDto.event_date_time;
+
+        Iterator<JsonNode> iterator = abonements.iterator();
+        List<Period> periods = new ArrayList<>();
+        JsonNode prevAbonoment = null;
+        while (iterator.hasNext()) {
+            JsonNode abonoment = iterator.next();
+            Date start = abonementFormat.parse(abonoment.get("begin").textValue());
+            Date end = abonementFormat.parse(abonoment.get("end").textValue());
+
+            if(prevAbonoment == null){
+                if(inDate.before(start)){
+                    Period period = new Period();
+                    period.setStart(inDate);
+                    period.setEnd(start);
+                    periods.add(period);
+                }
+            } else {
+                if(abonementFormat.parse(prevAbonoment.get("end").textValue()).getTime() - start.getTime() > 1000*60*5){ // Если промежуток больше 5 минут добавляем
+                    Period period = new Period();
+                    period.setStart(inDate);
+                    period.setEnd(start);
+                    periods.add(period);
+                }
+            }
+            if(!iterator.hasNext()){
+                if(outDate.after(end)){
+                    Period period = new Period();
+                    period.setStart(end);
+                    period.setEnd(outDate);
+                    periods.add(period);
+                }
+            } else {
+                prevAbonoment = abonoment;
             }
         }
-        return null;
+        log.info("periods size = " + periods.size());
+        if(periods.size() == 0){
+            return BigDecimal.ZERO;
+        } else {
+            BigDecimal totalRate = null;
+            for(Period p:periods){
+                log.info("calculate for period: begin: " + p.getStart() + " end: " + p.getEnd());
+                BigDecimal rate = calculateRate(p.getStart(), p.getEnd(), camera, carState, eventDto, format, properties);
+                if(rate != null){
+                    totalRate = totalRate != null ? totalRate.add(rate) : rate;
+                }
+            }
+            if(totalRate == null){
+                return BigDecimal.ZERO;
+            } else {
+                return totalRate;
+            }
+        }
     }
 }

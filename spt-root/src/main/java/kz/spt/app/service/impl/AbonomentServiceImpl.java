@@ -4,10 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.extension.PluginRegister;
+import kz.spt.lib.model.CarState;
 import kz.spt.lib.service.AbonomentService;
 import kz.spt.lib.service.PluginService;
+import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
+
+import java.text.SimpleDateFormat;
 
 import static kz.spt.lib.utils.StaticValues.abonomentPlugin;
 
@@ -113,5 +117,23 @@ public class AbonomentServiceImpl implements AbonomentService {
         }
 
         return result;
+    }
+
+    @Override
+    public JsonNode getAbonomentsDetails(String plateNumber, CarState carState, SimpleDateFormat format) throws Exception {
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
+        if (abonomentPluginRegister != null) {
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("command", "getSatisfiedAbonomentDetails");
+            node.put("plateNumber", plateNumber);
+            node.put("parkingId", carState.getParking().getId());
+            node.put("carInDate", format.format(carState.getInTimestamp()));
+
+            JsonNode result = abonomentPluginRegister.execute(node);
+            if(result.has("abonementsDetails")){
+                return result.get("abonementsDetails");
+            }
+        }
+        return null;
     }
 }

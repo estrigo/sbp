@@ -3,6 +3,7 @@ package kz.spt.abonomentplugin.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.abonomentplugin.bootstrap.datatable.AbonomentDtoComparators;
 import kz.spt.abonomentplugin.bootstrap.datatable.AbonomentTypeDtoComparators;
@@ -22,6 +23,7 @@ import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.Parking;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -236,26 +238,23 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     }
 
     @Override
-    public Boolean hasPaidNotExpiredAbonoment(String plateNumber, Long parkingId) {
-        Pageable first = PageRequest.of(0, 1);
-        List<Abonoment> abonoments = abonomentRepository.findPaidNotExpiredAbonoment(plateNumber, parkingId, new Date(), first);
-        return abonoments.size() > 0;
-    }
+    public JsonNode getPaidNotExpiredAbonoment(String plateNumber, Long parkingId, Date carInDate) {
+        List<Abonoment> abonoments = abonomentRepository.findPaidNotExpiredAbonoment(plateNumber, parkingId, carInDate, new Date());
 
-    @Override
-    public JsonNode getPaidNotExpiredAbonoment(String plateNumber, Long parkingId) {
-        Pageable first = PageRequest.of(0, 1);
-        List<Abonoment> abonoments = abonomentRepository.findPaidNotExpiredAbonoment(plateNumber, parkingId, new Date(), first);
+        ArrayNode abonements = objectMapper.createArrayNode();
+
         if(abonoments.size() > 0){
-            final String dateFormat = "dd.mm.yyyy HH:mm";
+            final String dateFormat = "dd.MM.yyyy HH:mm";
             SimpleDateFormat format = new SimpleDateFormat(dateFormat);
-            Abonoment abonoment = abonoments.get(0);
-            ObjectNode result = objectMapper.createObjectNode();
-            result.put("begin", format.format(abonoment.getBegin()));
-            result.put("end", format.format(abonoment.getEnd()));
-            return result;
+
+            for(Abonoment abonoment:abonoments){
+                ObjectNode result = objectMapper.createObjectNode();
+                result.put("begin", format.format(abonoment.getBegin()));
+                result.put("end", format.format(abonoment.getEnd()));
+                abonements.add(result);
+            }
         }
-        return null;
+        return abonements.size() > 0? abonements : null;
     }
 
     @Override

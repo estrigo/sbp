@@ -8,8 +8,12 @@ import kz.spt.abonomentplugin.model.Abonoment;
 import kz.spt.abonomentplugin.model.AbonomentTypes;
 import kz.spt.abonomentplugin.service.AbonomentPluginService;
 import kz.spt.lib.extension.PluginRegister;
+import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Log
 @Extension
@@ -19,6 +23,8 @@ public class CommandExecutor implements PluginRegister {
 
     @Override
     public JsonNode execute(JsonNode jsonCommand) throws Exception {
+
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode node = objectMapper.createObjectNode();
@@ -61,18 +67,13 @@ public class CommandExecutor implements PluginRegister {
             } else if("setAbonomentPaid".equals(command)){
                 Long id = jsonCommand.get("id").longValue();
                 getAbonomentPluginService().setAbonomentPaid(id);
-            } else if("hasPaidNotExpiredAbonoment".equals(command)){
+            } else if("getSatisfiedAbonomentDetails".equals(command)){
                 Long parkingId = jsonCommand.get("parkingId").longValue();
                 String plateNumber = jsonCommand.get("plateNumber").textValue();
-                Boolean result = getAbonomentPluginService().hasPaidNotExpiredAbonoment(plateNumber, parkingId);
-                node.put("hasPaidNotExpiredAbonoment", result);
-            } else if("getPaidNotExpiredAbonomentDetails".equals(command)){
-                Long parkingId = jsonCommand.get("parkingId").longValue();
-                String plateNumber = jsonCommand.get("plateNumber").textValue();
-                JsonNode result = getAbonomentPluginService().getPaidNotExpiredAbonoment(plateNumber, parkingId);
-                node.set("abonomentDetails", result);
+                Date carInDate = format.parse(jsonCommand.get("carInDate").textValue());
+                JsonNode result = getAbonomentPluginService().getPaidNotExpiredAbonoment(plateNumber, parkingId, carInDate);
+                node.set("abonementsDetails", result);
             } else {
-
                 throw new RuntimeException("Abonent plugin: unkown command");
             }
         } else {
