@@ -223,7 +223,7 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public void addGlobalModbusMaster(Barrier barrier) throws ModbusIOException, UnknownHostException {
-        if(!modbusMasterMap.containsKey(barrier.getIp())){
+        if(!disableOpen && !modbusMasterMap.containsKey(barrier.getIp())){
             modbusMasterMap.put(barrier.getIp(), getConnectedInstance(barrier.getIp()));
         }
     }
@@ -358,7 +358,6 @@ public class BarrierServiceImpl implements BarrierService {
             log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
             if (!isOpenValueChanged) {
                 for (int i = 0; i < 3; i++) {
-                    Thread.sleep(500);
                     m.writeMultipleRegisters(slaveId, offset, new_values);
                     registerValues = m.readHoldingRegisters(slaveId, offset, quantity);
                     for (int value : registerValues) {
@@ -393,7 +392,6 @@ public class BarrierServiceImpl implements BarrierService {
                     }
                     if (!isReturnValueChanged) {
                         for (int i = 0; i < 3; i++) {
-                            Thread.sleep(500);
                             m.writeMultipleRegisters(slaveId, offset, new_values);
                             registerValues = m.readHoldingRegisters(slaveId, offset, quantity);
                             for (int value : registerValues) {
@@ -418,7 +416,6 @@ public class BarrierServiceImpl implements BarrierService {
             log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
             if (!isOpenValueChanged) {
                 for (int i = 0; i < 3; i++) {
-                    Thread.sleep(500);
                     m.writeSingleCoil(slaveId, offset, true);
                     changedValue = m.readCoils(slaveId, offset, 1);
                     if (changedValue != null && changedValue.length > 0 && changedValue[0]) {
@@ -439,7 +436,6 @@ public class BarrierServiceImpl implements BarrierService {
                     Boolean isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
                     if (!isReturnValueChanged) {
                         for (int i = 0; i < 3; i++) {
-                            Thread.sleep(500);
                             m.writeSingleCoil(slaveId, offset, false);
                             currentValue = m.readCoils(slaveId, offset, 1);
                             isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
