@@ -10,6 +10,7 @@ import kz.spt.lib.model.Parking;
 import kz.spt.lib.service.CarModelService;
 import kz.spt.rateplugin.RatePlugin;
 import kz.spt.rateplugin.model.ParkingRate;
+import kz.spt.rateplugin.repository.RateRepository;
 import kz.spt.rateplugin.service.RateService;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
@@ -25,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 public class CommandExecutor implements PluginRegister {
 
     private RateService rateService;
-
+    private RateRepository rateRepository;
 
     @Override
     public JsonNode execute(JsonNode command) throws Exception {
@@ -46,7 +47,13 @@ public class CommandExecutor implements PluginRegister {
                     node.put("rateId", parkingRate.getId());
                     node.put("rateName", parkingRate.getName());
                 }
-            }else{
+            } else if ("deleteParkingRate".equals(commandName)) {
+                Long parkingId = command.get("parkingId").longValue();
+                ParkingRate parkingRate = getRateService().getByParkingId(parkingId);
+                getRateRepository().delete(parkingRate);
+                node.put("reply: ", "deleted parking rate");
+            }
+            else{
                 node.put("rateResult", BigDecimal.ZERO);
                 node.put("rateFreeMinutes", 0);
 
@@ -86,5 +93,11 @@ public class CommandExecutor implements PluginRegister {
             rateService = (RateService) RatePlugin.INSTANCE.getApplicationContext().getBean("rateServiceImpl");
         }
         return rateService;
+    }
+    private RateRepository getRateRepository(){
+        if(rateRepository == null) {
+            rateRepository = (RateRepository) RatePlugin.INSTANCE.getApplicationContext().getBean("rateRepository");
+        }
+        return rateRepository;
     }
 }

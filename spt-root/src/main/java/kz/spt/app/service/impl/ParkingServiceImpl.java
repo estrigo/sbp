@@ -1,9 +1,13 @@
 package kz.spt.app.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
 import kz.spt.app.service.ControllerService;
 import kz.spt.app.service.GateService;
+import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
 import kz.spt.app.repository.ParkingRepository;
 import kz.spt.lib.model.dto.ParkingCarsDTO;
@@ -11,12 +15,15 @@ import kz.spt.lib.model.dto.ParkingDto;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.ParkingService;
+import kz.spt.lib.service.PluginService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static kz.spt.lib.utils.StaticValues.ratePlugin;
 
 @Service
 public class ParkingServiceImpl implements ParkingService {
@@ -28,12 +35,16 @@ public class ParkingServiceImpl implements ParkingService {
     private CameraService cameraService;
     private CarStateService carStateService;
     private CarsService carsService;
+    private final PluginService pluginService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${parking.has.access.lcd}")
     Boolean hasAccessLcd;
 
     public ParkingServiceImpl(ParkingRepository parkingRepository, GateService gateService, BarrierService barrierService,
-                              ControllerService controllerService, CameraService cameraService, CarStateService carStateService, CarsService carsService) {
+                              ControllerService controllerService, CameraService cameraService, CarStateService carStateService,
+                              CarsService carsService, PluginService pluginService) {
         this.parkingRepository = parkingRepository;
         this.gateService = gateService;
         this.barrierService = barrierService;
@@ -41,6 +52,7 @@ public class ParkingServiceImpl implements ParkingService {
         this.cameraService = cameraService;
         this.carStateService = carStateService;
         this.carsService = carsService;
+        this.pluginService = pluginService;
 
     }
 
@@ -67,7 +79,7 @@ public class ParkingServiceImpl implements ParkingService {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(Long id) throws Exception{
         Parking parking = findById(id);
         if (parking.getGateList() != null) {
             for (Gate gate : parking.getGateList()) {
@@ -84,6 +96,13 @@ public class ParkingServiceImpl implements ParkingService {
                 }
                 gateService.deleteGate(gate);
             }
+        }
+        PluginRegister ratePluginRegister = pluginService.getPluginRegister(ratePlugin);
+        if (ratePluginRegister != null) {
+            ObjectNode command = objectMapper.createObjectNode();
+            command.put("command", "deleteParkingRate");
+            command.put("parkingId", parking.getId());
+            JsonNode ratePluginResult = ratePluginRegister.execute(command);
         }
         parkingRepository.delete(parking);
     }

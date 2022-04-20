@@ -16,7 +16,7 @@ public interface ParkingService {
 
     Parking findByType(Parking.ParkingType type);
 
-    void deleteById(Long id);
+    void deleteById(Long id) throws Exception;
 
     List<ParkingCarsDTO> listAllParkingCars();
 

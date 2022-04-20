@@ -63,7 +63,7 @@ public class ParkingController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteParking(Model model, @PathVariable Long id) {
+    public String deleteParking(Model model, @PathVariable Long id) throws Exception{
         parkingService.deleteById(id);
         return "redirect:/parking/list";
     }
