@@ -192,7 +192,7 @@ public class CarEventServiceImpl implements CarEventService {
                 }
             }
 
-            log.info("handling event from camera: " + eventDto.ip_address + " for car: " + eventDto.car_number);
+            log.info("handling event from camera: " + eventDto.ip_address + " for car: " + eventDto.car_number + " model - " + eventDto.car_model);
 
             properties.put("gateName", camera.getGate().getName());
             properties.put("gateId", camera.getGate().getId());
