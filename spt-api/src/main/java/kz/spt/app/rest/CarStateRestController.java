@@ -4,12 +4,14 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.dto.CarStateDto;
+import kz.spt.lib.model.dto.CarStateExcelDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.CarStateService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/rest/carstate")
@@ -32,4 +34,20 @@ public class CarStateRestController {
     public Boolean removeDebt(@RequestParam String plateNumber) throws Exception {
         return carStateService.removeDebt(plateNumber);
     }
+
+
+    @GetMapping("/excel")
+    public List<CarStateExcelDto> excellist(@RequestParam String dateFromString, @RequestParam String dateToString,
+                                            @RequestParam String plateNumber, @RequestParam Long inGateId,
+                                            @RequestParam Long outGateId) throws ParseException {
+        CarStateFilterDto filter = new CarStateFilterDto();
+        filter.setDateFromString(dateFromString);
+        filter.setDateToString(dateToString);
+        filter.setPlateNumber(plateNumber);
+        filter.setInGateId(inGateId);
+        filter.setOutGateId(outGateId);
+        return carStateService.getExcelData(filter);
+    }
+
+
 }

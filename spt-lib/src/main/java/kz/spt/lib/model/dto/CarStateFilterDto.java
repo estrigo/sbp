@@ -1,13 +1,11 @@
 package kz.spt.lib.model.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class CarStateFilterDto {
 
     private String dateFromString;

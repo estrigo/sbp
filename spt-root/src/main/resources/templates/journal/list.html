@@ -66,6 +66,9 @@
                 <div class="mb-5"></div>
 
                 <div class="row">
+                    <div class="col-3">
+                        <button type="button" class="btn btn-success waves-effect waves-light" onclick="exportExcel()" th:text="#{journal.downloadExcel}"></button>
+                    </div>
                     <div class="table-responsive" data-pattern="priority-columns">
                         <table id="carStateTable" class="table table-bordered">
                             <thead>
@@ -179,6 +182,8 @@
 <!-- Responsive examples -->
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+<script th:src="@{/assets/js/fancybox.umd.js}"></script>
+<script th:src="@{/assets/js/xlsx.js}"></script>
 
 <script th:inline="javascript">
     var address = '/plugins/datatables/json/ru.json';
@@ -324,7 +329,7 @@
         "order": [ //[[ in thymeleaf is inline script
             [2, "desc"]
         ],
-        buttons: ['copy', 'excel', 'pdf', 'csv'],
+        // buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: address
         },
@@ -356,6 +361,34 @@
             });
         } else {
             alert([[#{arm.invalidPlateNumber}]]);
+        }
+    }
+
+    function exportExcel(){
+        console.log("exportExcel !");
+        let dateFromString = $('#dateFromString').val();
+        let dateToString = $('#dateToString').val();
+        let plateNumber = $('#plateNumber').val();
+        let inGateId = $('#inGateId').val();
+        let outGateId = $('#outGateId').val();
+        if((dateFromString && dateToString) || plateNumber || inGateId || outGateId){
+            let carNumberH = [[#{car.platenumber}]];
+            let inGateH = [[#{carState.inGate}]];
+            let inTimestampStringH = [[#{carState.inTimestamp}]];
+            let outGateH = [[#{carState.outGate}]];
+            let outTimestampStringH = [[#{carState.outTimestamp}]];
+            let durationH = [[#{carState.duration}]];
+
+            $.get("/rest/carstate/excel?dateFromString=" + dateFromString + "&dateToString=" + dateToString + "&plateNumber=" + plateNumber + "&inGateId=" + inGateId + "&outGateId=" + outGateId, function (data) {
+                data.unshift({carNumber: carNumberH, inGate: inGateH, inTimestampString: inTimestampStringH, outGate: outGateH, outTimestampString: outTimestampStringH, duration: durationH});
+                let ws = XLSX.utils.json_to_sheet(data, {skipHeader:true});
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'journal');
+                XLSX.writeFile(wb, "journal.xls", { type: "buffer" });
+            });
+
+        } else {
+            console.log('filter not defined')
         }
     }
 

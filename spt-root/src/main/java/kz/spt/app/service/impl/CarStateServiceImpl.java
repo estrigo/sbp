@@ -7,6 +7,7 @@ import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarStateDto;
+import kz.spt.lib.model.dto.CarStateExcelDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.*;
 import kz.spt.app.repository.CarStateRepository;
@@ -402,4 +403,27 @@ public class CarStateServiceImpl implements CarStateService {
 
         return page;
     }
+
+
+    @Override
+    public List<CarStateExcelDto> getExcelData(CarStateFilterDto carStateFilterDto) throws ParseException {
+        Specification<CarState> specification = getCarStateSpecification(carStateFilterDto);
+        List<CarState> filteredCarStates = listByFiltersForExcel(specification);
+
+        List<CarStateExcelDto> carStateDtoList = new ArrayList<>(filteredCarStates.size());
+        for(CarState carState: filteredCarStates){
+            carStateDtoList.add(CarStateExcelDto.fromCarState(carState));
+        }
+
+        return carStateDtoList;
+    }
+
+    private List<CarState> listByFiltersForExcel(Specification<CarState> carStateSpecification) {
+        if (carStateSpecification != null) {
+            return carStateRepository.findAll(carStateSpecification);
+        } else {
+            return carStateRepository.findAll();
+        }
+    }
+
 }

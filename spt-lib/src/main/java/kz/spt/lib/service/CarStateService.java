@@ -6,6 +6,7 @@ import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.dto.CarStateDto;
+import kz.spt.lib.model.dto.CarStateExcelDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 
 import java.text.ParseException;
@@ -50,4 +51,6 @@ public interface CarStateService {
     CarState getLastCarState(String carNumber);
 
     void setAbonomentDetails(Long id, JsonNode details);
+
+    List<CarStateExcelDto> getExcelData(CarStateFilterDto carStateFilterDto) throws ParseException;
 }
