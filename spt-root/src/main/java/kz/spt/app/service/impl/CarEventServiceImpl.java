@@ -740,7 +740,7 @@ public class CarEventServiceImpl implements CarEventService {
                                 balance = billingResult.get("currentBalance").decimalValue().setScale(2);
 
                                 abonements = abonomentService.getAbonomentsDetails(eventDto.car_number, carState, format);
-                                if(abonements != null){
+                                if(abonements != null && abonements.isArray() && abonements.size() > 0){
                                     carOutBy = StaticValues.CarOutBy.ABONOMENT;
                                     rateResult = calculateAbonomentExtraPayment(camera, carState, eventDto, abonements, format, properties);
                                     if(balance.compareTo(rateResult) >= 0){

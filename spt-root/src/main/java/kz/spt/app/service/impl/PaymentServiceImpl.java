@@ -100,8 +100,7 @@ public class PaymentServiceImpl implements PaymentService {
                         carState.setCashlessPayment(true);
 
                         JsonNode abonements = abonomentService.getAbonomentsDetails(commandDto.account, carState, format);
-                        if(abonements.equals(null)){
-                            log.info("test1");
+                        if(abonements != null && abonements.isArray() && abonements.size() > 0){
                             return checkAbonomentExtraPayment(commandDto, carState, format, abonements, dto);
                         }
 
