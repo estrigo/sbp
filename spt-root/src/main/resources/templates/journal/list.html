@@ -47,7 +47,7 @@
                                 <option th:each="r : ${allOutGates}" th:value="${r.id}" th:text="${r.name}">
                             </select>
                         </div>
-                        <th:block sec:authorize="hasAnyRole('ROLE_OPERATOR_NO_REVENUE_SHARE')">
+                        <th:block sec:authorize="hasAnyRole('ROLE_OPERATOR_NO_REVENUE_SHARE', 'ROLE_MANAGER')">
                             <div class="col-3">
                                 <button type="button" data-toggle="modal" data-target="#remove-debt-modal"
                                         th:onclick="javascript:$('#removeDebt').modal('show')" class="btn btn-secondary"
