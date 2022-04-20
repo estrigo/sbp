@@ -50,7 +50,9 @@ public class CommandExecutor implements PluginRegister {
             } else if ("deleteParkingRate".equals(commandName)) {
                 Long parkingId = command.get("parkingId").longValue();
                 ParkingRate parkingRate = getRateService().getByParkingId(parkingId);
-                getRateRepository().delete(parkingRate);
+                if(parkingRate != null) {
+                    getRateRepository().delete(parkingRate);
+                }
                 node.put("reply: ", "deleted parking rate");
             }
             else{
