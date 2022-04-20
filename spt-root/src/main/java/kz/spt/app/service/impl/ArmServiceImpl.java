@@ -43,12 +43,14 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 @Log
 @Service
 public class ArmServiceImpl implements ArmService {
 
+    private static Map<String, Long> concurrentHashMap = new ConcurrentHashMap<>();
     private CameraService cameraService;
     private BarrierService barrierService;
     private EventLogService eventLogService;
@@ -129,6 +131,17 @@ public class ArmServiceImpl implements ArmService {
 
                     if(debtPlatenumber != null){
                         properties.put("carNumber", debtPlatenumber);
+
+                        if(concurrentHashMap.containsKey(debtPlatenumber)){
+                            Long timeDiffInMillis = System.currentTimeMillis() - concurrentHashMap.get(debtPlatenumber);
+                            if(timeDiffInMillis > 2 * 1000){ // если больше 2 секунд то принимать команду
+                                concurrentHashMap.put(debtPlatenumber, System.currentTimeMillis());
+                            } else {
+                                return false;
+                            }
+                        } else {
+                            concurrentHashMap.put(debtPlatenumber, System.currentTimeMillis());
+                        }
                     }
 
                     eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLog.StatusType.Success, camera.getId(), debtPlatenumber, snapshot, null);
@@ -136,7 +149,7 @@ public class ArmServiceImpl implements ArmService {
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName(), "Manual gate opening: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName());
 
                     if(debtPlatenumber != null){
-                        if (snapshot != null && !"".equals(snapshot) && !"null".equals(snapshot) && !"undefined".equals(snapshot)) {
+                        if (snapshot != null && !"".equals(snapshot) && !"null".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
                             String carImageUrl = carImageService.saveImage(snapshot, new Date(), debtPlatenumber);
                             properties.put(StaticValues.carImagePropertyName, carImageUrl);
                             properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
@@ -155,7 +168,7 @@ public class ArmServiceImpl implements ArmService {
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName(), "Manual gate opening: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName());
 
                     if(debtPlatenumber != null){
-                        if (snapshot != null && !"".equals(snapshot) && !"null".equals(snapshot) && !"undefined".equals(snapshot)) {
+                        if (snapshot != null && !"".equals(snapshot) && !"null".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
                             String carImageUrl = carImageService.saveImage(snapshot, new Date(), debtPlatenumber);
                             properties.put(StaticValues.carImagePropertyName, carImageUrl);
                             properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);

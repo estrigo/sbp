@@ -97,7 +97,7 @@ public class CarEventServiceImpl implements CarEventService {
                 eventDto.lp_picture = null;
                 eventDto.manualEnter = true;
 
-                if (snapshot != null && !"".equals(snapshot) && !"undefined".equals(snapshot) && !"null".equals(snapshot)) {
+                if (snapshot != null && !"".equals(snapshot) && !"undefined".equals(snapshot) && !"null".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
                     eventDto.car_picture = snapshot;
                 } else {
                     eventDto.car_picture = null;
@@ -175,7 +175,7 @@ public class CarEventServiceImpl implements CarEventService {
             if(!eventDto.manualOpen){
                 if (concurrentHashMap.containsKey(eventDto.ip_address) || (secondCameraIp != null && concurrentHashMap.containsKey(secondCameraIp))) {
                     Long timeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(eventDto.ip_address) ? concurrentHashMap.get(eventDto.ip_address) : 0);
-                    int timeout = (camera.getTimeout() == null ? 0 : camera.getTimeout() * 1000);
+                    int timeout = (camera.getTimeout() == null ? 1 : camera.getTimeout() * 1000);
                     if (secondCameraIp != null) {
                         Long secondCameraTimeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(secondCameraIp) ? concurrentHashMap.get(secondCameraIp) : 0);
                         timeDiffInMillis = timeDiffInMillis < secondCameraTimeDiffInMillis ? timeDiffInMillis : secondCameraTimeDiffInMillis;
