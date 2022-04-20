@@ -185,17 +185,17 @@ public class RateServiceImpl implements RateService {
                 hours++;
                 inCalendar.add(Calendar.HOUR, 1);
             }
-            log.info("it checks dimensions" + carType);
+            log.info("it checks dimensions for car model" + carType);
             if (!carType.equals("")) {
                 if (parkingRate != null && carType.equals("1")) {
-                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValuePassenger() : parkingRate.getCashPaymentValuePassenger()).multiply(BigDecimal.valueOf(hours)));
+                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValuePassenger() : parkingRate.getCashPaymentValuePassenger()).multiply(BigDecimal.valueOf(1)));
                 } else if (parkingRate != null && carType.equals("2")) {
-                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValueVan() : parkingRate.getCashPaymentValueVan()).multiply(BigDecimal.valueOf(hours)));
+                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValueVan() : parkingRate.getCashPaymentValueVan()).multiply(BigDecimal.valueOf(1)));
                 } else {
-                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValueTruck() : parkingRate.getCashPaymentValueTruck()).multiply(BigDecimal.valueOf(hours)));
+                    result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValueTruck() : parkingRate.getCashPaymentValueTruck()).multiply(BigDecimal.valueOf(1)));
                 }
             } else {
-                result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValuePassenger() : parkingRate.getCashPaymentValuePassenger()).multiply(BigDecimal.valueOf(hours)));
+                result = result.add(BigDecimal.valueOf(cashlessPayment ? parkingRate.getOnlinePaymentValuePassenger() : parkingRate.getCashPaymentValuePassenger()).multiply(BigDecimal.valueOf(1)));
             }
 
             return result;
