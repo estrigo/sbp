@@ -855,7 +855,6 @@ public class CarEventServiceImpl implements CarEventService {
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто по предоплате: Авто с гос. номером" + eventDto.car_number, "For prepaid exit is allowed on prepaid basis. Car with license plate " + eventDto.car_number);
             eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Выпускаем авто по предоплате: Авто с гос. номером" + eventDto.car_number, "For prepaid exit is allowed on prepaid basis. Car with license plate " + eventDto.car_number);
         } else if (StaticValues.CarOutBy.ABONOMENT.equals(carOutBy)) {
-            carStateService.createOUTState(eventDto.car_number, eventDto.event_date_time, camera, carState,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
             properties.put("type", EventLog.StatusType.Allow);
             String message_ru = "Пропускаем авто: Найдено действущий абономент на номер авто " + eventDto.car_number + ". Проезд разрешен.";
             String message_en = "Allowed: Found valid subscription for car late number " + eventDto.car_number + ". Allowed.";
@@ -868,6 +867,8 @@ public class CarEventServiceImpl implements CarEventService {
                 decreaseBalance(carState.getCarNumber(), carState.getParking().getName(), carState.getId(), rateResult, properties);
             }
             carState.setRateAmount(zerotouchValue != null ? rateResult.add(zerotouchValue) : rateResult);
+            carStateService.createOUTState(eventDto.car_number, eventDto.event_date_time, camera, carState,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
+
             if (billingPluginRegister != null) {
                 ObjectNode addTimestampNode = this.objectMapper.createObjectNode();
                 addTimestampNode.put("command", "addOutTimestampToPayments");

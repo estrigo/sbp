@@ -24,10 +24,11 @@ import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -325,7 +326,7 @@ public class BarrierServiceImpl implements BarrierService {
         return result;
     }
 
-    private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException, UnknownHostException {
+    private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException {
         Boolean result = true;
 
         ModbusMaster m;
@@ -408,8 +409,19 @@ public class BarrierServiceImpl implements BarrierService {
                 }
             }
         } else {
-            m.writeSingleCoil(slaveId, offset, true);
-            boolean[] changedValue = m.readCoils(slaveId, offset, 1);
+            try {
+                m.writeSingleCoil(slaveId, offset, true);
+            } catch (Exception e){
+                m.connect();
+                m.writeSingleCoil(slaveId, offset, true);
+            }
+            boolean[] changedValue;
+            try {
+                changedValue = m.readCoils(slaveId, offset, 1);
+            } catch (Exception e){
+                m.connect();
+                changedValue = m.readCoils(slaveId, offset, 1);
+            }
             if (changedValue != null && changedValue.length > 0 && changedValue[0]) {
                 isOpenValueChanged = true;
             }
