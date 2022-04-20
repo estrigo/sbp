@@ -212,7 +212,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         }
         abonoment.setBegin(calendar.getTime());
 
-
+        abonoment.setPaidType(type.getType());
         calendar.add(Calendar.DATE, type.getPeriod());
         abonoment.setEnd(calendar.getTime());
         Abonoment savedAbonoment = abonomentRepository.save(abonoment);

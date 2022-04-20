@@ -51,6 +51,9 @@ public class Abonoment {
     @Column(name = "type")
     private String type;
 
+    @Column(name = "paidType")
+    private String paidType;
+
     @ManyToOne
     @JoinColumn(name = "parking_id")
     private Parking parking;
