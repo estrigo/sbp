@@ -73,6 +73,12 @@ public class RateController {
             bindingResult.addError(error);
         }
 
+        if(ParkingRate.RateType.FREE.equals(rate.getRateType())) {
+            rate.setCashPaymentValue(0);
+            rate.setDayPaymentValue(0);
+            rate.setOnlinePaymentValue(0);
+        }
+
         if (!bindingResult.hasErrors()) {
             Parking parking = rateService.getParkingById(parkingId);
             rate.setParking(parking);

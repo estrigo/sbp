@@ -44,6 +44,7 @@
                                             <option th:value="INTERVAL" th:text="#{'rate.Type.INTERVAL'}"></option>
                                             <option th:value="DIMENSIONS" th:text="#{'rate.Type.DIMENSIONS'}"></option>
                                             <option th:value="PREPAID" th:text="#{'rate.Type.PREPAID'}"></option>
+                                            <option th:value="FREE" th:text="#{'rate.Type.FREE'}"></option>
                                         </select>
                                     </div>
                                 </div>
@@ -296,6 +297,15 @@
         }
         if(val === 'PREPAID'){
             $('#prepaid').show();
+            $('#freeMinutes').hide();
+            $('#dayPayment').hide();
+        } else {
+            $('#prepaid').hide();
+            $('#freeMinutes').show();
+            $('#dayPayment').show();
+        }
+        if(val === 'FREE') {
+            $('#prepaid').hide();
             $('#freeMinutes').hide();
             $('#dayPayment').hide();
         } else {
