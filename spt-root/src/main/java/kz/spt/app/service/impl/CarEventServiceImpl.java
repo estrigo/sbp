@@ -955,7 +955,8 @@ public class CarEventServiceImpl implements CarEventService {
             ratePluginNode.put("paymentsJson", carState.getPaymentJson());
             Cars cars = carsService.findByPlatenumber(carState.getCarNumber());
             CarModel carModel = carModelService.getByModel(cars.getModel());
-            ratePluginNode.put("carType", carModel.getType());
+            if (carModel != null)
+                ratePluginNode.put("carType", carModel.getType());
             JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
             return ratePluginResult.get("rateResult").decimalValue().setScale(2);
         } else {
