@@ -5,6 +5,7 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CarState;
+import kz.spt.lib.model.Parking;
 import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.model.dto.CarStateExcelDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
@@ -53,4 +54,6 @@ public interface CarStateService {
     void setAbonomentDetails(Long id, JsonNode details);
 
     List<CarStateExcelDto> getExcelData(CarStateFilterDto carStateFilterDto) throws ParseException;
+
+    void deleteAllInParking(Parking parking);
 }

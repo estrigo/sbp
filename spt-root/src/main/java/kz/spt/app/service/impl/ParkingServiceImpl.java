@@ -3,6 +3,7 @@ package kz.spt.app.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.app.repository.CarStateRepository;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
 import kz.spt.app.service.ControllerService;
@@ -18,12 +19,14 @@ import kz.spt.lib.service.ParkingService;
 import kz.spt.lib.service.PluginService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static kz.spt.lib.utils.StaticValues.ratePlugin;
+import static kz.spt.lib.utils.StaticValues.whitelistPlugin;
 
 @Service
 public class ParkingServiceImpl implements ParkingService {
@@ -79,6 +82,7 @@ public class ParkingServiceImpl implements ParkingService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) throws Exception{
         Parking parking = findById(id);
         if (parking.getGateList() != null) {
@@ -97,6 +101,20 @@ public class ParkingServiceImpl implements ParkingService {
                 gateService.deleteGate(gate);
             }
         }
+
+
+        carStateService.deleteAllInParking(parking);
+//        CarStateRepository
+
+        PluginRegister whitelistPluginRegister = pluginService.getPluginRegister(whitelistPlugin);
+        if (whitelistPluginRegister != null) {
+            ObjectNode command = objectMapper.createObjectNode();
+            command.put("command", "deleteWhitelists");
+            command.put("car_number", "000XXX00");
+            command.put("parkingId", parking.getId());
+            JsonNode whitelistPluginResult = whitelistPluginRegister.execute(command);
+        }
+
         PluginRegister ratePluginRegister = pluginService.getPluginRegister(ratePlugin);
         if (ratePluginRegister != null) {
             ObjectNode command = objectMapper.createObjectNode();
@@ -104,6 +122,9 @@ public class ParkingServiceImpl implements ParkingService {
             command.put("parkingId", parking.getId());
             JsonNode ratePluginResult = ratePluginRegister.execute(command);
         }
+//        CarState
+//
+
         parkingRepository.delete(parking);
     }
 

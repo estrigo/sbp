@@ -44,4 +44,6 @@ public interface WhitelistService {
     List<WhiteListDto> listAllWhitelistForExcel() throws JsonProcessingException;
 
     List<WhiteListDto> listByGroupName(String groupName) throws JsonProcessingException;
+
+    void deleteAllByParkingId(Long parkingId);
 }

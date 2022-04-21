@@ -1,6 +1,7 @@
 package kz.spt.app.repository;
 
 import kz.spt.lib.model.CarState;
+import kz.spt.lib.model.Parking;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -44,4 +45,7 @@ public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSp
 
     @Query("from CarState cs where cs.carNumber = :carNumber order by cs.inTimestamp desc")
     List<CarState> getLastCarState(@Param("carNumber") String carNumber, Pageable page);
+
+    @Query("from CarState cs where cs.parking = :parking")
+    List<CarState> getCarStateByParkingId(@Param("parking") Parking parking);
 }
