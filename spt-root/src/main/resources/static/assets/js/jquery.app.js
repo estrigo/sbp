@@ -304,6 +304,10 @@ $(document).ready(function() {
             $(this).parent().parent().prev().click(); // click the item to make it drop
         }
     });
+
+    if ($(".card-header").length>0) {
+        document.title = $(".card-header:first").text();
+    }
 });
 
 var wow = new WOW(
