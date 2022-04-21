@@ -24,4 +24,8 @@ public interface AbonomentRepository extends JpaRepository<Abonoment, Long>, Jpa
 
     @Query("select count(a.id) from Abonoment a where a.car.platenumber = :plateNumber and a.parking.id = :parkingId and not ((:begin < a.begin and :end <= a.begin) or (:begin>= a.end and :end > a.end))")
     Long findIntersectionAbonoment(@Param("plateNumber") String plateNumber, @Param("parkingId") Long parkingId, @Param("begin") Date begin, @Param("end") Date end);
+
+    @Query("from Abonoment w where w.parking.id = :parkingId")
+    List<Abonoment> findAbonomentByParking(@Param("parkingId") Long parkingId);
+
 }

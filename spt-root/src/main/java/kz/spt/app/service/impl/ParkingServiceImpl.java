@@ -25,8 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static kz.spt.lib.utils.StaticValues.ratePlugin;
-import static kz.spt.lib.utils.StaticValues.whitelistPlugin;
+import static kz.spt.lib.utils.StaticValues.*;
 
 @Service
 public class ParkingServiceImpl implements ParkingService {
@@ -121,6 +120,14 @@ public class ParkingServiceImpl implements ParkingService {
             command.put("command", "deleteParkingRate");
             command.put("parkingId", parking.getId());
             JsonNode ratePluginResult = ratePluginRegister.execute(command);
+        }
+
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonomentPlugin);
+        if (abonomentPluginRegister != null) {
+            ObjectNode command = objectMapper.createObjectNode();
+            command.put("command", "deleteParkingAbonoments");
+            command.put("parkingId", parking.getId());
+            JsonNode abonomentPluginResult = abonomentPluginRegister.execute(command);
         }
 //        CarState
 //

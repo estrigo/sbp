@@ -137,6 +137,13 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     }
 
     @Override
+    public void deleteAbonomentByParkingID(Long parkingId) {
+        List<Abonoment> abonomentList = abonomentRepository.findAbonomentByParking(parkingId);
+        for (int i=0; i<abonomentList.size(); i++) {
+            abonomentRepository.deleteById(abonomentList.get(i).getId());
+        }
+    }
+    @Override
     public Page<AbonomentTypeDTO> abonomentTypeDtoList(PagingRequest pagingRequest) {
         List<AbonomentTypes> allAbonomentTypes = listByFilters();
         return getPage(AbonomentTypeDTO.convertToDto(allAbonomentTypes), pagingRequest);

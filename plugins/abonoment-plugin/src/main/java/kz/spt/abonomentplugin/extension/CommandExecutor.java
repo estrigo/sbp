@@ -74,7 +74,13 @@ public class CommandExecutor implements PluginRegister {
                 Date carInDate = format.parse(jsonCommand.get("carInDate").textValue());
                 JsonNode result = getAbonomentPluginService().getPaidNotExpiredAbonoment(plateNumber, parkingId, carInDate);
                 node.set("abonementsDetails", result);
-            } else {
+            } else if ("deleteParkingAbonoments".equals(command)) {
+                Long parkingId = jsonCommand.get("parkingId").longValue();
+                getAbonomentPluginService().deleteAbonomentByParkingID(parkingId);
+//                getWhitelistService().deleteAllByParkingId(parkingId);
+                node.put("reply: ", "deleted whitelist lists");
+            }
+            else {
                 throw new RuntimeException("Abonent plugin: unkown command");
             }
         } else {

@@ -27,6 +27,8 @@ public interface AbonomentPluginService {
 
     void deleteAbonoment(Long id);
 
+    void deleteAbonomentByParkingID(Long parkingId);
+
     Page<AbonomentDTO> abonomentDtoList(PagingRequest pagingRequest);
 
     JsonNode getUnpaidNotExpiredAbonoment(String plateNumber);

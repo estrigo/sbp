@@ -602,16 +602,12 @@ public class WhitelistServiceImpl implements WhitelistService {
 
     public void deleteAllByParkingId(Long parkingId) {
         List<Whitelist> whitelists = whitelistRepository.findByParkingID(parkingId);
-        if (whitelists.size()>0) {
-            for (int i=0; i<whitelists.size(); i++){
-                whitelistRepository.deleteById(whitelists.get(i).getId());
-            }
+        for (int i=0; i<whitelists.size(); i++){
+            whitelistRepository.deleteById(whitelists.get(i).getId());
         }
         List<WhitelistGroups> whitelistGroups = whitelistGroupsRepository.getWhitelistGroupByParkingId(parkingId);
-        if (whitelistGroups.size()>0) {
-            for (int i=0; i<whitelistGroups.size(); i++){
-                whitelistGroupsRepository.deleteById(whitelistGroups.get(i).getId());
-            }
+        for (int i=0; i<whitelistGroups.size(); i++){
+            whitelistGroupsRepository.deleteById(whitelistGroups.get(i).getId());
         }
 
     }
