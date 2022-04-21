@@ -50,7 +50,7 @@ import java.util.concurrent.Future;
 @Service
 public class ArmServiceImpl implements ArmService {
 
-    private static Map<String, Long> concurrentHashMap = new ConcurrentHashMap<>();
+    private static Hashtable<String, Long> hashtable = new Hashtable<>();
     private CameraService cameraService;
     private BarrierService barrierService;
     private EventLogService eventLogService;
@@ -132,15 +132,15 @@ public class ArmServiceImpl implements ArmService {
                     if(debtPlatenumber != null){
                         properties.put("carNumber", debtPlatenumber);
 
-                        if(concurrentHashMap.containsKey(debtPlatenumber)){
-                            Long timeDiffInMillis = System.currentTimeMillis() - concurrentHashMap.get(debtPlatenumber);
+                        if(hashtable.containsKey(debtPlatenumber)){
+                            Long timeDiffInMillis = System.currentTimeMillis() - hashtable.get(debtPlatenumber);
                             if(timeDiffInMillis > 2 * 1000){ // если больше 2 секунд то принимать команду
-                                concurrentHashMap.put(debtPlatenumber, System.currentTimeMillis());
+                                hashtable.put(debtPlatenumber, System.currentTimeMillis());
                             } else {
                                 return false;
                             }
                         } else {
-                            concurrentHashMap.put(debtPlatenumber, System.currentTimeMillis());
+                            hashtable.put(debtPlatenumber, System.currentTimeMillis());
                         }
                     }
 

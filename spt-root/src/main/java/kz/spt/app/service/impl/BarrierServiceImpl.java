@@ -6,7 +6,6 @@ import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import com.intelligt.modbus.jlibmodbus.master.ModbusMaster;
 import com.intelligt.modbus.jlibmodbus.master.ModbusMasterFactory;
-import com.intelligt.modbus.jlibmodbus.serial.SerialParameters;
 import com.intelligt.modbus.jlibmodbus.tcp.TcpParameters;
 import kz.spt.app.job.CarSimulateJob;
 import kz.spt.app.job.StatusCheckJob;
@@ -27,8 +26,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.Socket;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -412,8 +409,8 @@ public class BarrierServiceImpl implements BarrierService {
             try {
                 m.writeSingleCoil(slaveId, offset, true);
             } catch (Exception e){
-                m.connect();
-                m.writeSingleCoil(slaveId, offset, true);
+                log.info("retry error: " + e.getMessage());
+                modbusRetryWrite(m, slaveId, offset, true);
             }
             boolean[] changedValue;
             try {
@@ -443,8 +440,18 @@ public class BarrierServiceImpl implements BarrierService {
                 Thread.sleep(500);
                 boolean[] currentValue = m.readCoils(slaveId, offset, 1);
                 if (currentValue != null && currentValue.length > 0 && currentValue[0]) {
-                    m.writeSingleCoil(slaveId, offset, false);
-                    currentValue = m.readCoils(slaveId, offset, 1);
+                    try {
+                        m.writeSingleCoil(slaveId, offset, false);
+                    } catch (Exception e){
+                        m.connect();
+                        m.writeSingleCoil(slaveId, offset, false);
+                    }
+                    try {
+                        currentValue = m.readCoils(slaveId, offset, 1);
+                    } catch (Exception e){
+                        m.connect();
+                        currentValue = m.readCoils(slaveId, offset, 1);
+                    }
                     Boolean isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
                     if (!isReturnValueChanged) {
                         for (int i = 0; i < 3; i++) {
@@ -478,5 +485,22 @@ public class BarrierServiceImpl implements BarrierService {
 
     private enum Command {
         Open, Close
+    }
+
+    private Boolean modbusRetryWrite(ModbusMaster m, int slaveId, int offset, boolean value){
+        Boolean wrote = false;
+        int retryCount = 0;
+        while (!wrote){
+            try {
+                retryCount++;
+                log.info("modbus retry count: " + retryCount);
+                m.connect();
+                m.writeSingleCoil(slaveId, offset, value);
+                wrote = true;
+            } catch (Exception e) {
+                log.info("modbus retry error: " + e.getMessage());
+            }
+        }
+        return wrote;
     }
 }

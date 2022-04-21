@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -37,7 +38,7 @@ import java.util.logging.Level;
 @Service
 public class CarEventServiceImpl implements CarEventService {
 
-    private static Map<String, Long> concurrentHashMap = new ConcurrentHashMap<>();
+    private static Hashtable<String, Long> hashtable = new Hashtable<>();
     private final CarsService carsService;
     private final CameraService cameraService;
     private final EventLogService eventLogService;
@@ -175,11 +176,11 @@ public class CarEventServiceImpl implements CarEventService {
             String secondCameraIp = (gate.frontCamera2 != null) ? (eventDto.ip_address.equals(gate.frontCamera.ip) ? gate.frontCamera2.ip : gate.frontCamera.ip) : null; // If there is two camera, then ignore second by timeout
 
             if(!eventDto.manualOpen){
-                if (concurrentHashMap.containsKey(eventDto.ip_address) || (secondCameraIp != null && concurrentHashMap.containsKey(secondCameraIp))) {
-                    Long timeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(eventDto.ip_address) ? concurrentHashMap.get(eventDto.ip_address) : 0);
+                if (hashtable.containsKey(eventDto.ip_address) || (secondCameraIp != null && hashtable.containsKey(secondCameraIp))) {
+                    Long timeDiffInMillis = System.currentTimeMillis() - (hashtable.containsKey(eventDto.ip_address) ? hashtable.get(eventDto.ip_address) : 0);
                     int timeout = (camera.getTimeout() == null ? 1 : camera.getTimeout() * 1000);
                     if (secondCameraIp != null) {
-                        Long secondCameraTimeDiffInMillis = System.currentTimeMillis() - (concurrentHashMap.containsKey(secondCameraIp) ? concurrentHashMap.get(secondCameraIp) : 0);
+                        Long secondCameraTimeDiffInMillis = System.currentTimeMillis() - (hashtable.containsKey(secondCameraIp) ? hashtable.get(secondCameraIp) : 0);
                         timeDiffInMillis = timeDiffInMillis < secondCameraTimeDiffInMillis ? timeDiffInMillis : secondCameraTimeDiffInMillis;
                     }
 
@@ -187,10 +188,10 @@ public class CarEventServiceImpl implements CarEventService {
                         log.info("Ignored event from camera: " + eventDto.ip_address + " time: " + timeDiffInMillis);
                         return;
                     } else {
-                        concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
+                        hashtable.put(eventDto.ip_address, System.currentTimeMillis());
                     }
                 } else {
-                    concurrentHashMap.put(eventDto.ip_address, System.currentTimeMillis());
+                    hashtable.put(eventDto.ip_address, System.currentTimeMillis());
                 }
             }
 
@@ -323,7 +324,7 @@ public class CarEventServiceImpl implements CarEventService {
             Calendar current = Calendar.getInstance();
             if(carState.getParking().equals(camera.getGate().getParking()) && (current.getTime().getTime() - carState.getInTimestamp().getTime() <= 5*60*1000)){
                 enteredFromThisSecondsBefore = true;
-            } else if(carState.getPaid() != null && !carState.getPaid()) {
+            } else { // Закрывать предыдущий сессию, чтобы авто могла заехать
                 carStateService.createOUTManual(eventDto.car_number, new Date(), carState); // Принудительная закрытие предыдущей сессий
                 carState = null;
             }

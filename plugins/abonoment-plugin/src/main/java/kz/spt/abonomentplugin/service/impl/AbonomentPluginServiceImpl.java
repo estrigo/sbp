@@ -201,7 +201,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         else {
             abonoment.setType(type.getCustomJson());
         }
-
+        abonoment.setCustomNumbers(type.getCustomNumbers());
 
         Calendar calendar = Calendar.getInstance();
         if (dateStart.equals("")){
@@ -255,6 +255,8 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
             abonoment.setBegin(calendar.getTime());
+            calendar.add(Calendar.DATE, abonoment.getMonths());
+            abonoment.setEnd(calendar.getTime());
         }
         abonomentRepository.save(abonoment);
     }
@@ -269,10 +271,12 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             final String dateFormat = "dd.MM.yyyy HH:mm";
             SimpleDateFormat format = new SimpleDateFormat(dateFormat);
 
-            for(Abonoment abonoment:abonoments){
+            for(Abonoment abonement:abonoments){
                 ObjectNode result = objectMapper.createObjectNode();
-                result.put("begin", format.format(abonoment.getBegin()));
-                result.put("end", format.format(abonoment.getEnd()));
+                result.put("begin", format.format(abonement.getBegin()));
+                result.put("end", format.format(abonement.getEnd()));
+                result.put("type", abonement.getPaidType());
+                result.put("custom_numbers", abonement.getCustomNumbers());
                 abonements.add(result);
             }
         }
