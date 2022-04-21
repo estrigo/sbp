@@ -49,6 +49,7 @@ public class CarEventServiceImpl implements CarEventService {
     private final PluginService pluginService;
     private final QrPanelService qrPanelService;
     private final AbonomentService abonomentService;
+    private final CarModelService carModelService;
 
     @Value("${parking.has.access.unknown.cases}")
     Boolean parkingHasAccessUnknownCases;
@@ -62,7 +63,7 @@ public class CarEventServiceImpl implements CarEventService {
     public CarEventServiceImpl(CarsService carsService, CameraService cameraService, EventLogService eventLogService,
                                CarStateService carStateService, CarImageService carImageService,
                                BarrierService barrierService, BlacklistService blacklistService, PluginService pluginService, QrPanelService qrPanelService,
-                               AbonomentService abonomentService) {
+                               AbonomentService abonomentService, CarModelService carModelService) {
         this.carsService = carsService;
         this.cameraService = cameraService;
         this.eventLogService = eventLogService;
@@ -73,6 +74,7 @@ public class CarEventServiceImpl implements CarEventService {
         this.pluginService = pluginService;
         this.qrPanelService = qrPanelService;
         this.abonomentService = abonomentService;
+        this.carModelService = carModelService;
     }
 
     @Override
@@ -736,6 +738,7 @@ public class CarEventServiceImpl implements CarEventService {
                                 ObjectNode billinNode = this.objectMapper.createObjectNode();
                                 billinNode.put("command", "getCurrentBalance");
                                 billinNode.put("plateNumber", carState.getCarNumber());
+
                                 JsonNode billingResult = billingPluginRegister.execute(billinNode);
                                 balance = billingResult.get("currentBalance").decimalValue().setScale(2);
 
@@ -756,6 +759,7 @@ public class CarEventServiceImpl implements CarEventService {
                                     log.info("abonements hasAccess = " + hasAccess);
                                 } else {
                                     rateResult = calculateRate(carState.getInTimestamp(), eventDto.event_date_time, camera, carState, eventDto, format, properties);
+                                    log.info("Checking out here");
                                     if (rateResult == null) {
                                         properties.put("type", EventLog.StatusType.Error);
                                         String descriptionRu = "Ошибка расчета плагина вычисления стоимости парковки. Авто с гос. номером " + eventDto.car_number;
@@ -948,7 +952,9 @@ public class CarEventServiceImpl implements CarEventService {
             ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
             ratePluginNode.put("isCheck", false);
             ratePluginNode.put("paymentsJson", carState.getPaymentJson());
-
+            Cars cars = carsService.findByPlatenumber(carState.getCarNumber());
+            CarModel carModel = carModelService.getByModel(cars.getModel());
+            ratePluginNode.put("carType", carModel.getType());
             JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
             return ratePluginResult.get("rateResult").decimalValue().setScale(2);
         } else {
