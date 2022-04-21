@@ -1,4 +1,4 @@
-FROM arm64v8/openjdk:11.0-jre
+FROM arm64v8/openjdk
 LABEL maintainer="smartparking.technologies@gmail.com"
 
 WORKDIR /usr/local/
