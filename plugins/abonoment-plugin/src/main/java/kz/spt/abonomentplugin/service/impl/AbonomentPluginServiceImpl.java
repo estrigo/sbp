@@ -251,6 +251,11 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     public void setAbonomentPaid(Long id) {
         Abonoment abonoment  = abonomentRepository.findById(id).get();
         abonoment.setPaid(true);
+        if (abonoment.getChecked()){
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date());
+            abonoment.setBegin(calendar.getTime());
+        }
         abonomentRepository.save(abonoment);
     }
 
