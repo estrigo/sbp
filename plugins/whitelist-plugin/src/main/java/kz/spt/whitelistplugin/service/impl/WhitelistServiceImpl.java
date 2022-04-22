@@ -576,7 +576,11 @@ public class WhitelistServiceImpl implements WhitelistService {
 
         return model -> (model.getPlateNumber() !=  null && model.getPlateNumber().toLowerCase().contains(value.toLowerCase())
                 || (model.getParkingName() != null && model.getParkingName().toLowerCase().contains(value.toLowerCase()))
-                || (model.getGroupName() != null && model.getGroupName().toLowerCase().contains(value.toLowerCase())));
+                || (model.getGroupName() != null && model.getGroupName().toLowerCase().contains(value.toLowerCase()))
+                || (model.getFullName() != null && model.getFullName().toLowerCase().contains(value.toLowerCase()))
+                || (model.getParkingNumber() != null && model.getParkingNumber().toLowerCase().contains(value.toLowerCase()))
+                || (model.getAddress() != null && model.getAddress().toLowerCase().contains(value.toLowerCase()))
+                || (model.getComment() != null && model.getComment().toLowerCase().contains(value.toLowerCase())));
     }
 
     private Comparator<WhiteListDto> sort(PagingRequest pagingRequest){
