@@ -77,6 +77,8 @@ public class CarsServiceImpl implements CarsService {
         Cars car = findByPlatenumber(platenumber);
         if(car == null){
             car = new Cars();
+            platenumber = platenumber.trim();
+            platenumber = platenumber.replaceAll("\\W", "");
             car.setPlatenumber(platenumber);
 
             Map<String, Object> properties = new HashMap<>();
