@@ -70,6 +70,8 @@ spring:
     scheduling:
       pool:
         size: 10
+  jmx:
+    enabled: true
 server:
   tomcat:
     protocol-header: x-forwarded-proto
