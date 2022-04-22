@@ -56,4 +56,6 @@ public interface CarStateService {
     List<CarStateExcelDto> getExcelData(CarStateFilterDto carStateFilterDto) throws ParseException;
 
     void deleteAllInParking(Parking parking);
+
+    void deleteParkingFromCarStates(Parking parking);
 }

@@ -102,8 +102,7 @@ public class ParkingServiceImpl implements ParkingService {
         }
 
 
-        carStateService.deleteAllInParking(parking);
-//        CarStateRepository
+        carStateService.deleteParkingFromCarStates(parking);
 
         PluginRegister whitelistPluginRegister = pluginService.getPluginRegister(whitelistPlugin);
         if (whitelistPluginRegister != null) {

@@ -68,6 +68,16 @@ public class CarStateServiceImpl implements CarStateService {
         }
     }
 
+    public void deleteParkingFromCarStates(Parking parking) {
+        List<CarState> carStates = carStateRepository.getCarStateByParkingId(parking);
+        if (carStates.size()>0) {
+            for (int i=0; i<carStates.size(); i++) {
+                carStates.get(i).setParking(null);
+                carStateRepository.save(carStates.get(i));
+            }
+        }
+    }
+
     @Override
     public void createINState(String carNumber, Date inTimestamp, Camera camera, Boolean paid, String whitelistJson, String inPhotoUrl) {
         CarState carState = new CarState();
