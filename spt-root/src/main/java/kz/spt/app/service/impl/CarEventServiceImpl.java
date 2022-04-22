@@ -467,7 +467,7 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("type", EventLog.StatusType.Allow);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " по предоплате" + eventWithDimensionRu, "Permitted: Car with number " + eventDto.car_number + " on prepaid basis" + eventWithDimensionEn);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " по предоплате" + eventWithDimensionRu, "Permitted: Car with number " + eventDto.car_number + " on prepaid basis" + eventWithDimensionEn);
-        }else {
+        } else {
             if (whitelistCheckResults == null) {
                 properties.put("type", EventLog.StatusType.Allow);
                 carStateService.createINState(eventDto.car_number, eventDto.event_date_time, camera, true, null,properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
@@ -935,8 +935,13 @@ public class CarEventServiceImpl implements CarEventService {
                 String descriptionRu = "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + rateResult + ". Остаток баланса: " + subtractResult + ". Проезд разрешен.";
                 String descriptionEn = "Allowed: Paid for parking. Total sum: " + rateResult + ". Balance left: " + subtractResult + ". Allowed.";
                 if (BigDecimal.ZERO.compareTo(rateResult) == 0) {
-                    descriptionRu = "Пропускаем авто: Оплата не требуется. Проезд разрешен.";
-                    descriptionEn = "Allowed: No payment required. Allowed";
+                    if ((eventDto.event_date_time.getTime() - carState.getInTimestamp().getTime()) < 900000){
+                        descriptionRu = "Пропускаем авто: Первые 15 минут бесплатно. Проезд разрешен.";
+                        descriptionEn = "Allowed: First 15 minutes free. Allowed";
+                    } else {
+                        descriptionRu = "Пропускаем авто: Оплата не требуется. Проезд разрешен.";
+                        descriptionEn = "Allowed: No payment required. Allowed";
+                    }
                 }
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
