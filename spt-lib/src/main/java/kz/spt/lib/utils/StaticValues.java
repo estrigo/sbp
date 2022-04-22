@@ -11,6 +11,7 @@ public class StaticValues {
         MANUAL, // ручной выезд авто
         ABONOMENT, // выезд через абономент
         REGISTER; // только регистрировать выезды
+
     }
 
     public static String dateFormatTZ = "yyyy-MM-dd'T'HH:mm:ssZ";
@@ -26,4 +27,5 @@ public class StaticValues {
     public static String carImageSmallAddon = "_resize_w_200_h_100";
     public static String carImagePropertyName = "carImageUrl";
     public static String carSmallImagePropertyName = "carSmallImageUrl";
+    public static String carmodelPlugin = "carmodel-plugin";
 }
