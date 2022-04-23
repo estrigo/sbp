@@ -122,15 +122,24 @@ public class GateStatusDto {
                         gateStatusDto.frontCamera = new CameraStatusDto();
                         gateStatusDto.frontCamera.id = camera.getId();
                         gateStatusDto.frontCamera.ip = camera.getIp();
+                        gateStatusDto.frontCamera.timeout = camera.getTimeout() != null ? camera.getTimeout(): 1;
+                        gateStatusDto.frontCamera.enabled = camera.isEnabled();
+                        gateStatusDto.frontCamera.gateId = gate.getId();
                     } else {
                         gateStatusDto.frontCamera2 = new CameraStatusDto();
                         gateStatusDto.frontCamera2.id = camera.getId();
                         gateStatusDto.frontCamera2.ip = camera.getIp();
+                        gateStatusDto.frontCamera2.timeout = camera.getTimeout() != null ? camera.getTimeout(): 1;
+                        gateStatusDto.frontCamera2.enabled = camera.isEnabled();
+                        gateStatusDto.frontCamera2.gateId = gate.getId();
                     }
                 }
                 if (Camera.CameraType.BACK.equals(camera.getCameraType())) {
                     gateStatusDto.backCamera = new CameraStatusDto();
                     gateStatusDto.backCamera.id = camera.getId();
+                    gateStatusDto.backCamera.timeout = camera.getTimeout() != null ? camera.getTimeout(): 1;
+                    gateStatusDto.backCamera.enabled = camera.isEnabled();
+                    gateStatusDto.backCamera.gateId = gate.getId();
                 }
             }
         }

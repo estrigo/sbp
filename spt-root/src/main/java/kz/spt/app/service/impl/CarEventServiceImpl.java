@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.job.StatusCheckJob;
+import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.Period;
 import kz.spt.app.repository.CarModelRepository;
@@ -151,10 +152,10 @@ public class CarEventServiceImpl implements CarEventService {
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
         eventDto.car_number = eventDto.car_number.toUpperCase();
 
-        Camera camera = cameraService.findCameraByIp(eventDto.ip_address);
+        CameraStatusDto cameraStatusDto = StatusCheckJob.findCameraStatusDtoByIp(eventDto.ip_address);
 
         //Если камера не зайдействована, то не фиксировать события по ней. Задача #170
-        if (!camera.isEnabled())
+        if (cameraStatusDto!=null && !cameraStatusDto.enabled)
             return;
 
         Map<String, Object> properties = new HashMap<>();
@@ -172,16 +173,16 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("car_model", eventDto.car_model);
         }
 
-        if (camera != null) {
+        if (cameraStatusDto != null) {
 
-            GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(camera.getGate().getId());
+            GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(cameraStatusDto.gateId);
 
             String secondCameraIp = (gate.frontCamera2 != null) ? (eventDto.ip_address.equals(gate.frontCamera.ip) ? gate.frontCamera2.ip : gate.frontCamera.ip) : null; // If there is two camera, then ignore second by timeout
 
             if(!eventDto.manualOpen){
                 if (hashtable.containsKey(eventDto.ip_address) || (secondCameraIp != null && hashtable.containsKey(secondCameraIp))) {
                     Long timeDiffInMillis = System.currentTimeMillis() - (hashtable.containsKey(eventDto.ip_address) ? hashtable.get(eventDto.ip_address) : 0);
-                    int timeout = (camera.getTimeout() == null ? 1 : camera.getTimeout() * 1000);
+                    int timeout = (cameraStatusDto.timeout == 0 ? 1 : cameraStatusDto.timeout * 1000);
                     if (secondCameraIp != null) {
                         Long secondCameraTimeDiffInMillis = System.currentTimeMillis() - (hashtable.containsKey(secondCameraIp) ? hashtable.get(secondCameraIp) : 0);
                         timeDiffInMillis = timeDiffInMillis < secondCameraTimeDiffInMillis ? timeDiffInMillis : secondCameraTimeDiffInMillis;
@@ -202,10 +203,9 @@ public class CarEventServiceImpl implements CarEventService {
 
             log.info("handling event from camera: " + eventDto.ip_address + " for car: " + eventDto.car_number + " model - " + eventDto.car_model);
 
-            properties.put("gateName", camera.getGate().getName());
-            properties.put("gateId", camera.getGate().getId());
-            properties.put("gateDescription", camera.getGate().getDescription());
-            properties.put("gateType", camera.getGate().getGateType().toString());
+            properties.put("gateName", gate.gateName);
+            properties.put("gateId", gate.gateId);
+            properties.put("gateType", gate.gateType);
 
             if (eventDto.car_picture != null && !"".equals(eventDto.car_picture) && !"null".equals(eventDto.car_picture) && !"undefined".equals(eventDto.car_picture) && !"data:image/jpg;base64,null".equals(eventDto.car_picture)) {
                 String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_date_time, eventDto.car_number);
@@ -214,23 +214,24 @@ public class CarEventServiceImpl implements CarEventService {
             }
 
             log.info("Camera belongs to gate: " + gate.gateId);
-            if (gate.frontCamera != null && gate.frontCamera.id == camera.getId()) {
+            if (gate.frontCamera != null && gate.frontCamera.id == cameraStatusDto.id) {
                 gate.frontCamera.carEventDto = eventDto;
                 gate.frontCamera.properties = properties;
-            } else if (gate.backCamera != null && gate.backCamera.id == camera.getId()) {
+            } else if (gate.backCamera != null && gate.backCamera.id == cameraStatusDto.id) {
                 gate.backCamera.carEventDto = eventDto;
                 gate.backCamera.properties = properties;
             }
 
-            if (eventDto.manualOpen || isAllow(eventDto, camera, properties, gate)) {
-                log.info("Gate type: " + camera.getGate().getGateType());
-                createNewCarEvent(camera, eventDto, properties);
+            if (eventDto.manualOpen || isAllow(eventDto, cameraStatusDto, properties, gate)) {
+                log.info("Gate type: " + gate.gateType);
+                createNewCarEvent(cameraStatusDto, gate, eventDto, properties);
 
-                if (Gate.GateType.REVERSE.equals(camera.getGate().getGateType())) {
+                Camera camera = cameraService.findCameraByIp(cameraStatusDto.ip);
+                if (Gate.GateType.REVERSE.equals(gate.gateType)) {
                     handleCarReverseInEvent(eventDto, camera, gate, properties, format);
-                } else if (Gate.GateType.IN.equals(camera.getGate().getGateType())) {
+                } else if (Gate.GateType.IN.equals(gate.gateType)) {
                     handleCarInEvent(eventDto, camera, gate, properties, format);
-                } else if (Gate.GateType.OUT.equals(camera.getGate().getGateType())) {
+                } else if (Gate.GateType.OUT.equals(gate.gateType)) {
                     handleCarOutEvent(eventDto, camera, gate, properties, format);
                 }
             } else {
@@ -246,11 +247,11 @@ public class CarEventServiceImpl implements CarEventService {
         }
     }
 
-    private boolean isAllow(CarEventDto carEvent, Camera camera, Map<String, Object> properties, GateStatusDto gate) {
+    private boolean isAllow(CarEventDto carEvent, CameraStatusDto cameraStatusDto, Map<String, Object> properties, GateStatusDto gate) {
         if (blacklistService.findByPlate(carEvent.car_number).isPresent()) {
             properties.put("type", EventLog.StatusType.Deny);
-            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), carEvent.car_number, "В проезде отказано: Авто с гос. номером " + carEvent.car_number + " в черном списке", "Not allowed to enter: Car with number " + carEvent.car_number + " in blacklist");
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Авто с гос. номером " + carEvent.car_number + " в черном списке", "Not allowed to enter: Car with number " + carEvent.car_number + " in blacklist");
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, cameraStatusDto.id, carEvent.car_number, "В проезде отказано: Авто с гос. номером " + carEvent.car_number + " в черном списке", "Not allowed to enter: Car with number " + carEvent.car_number + " in blacklist");
+            eventLogService.createEventLog(Gate.class.getSimpleName(), cameraStatusDto.id, properties, "В проезде отказано: Авто с гос. номером " + carEvent.car_number + " в черном списке", "Not allowed to enter: Car with number " + carEvent.car_number + " in blacklist");
             return false;
         }
         return gate.lastClosedTime == null || System.currentTimeMillis() - gate.lastClosedTime > 5000; ////если последний раз закрыли больше 5 секунды
@@ -966,12 +967,12 @@ public class CarEventServiceImpl implements CarEventService {
         }
     }
 
-    private void createNewCarEvent(Camera camera, CarEventDto eventDto, Map<String, Object> properties) {
+    private void createNewCarEvent(CameraStatusDto cameraStatusDto, GateStatusDto gateStatusDto, CarEventDto eventDto, Map<String, Object> properties) {
         properties.put("type", EventLog.StatusType.Success);
-        eventLogService.sendSocketMessage(ArmEventType.Photo, EventLog.StatusType.Success, camera.getId(), eventDto.car_number, eventDto.car_picture, null);
-        eventLogService.sendSocketMessage(ArmEventType.Lp, EventLog.StatusType.Success, camera.getId(), eventDto.car_number, eventDto.lp_picture, null);
-        eventLogService.createEventLog(Camera.class.getSimpleName(), camera.getId(), properties, "Зафиксирован новый номер авто " + eventDto.car_number, "New license plate number identified " + eventDto.car_number);
-        carsService.createCar(eventDto.car_number, eventDto.region, eventDto.vecihleType, Gate.GateType.OUT.equals(camera.getGate().getGateType()) ? null : eventDto.car_model); // При выезде не сохранять тип авто
+        eventLogService.sendSocketMessage(ArmEventType.Photo, EventLog.StatusType.Success, cameraStatusDto.id, eventDto.car_number, eventDto.car_picture, null);
+        eventLogService.sendSocketMessage(ArmEventType.Lp, EventLog.StatusType.Success, cameraStatusDto.id, eventDto.car_number, eventDto.lp_picture, null);
+        eventLogService.createEventLog(Camera.class.getSimpleName(), cameraStatusDto.id, properties, "Зафиксирован новый номер авто " + eventDto.car_number, "New license plate number identified " + eventDto.car_number);
+        carsService.createCar(eventDto.car_number, eventDto.region, eventDto.vecihleType, Gate.GateType.OUT.equals(gateStatusDto.gateType) ? null : eventDto.car_model); // При выезде не сохранять тип авто
     }
 
     private BigDecimal calculateRate(Date inDate, Date outDate, Camera camera, CarState carState, CarEventDto eventDto, SimpleDateFormat format,Map<String, Object> properties) throws Exception {

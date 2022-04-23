@@ -37,7 +37,7 @@ public class StatusCheckJob {
     public static Map<Long, Boolean> isGatesProcessing = new ConcurrentHashMap<>();
     public static Queue<GateStatusDto> globalGateDtos = new ConcurrentLinkedQueue<>();
 
-    @Scheduled(fixedDelayString = "${status.check.fixedDelay}", initialDelay = 20000)
+    @Scheduled(fixedDelayString = "${status.check.fixedDelay}", initialDelay = 5000)
     public void scheduleFixedDelayTask() throws UnknownHostException, ModbusIOException {
         if(globalGateDtos.isEmpty()){
             refreshGlobalGateIds();
@@ -75,6 +75,19 @@ public class StatusCheckJob {
         for(GateStatusDto gate: StatusCheckJob.globalGateDtos){
             if(gate.gateId == gateId){
                 return gate;
+            }
+        }
+        return null;
+    }
+
+    public static CameraStatusDto findCameraStatusDtoByIp(String cameraIp){
+        for(GateStatusDto gate: StatusCheckJob.globalGateDtos){
+            if(cameraIp.equals(gate.frontCamera.ip)){
+                return gate.frontCamera;
+            } else if(gate.frontCamera2 != null && cameraIp.equals(gate.frontCamera2.ip)){
+                return gate.frontCamera2;
+            } else if(gate.backCamera != null && cameraIp.equals(gate.backCamera.ip)){
+                return gate.backCamera;
             }
         }
         return null;
