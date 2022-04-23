@@ -450,6 +450,19 @@ public class PaymentServiceImpl implements PaymentService {
                 ratePluginNode.put("isCheck", false);
                 ratePluginNode.put("paymentsJson", carState.getPaymentJson());
 
+                Cars cars = carService.findByPlatenumber(carState.getCarNumber());
+                if (cars.getModel() != null && !cars.getModel().equals("")) {
+                    ratePluginNode.put("carModel", cars.getModel());
+                    if (carModelService.getByModel(cars.getModel()) != null) {
+                        CarModel carModel = carModelService.getByModel(cars.getModel());
+                        ratePluginNode.put("carType", carModel.getType());
+                    } else {
+                        log.info("This model doesn't exist in db - " + cars.getModel());
+                    }
+                } else {
+                    log.info("Car record doesn't exist in database");
+                }
+
                 JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
                 rateResult = ratePluginResult.get("rateResult").decimalValue().setScale(2);
                 carState.setRateAmount(rateResult);
