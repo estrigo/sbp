@@ -1,9 +1,14 @@
 package kz.spt.lib.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import kz.spt.app.model.dto.Period;
 import kz.spt.lib.model.CarState;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 public interface AbonomentService {
 
@@ -16,4 +21,6 @@ public interface AbonomentService {
     JsonNode deleteAbonoment(Long id) throws Exception;
 
     JsonNode getAbonomentsDetails(String plateNumber, CarState carState, SimpleDateFormat format) throws Exception;
+
+    List<Period> calculatePaymentPeriods(JsonNode abonementJson, Date inDate, Date outDate) throws JsonProcessingException, ParseException;
 }

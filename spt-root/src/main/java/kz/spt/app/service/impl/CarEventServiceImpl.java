@@ -196,6 +196,8 @@ public class CarEventServiceImpl implements CarEventService {
                 } else {
                     hashtable.put(eventDto.ip_address, System.currentTimeMillis());
                 }
+            } else {
+                hashtable.put(eventDto.ip_address, System.currentTimeMillis());
             }
 
             log.info("handling event from camera: " + eventDto.ip_address + " for car: " + eventDto.car_number + " model - " + eventDto.car_model);
@@ -998,66 +1000,29 @@ public class CarEventServiceImpl implements CarEventService {
         }
     }
 
-    private BigDecimal calculateAbonomentExtraPayment(Camera camera, CarState carState, CarEventDto eventDto, JsonNode jsonNode, SimpleDateFormat format, Map<String, Object> properties) throws Exception {
-        ArrayNode abonements = (ArrayNode) jsonNode;
-
-        final String dateFormat = "dd.MM.yyyy HH:mm";
-        SimpleDateFormat abonementFormat = new SimpleDateFormat(dateFormat);
+    private BigDecimal calculateAbonomentExtraPayment(Camera camera, CarState carState, CarEventDto eventDto, JsonNode abonementJson, SimpleDateFormat format, Map<String, Object> properties) throws Exception {
 
         Date inDate = carState.getInTimestamp();
         Date outDate = eventDto.event_date_time;
 
-        Iterator<JsonNode> iterator = abonements.iterator();
-        List<Period> periods = new ArrayList<>();
-        JsonNode prevAbonoment = null;
-        while (iterator.hasNext()) {
-            JsonNode abonoment = iterator.next();
-            Date start = abonementFormat.parse(abonoment.get("begin").textValue());
-            Date end = abonementFormat.parse(abonoment.get("end").textValue());
+        List<Period> periods = abonomentService.calculatePaymentPeriods(abonementJson, inDate, outDate);
 
-            if(prevAbonoment == null){
-                if(inDate.before(start)){
-                    Period period = new Period();
-                    period.setStart(inDate);
-                    period.setEnd(start);
-                    periods.add(period);
-                }
-            } else {
-                if(abonementFormat.parse(prevAbonoment.get("end").textValue()).getTime() - start.getTime() > 1000*60*5){ // Если промежуток больше 5 минут добавляем
-                    Period period = new Period();
-                    period.setStart(inDate);
-                    period.setEnd(start);
-                    periods.add(period);
-                }
-            }
-            if(!iterator.hasNext()){
-                if(outDate.after(end)){
-                    Period period = new Period();
-                    period.setStart(end);
-                    period.setEnd(outDate);
-                    periods.add(period);
-                }
-            } else {
-                prevAbonoment = abonoment;
-            }
-        }
         log.info("periods size = " + periods.size());
         if(periods.size() == 0){
             return BigDecimal.ZERO;
         } else {
-            BigDecimal totalRate = null;
+            Calendar calcEndCalendar = Calendar.getInstance();
+            Date calcBegin = periods.get(0).getStart();
+            calcEndCalendar.setTime(periods.get(0).getStart());
+
             for(Period p:periods){
-                log.info("calculate for period: begin: " + p.getStart() + " end: " + p.getEnd());
-                BigDecimal rate = calculateRate(p.getStart(), p.getEnd(), camera, carState, eventDto, format, properties);
-                if(rate != null){
-                    totalRate = totalRate != null ? totalRate.add(rate) : rate;
-                }
+                log.info("adding period: begin: " + p.getStart() + " end: " + p.getEnd());
+                calcEndCalendar.add(Calendar.MILLISECOND, (int) (p.getEnd().getTime()-p.getStart().getTime()));
             }
-            if(totalRate == null){
-                return BigDecimal.ZERO;
-            } else {
-                return totalRate;
-            }
+            log.info("calculate rate for: " + calcBegin + " end: " + calcEndCalendar.getTime());
+            BigDecimal rate = calculateRate(calcBegin, calcEndCalendar.getTime(), camera, carState, eventDto, format, properties);
+
+            return rate;
         }
     }
 }

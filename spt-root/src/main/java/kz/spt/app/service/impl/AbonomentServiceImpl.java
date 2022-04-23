@@ -1,8 +1,11 @@
 package kz.spt.app.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.app.model.dto.Period;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.service.AbonomentService;
@@ -11,7 +14,10 @@ import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.*;
 
 import static kz.spt.lib.utils.StaticValues.abonomentPlugin;
 
@@ -136,5 +142,104 @@ public class AbonomentServiceImpl implements AbonomentService {
             }
         }
         return null;
+    }
+
+    @Override
+    public List<Period> calculatePaymentPeriods(JsonNode abonementJson, Date inDate, Date outDate) throws JsonProcessingException, ParseException {
+
+        ArrayNode abonements = (ArrayNode) abonementJson;
+
+        final String dateFormat = "dd.MM.yyyy HH:mm";
+        SimpleDateFormat abonementFormat = new SimpleDateFormat(dateFormat);
+
+        Iterator<JsonNode> iterator = abonements.iterator();
+        List<Period> periods = new ArrayList<>();
+        JsonNode prevAbonoment = null;
+        while (iterator.hasNext()) {
+            JsonNode abonoment = iterator.next();
+            Date start = abonementFormat.parse(abonoment.get("begin").textValue());
+            Date end = abonementFormat.parse(abonoment.get("end").textValue());
+            String type = abonoment.has("type") && abonoment.get("type") != null ? abonoment.get("type").textValue() : null;
+            String custom_numbers = abonoment.has("custom_numbers") && abonoment.get("custom_numbers") != null ? abonoment.get("custom_numbers").textValue() : null;
+
+            if(prevAbonoment == null){
+                if(inDate.before(start)){
+                    Period period = new Period();
+                    period.setStart(inDate);
+                    period.setEnd(start);
+                    periods.add(period);
+                }
+            } else {
+                if(abonementFormat.parse(prevAbonoment.get("end").textValue()).getTime() - start.getTime() > 1000*60*5){ // Если промежуток больше 5 минут добавляем
+                    Period period = new Period();
+                    period.setStart(inDate);
+                    period.setEnd(start);
+                    periods.add(period);
+                }
+            }
+
+            if("CUSTOM".equals(type)){
+                Calendar startCalendar = Calendar.getInstance();
+                startCalendar.setTime(start);
+
+                if(custom_numbers != null){
+                    JsonNode custom_numbersJson = objectMapper.readTree(custom_numbers);
+
+                    while (startCalendar.getTime().before(outDate)){
+                        LocalDate localDate = LocalDate.of(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
+                        int day = localDate.getDayOfWeek().getValue() - 1;
+                        int hour = startCalendar.get(Calendar.HOUR_OF_DAY);
+
+                        Boolean hasAccess = true;
+                        if (custom_numbersJson.has(day + "")) {
+                            TreeSet<Integer> sortedHours = new TreeSet<>();
+                            for (final JsonNode h : custom_numbersJson.get("" + day)) {
+                                sortedHours.add(h.intValue());
+                            }
+                            if (!sortedHours.contains(hour)) {
+                                hasAccess = false;
+                            }
+                        } else {
+                            hasAccess = false;
+                        }
+
+                        if(hasAccess){
+                            startCalendar.add(Calendar.HOUR_OF_DAY, 1);
+                            if(startCalendar.getTime().after(outDate)){
+                                startCalendar.setTime(outDate);
+                            }
+                        } else {
+                            int minute = startCalendar.get(Calendar.MINUTE);
+                            Period p = new Period();
+                            p.setStart(startCalendar.getTime());
+                            startCalendar.add(Calendar.HOUR_OF_DAY, 1);
+                            if(minute > 0){
+                                startCalendar.set(Calendar.MINUTE, 0);
+                                startCalendar.set(Calendar.SECOND, 0);
+                                startCalendar.set(Calendar.MILLISECOND, 0);
+                            }
+                            if(startCalendar.getTime().after(outDate)){
+                                startCalendar.setTime(outDate);
+                            }
+                            p.setEnd(startCalendar.getTime());
+                            periods.add(p);
+                        }
+                    }
+                }
+            }
+
+            if(!iterator.hasNext()){
+                if(outDate.after(end)){
+                    Period period = new Period();
+                    period.setStart(end);
+                    period.setEnd(outDate);
+                    periods.add(period);
+                }
+            } else {
+                prevAbonoment = abonoment;
+            }
+        }
+
+        return periods;
     }
 }

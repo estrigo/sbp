@@ -749,79 +749,48 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private BillingInfoSuccessDto checkAbonomentExtraPayment(CommandDto commandDto, CarState carState, SimpleDateFormat format, JsonNode abonementJson, BillingInfoSuccessDto dto) throws Exception {
-        ArrayNode abonements = (ArrayNode) abonementJson;
-
-        final String dateFormat = "dd.MM.yyyy HH:mm";
-        SimpleDateFormat abonementFormat = new SimpleDateFormat(dateFormat);
 
         Date inDate = carState.getInTimestamp();
         Date outDate = new Date();
 
-        Iterator<JsonNode> iterator = abonements.iterator();
-        List<Period> periods = new ArrayList<>();
-        JsonNode prevAbonoment = null;
-        while (iterator.hasNext()) {
-            JsonNode abonoment = iterator.next();
-            Date start = abonementFormat.parse(abonoment.get("begin").textValue());
-            Date end = abonementFormat.parse(abonoment.get("end").textValue());
+        List<Period> periods = abonomentService.calculatePaymentPeriods(abonementJson, inDate, outDate);
 
-            if(prevAbonoment == null){
-                if(inDate.before(start)){
-                    Period period = new Period();
-                    period.setStart(inDate);
-                    period.setEnd(start);
-                    periods.add(period);
-                }
-            } else {
-                if(abonementFormat.parse(prevAbonoment.get("end").textValue()).getTime() - start.getTime() > 1000*60*5){ // Если промежуток больше 5 минут добавляем
-                    Period period = new Period();
-                    period.setStart(inDate);
-                    period.setEnd(start);
-                    periods.add(period);
-                }
-            }
-            if(!iterator.hasNext()){
-                if(outDate.after(end)){
-                    Period period = new Period();
-                    period.setStart(end);
-                    period.setEnd(outDate);
-                    periods.add(period);
-                }
-            } else {
-                prevAbonoment = abonoment;
-            }
-        }
         if(periods.size() == 0){
             return dto;
         } else {
-            BigDecimal totalRate = null;
-            for(Period p:periods){
-                BigDecimal rate = null;
-                PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
-                if (ratePluginRegister != null) {
-                    ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
-                    ratePluginNode.put("parkingId", carState.getParking().getId());
-                    ratePluginNode.put("inDate", format.format(p.getStart()));
-                    ratePluginNode.put("outDate", format.format(p.getEnd()));
-                    ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
-                    ratePluginNode.put("isCheck", false);
-                    ratePluginNode.put("paymentsJson", carState.getPaymentJson());
 
-                    JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
-                    rate = ratePluginResult.get("rateResult").decimalValue().setScale(2);
-                    dto.tariff = ratePluginResult.get("rateName") != null ? ratePluginResult.get("rateName").textValue() : "";
-                    dto.hours = ratePluginResult.get("payed_till") != null ? (int) ratePluginResult.get("payed_till").longValue() : 0;
-                }
-                if(rate != null){
-                    totalRate = totalRate != null ? totalRate.add(rate) : rate;
-                }
+            Calendar calcEndCalendar = Calendar.getInstance();
+            Date calcBegin = periods.get(0).getStart();
+            calcEndCalendar.setTime(periods.get(0).getStart());
+
+            for(Period p:periods){
+                log.info("payment service adding period: begin: " + p.getStart() + " end: " + p.getEnd());
+                calcEndCalendar.add(Calendar.MILLISECOND, (int) (p.getEnd().getTime()-p.getStart().getTime()));
             }
-            if(totalRate == null){
+            log.info("calculate rate for: " + calcBegin + " end: " + calcEndCalendar.getTime());
+            BigDecimal rate = null;
+            PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+            if (ratePluginRegister != null) {
+                ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
+                ratePluginNode.put("parkingId", carState.getParking().getId());
+                ratePluginNode.put("inDate", format.format(calcBegin));
+                ratePluginNode.put("outDate", format.format(calcEndCalendar.getTime()));
+                ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
+                ratePluginNode.put("isCheck", false);
+                ratePluginNode.put("paymentsJson", carState.getPaymentJson());
+
+                JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
+                rate = ratePluginResult.get("rateResult").decimalValue().setScale(2);
+                dto.tariff = ratePluginResult.get("rateName") != null ? ratePluginResult.get("rateName").textValue() : "";
+                dto.hours = ratePluginResult.get("payed_till") != null ? (int) ratePluginResult.get("payed_till").longValue() : 0;
+            }
+
+            if(rate == null){
                 return dto;
             } else {
                 JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
                 dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue();
-                dto.sum = totalRate;
+                dto.sum = rate;
             }
         }
         return dto;
