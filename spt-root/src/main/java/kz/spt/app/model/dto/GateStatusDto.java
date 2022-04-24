@@ -82,6 +82,7 @@ public class GateStatusDto {
                 gateStatusDto.loop.defaultValue = barrier.getLoopDefaultValue();
                 gateStatusDto.loop.modbusRegister = barrier.getLoopModbusRegister();
                 gateStatusDto.loop.modbusDeviceVersion = barrier.getModbusDeviceVersion();
+                gateStatusDto.loop.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
             }else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType()) && barrier.getLoopJetsonPin() != null) {
                 gateStatusDto.loop = new SensorStatusDto();
                 gateStatusDto.loop.barrierId = barrier.getId();
@@ -89,6 +90,7 @@ public class GateStatusDto {
                 gateStatusDto.loop.type = barrier.getBarrierType();
                 gateStatusDto.loop.ip = barrier.getIp();
                 gateStatusDto.loop.oid = barrier.getLoopJetsonPin().toString();
+                gateStatusDto.loop.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
             }
 
             if(!StringUtils.isEmpty(barrier.getPhotoElementIp()) && !StringUtils.isEmpty(barrier.getPhotoElementPassword()) && barrier.getPhotoElementOid() != null && barrier.getPhotoElementType() != null){
@@ -104,6 +106,7 @@ public class GateStatusDto {
                 gateStatusDto.loop.defaultValue = barrier.getPhotoElementDefaultValue();
                 gateStatusDto.photoElement.modbusRegister = barrier.getPhotoElementModbusRegister();
                 gateStatusDto.photoElement.modbusDeviceVersion = barrier.getModbusDeviceVersion();
+                gateStatusDto.photoElement.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
             }else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType()) && barrier.getPhotoElementJetsonPin() != null) {
                 gateStatusDto.photoElement = new SensorStatusDto();
                 gateStatusDto.photoElement.barrierId = barrier.getId();
@@ -111,6 +114,7 @@ public class GateStatusDto {
                 gateStatusDto.photoElement.type = barrier.getBarrierType();
                 gateStatusDto.photoElement.ip = barrier.getIp();
                 gateStatusDto.photoElement.oid = barrier.getPhotoElementJetsonPin().toString();
+                gateStatusDto.photoElement.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
             }
         }
 

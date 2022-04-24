@@ -68,7 +68,7 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public int getSensorStatus(SensorStatusDto sensor) throws IOException, ParseException, ModbusIOException, ModbusProtocolException, ModbusNumberException {
-        if (!disableOpen) {
+        if (!disableOpen && (sensor.gateNotControlBarrier == null || !sensor.gateNotControlBarrier)) {
             if (Barrier.BarrierType.SNMP.equals(sensor.type)) {
                 if (sensor.oid != null && sensor.password != null && sensor.ip != null && sensor.snmpVersion != null) {
                     SNMPManager client = new SNMPManager("udp:" + sensor.ip + "/161", sensor.password, sensor.snmpVersion);
@@ -147,7 +147,7 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public Boolean openBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
-        if (!disableOpen) { //  ignore in development
+        if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier())) { //  ignore in development
             GateStatusDto gate = new GateStatusDto();
             gate.gateType = barrier.getGate().getGateType();
             gate.gateName = barrier.getGate().getName();
@@ -168,7 +168,7 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public Boolean closeBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
-        if (!disableOpen) { //  ignore in development
+        if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier())) { //  ignore in development
             GateStatusDto gate = new GateStatusDto();
             gate.gateType = barrier.getGate().getGateType();
             gate.gateName = barrier.getGate().getName();
@@ -188,7 +188,7 @@ public class BarrierServiceImpl implements BarrierService {
     }
 
     public Boolean openBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
-        if (!disableOpen) { //  ignore in development
+        if (!disableOpen && (gate.notControlBarrier == null || !gate.notControlBarrier)) { //  ignore in development
             if (barrier.type == null) {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + (carNumber != null ? " for car number " + carNumber : ""));
                 return false;
@@ -204,7 +204,7 @@ public class BarrierServiceImpl implements BarrierService {
     }
 
     public Boolean closeBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
-        if (!disableOpen) {
+        if (!disableOpen && (gate.notControlBarrier == null || !gate.notControlBarrier)) {
             if (barrier.type == null) {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы закрыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to close" + (carNumber != null ? " for car number " + carNumber : ""));
                 return false;
@@ -221,7 +221,7 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public void addGlobalModbusMaster(Barrier barrier) throws ModbusIOException, UnknownHostException {
-        if(!disableOpen && !modbusMasterMap.containsKey(barrier.getIp())){
+        if(!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier()) && !modbusMasterMap.containsKey(barrier.getIp())){
             modbusMasterMap.put(barrier.getIp(), getConnectedInstance(barrier.getIp()));
         }
     }
@@ -512,7 +512,7 @@ public class BarrierServiceImpl implements BarrierService {
         Boolean read = false;
         int retryCount = 0;
         boolean[] results = null;
-        while (!read){
+        while (!read && retryCount<15){
             try {
                 retryCount++;
                 log.info("modbus read retry count: " + retryCount);
@@ -529,7 +529,7 @@ public class BarrierServiceImpl implements BarrierService {
     private Boolean modbusRetryWrite(ModbusMaster m, int slaveId, int offset, boolean value){
         Boolean wrote = false;
         int retryCount = 0;
-        while (!wrote){
+        while (!wrote && retryCount<15){
             try {
                 retryCount++;
                 log.info("modbus write retry count: " + retryCount);

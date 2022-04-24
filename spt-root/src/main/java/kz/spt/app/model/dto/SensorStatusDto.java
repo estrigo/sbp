@@ -15,4 +15,5 @@ public class SensorStatusDto {
     public Integer defaultValue = 0;
     public String modbusDeviceVersion;
     public Integer modbusRegister;
+    public Boolean gateNotControlBarrier = false;
 }
