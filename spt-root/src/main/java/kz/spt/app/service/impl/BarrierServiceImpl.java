@@ -416,8 +416,7 @@ public class BarrierServiceImpl implements BarrierService {
             try {
                 changedValue = m.readCoils(slaveId, offset, 1);
             } catch (Exception e){
-                m.connect();
-                changedValue = m.readCoils(slaveId, offset, 1);
+                changedValue = modbusRetryRead(m, slaveId, offset, 1);
             }
             if (changedValue != null && changedValue.length > 0 && changedValue[0]) {
                 isOpenValueChanged = true;
@@ -425,8 +424,17 @@ public class BarrierServiceImpl implements BarrierService {
             log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
             if (!isOpenValueChanged) {
                 for (int i = 0; i < 3; i++) {
-                    m.writeSingleCoil(slaveId, offset, true);
-                    changedValue = m.readCoils(slaveId, offset, 1);
+                    try {
+                        m.writeSingleCoil(slaveId, offset, true);
+                    } catch (Exception e){
+                        log.info("retry error: " + e.getMessage());
+                        modbusRetryWrite(m, slaveId, offset, true);
+                    }
+                    try {
+                        changedValue = m.readCoils(slaveId, offset, 1);
+                    } catch (Exception e){
+                        changedValue = modbusRetryRead(m, slaveId, offset, 1);
+                    }
                     if (changedValue != null && changedValue.length > 0 && changedValue[0]) {
                         isOpenValueChanged = true;
                         break;
@@ -438,25 +446,38 @@ public class BarrierServiceImpl implements BarrierService {
                 }
             } else {
                 Thread.sleep(500);
-                boolean[] currentValue = m.readCoils(slaveId, offset, 1);
+                boolean[] currentValue = null;
+                try {
+                    currentValue = m.readCoils(slaveId, offset, 1);
+                } catch (Exception e){
+                    currentValue = modbusRetryRead(m, slaveId, offset, 1);
+                }
                 if (currentValue != null && currentValue.length > 0 && currentValue[0]) {
                     try {
                         m.writeSingleCoil(slaveId, offset, false);
                     } catch (Exception e){
-                        m.connect();
-                        m.writeSingleCoil(slaveId, offset, false);
+                        log.info("retry error: " + e.getMessage());
+                        modbusRetryWrite(m, slaveId, offset, false);
                     }
                     try {
                         currentValue = m.readCoils(slaveId, offset, 1);
                     } catch (Exception e){
-                        m.connect();
-                        currentValue = m.readCoils(slaveId, offset, 1);
+                        currentValue = modbusRetryRead(m, slaveId, offset, 1);
                     }
                     Boolean isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
                     if (!isReturnValueChanged) {
                         for (int i = 0; i < 3; i++) {
-                            m.writeSingleCoil(slaveId, offset, false);
-                            currentValue = m.readCoils(slaveId, offset, 1);
+                            try {
+                                m.writeSingleCoil(slaveId, offset, false);
+                            } catch (Exception e){
+                                log.info("retry error: " + e.getMessage());
+                                modbusRetryWrite(m, slaveId, offset, false);
+                            }
+                            try {
+                                currentValue = m.readCoils(slaveId, offset, 1);
+                            } catch (Exception e){
+                                currentValue = modbusRetryRead(m, slaveId, offset, 1);
+                            }
                             isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
                             if (isReturnValueChanged) {
                                 break;
@@ -487,13 +508,31 @@ public class BarrierServiceImpl implements BarrierService {
         Open, Close
     }
 
+    private boolean[] modbusRetryRead(ModbusMaster m, int slaveId, int offset, int value){
+        Boolean read = false;
+        int retryCount = 0;
+        boolean[] results = null;
+        while (!read){
+            try {
+                retryCount++;
+                log.info("modbus read retry count: " + retryCount);
+                m.connect();
+                results = m.readCoils(slaveId, offset, value);
+                read = true;
+            } catch (Exception e) {
+                log.info("modbus read retry error: " + e.getMessage());
+            }
+        }
+        return results;
+    }
+
     private Boolean modbusRetryWrite(ModbusMaster m, int slaveId, int offset, boolean value){
         Boolean wrote = false;
         int retryCount = 0;
         while (!wrote){
             try {
                 retryCount++;
-                log.info("modbus retry count: " + retryCount);
+                log.info("modbus write retry count: " + retryCount);
                 m.connect();
                 m.writeSingleCoil(slaveId, offset, value);
                 wrote = true;
