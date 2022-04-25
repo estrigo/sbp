@@ -187,9 +187,6 @@
     }
 
     function showGreeting(messageBody) {
-        if (cameras[messageBody.id] === null || cameras[messageBody.id] === undefined) {
-            initCamera(messageBody.id);
-        }
         const lp = cameras[messageBody.id].lp;
         const logs = cameras[messageBody.id].logs;
         const fancyImage = cameras[messageBody.id].fancyImage;
@@ -412,7 +409,9 @@
     function passCar(cameraId) {
         var plateNumber = $("#plateNumber" + cameraId).val();
         if (!/^[a-zA-Z0-9]+$/.test(plateNumber)) {
-            alert([[#{crm.onlyLatinAndNumbersAllowed}]]);
+            console.log(cameras);
+            const logs = cameras[cameraId].logs;
+            $(logs).prepend(content("Error", '[' + plateNumber + ']' + [[#{crm.onlyLatinAndNumbersAllowed}]]));
         } else if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
             var form = new FormData();
             form.append("cameraId", cameraId);
@@ -431,7 +430,8 @@
                 console.log(response);
             });
         } else {
-            alert([[#{arm.invalidPlateNumber}]]);
+            const logs = cameras[cameraId].logs;
+            $(logs).prepend(content("Error", '[' + plateNumber + ']' + [[#{arm.invalidPlateNumber}]]));
         }
     }
 
@@ -439,13 +439,16 @@
         var plateNumber = $("#plateNumber" + cameraId).val();
 
         if (!/^[a-zA-Z0-9]+$/.test(plateNumber)) {
-            alert([[#{crm.onlyLatinAndNumbersAllowed}]]);
+            const logs = cameras[cameraId].logs;
+            $(logs).prepend(content("Error", '[' + plateNumber + ']' + [[#{crm.onlyLatinAndNumbersAllowed}]]));
         } else if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
             $.get("/rest/balance/check/" + plateNumber, function (data) {
-                alert([[#{arm.balanceEqual}]] + data);
+                const logs = cameras[cameraId].logs;
+                $(logs).prepend(content("Success", '[' + plateNumber + ']' + [[#{arm.balanceEqual}]] + data));
             });
         } else {
-            alert([[#{arm.invalidPlateNumber}]]);
+            const logs = cameras[cameraId].logs;
+            $(logs).prepend(content("Error", '[' + plateNumber + ']' + [[#{arm.invalidPlateNumber}]]));
         }
     }
 
@@ -471,5 +474,13 @@
             "dataType": "json",
         });
     }
+
+    $(document).on('ready',function(){
+        $(".item").each(function () {
+            const $input = $(this);
+            const id = $input.data("id");
+            initCamera(id);
+        });
+    });
 </script>
 </html>
