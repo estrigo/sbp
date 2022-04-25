@@ -455,6 +455,17 @@
             .prop('selected', false);
         table.ajax.reload();
     })
+
+    const now = new Date();
+    now.setHours(6);
+    now.setMinutes(0);
+    now.setSeconds(0)
+    document.getElementById('dateFromString').value = now.toISOString().slice(0, 16);
+    now.setHours(29);
+    now.setMinutes(59);
+    now.setSeconds(0);
+    document.getElementById('dateToString').value = now.toISOString().slice(0, 16);
+
 </script>
 
 </html>
