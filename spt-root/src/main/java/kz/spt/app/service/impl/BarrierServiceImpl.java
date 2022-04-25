@@ -333,7 +333,13 @@ public class BarrierServiceImpl implements BarrierService {
             // since 1.2.8
         if (!m.isConnected()) {
             log.info("barrier.ip: " + barrier.ip + " !m.isConnected()");
-            m.connect();
+            try{
+                m.connect();
+            } catch (Exception e){
+                log.info("retry connect error: " + e.getMessage());
+                modbusRetryConnect(m);
+            }
+
         }
         Boolean isOpenValueChanged = false;
 
@@ -409,7 +415,7 @@ public class BarrierServiceImpl implements BarrierService {
             try {
                 m.writeSingleCoil(slaveId, offset, true);
             } catch (Exception e){
-                log.info("retry error: " + e.getMessage());
+                log.info("retry write error: " + e.getMessage());
                 modbusRetryWrite(m, slaveId, offset, true);
             }
             boolean[] changedValue;
@@ -541,5 +547,21 @@ public class BarrierServiceImpl implements BarrierService {
             }
         }
         return wrote;
+    }
+
+    private Boolean modbusRetryConnect(ModbusMaster m){
+        Boolean connected = false;
+        int retryCount = 0;
+        while (!connected && retryCount<15){
+            try {
+                retryCount++;
+                log.info("modbus connect retry count: " + retryCount);
+                m.connect();
+                connected = true;
+            } catch (Exception e) {
+                log.info("modbus connect error: " + e.getMessage());
+            }
+        }
+        return connected;
     }
 }
