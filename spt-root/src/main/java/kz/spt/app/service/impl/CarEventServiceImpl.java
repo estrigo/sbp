@@ -449,9 +449,9 @@ public class CarEventServiceImpl implements CarEventService {
                 carModel = carModelRepository.getByModel(eventDto.car_model);
             }
             String dimension;
-            if (carModel != null && carModel.getType()==3) {
+            if (carModel != null && carModel.getType()==1) {
                 dimension = "легковой";
-            } else if (carModel != null && carModel.getType()==3){
+            } else if (carModel != null && carModel.getType()==2){
                 dimension = "микро автобус";
             } else if (carModel != null && carModel.getType()==3){
                 dimension = "грузовик";
@@ -738,7 +738,7 @@ public class CarEventServiceImpl implements CarEventService {
                             hasAccess = true;
                         } else {
                             properties.put("type", EventLog.StatusType.Deny);
-                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited");
+                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.NotFound, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited");
                             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited");
                             hasAccess = false;
                         }

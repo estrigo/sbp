@@ -230,6 +230,10 @@
         switch (eventStatus) {
             case "Deny":
             case "Error":
+                p.className += " bg-poop";
+                p.className += " text-white";
+                break;
+            case "NotFound":
                 p.className += " bg-danger";
                 p.className += " text-white";
                 break;

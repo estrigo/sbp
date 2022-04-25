@@ -31,7 +31,8 @@ public class EventLog {
         Deny,
         Error,
         Success,
-        Debt
+        Debt,
+        NotFound
     }
 
     @Id
