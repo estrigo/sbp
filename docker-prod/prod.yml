@@ -114,6 +114,7 @@ zero:
       tokenUrl: https://gateway.chocodev.kz/auth/token
       clientId: 35000006
       clientPassword: f5ae4d63b60d9845f95a69bc4240806810338b940a2d0ee8211270a303be66e1
+      filialId: 4752
       postUrl: gateway.chocodev.kz/payments/v1/smartparking/pay
 parking:
   has:

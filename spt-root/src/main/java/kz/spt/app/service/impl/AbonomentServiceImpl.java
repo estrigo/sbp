@@ -180,12 +180,12 @@ public class AbonomentServiceImpl implements AbonomentService {
 
             if("CUSTOM".equals(type)){
                 Calendar startCalendar = Calendar.getInstance();
-                startCalendar.setTime(start);
+                startCalendar.setTime(start.before(inDate) ? inDate : start);
 
                 if(custom_numbers != null){
                     JsonNode custom_numbersJson = objectMapper.readTree(custom_numbers);
 
-                    while (startCalendar.getTime().before(outDate)){
+                    while (startCalendar.getTime().before(outDate.before(end) ? outDate : end)){
                         LocalDate localDate = LocalDate.of(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
                         int day = localDate.getDayOfWeek().getValue() - 1;
                         int hour = startCalendar.get(Calendar.HOUR_OF_DAY);
