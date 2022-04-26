@@ -17,8 +17,6 @@ public class BarrierStatusDto {
     public Integer modbusCloseRegister;
     public Integer loopModbusRegister;
     public Integer photoElementModbusRegister;
-    public Integer loopJetsonPin;
-    private Integer photoElementJetsonPin;
 
     public static BarrierStatusDto fromBarrier(Barrier barrier){
         BarrierStatusDto barrierStatusDto = new BarrierStatusDto();
@@ -35,8 +33,6 @@ public class BarrierStatusDto {
         barrierStatusDto.modbusCloseRegister = barrier.getModbusCloseRegister();
         barrierStatusDto.loopModbusRegister = barrier.getLoopModbusRegister();
         barrierStatusDto.photoElementModbusRegister = barrier.getPhotoElementModbusRegister();
-        barrierStatusDto.loopJetsonPin = barrier.getLoopJetsonPin();
-        barrierStatusDto.photoElementJetsonPin = barrier.getPhotoElementJetsonPin();
         return barrierStatusDto;
     }
 }

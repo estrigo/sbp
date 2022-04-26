@@ -15,7 +15,13 @@ import java.util.List;
 public class GateStatusDto {
 
     public enum GateStatus {Open,Closed};
-    public enum SensorStatus {Quit, Triggerred, WAIT, ON, PASSED};
+    public enum SensorStatus {
+        Quit, //событий нет, пока тишина
+        Triggerred, //машина начинает проезжать
+        WAIT, //ждем пока машина не подойдет
+        ON,//машина проезжает
+        PASSED//машина проеахала
+    };
     public enum DirectionStatus {QUIT, FORWARD, REVERSE};
 
     public Long gateId;

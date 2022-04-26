@@ -115,7 +115,7 @@ public class BarrierServiceImpl implements BarrierService {
                         result = changedValue[0] ? 0 : 1;
                     }
                 }
-                if(sensor.modbusDeviceVersion != null && "icpdas".equals(sensor.modbusDeviceVersion)){
+                if (sensor.modbusDeviceVersion != null && "icpdas".equals(sensor.modbusDeviceVersion)) {
                     m.disconnect();
                 }
                 return result;
@@ -160,7 +160,7 @@ public class BarrierServiceImpl implements BarrierService {
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
                 return modbusChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
-                return jetsonChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                return jetsonChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Open);
             }
         }
         return true;
@@ -181,7 +181,7 @@ public class BarrierServiceImpl implements BarrierService {
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
                 return modbusChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Close);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
-                return jetsonChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Close);
+                return jetsonChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Close);
             }
         }
         return true;
@@ -197,7 +197,7 @@ public class BarrierServiceImpl implements BarrierService {
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.type)) {
                 return modbusChangeValue(gate, carNumber, barrier, Command.Open);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.type)) {
-                return jetsonChangeValue(gate, carNumber, barrier, Command.Open);
+                return jetsonChangeValue(barrier, Command.Open);
             }
         }
         return true;
@@ -213,7 +213,7 @@ public class BarrierServiceImpl implements BarrierService {
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.type)) {
                 return modbusChangeValue(gate, carNumber, barrier, Command.Close);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.type)) {
-                return jetsonChangeValue(gate, carNumber, barrier, Command.Close);
+                return jetsonChangeValue(barrier, Command.Close);
             }
         }
         return true;
@@ -221,7 +221,7 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public void addGlobalModbusMaster(Barrier barrier) throws ModbusIOException, UnknownHostException {
-        if(!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier()) && !modbusMasterMap.containsKey(barrier.getIp())){
+        if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier()) && !modbusMasterMap.containsKey(barrier.getIp())) {
             modbusMasterMap.put(barrier.getIp(), getConnectedInstance(barrier.getIp()));
         }
     }
@@ -330,12 +330,12 @@ public class BarrierServiceImpl implements BarrierService {
         m = modbusMasterMap.get(barrier.ip);
 
         int slaveId = 1;
-            // since 1.2.8
+        // since 1.2.8
         if (!m.isConnected()) {
             log.info("barrier.ip: " + barrier.ip + " !m.isConnected()");
-            try{
+            try {
                 m.connect();
-            } catch (Exception e){
+            } catch (Exception e) {
                 log.info("retry connect error: " + e.getMessage());
                 modbusRetryConnect(m);
             }
@@ -414,14 +414,14 @@ public class BarrierServiceImpl implements BarrierService {
         } else {
             try {
                 m.writeSingleCoil(slaveId, offset, true);
-            } catch (Exception e){
+            } catch (Exception e) {
                 log.info("retry write error: " + e.getMessage());
                 modbusRetryWrite(m, slaveId, offset, true);
             }
             boolean[] changedValue;
             try {
                 changedValue = m.readCoils(slaveId, offset, 1);
-            } catch (Exception e){
+            } catch (Exception e) {
                 changedValue = modbusRetryRead(m, slaveId, offset, 1);
             }
             if (changedValue != null && changedValue.length > 0 && changedValue[0]) {
@@ -432,13 +432,13 @@ public class BarrierServiceImpl implements BarrierService {
                 for (int i = 0; i < 3; i++) {
                     try {
                         m.writeSingleCoil(slaveId, offset, true);
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         log.info("retry error: " + e.getMessage());
                         modbusRetryWrite(m, slaveId, offset, true);
                     }
                     try {
                         changedValue = m.readCoils(slaveId, offset, 1);
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         changedValue = modbusRetryRead(m, slaveId, offset, 1);
                     }
                     if (changedValue != null && changedValue.length > 0 && changedValue[0]) {
@@ -455,19 +455,19 @@ public class BarrierServiceImpl implements BarrierService {
                 boolean[] currentValue = null;
                 try {
                     currentValue = m.readCoils(slaveId, offset, 1);
-                } catch (Exception e){
+                } catch (Exception e) {
                     currentValue = modbusRetryRead(m, slaveId, offset, 1);
                 }
                 if (currentValue != null && currentValue.length > 0 && currentValue[0]) {
                     try {
                         m.writeSingleCoil(slaveId, offset, false);
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         log.info("retry error: " + e.getMessage());
                         modbusRetryWrite(m, slaveId, offset, false);
                     }
                     try {
                         currentValue = m.readCoils(slaveId, offset, 1);
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         currentValue = modbusRetryRead(m, slaveId, offset, 1);
                     }
                     Boolean isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
@@ -475,13 +475,13 @@ public class BarrierServiceImpl implements BarrierService {
                         for (int i = 0; i < 3; i++) {
                             try {
                                 m.writeSingleCoil(slaveId, offset, false);
-                            } catch (Exception e){
+                            } catch (Exception e) {
                                 log.info("retry error: " + e.getMessage());
                                 modbusRetryWrite(m, slaveId, offset, false);
                             }
                             try {
                                 currentValue = m.readCoils(slaveId, offset, 1);
-                            } catch (Exception e){
+                            } catch (Exception e) {
                                 currentValue = modbusRetryRead(m, slaveId, offset, 1);
                             }
                             isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
@@ -496,13 +496,13 @@ public class BarrierServiceImpl implements BarrierService {
                 }
             }
         }
-        if(barrier.modbusDeviceVersion != null && "icpdas".equals(barrier.modbusDeviceVersion)){
+        if (barrier.modbusDeviceVersion != null && "icpdas".equals(barrier.modbusDeviceVersion)) {
             m.disconnect();
         }
         return result;
     }
 
-    private Boolean jetsonChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) {
+    private Boolean jetsonChangeValue(BarrierStatusDto barrier, Command command) {
         String pin = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
         var response = new RestTemplateBuilder().build().getForObject("http://" + barrier.ip + ":9001" + "/gate_action?pin=" + pin, JetsonResponse.class);
 
@@ -510,15 +510,11 @@ public class BarrierServiceImpl implements BarrierService {
         return response.getSuccess();
     }
 
-    private enum Command {
-        Open, Close
-    }
-
-    private boolean[] modbusRetryRead(ModbusMaster m, int slaveId, int offset, int value){
+    private boolean[] modbusRetryRead(ModbusMaster m, int slaveId, int offset, int value) {
         Boolean read = false;
         int retryCount = 0;
         boolean[] results = null;
-        while (!read && retryCount<15){
+        while (!read && retryCount < 15) {
             try {
                 retryCount++;
                 log.info("modbus read retry count: " + retryCount);
@@ -532,10 +528,10 @@ public class BarrierServiceImpl implements BarrierService {
         return results;
     }
 
-    private Boolean modbusRetryWrite(ModbusMaster m, int slaveId, int offset, boolean value){
+    private Boolean modbusRetryWrite(ModbusMaster m, int slaveId, int offset, boolean value) {
         Boolean wrote = false;
         int retryCount = 0;
-        while (!wrote && retryCount<15){
+        while (!wrote && retryCount < 15) {
             try {
                 retryCount++;
                 log.info("modbus write retry count: " + retryCount);
@@ -549,10 +545,10 @@ public class BarrierServiceImpl implements BarrierService {
         return wrote;
     }
 
-    private Boolean modbusRetryConnect(ModbusMaster m){
+    private Boolean modbusRetryConnect(ModbusMaster m) {
         Boolean connected = false;
         int retryCount = 0;
-        while (!connected && retryCount<15){
+        while (!connected && retryCount < 15) {
             try {
                 retryCount++;
                 log.info("modbus connect retry count: " + retryCount);
@@ -563,5 +559,9 @@ public class BarrierServiceImpl implements BarrierService {
             }
         }
         return connected;
+    }
+
+    private enum Command {
+        Open, Close
     }
 }
