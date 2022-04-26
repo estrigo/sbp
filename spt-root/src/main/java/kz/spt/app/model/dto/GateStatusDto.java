@@ -72,7 +72,11 @@ public class GateStatusDto {
                 gateStatusDto.barrier = BarrierStatusDto.fromBarrier(barrier);
             }
             if(Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType()) && barrier.getIp()!= null && barrier.getIp().contains(".")){
-                barrierService.addGlobalModbusMaster(barrier);
+                try {
+                    barrierService.addGlobalModbusMaster(barrier);
+                } catch (Exception e){
+                    log.info(" Modbus connection error: " + e.getMessage());
+                }
             }
 
             if(!StringUtils.isEmpty(barrier.getLoopIp()) && !StringUtils.isEmpty(barrier.getLoopPassword()) && barrier.getLoopOid() != null && barrier.getLoopType() != null){
