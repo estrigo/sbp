@@ -94,6 +94,8 @@
 <script type="text/javascript" th:inline="javascript">
     var locale = [[${#locale}]];
     var descriptionColumn = locale == "en" ? "descriptionEn" : "description";
+    let dateFrom = $('#dateFromString').val();
+    let dateTo = $('#dateToString').val();
 
     function buildAjaxUrl(){
         return "/rest/events?dateFromString=" + $('#dateFromString').val() + "&dateToString=" + $('#dateToString').val() +
