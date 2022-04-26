@@ -30,6 +30,7 @@ import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Log
@@ -41,7 +42,7 @@ public class BarrierServiceImpl implements BarrierService {
     private final String BARRIER_OFF = "0";
     private Boolean disableOpen;
 
-    private Map<String, ModbusMaster> modbusMasterMap = new HashMap<>();
+    private static Map<String, ModbusMaster> modbusMasterMap = new ConcurrentHashMap<>();
 
     public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, BarrierRepository barrierRepository, EventLogService eventLogService) {
         this.disableOpen = disableOpen;
