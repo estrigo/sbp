@@ -518,7 +518,7 @@ public class BarrierServiceImpl implements BarrierService {
         Boolean read = false;
         int retryCount = 0;
         boolean[] results = null;
-        while (!read && retryCount < 15) {
+        while (!read && retryCount<3){
             try {
                 retryCount++;
                 log.info("modbus read retry count: " + retryCount);
@@ -535,7 +535,7 @@ public class BarrierServiceImpl implements BarrierService {
     private Boolean modbusRetryWrite(ModbusMaster m, int slaveId, int offset, boolean value) {
         Boolean wrote = false;
         int retryCount = 0;
-        while (!wrote && retryCount < 15) {
+        while (!wrote && retryCount<3){
             try {
                 retryCount++;
                 log.info("modbus write retry count: " + retryCount);
@@ -552,7 +552,7 @@ public class BarrierServiceImpl implements BarrierService {
     private Boolean modbusRetryConnect(ModbusMaster m) {
         Boolean connected = false;
         int retryCount = 0;
-        while (!connected && retryCount < 15) {
+        while (!connected && retryCount<3){
             try {
                 retryCount++;
                 log.info("modbus connect retry count: " + retryCount);
