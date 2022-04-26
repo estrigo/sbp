@@ -323,10 +323,13 @@ public class BarrierServiceImpl implements BarrierService {
         return result;
     }
 
-    private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException {
+    private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException, UnknownHostException {
         Boolean result = true;
 
         ModbusMaster m;
+        if(!modbusMasterMap.containsKey(barrier.ip) || modbusMasterMap.get(barrier.ip) == null){
+            modbusMasterMap.put(barrier.ip, getConnectedInstance(barrier.ip));
+        }
         m = modbusMasterMap.get(barrier.ip);
 
         int slaveId = 1;
