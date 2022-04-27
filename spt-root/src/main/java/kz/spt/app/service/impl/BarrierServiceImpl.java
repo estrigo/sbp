@@ -221,6 +221,7 @@ public class BarrierServiceImpl implements BarrierService {
     @Override
     public void addGlobalModbusMaster(Barrier barrier) throws ModbusIOException, UnknownHostException {
         if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier()) && !modbusMasterMap.containsKey(barrier.getIp())) {
+            log.info("connecting global " + barrier.getIp());
             modbusMasterMap.put(barrier.getIp(), getConnectedInstance(barrier.getIp()));
         }
     }
@@ -232,12 +233,17 @@ public class BarrierServiceImpl implements BarrierService {
         tcpParameters.setPort(Modbus.TCP_PORT);
 
         ModbusMaster m = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
-        m.setResponseTimeout(10000); // 10 seconds timeout
+        m.setResponseTimeout(5000); // 5 seconds timeout
 
         log.info("Connecting barrier.getIp(): " + ip);
 
         if (!m.isConnected()) {
-            m.connect();
+            try {
+                m.connect();
+            } catch (Exception e) {
+                log.info("retry connect error: " + e.getMessage());
+                modbusRetryConnect(m);
+            }
         }
         return m;
     }
@@ -341,7 +347,6 @@ public class BarrierServiceImpl implements BarrierService {
                 log.info("retry connect error: " + e.getMessage());
                 modbusRetryConnect(m);
             }
-
         }
         Boolean isOpenValueChanged = false;
 
@@ -418,7 +423,11 @@ public class BarrierServiceImpl implements BarrierService {
                 m.writeSingleCoil(slaveId, offset, true);
             } catch (Exception e) {
                 log.info("retry write error: " + e.getMessage());
-                modbusRetryWrite(m, slaveId, offset, true);
+                boolean retryResult = modbusRetryWrite(m, slaveId, offset, true);
+                if(!retryResult){
+                    log.info("modbus isOpenValueChanged: " + retryResult);
+                    return retryResult;
+                }
             }
             boolean[] changedValue;
             try {

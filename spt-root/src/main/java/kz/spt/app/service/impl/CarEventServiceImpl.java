@@ -31,16 +31,16 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 @Log
 @Service
 public class CarEventServiceImpl implements CarEventService {
 
-    private static Hashtable<String, Long> hashtable = new Hashtable<>();
+    private static Hashtable<String, Long> cameraTimeoutHashtable = new Hashtable<>();
+    private static Hashtable<String, Long> barrierInProcessingHashtable = new Hashtable<>();
+    private static Hashtable<String, Long> barrierOutProcessingHashtable = new Hashtable<>();
     private final CarsService carsService;
     private final CameraService cameraService;
     private final EventLogService eventLogService;
@@ -180,11 +180,11 @@ public class CarEventServiceImpl implements CarEventService {
             String secondCameraIp = (gate.frontCamera2 != null) ? (eventDto.ip_address.equals(gate.frontCamera.ip) ? gate.frontCamera2.ip : gate.frontCamera.ip) : null; // If there is two camera, then ignore second by timeout
 
             if(!eventDto.manualOpen){
-                if (hashtable.containsKey(eventDto.ip_address) || (secondCameraIp != null && hashtable.containsKey(secondCameraIp))) {
-                    Long timeDiffInMillis = System.currentTimeMillis() - (hashtable.containsKey(eventDto.ip_address) ? hashtable.get(eventDto.ip_address) : 0);
+                if (cameraTimeoutHashtable.containsKey(eventDto.ip_address) || (secondCameraIp != null && cameraTimeoutHashtable.containsKey(secondCameraIp))) {
+                    Long timeDiffInMillis = System.currentTimeMillis() - (cameraTimeoutHashtable.containsKey(eventDto.ip_address) ? cameraTimeoutHashtable.get(eventDto.ip_address) : 0);
                     int timeout = (cameraStatusDto.timeout == 0 ? 1 : cameraStatusDto.timeout * 1000);
                     if (secondCameraIp != null) {
-                        Long secondCameraTimeDiffInMillis = System.currentTimeMillis() - (hashtable.containsKey(secondCameraIp) ? hashtable.get(secondCameraIp) : 0);
+                        Long secondCameraTimeDiffInMillis = System.currentTimeMillis() - (cameraTimeoutHashtable.containsKey(secondCameraIp) ? cameraTimeoutHashtable.get(secondCameraIp) : 0);
                         timeDiffInMillis = timeDiffInMillis < secondCameraTimeDiffInMillis ? timeDiffInMillis : secondCameraTimeDiffInMillis;
                     }
 
@@ -192,13 +192,13 @@ public class CarEventServiceImpl implements CarEventService {
                         log.info("Ignored event from camera: " + eventDto.ip_address + " time: " + timeDiffInMillis);
                         return;
                     } else {
-                        hashtable.put(eventDto.ip_address, System.currentTimeMillis());
+                        cameraTimeoutHashtable.put(eventDto.ip_address, System.currentTimeMillis());
                     }
                 } else {
-                    hashtable.put(eventDto.ip_address, System.currentTimeMillis());
+                    cameraTimeoutHashtable.put(eventDto.ip_address, System.currentTimeMillis());
                 }
             } else {
-                hashtable.put(eventDto.ip_address, System.currentTimeMillis());
+                cameraTimeoutHashtable.put(eventDto.ip_address, System.currentTimeMillis());
             }
 
             log.info("handling event from camera: " + eventDto.ip_address + " for car: " + eventDto.car_number + " model - " + eventDto.car_model);
@@ -308,6 +308,11 @@ public class CarEventServiceImpl implements CarEventService {
                 gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
                 gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
                 gate.lastTriggeredTime = System.currentTimeMillis();
+            } else {
+                String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
+                String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
             }
         }
     }
@@ -425,17 +430,35 @@ public class CarEventServiceImpl implements CarEventService {
         log.info("hasAccess: " + hasAccess);
 
         if (hasAccess) {
-            boolean openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
-            if (openResult) {
-                gate.gateStatus = GateStatusDto.GateStatus.Open;
-                gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
-                gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
-                gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
-                gate.lastTriggeredTime = System.currentTimeMillis();
-                if (!gate.isSimpleWhitelist && !enteredFromThisSecondsBefore) {
-                    saveCarInState(eventDto, camera, whitelistCheckResults, properties);
-                }
+            if(barrierInProcessingHashtable.containsKey(camera.getGate().getBarrier().getIp())){
+                return;
             }
+            barrierInProcessingHashtable.put(camera.getGate().getBarrier().getIp(), System.currentTimeMillis());
+            try{
+                boolean openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+                if (openResult) {
+                    gate.gateStatus = GateStatusDto.GateStatus.Open;
+                    gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
+                    gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
+                    gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
+                    gate.lastTriggeredTime = System.currentTimeMillis();
+                    if (!gate.isSimpleWhitelist && !enteredFromThisSecondsBefore) {
+                        saveCarInState(eventDto, camera, whitelistCheckResults, properties);
+                    }
+                } else {
+                    String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
+                    String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
+                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
+                }
+            } catch (Throwable e){
+                log.info("Error opening barrier: " + e.getMessage());
+                String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
+                String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
+            }
+            barrierInProcessingHashtable.remove(camera.getGate().getBarrier().getIp());
         }
     }
 
@@ -845,21 +868,39 @@ public class CarEventServiceImpl implements CarEventService {
             }
         }
         if (hasAccess) {
-            boolean openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
-            if (openResult) {
-                gate.gateStatus = GateStatusDto.GateStatus.Open;
-                gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
-                gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
-                gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
-                gate.lastTriggeredTime = System.currentTimeMillis();
-                if (!gate.isSimpleWhitelist && !leftFromThisSecondsBefore && carState != null) {
-                    saveCarOutState(eventDto, camera, carState, properties, isWhitelistCar, balance, rateResult, zerotouchValue, format, carOutBy, abonements);
-                } else if (leftFromThisSecondsBefore) {
-                    properties.put("type", EventLog.StatusType.Allow);
-                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
-                }
+            if(barrierOutProcessingHashtable.containsKey(camera.getGate().getBarrier().getIp())){
+                return;
             }
+            barrierOutProcessingHashtable.put(camera.getGate().getBarrier().getIp(), System.currentTimeMillis());
+            boolean openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+            try{
+                if (openResult) {
+                    gate.gateStatus = GateStatusDto.GateStatus.Open;
+                    gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
+                    gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
+                    gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
+                    gate.lastTriggeredTime = System.currentTimeMillis();
+                    if (!gate.isSimpleWhitelist && !leftFromThisSecondsBefore && carState != null) {
+                        saveCarOutState(eventDto, camera, carState, properties, isWhitelistCar, balance, rateResult, zerotouchValue, format, carOutBy, abonements);
+                    } else if (leftFromThisSecondsBefore) {
+                        properties.put("type", EventLog.StatusType.Allow);
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
+                    }
+                } else {
+                    String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
+                    String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
+                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
+                }
+            } catch (Exception e){
+                String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
+                String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
+                log.info("Error opening barrier: " + e.getMessage());
+            }
+            barrierOutProcessingHashtable.remove(camera.getGate().getBarrier().getIp());
         } else {
             try {
                 qrPanelService.display(camera.getGate(), eventDto.car_number);
