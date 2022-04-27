@@ -58,4 +58,6 @@ public interface CarStateService {
     void deleteAllInParking(Parking parking);
 
     void deleteParkingFromCarStates(Parking parking);
+
+    CarState manualOutWithDebt(String carNumber, Date outTimestamp, CarState carState) throws Exception ;
 }

@@ -446,4 +446,60 @@ public class CarStateServiceImpl implements CarStateService {
         }
     }
 
+    public CarState manualOutWithDebt(String carNumber, Date outTimestamp, CarState carState) throws Exception {
+        PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("carNumber", carState.getCarNumber());
+        properties.put("eventTime", outTimestamp);
+
+        BigDecimal rateResult = calculateRate(carState.getInTimestamp(), outTimestamp,
+                carState, format, properties);
+        if (billingPluginRegister != null) {
+            ObjectNode billingNode = this.objectMapper.createObjectNode();
+            billingNode.put("command", "decreaseCurrentBalance");
+            billingNode.put("reason", "");
+            billingNode.put("reasonEn", "");
+            billingNode.put("amount", rateResult!=null ? rateResult : new BigDecimal(0));
+            billingNode.put("plateNumber", carState.getCarNumber());
+            billingNode.put("carStateId", carState.getId());
+            JsonNode decreaseBalanceResult = billingPluginRegister.execute(billingNode);
+            BigDecimal currentBalance = decreaseBalanceResult.get("currentBalance").decimalValue();;
+            properties.put("type", EventLog.StatusType.Success);
+            properties.put("currentBalance", currentBalance);
+        }
+
+        String username = "";
+        if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+            CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (currentUser != null) {
+                username = currentUser.getUsername();
+            }
+        }
+        carState.setRateAmount(rateResult);
+        String messageRu = "Ручной выезд Авто с гос. номером " + carState.getCarNumber() + ". Пользователь " + username + " инициировал ручной запуск с парковки " + carState.getParking().getName() + ". Списано с баланса клиента: " + rateResult + ".";
+        String messageEn = "Manual pass. Car with license plate " + carState.getCarNumber() + ". User " + username + " initiated manual open gate from parking " + carState.getParking().getName() + ". Deducted from the client's balance: " + rateResult + ".";
+        eventLogService.createEventLog("Rate", null, properties, messageRu, messageEn);
+        return carState;
+    }
+
+    private BigDecimal calculateRate(Date inDate, Date outDate, CarState carState, SimpleDateFormat format,
+                                     Map<String, Object> properties) throws Exception {
+        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+        if (ratePluginRegister != null) {
+            ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
+            ratePluginNode.put("parkingId", carState.getParking().getId());
+            ratePluginNode.put("inDate", format.format(inDate));
+            ratePluginNode.put("outDate", format.format(outDate));
+            ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
+            ratePluginNode.put("isCheck", false);
+            ratePluginNode.put("paymentsJson", carState.getPaymentJson());
+            JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
+            return ratePluginResult.get("rateResult").decimalValue().setScale(2);
+        } else {
+            return new BigDecimal(0);
+        }
+    }
+
 }

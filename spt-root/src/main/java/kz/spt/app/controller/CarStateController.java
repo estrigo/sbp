@@ -8,6 +8,7 @@ import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.dto.BlacklistDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.CarStateService;
+import lombok.extern.java.Log;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -26,6 +27,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/journal")
+@Log
 public class CarStateController {
 
     private GateService gateService;
@@ -116,4 +118,23 @@ public class CarStateController {
         carStateService.editPlateNumber(carState);
         return "redirect:/journal/list";
     }
+
+    @GetMapping("/manualOut")
+    public String manualOutBy(@RequestParam String carNumber, @RequestParam String dateOut,
+                              @RequestParam String exitType, @RequestParam String dateIn) throws Exception  {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+        Date outTimestamp = sdf.parse(dateOut);
+        Date inTimestamp = sdf.parse(dateIn);
+        CarState carState = carStateService.getLastNotLeft(carNumber);
+        carState.setInTimestamp(inTimestamp);
+        if (exitType.equals("1")) {
+            carState = carStateService.manualOutWithDebt(carNumber, outTimestamp, carState);
+            carStateService.createOUTManual(carNumber, outTimestamp, carState);
+            return "redirect:/journal/list";
+        } else {
+            carStateService.createOUTManual(carNumber, outTimestamp, carState);
+            return "redirect:/journal/list";
+        }
+    }
+
 }

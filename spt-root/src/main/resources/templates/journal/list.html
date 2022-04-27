@@ -125,6 +125,54 @@
         </div>
     </div>
 
+    <div id="manualPassModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+
+                            <div class="form-group">
+                                <label class="control-label" th:text="#{car.platenumber}"></label>
+                                <input type="text" class="form-control" name="plateNumber" id="plateNumber" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label" th:text="#{carState.inTimestamp}"></label>
+                                <input type="datetime-local" class="form-control" name="dateIn" id="dateIn">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label" th:text="#{carState.outTimestamp}"></label>
+                                <input type="datetime-local" class="form-control" id="dateOut">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label" th:text="#{crm.ExitType}"></label>
+                                <select class="form-control select2" id="exitType">
+                                    <option value=1 th:text="#{crm.paidExit}"></option>
+                                    <option value=0 th:text="#{crm.freeExit}"></option>
+                                    </option>
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="passCar" class="btn btn-success waves-effect waves-light" th:text="#{crm.save}"
+                            th:onclick="manualPassCar()"></button>
+                    <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal"
+                            th:text="#{crm.close}"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="addBlacklist" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -244,7 +292,8 @@
                         }
 
                         if (canKick) {
-                            menu += '<a class="dropdown-item" href="out/' + carState.carNumber + '">' + [[#{carState.manualOut}]] + '</a>';
+                            menu += '<button class="dropdown-item" onclick="showModalClickWithDate(this)" data-modal="manualPassModal" data-number="' + carState.carNumber + '" data-time="' + carState.inTimestampString + '" data-id="' + carState.id + '">' + [[#{carState.manualOut}]] + '</button>';
+                            // menu += '<a class="dropdown-item" href="out/' + carState.carNumber + '">' + [[#{carState.manualOut}]] + '</a>';
                         }
                     }
 
@@ -392,6 +441,21 @@
         }
     }
 
+    let initialDateIn;
+    function showModalClickWithDate(e){
+        const $input = $(e);
+        const $modal = $input.data("modal");
+        const $carNumber = $input.data("number");
+        const $dateIn = $input.data("time");
+        const $id = $input.data("id");
+        let pattern = /(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\:(\d{2})\:(\d{2})/;
+        let de = new Date($dateIn.replace(pattern,'$3-$2-$1T$4:$5:$6'));
+        initialDateIn = new Date(de);
+        de.setHours(de.getHours() + 6);
+        document.getElementById('dateIn').value = de.toISOString().slice(0, 16);
+        showModal($modal,$carNumber,$id);
+    }
+
     function showModalClick(e){
         console.log(e);
         const $input = $(e);
@@ -399,6 +463,29 @@
         const $carNumber = $input.data("number");
         const $id = $input.data("id");
         showModal($modal,$carNumber,$id);
+    }
+
+    function manualPassCar(){
+        let exitType = $('#manualPassModal').find('#exitType').val();
+        let dateOut = $('#manualPassModal').find('#dateOut').val();
+        let plateNumber = $('#manualPassModal').find('#plateNumber').val();
+        let dateIn = $('#manualPassModal').find('#dateIn').val();
+        let newDateIn = new Date(dateIn)
+        if (initialDateIn >= newDateIn) {
+            $.get("/journal/manualOut?carNumber=" + plateNumber + "&dateOut=" + dateOut + "&exitType=" + exitType + "&dateIn=" + dateIn, function (data) {
+                $('#manualPassModal').modal('hide');
+                table.ajax.reload(); //reload datatable
+            });
+        } else if (initialDateIn < newDateIn) {
+            alert([[#{crm.LaterDateIn}]]);
+        }
+
+    }
+
+    function setDateOut() {
+        let today = new Date();
+        today.setHours(today.getHours() + 6);
+        document.getElementById('dateOut').value = today.toISOString().slice(0, 16);
     }
 
     var activeCarState = {};
@@ -427,6 +514,17 @@
         });
     })
     $('#editPlate').on('hide.bs.modal', function () {
+        activeCarState = {}
+    })
+
+    $('#manualPassModal').on('shown.bs.modal', function () {
+        $(this).find("input[name=plateNumber]").each(function () {
+            $(this).val(activeCarState.plateNumber);
+        });
+        setDateOut();
+    })
+    $('#manualPassModal').on('hide.bs.modal', function () {
+        setDateOut();
         activeCarState = {}
     })
 
