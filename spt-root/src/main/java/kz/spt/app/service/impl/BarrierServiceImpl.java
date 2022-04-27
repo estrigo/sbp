@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,13 +35,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Log
 public class BarrierServiceImpl implements BarrierService {
 
+    private static Map<String, ModbusMaster> modbusMasterMap = new ConcurrentHashMap<>();
     private final BarrierRepository barrierRepository;
     private final EventLogService eventLogService;
     private final String BARRIER_ON = "1";
     private final String BARRIER_OFF = "0";
     private Boolean disableOpen;
-
-    private static Map<String, ModbusMaster> modbusMasterMap = new ConcurrentHashMap<>();
 
     public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, BarrierRepository barrierRepository, EventLogService eventLogService) {
         this.disableOpen = disableOpen;
@@ -122,8 +120,8 @@ public class BarrierServiceImpl implements BarrierService {
                 return result;
             } else if (Barrier.BarrierType.JETSON.equals(sensor.type)) {
                 var response = new RestTemplateBuilder().build().getForObject("http://" + sensor.ip + ":9001" + "/sensor_status?pin=" + sensor.oid, JetsonResponse.class);
-                //log.info(response.toString());
-                return response.getState();
+                log.info(response.toString());
+                return response.getState() == 0 ? 1 : 0;
             } else {
                 return -1;
             }
@@ -328,7 +326,7 @@ public class BarrierServiceImpl implements BarrierService {
         Boolean result = true;
 
         ModbusMaster m;
-        if(!modbusMasterMap.containsKey(barrier.ip) || modbusMasterMap.get(barrier.ip) == null){
+        if (!modbusMasterMap.containsKey(barrier.ip) || modbusMasterMap.get(barrier.ip) == null) {
             modbusMasterMap.put(barrier.ip, getConnectedInstance(barrier.ip));
         }
         m = modbusMasterMap.get(barrier.ip);
@@ -509,8 +507,7 @@ public class BarrierServiceImpl implements BarrierService {
     private Boolean jetsonChangeValue(BarrierStatusDto barrier, Command command) {
         String pin = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
         var response = new RestTemplateBuilder().build().getForObject("http://" + barrier.ip + ":9001" + "/gate_action?pin=" + pin, JetsonResponse.class);
-
-        //log.info(response.toString());
+        log.info(response.toString());
         return response.getSuccess();
     }
 
@@ -518,7 +515,7 @@ public class BarrierServiceImpl implements BarrierService {
         Boolean read = false;
         int retryCount = 0;
         boolean[] results = null;
-        while (!read && retryCount<3){
+        while (!read && retryCount < 3) {
             try {
                 retryCount++;
                 log.info("modbus read retry count: " + retryCount);
@@ -535,7 +532,7 @@ public class BarrierServiceImpl implements BarrierService {
     private Boolean modbusRetryWrite(ModbusMaster m, int slaveId, int offset, boolean value) {
         Boolean wrote = false;
         int retryCount = 0;
-        while (!wrote && retryCount<3){
+        while (!wrote && retryCount < 3) {
             try {
                 retryCount++;
                 log.info("modbus write retry count: " + retryCount);
@@ -552,7 +549,7 @@ public class BarrierServiceImpl implements BarrierService {
     private Boolean modbusRetryConnect(ModbusMaster m) {
         Boolean connected = false;
         int retryCount = 0;
-        while (!connected && retryCount<3){
+        while (!connected && retryCount < 3) {
             try {
                 retryCount++;
                 log.info("modbus connect retry count: " + retryCount);
