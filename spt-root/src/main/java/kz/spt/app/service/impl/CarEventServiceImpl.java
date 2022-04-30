@@ -61,6 +61,12 @@ public class CarEventServiceImpl implements CarEventService {
     @Value("${parking.only.register.cars}")
     Boolean parkingOnlyRegisterCars;
 
+    @Value("${parking.ignore.left.seconds}")
+    int parkingIgnoreLeftSeconds;
+
+    @Value("${parking.ignore.entered.seconds}")
+    int parkingIgnoreEnteredSeconds;
+
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
     private ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(LocaleContextHolder.getLocale().toString().substring(0, 2)));
 
@@ -322,9 +328,9 @@ public class CarEventServiceImpl implements CarEventService {
         JsonNode whitelistCheckResults = null;
         Boolean enteredFromThisSecondsBefore = false;
 
-        // проверить если машины выезжала или заезжала 20 секунд минуты назад
+        // проверить если машины выезжала, по умолчанию 20 секунд назад
         Calendar now = Calendar.getInstance();
-        now.add(Calendar.SECOND, -20);
+        now.add(Calendar.SECOND, (-1)*parkingIgnoreLeftSeconds);
         Boolean hasLeft = carStateService.getIfHasLastFromOtherCamera(eventDto.car_number, eventDto.ip_address, now.getTime());
         if (hasLeft) {
             return;
@@ -709,9 +715,9 @@ public class CarEventServiceImpl implements CarEventService {
         } catch (Exception ex) {
             log.log(Level.WARNING, "Error while clearing qrpanel for gate " + gate.gateName);
         }
-        // проверить если машины выезжала или заезжала 20 секунд назад
+        // проверить если машины заезжала, по умолчанию 20 секунд назад
         Calendar now = Calendar.getInstance();
-        now.add(Calendar.SECOND, -20);
+        now.add(Calendar.SECOND, (-1)*parkingIgnoreEnteredSeconds);
         Boolean hasLeft = carStateService.getIfHasLastFromOtherCamera(eventDto.car_number, eventDto.ip_address, now.getTime());
         if (hasLeft) {
             return;

@@ -128,6 +128,11 @@ parking:
   only:
     register:
       cars: false
+  ignore:
+    left:
+      seconds: 20 # ignore from any camera if car left from other camera, default 20 seconds
+    entered:
+      seconds: 20 # ignore from any camera if car entered from other camera, default 20 seconds
 webkassa:
   host: https://kkm.webkassa.kz
 rekassa:

@@ -102,10 +102,15 @@ parking:
         cases: false # Выпускать все авто где вьезд не найден
   remove:
     all:
-      debts: false
+      debts: false # удалят все долги после 03.00 утра
   only:
     register:
-      cars: false
+      cars: false #просто регистрирует въезды и выезды, система без шлагбаумом
+  ignore:
+    left:
+      seconds: 20 # ignore from any camera if car left from other camera, default 20 seconds
+    entered:
+      seconds: 20 # ignore from any camera if car entered from other camera, default 20 seconds
 parkomat.ip:
 cors:
   allowed:
