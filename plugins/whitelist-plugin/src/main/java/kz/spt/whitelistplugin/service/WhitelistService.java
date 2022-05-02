@@ -46,4 +46,6 @@ public interface WhitelistService {
     List<WhiteListDto> listByGroupName(String groupName) throws JsonProcessingException;
 
     void deleteAllByParkingId(Long parkingId);
+
+    ArrayNode getValidWhiteListsInPeriod(Long parkingId, String platenumber, Date inDate, Date outDate) throws JsonProcessingException;
 }

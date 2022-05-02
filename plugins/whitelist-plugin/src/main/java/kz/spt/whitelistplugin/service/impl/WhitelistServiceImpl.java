@@ -302,6 +302,89 @@ public class WhitelistServiceImpl implements WhitelistService {
     }
 
     @Override
+    public ArrayNode getValidWhiteListsInPeriod(Long parkingId, String platenumber, Date inDate, Date outDate) throws JsonProcessingException {
+
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+
+        Cars car = rootServicesGetterService.getCarsService().findByPlatenumber(platenumber);
+
+        if (car != null) {
+            List<Whitelist> whitelists = whitelistRepository.findValidWhiteListByCar(car, inDate, outDate, parkingId);
+            List<Whitelist> groupWhitelists = whitelistRepository.findValidWhiteListGroupByCar(car, inDate, outDate, parkingId);
+
+            SimpleDateFormat format = new SimpleDateFormat(datePrettyFormat);
+
+            for (Whitelist whitelist : whitelists) {
+                ObjectNode objectNode = objectMapper.createObjectNode();
+                objectNode.put("id", whitelist.getId());
+                objectNode.put("plateNumber", whitelist.getCar().getPlatenumber());
+                objectNode.put("type", whitelist.getType().toString());
+                if (AbstractWhitelist.Type.PERIOD.equals(whitelist.getType())) {
+                    if (whitelist.getAccess_start() != null) {
+                        objectNode.put("accessStart", format.format(whitelist.getAccess_start()));
+                    }
+                    if (whitelist.getAccess_end() != null) {
+                        objectNode.put("accessEnd", format.format(whitelist.getAccess_end()));
+                    }
+                }
+                if (Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null) {
+                    objectNode.set("customJson", objectMapper.readTree(whitelist.getCustomJson()));
+                }
+                arrayNode.add(objectNode);
+            }
+            for (Whitelist whitelist : groupWhitelists) {
+                ObjectNode objectNode = objectMapper.createObjectNode();
+
+                objectNode.put("id", whitelist.getGroup().getId());
+                objectNode.put("plateNumber", whitelist.getCar().getPlatenumber());
+                objectNode.put("groupId", whitelist.getGroup().getId());
+                objectNode.put("groupName", whitelist.getGroup().getName());
+                objectNode.put("type", whitelist.getGroup().getType().toString());
+
+                if (Whitelist.Type.PERIOD.equals(whitelist.getGroup().getType())) {
+                    if (whitelist.getGroup().getAccess_start() != null) {
+                        objectNode.put("accessStart", format.format(whitelist.getGroup().getAccess_start()));
+                    }
+                    if (whitelist.getGroup().getAccess_end() != null) {
+                        objectNode.put("accessEnd", format.format(whitelist.getGroup().getAccess_end()));
+                    }
+                }
+                if (Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null) {
+                    objectNode.set("customJson", objectMapper.readTree(whitelist.getCustomJson()));
+                }
+                arrayNode.add(objectNode);
+            }
+        }
+        if (arrayNode.isEmpty() && platenumber.length() > 2) {
+            SimpleDateFormat format = new SimpleDateFormat(datePrettyFormat);
+            if (platenumber.length() == 9) {
+                platenumber = platenumber.substring(0, platenumber.length() - 3);
+            } else {
+                platenumber = platenumber.substring(0, platenumber.length() - 2);
+            }
+            List<Cars> carsList = rootServicesGetterService.getCarsService().findByPlatenumberContaining(platenumber);
+            for (Cars cars: carsList) {
+                List<Whitelist> whitelists = whitelistRepository.findWhitelistGroupTaxiByCar(cars, inDate, outDate, parkingId);
+
+                for (Whitelist w : whitelists) {
+                    ObjectNode objectNode = objectMapper.createObjectNode();
+                    objectNode.put("id", w.getGroup().getId());
+                    objectNode.put("plateNumber", w.getCar().getPlatenumber());
+                    objectNode.put("groupId", w.getGroup().getId());
+                    objectNode.put("groupName", w.getGroup().getName());
+                    objectNode.put("type", w.getGroup().getType().toString());
+                    objectNode.put("accessStart", format.format(w.getGroup().getAccess_start()));
+                    objectNode.put("accessEnd", format.format(w.getGroup().getAccess_end()));
+                    arrayNode.add(objectNode);
+                }
+            }
+        }
+        log.info("arrayNode.size: " + arrayNode.size());
+        return arrayNode.isEmpty() ? null : arrayNode;
+    }
+
+
+    @Override
     public Whitelist prepareById(Long id) {
         SimpleDateFormat format = new SimpleDateFormat(dateformat);
         Whitelist whitelist = whitelistRepository.getWithCarAndGroupAndParking(id);

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.model.dto.Period;
+import kz.spt.app.service.WhitelistRootService;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarEventDto;
@@ -40,11 +41,12 @@ public class PaymentServiceImpl implements PaymentService {
     private final CarModelService carModelService;
     private final EventLogService eventLogService;
     private final AbonomentService abonomentService;
+    private final WhitelistRootService whitelistRootService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
     public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService, ParkingService parkingService, EventLogService eventLogService,
-                              CarModelService carModelService, AbonomentService abonomentService) {
+                              CarModelService carModelService, AbonomentService abonomentService, WhitelistRootService whitelistRootService) {
         this.pluginService = pluginService;
         this.carStateService = carStateService;
         this.carService = carService;
@@ -52,6 +54,7 @@ public class PaymentServiceImpl implements PaymentService {
         this.eventLogService = eventLogService;
         this.carModelService = carModelService;
         this.abonomentService = abonomentService;
+        this.whitelistRootService = whitelistRootService;
     }
 
     @Override
@@ -98,6 +101,11 @@ public class PaymentServiceImpl implements PaymentService {
                         dto.result = 0;
                         dto.left_free_time_minutes = 15;
                         carState.setCashlessPayment(true);
+
+                        JsonNode whiteLists = whitelistRootService.getValidWhiteListsInPeriod(carState.getParking().getId(), commandDto.account, carState.getInTimestamp(), new Date(), format);
+                        if(whiteLists != null && whiteLists.isArray() && whiteLists.size() > 0){
+                            return checkWhiteListExtraPayment(commandDto, carState, format, whiteLists, dto);
+                        }
 
                         JsonNode abonements = abonomentService.getAbonomentsDetails(commandDto.account, carState, format);
                         if(abonements != null && abonements.isArray() && abonements.size() > 0){
@@ -781,6 +789,54 @@ public class PaymentServiceImpl implements PaymentService {
                 calcEndCalendar.add(Calendar.MILLISECOND, (int) (p.getEnd().getTime()-p.getStart().getTime()));
             }
             log.info("calculate rate for: " + calcBegin + " end: " + calcEndCalendar.getTime());
+            BigDecimal rate = null;
+            PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+            if (ratePluginRegister != null) {
+                ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
+                ratePluginNode.put("parkingId", carState.getParking().getId());
+                ratePluginNode.put("inDate", format.format(calcBegin));
+                ratePluginNode.put("outDate", format.format(calcEndCalendar.getTime()));
+                ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
+                ratePluginNode.put("isCheck", false);
+                ratePluginNode.put("paymentsJson", carState.getPaymentJson());
+
+                JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
+                rate = ratePluginResult.get("rateResult").decimalValue().setScale(2);
+                dto.tariff = ratePluginResult.get("rateName") != null ? ratePluginResult.get("rateName").textValue() : "";
+                dto.hours = ratePluginResult.get("payed_till") != null ? (int) ratePluginResult.get("payed_till").longValue() : 0;
+            }
+
+            if(rate == null){
+                return dto;
+            } else {
+                JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
+                dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue();
+                dto.sum = rate;
+            }
+        }
+        return dto;
+    }
+
+    private BillingInfoSuccessDto checkWhiteListExtraPayment(CommandDto commandDto, CarState carState, SimpleDateFormat format, JsonNode whiteListJson, BillingInfoSuccessDto dto) throws Exception {
+
+        Date inDate = carState.getInTimestamp();
+        Date outDate = new Date();
+
+        List<Period> periods = whitelistRootService.calculatePaymentPeriods(whiteListJson, inDate, outDate);
+
+        if(periods.size() == 0){
+            return dto;
+        } else {
+
+            Calendar calcEndCalendar = Calendar.getInstance();
+            Date calcBegin = periods.get(0).getStart();
+            calcEndCalendar.setTime(periods.get(0).getStart());
+
+            for(Period p:periods){
+                log.info("payment service adding period: begin: " + p.getStart() + " end: " + p.getEnd());
+                calcEndCalendar.add(Calendar.MILLISECOND, (int) (p.getEnd().getTime()-p.getStart().getTime()));
+            }
+            log.info("calculate whitelist rate for: " + calcBegin + " end: " + calcEndCalendar.getTime());
             BigDecimal rate = null;
             PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
             if (ratePluginRegister != null) {

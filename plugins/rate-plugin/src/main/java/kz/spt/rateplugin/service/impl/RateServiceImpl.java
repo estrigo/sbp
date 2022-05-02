@@ -77,7 +77,7 @@ public class RateServiceImpl implements RateService {
             Date lastPaymentDate = getLastPaymentDate(paymentsJson); // Если была оплата проверяем прошли минуты до которые даются для выезда
             if(lastPaymentDate != null){
                 log.info("lastPaymentDate: " +  lastPaymentDate);
-                int seconds = (int) (outCalendar.getTime().getTime() - lastPaymentDate.getTime()) / 1000;
+                int seconds = (int) ((new Date()).getTime() - lastPaymentDate.getTime()) / 1000;
                 int minutesPassedAfterLastPay = seconds / 60;
                 int secondsPassedAfterLastPay = seconds % 60;
                 log.info("minutesPassedAfterLastPay: " + minutesPassedAfterLastPay);

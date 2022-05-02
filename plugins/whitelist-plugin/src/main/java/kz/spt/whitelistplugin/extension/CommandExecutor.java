@@ -33,13 +33,18 @@ public class CommandExecutor implements PluginRegister {
                 if(result != null){
                     node.set("whitelistCheckResult", result);
                 }
-            }
-            else if (commandName.equals("deleteWhitelists")) {
+            } else if (commandName.equals("deleteWhitelists")) {
                 Long parkingId = command.get("parkingId").longValue();
                 getWhitelistService().deleteAllByParkingId(parkingId);
                 node.put("reply: ", "deleted whitelist lists");
-            }
-            else {
+            } else if(commandName.equals("getValidWhiteListsInPeriod")) {
+                Long parkingId = command.get("parkingId").longValue();
+                String platenumber = command.get("car_number").textValue();
+                String inDate = command.get("inDate").textValue();
+                String outDate = command.get("outDate").textValue();
+                JsonNode result = getWhitelistService().getValidWhiteListsInPeriod(parkingId, platenumber, format.parse(inDate), format.parse(outDate));
+                node.set("validWhiteListsInPeriodResult", result);
+            } else {
                 JsonNode result = getWhitelistService().getList(command.get("parkingId").longValue(), command.get("car_number").textValue());
                 if(result != null){
                     node.set("whitelistListResult", result);

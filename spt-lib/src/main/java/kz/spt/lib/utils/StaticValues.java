@@ -10,8 +10,8 @@ public class StaticValues {
         ZERO_TOUCH,
         MANUAL, // ручной выезд авто
         ABONOMENT, // выезд через абономент
-        REGISTER; // только регистрировать выезды
-
+        REGISTER, // только регистрировать выезды
+        FREE; //  Бесплатный заездь
     }
 
     public static String dateFormatTZ = "yyyy-MM-dd'T'HH:mm:ssZ";
