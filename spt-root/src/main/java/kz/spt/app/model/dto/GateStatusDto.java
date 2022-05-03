@@ -79,21 +79,29 @@ public class GateStatusDto {
                 }
             }
 
-            if(!StringUtils.isEmpty(barrier.getLoopIp()) && !StringUtils.isEmpty(barrier.getLoopPassword()) && barrier.getLoopOid() != null && barrier.getLoopType() != null){
+            if(Barrier.BarrierType.SNMP.equals(barrier.getBarrierType()) && !StringUtils.isEmpty(barrier.getLoopIp()) && !StringUtils.isEmpty(barrier.getLoopPassword()) && barrier.getLoopOid() != null){
                 gateStatusDto.loop = new SensorStatusDto();
                 gateStatusDto.loop.barrierId = barrier.getId();
                 gateStatusDto.loop.barrierIp = barrier.getIp();
                 gateStatusDto.loop.sensorName = "loop";
-                gateStatusDto.loop.type = barrier.getLoopType();
                 gateStatusDto.loop.ip = barrier.getLoopIp();
                 gateStatusDto.loop.password = barrier.getLoopPassword();
                 gateStatusDto.loop.oid = barrier.getLoopOid();
                 gateStatusDto.loop.snmpVersion = barrier.getLoopSnmpVersion();
                 gateStatusDto.loop.defaultValue = barrier.getLoopDefaultValue();
+                gateStatusDto.loop.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
+                gateStatusDto.loop.type = barrier.getBarrierType();
+            } else if(Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType()) && barrier.getLoopModbusRegister() != null){
+                gateStatusDto.loop = new SensorStatusDto();
+                gateStatusDto.loop.barrierId = barrier.getId();
+                gateStatusDto.loop.barrierIp = barrier.getIp();
+                gateStatusDto.loop.sensorName = "loop";
+                gateStatusDto.loop.ip = barrier.getLoopIp();
                 gateStatusDto.loop.modbusRegister = barrier.getLoopModbusRegister();
                 gateStatusDto.loop.modbusDeviceVersion = barrier.getModbusDeviceVersion();
                 gateStatusDto.loop.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
-            }else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType()) && barrier.getLoopJetsonPin() != null) {
+                gateStatusDto.loop.type = barrier.getBarrierType();
+            } else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType()) && barrier.getLoopJetsonPin() != null) {
                 gateStatusDto.loop = new SensorStatusDto();
                 gateStatusDto.loop.barrierId = barrier.getId();
                 gateStatusDto.loop.sensorName = "loop";
@@ -103,21 +111,28 @@ public class GateStatusDto {
                 gateStatusDto.loop.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
             }
 
-            if(!StringUtils.isEmpty(barrier.getPhotoElementIp()) && !StringUtils.isEmpty(barrier.getPhotoElementPassword()) && barrier.getPhotoElementOid() != null && barrier.getPhotoElementType() != null){
+            if(Barrier.BarrierType.SNMP.equals(barrier.getBarrierType()) && !StringUtils.isEmpty(barrier.getPhotoElementIp()) && !StringUtils.isEmpty(barrier.getPhotoElementPassword()) && barrier.getPhotoElementOid() != null){
                 gateStatusDto.photoElement = new SensorStatusDto();
                 gateStatusDto.photoElement.barrierId = barrier.getId();
                 gateStatusDto.photoElement.barrierIp = barrier.getIp();
                 gateStatusDto.photoElement.sensorName = "photoElement";
-                gateStatusDto.photoElement.type = barrier.getPhotoElementType();
                 gateStatusDto.photoElement.ip = barrier.getPhotoElementIp();
                 gateStatusDto.photoElement.password = barrier.getPhotoElementPassword();
                 gateStatusDto.photoElement.oid = barrier.getPhotoElementOid();
                 gateStatusDto.photoElement.snmpVersion = barrier.getPhotoElementSnmpVersion();
                 gateStatusDto.loop.defaultValue = barrier.getPhotoElementDefaultValue();
+                gateStatusDto.photoElement.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
+                gateStatusDto.photoElement.type = barrier.getBarrierType();
+            } else if(Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType()) && barrier.getPhotoElementModbusRegister() != null){
+                gateStatusDto.photoElement = new SensorStatusDto();
+                gateStatusDto.photoElement.barrierId = barrier.getId();
+                gateStatusDto.photoElement.barrierIp = barrier.getIp();
+                gateStatusDto.photoElement.sensorName = "photoElement";
                 gateStatusDto.photoElement.modbusRegister = barrier.getPhotoElementModbusRegister();
                 gateStatusDto.photoElement.modbusDeviceVersion = barrier.getModbusDeviceVersion();
                 gateStatusDto.photoElement.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
-            }else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType()) && barrier.getPhotoElementJetsonPin() != null) {
+                gateStatusDto.photoElement.type = barrier.getBarrierType();
+            } else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType()) && barrier.getPhotoElementJetsonPin() != null) {
                 gateStatusDto.photoElement = new SensorStatusDto();
                 gateStatusDto.photoElement.barrierId = barrier.getId();
                 gateStatusDto.photoElement.sensorName = "photoElement";

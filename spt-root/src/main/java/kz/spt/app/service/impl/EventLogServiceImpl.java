@@ -4,7 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
+import com.intelligt.modbus.jlibmodbus.master.ModbusMaster;
 import kz.spt.app.model.dto.EventLogExcelDto;
+import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.GateService;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
@@ -320,8 +325,29 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
-    public String getApplicationPropertyValue(String prortyName) {
-        return env.getProperty(prortyName);
+    public String getApplicationPropertyValue(String propertyName) throws ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException {
+/*
+        ModbusMaster m = BarrierServiceImpl.modbusMasterMap.get("10.66.100.57");
+        if(!m.isConnected()){
+            m.connect();
+        }
+        int slaveId = 1;
+        if("camera".equals(propertyName)){
+            Thread.sleep(1000);
+            m.writeSingleCoil(slaveId, 18, true);
+            Thread.sleep(1000);
+            m.writeSingleCoil(slaveId, 18, false);
+        } else if("loop".equals(propertyName)){
+            m.writeSingleCoil(slaveId, 18, true);
+            Thread.sleep(1000);
+            m.writeSingleCoil(slaveId, 19, true);
+            Thread.sleep(1000);
+            m.writeSingleCoil(slaveId, 18, false);
+            Thread.sleep(1000);
+            m.writeSingleCoil(slaveId, 19, false);
+        }
+*/
+        return env.getProperty(propertyName);
     }
 
     @Override

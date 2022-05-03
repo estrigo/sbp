@@ -78,10 +78,6 @@ public class Barrier {
 
 
     // --- Данные петли для проверки присуствия машины  (После шлагбаума)
-    @Enumerated(EnumType.STRING)
-    @Column(name = "before_loop_type")
-    private Barrier.BarrierType loopType;
-
     private String loopIp;
 
     private String loopPassword;
@@ -99,10 +95,6 @@ public class Barrier {
     private Integer loopJetsonPin;
 
     // --- Данные фотоэлемента для проверки присуствия машины (До шлагбаума)
-    @Enumerated(EnumType.STRING)
-    @Column(name = "loop_type")
-    private Barrier.BarrierType photoElementType;
-
     private String photoElementIp;
 
     private String photoElementPassword;

@@ -127,17 +127,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="type" class="control-label" th:text="#{barrier.type}"></label>
-                        <select th:field="*{loopType}" th:value="*{loopType}" class="form-control" id="loopType">
-                            <option th:each="barrierType : ${T(kz.spt.lib.model.Barrier.BarrierType).ALL}"
-                                    th:value="${barrierType}" th:text="#{'barrier.barrierType.' + ${barrierType}}">
-                            </option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-8">
+                <div class="col-md-12">
                     <div class="form-group">
                         <label for="loopOid" class="control-label" th:text="#{barrier.loopOid}"></label>
                         <input type="text" class="form-control" id="loopOid" th:field="*{loopOid}" th:value="*{loopOid}">
@@ -207,17 +197,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="type" class="control-label" th:text="#{barrier.type}"></label>
-                        <select th:field="*{photoElementType}" th:value="*{photoElementType}" class="form-control" id="photoElementType">
-                            <option th:each="barrierType : ${T(kz.spt.lib.model.Barrier.BarrierType).ALL}"
-                                    th:value="${barrierType}" th:text="#{'barrier.barrierType.' + ${barrierType}}">
-                            </option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-8">
+                <div class="col-md-12">
                     <div class="form-group">
                         <label for="photoElementOid" class="control-label" th:text="#{barrier.loopOid}"></label>
                         <input type="text" class="form-control" id="photoElementOid" th:field="*{photoElementOid}" th:value="*{photoElementOid}">

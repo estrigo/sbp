@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Log
 public class BarrierServiceImpl implements BarrierService {
 
-    private static Map<String, ModbusMaster> modbusMasterMap = new ConcurrentHashMap<>();
+    public static Map<String, ModbusMaster> modbusMasterMap = new ConcurrentHashMap<>();
     private final BarrierRepository barrierRepository;
     private final EventLogService eventLogService;
     private final String BARRIER_ON = "1";
@@ -105,13 +105,13 @@ public class BarrierServiceImpl implements BarrierService {
 
                     int[] values = m.readHoldingRegisters(slaveId, offset, quantity);
                     for (int value : values) {
-                        result = Integer.toBinaryString(value).charAt(sensor_value) == '1' ? 0 : 1;
+                        result = Integer.toBinaryString(value).charAt(sensor_value) == '1' ? 1 : 0;
                     }
                 } else {
                     int offset = sensor.modbusRegister - 1;
                     boolean[] changedValue = m.readCoils(slaveId, offset, 1);
                     if (changedValue != null && changedValue.length > 0) {
-                        result = changedValue[0] ? 0 : 1;
+                        result = changedValue[0] ? 1 : 0;
                     }
                 }
                 if (sensor.modbusDeviceVersion != null && "icpdas".equals(sensor.modbusDeviceVersion)) {
@@ -241,7 +241,7 @@ public class BarrierServiceImpl implements BarrierService {
             try {
                 m.connect();
             } catch (Exception e) {
-                log.info("retry connect error: " + e.getMessage());
+                log.info("retry connect ip: " + ip + " error: " + e.getMessage());
                 modbusRetryConnect(m);
             }
         }

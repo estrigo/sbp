@@ -1,5 +1,8 @@
 package kz.spt.lib.service;
 
+import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.EventLog;
@@ -31,7 +34,7 @@ public interface EventLogService {
 
     void save(EventLog eventLog);
 
-    String getApplicationPropertyValue(String prortyName);
+    String getApplicationPropertyValue(String prortyName) throws ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException;
 
     String findLastNotEnoughFunds(Long gateId);
 
