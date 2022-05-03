@@ -61,6 +61,13 @@ public class ZerotouchServiceImpl implements ZerotouchService {
         Boolean result = false;
 
         if(zeroTouchRahmetCheck) {
+            ZeroTouchLog zeroTouchLog = zeroTouchLogRepository.findZeroTouchLogByCarStateId(carStateId);
+
+            if (zeroTouchLog != null && zeroTouchLog.getIsPaid())
+                return true;
+            else if (zeroTouchLog!=null && !zeroTouchLog.getIsPaid())
+                return false;
+
             getToken();
 
             CloseableHttpClient zeroTouchHttpClient = HttpClients.custom().setConnectionTimeToLive(5, TimeUnit.SECONDS).build();
