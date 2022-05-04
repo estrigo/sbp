@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+
+<div class="content">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card table-responsive">
+                    <div class="card-header" th:text="#{report.billing}"></div>
+                    <div class="card-body">
+                        <div>
+                            <form method="post">
+                                <div class="form-row">
+                                    <div class="col-4">
+                                        <input id="dateFrom" type="datetime-local" class="form-control" />
+                                    </div>
+                                    <div class="col-4">
+                                        <input id="dateTo" type="datetime-local" class="form-control" />
+                                    </div>
+                                    <div class="col-1">
+                                        <button type="button" class="btn btn-primary mr-1"
+                                                onclick="find()"
+                                                th:text="#{report.find}"></button>
+                                    </div>
+                                    <div class="col-1">
+                                        <button type="button" class="btn btn-primary mr-1"
+                                                onclick="clear()"
+                                                th:text="#{report.clear}"></button>
+                                    </div>
+                                    <div class="col-2">
+                                        <button type="button" class="btn btn-success mr-1"
+                                                onclick="excel()"
+                                                th:text="#{report.excel}"></button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <table id="sumReport" class="table table-bordered table-bordered">
+                            <thead>
+                            <tr>
+                                <th th:text="#{report.dateTime}"></th>
+                                <th th:text="#{report.records}"></th>
+                                <th th:text="#{report.paymentRecords}"></th>
+                                <th th:text="#{report.whitelistRecords}"></th>
+                                <th th:text="#{report.abonementRecords}"></th>
+                                <th th:text="#{report.kaspiSum}"></th>
+                                <th th:text="#{report.yurtaSum}"></th>
+                                <!--th th:text="#{report.bankCardSum}"></th>
+                                <th th:text="#{report.cashSum}"></th>
+                                <th th:text="#{report.halykSum}"></th>
+                                <th th:text="#{report.rahmetSum}"></th-->
+                                <th th:text="#{report.totalSum}"></th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Required datatable js -->
+<script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
+<script th:src="@{/plugins/datatables/dataTables.bootstrap4.min.js}"></script>
+<!-- Buttons examples -->
+<script th:src="@{/plugins/datatables/dataTables.buttons.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.bootstrap4.min.js}"></script>
+<script th:src="@{/plugins/datatables/jszip.min.js}"></script>
+<script th:src="@{/plugins/datatables/pdfmake.min.js}"></script>
+<script th:src="@{/plugins/datatables/vfs_fonts.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.html5.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.print.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.colVis.min.js}"></script>
+<!-- Responsive examples -->
+<script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
+<script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+
+<script th:inline="javascript">
+    let date=new Date();
+    var dateFrom = (new Date(date.getFullYear(),date.getMonth(),date.getDate(), 6, 0, 0, 0)).toISOString();
+    var dateTo = (new Date(date.getFullYear(),date.getMonth(),date.getDate(), date.getHours()+6, date.getMinutes(), date.getSeconds(), 0)).toISOString();
+    $('#dateFrom').val(dateFrom.substring(0, dateFrom.length-1));
+    $('#dateTo').val(dateTo.substring(0, dateTo.length-1));
+
+    var localizationAddress = '/plugins/datatables/json/ru.json';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        localizationAddress = "";
+    }
+
+    const table = $('#sumReport').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "searching": false,
+        "ajax": {
+            "url": "/rest/report/sum",
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+                d.customFilters = {
+                    "dateFrom": $('#dateFrom').val(),
+                    "dateTo": $('#dateTo').val(),
+                };
+                return JSON.stringify(d);
+            }
+        },
+        "columns": [
+            {"data": "dateTime"},
+            {"data": "count"},
+            {"data": "paymentsCount"},
+            {"data": "whitelistsCount"},
+            {"data": "abonementsCount"},
+            {"data": "kaspiSum"},
+            {"data": "yurtaSum"},
+            {"data": "totalSum"}
+        ],
+        "order": [ //[[ in thymeleaf is inline script
+            [0, "desc"]
+        ],
+        language: {
+            url: localizationAddress
+        }
+    });
+
+    function find() {
+        table.ajax.reload();
+    }
+
+    $(document).on('ready',function(){
+        find();
+    });
+
+    function excel() {
+        let request = {
+            "dateFrom": $('#dateFrom').val(),
+            "dateTo": $('#dateTo').val(),
+        };
+        $.ajax({
+            url: "/rest/report/sum/excel",
+            type: "POST",
+            data: JSON.stringify(request),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                try {
+                    let arr = [];
+                    for (let i = 0; i < data.length; i++) {
+                        arr.push(data[i]);
+                    }
+                    let ws = XLSX.utils.json_to_sheet(arr);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, 'Sum');
+                    XLSX.writeFile(wb, "report.xls", {type: "buffer"});
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        })
+    }*/
+</script>
+
+</html>
