@@ -51,6 +51,7 @@ public class DefaultUrlAuthenticationSuccessHandler implements AuthenticationSuc
         roleTargetUrlMap.put("ROLE_MANAGER", "/events/list");
         roleTargetUrlMap.put("ROLE_ACCOUNTANT", "/billing/payments/list");
         roleTargetUrlMap.put("ROLE_READ", "/events/list");
+        roleTargetUrlMap.put("ROLE_BAQORDA", "/billing/payments/list");
 
         final Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         for (final GrantedAuthority grantedAuthority : authorities) {

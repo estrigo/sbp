@@ -59,12 +59,12 @@
                         <a th:href="@{|/arm/realtime|}" class="waves-effect waves-primary"><i
                                 class="ti-desktop"></i><span th:text=" #{crm.arm} "></span></a>
                     </li>
-                    <li sec:authorize="!hasRole('ROLE_ACCOUNTANT')">
+                    <li sec:authorize="!hasRole('ROLE_ACCOUNTANT') && !hasRole('ROLE_BAQORDA')">
                         <a th:href="@{|/events/list|}" class="waves-effect waves-primary"><i
                                 class="ti-files"></i><span th:text=" #{events.events} "></span></a>
                     </li>
                     <th:block sec:authorize="!hasRole('ROLE_RTA')">
-                        <li sec:authorize="!hasRole('ROLE_ACCOUNTANT')">
+                        <li sec:authorize="!hasRole('ROLE_ACCOUNTANT') && !hasRole('ROLE_BAQORDA')">
                             <a th:href="@{|/journal/list|}" class="waves-effect waves-primary"><i
                                     class="ti-receipt"></i><span th:text=" #{carstate.journal} "></span></a>
                         </li>
@@ -99,7 +99,7 @@
                             <a th:href="@{|/balance/operation|}" class="waves-effect waves-primary"><i
                                     class="ti-list-ol"></i><span th:text=" #{balance.balance} "></span></a>
                         </li>
-                        <li sec:authorize="!hasRole('ROLE_ACCOUNTANT')">
+                        <li sec:authorize="!hasRole('ROLE_ACCOUNTANT') && !hasRole('ROLE_BAQORDA')">
                             <a class="waves-effect waves-primary" onclick="javascript:$('#helpModal').modal('show')">
                                 <i class="ti-heart"></i><span th:text=" #{crm.help} "></span></a>
                         </li>

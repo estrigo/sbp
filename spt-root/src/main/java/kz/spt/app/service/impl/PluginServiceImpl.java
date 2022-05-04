@@ -61,6 +61,12 @@ public class PluginServiceImpl implements PluginService {
                                 menus.add(link);
                             }
                         }
+                        if (currentUser.getUser().getRoles().get(0).getName().equals("ROLE_BAQORDA")){
+                            String pluginName = plugin.toString().substring(7,10);
+                            if (pluginName.equals("whi")||pluginName.equals("bil")||pluginName.equals("abo")){
+                                menus.add(link);
+                            }
+                        }
                         else {
                             menus.add(link);
                         }

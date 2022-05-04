@@ -6,6 +6,7 @@ insert into role (role_id, role, plugin, name_en, name_ru) values (5, 'PLUGIN_RO
 insert into role (role_id, role, plugin, name_en, name_ru) values (6, 'ROLE_OPERATOR', null, 'Operator', 'Оператор');
 insert into role (role_id, role, plugin, name_en, name_ru) values (7, 'ROLE_OPERATOR_NO_REVENUE_SHARE', null,'Operator NO REVENUE SHARE','Оператор для контрактов без долевого участия');
 insert into role (role_id, role, plugin, name_en, name_ru) values (9, 'ROLE_READ', null,'read','read');
+insert into role (role_id, role, plugin, name_en, name_ru) values (30, 'ROLE_BAQORDA', null,'read','read');
 
 INSERT INTO users (id, email, enabled, first_name, last_name, password, username)
 VALUES ('1', 'a@u', '1', 'AFN', 'ALN', '$2a$10$vukbRa3lWnWvaOF4gkwdfexE.EfUpwQQJVZzisriuh5rOl4HfMXuy', 'admin');
