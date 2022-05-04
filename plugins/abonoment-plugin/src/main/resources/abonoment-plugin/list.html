@@ -24,7 +24,7 @@
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane fade show active" id="list">
-                            <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                            <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER','ROLE_BAQORDA')">
                                 <div class="form-group row">
                                     <div class="col-12">
                                         <button type="button" data-toggle="modal" data-target="#add-abonoment-modal"
@@ -50,7 +50,7 @@
                             </table>
                         </div>
                         <div class="tab-pane fade" id="types">
-                            <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                            <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER','ROLE_BAQORDA')">
                                 <div class="form-group row">
                                     <div class="col-12">
                                         <button type="button" data-toggle="modal" data-target="#add-abonoment-modal"

@@ -54,7 +54,7 @@
                             </li>
                         </ul>
                         <div class="tab-content">
-                            <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                            <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER','ROLE_BAQORDA')">
                                 <div class="form-group row">
                                     <div class="col-12">
                                         <a th:href="@{|/whitelist/add|}"
