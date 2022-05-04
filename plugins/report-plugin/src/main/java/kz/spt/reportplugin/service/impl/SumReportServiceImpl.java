@@ -26,6 +26,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -83,10 +84,37 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                 .setParameter("dateFrom", filterSumReportDto.getDateFrom())
                 .setParameter("dateTo", filterSumReportDto.getDateTo())
                 .getResultList();
-        
+
+        SimpleDateFormat checkFormat = new SimpleDateFormat("yyyy.MM.dd");
+        SimpleDateFormat correctFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+
         for(Object[] object: objects){
+            String dateTime = (String) object[0];
+            StringBuilder dateTimeString = new StringBuilder("");
+            if(dateTime.equals(checkFormat.format(filterSumReportDto.getDateFrom()))){
+                dateTimeString.append(correctFormat.format(filterSumReportDto.getDateFrom()));
+            } else {
+                dateTimeString.append(dateTime.substring(8));
+                dateTimeString.append(".");
+                dateTimeString.append(dateTime, 5, 7);
+                dateTimeString.append(".");
+                dateTimeString.append(dateTime, 2, 4);
+                dateTimeString.append(" 00:00");
+            }
+            dateTimeString.append("\n");
+            if(dateTime.equals(checkFormat.format(filterSumReportDto.getDateTo()))){
+                dateTimeString.append(correctFormat.format(filterSumReportDto.getDateTo()));
+            } else {
+                dateTimeString.append(dateTime.substring(8));
+                dateTimeString.append(".");
+                dateTimeString.append(dateTime, 5, 7);
+                dateTimeString.append(".");
+                dateTimeString.append(dateTime, 2, 4);
+                dateTimeString.append(" 23:59");
+            }
+
             SumReportDto dto = SumReportDto.builder()
-                    .dateTime((String) object[0])
+                    .dateTime(dateTimeString.toString())
                     .count(((BigInteger) object[1]).intValue())
                     .paymentsCount(((BigInteger) object[2]).intValue())
                     .whitelistsCount(((BigInteger) object[3]).intValue())
