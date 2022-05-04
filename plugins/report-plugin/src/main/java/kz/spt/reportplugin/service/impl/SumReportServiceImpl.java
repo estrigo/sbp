@@ -57,7 +57,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
         List<SumReportDto> results = new ArrayList<>();
 
-        String query = "select DATE_FORMAT(cs.out_timestamp, '%Y.%m.%d') as datetime, " +
+        String query = "select DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%Y.%m.%d') as datetime, " +
                 "       count(cs.id) as count, " +
                 "       count(cs.amount) as paymentsCount, " +
                 "       count(cs.whitelist_json) as whitelistsCount, " +
@@ -77,8 +77,8 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                 "    ) as payments on payments.car_state_id = cs.id " +
                 "where cs.out_timestamp is not null " +
                 "and cs.out_timestamp between :dateFrom and :dateTo " +
-                "group by DATE_FORMAT(cs.out_timestamp, '%Y.%m.%d') " +
-                "order by DATE_FORMAT(cs.out_timestamp, '%Y.%m.%d') desc";
+                "group by DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%Y.%m.%d') " +
+                "order by DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%Y.%m.%d') desc";
 
         List<Object[]> objects =  entityManager.createNativeQuery(query)
                 .setParameter("dateFrom", filterSumReportDto.getDateFrom())
