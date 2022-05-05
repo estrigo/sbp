@@ -9,7 +9,6 @@ import kz.spt.app.service.GateService;
 import kz.spt.app.thread.GateStatusCheckThread;
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Gate;
-import kz.spt.lib.service.CarEventService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;

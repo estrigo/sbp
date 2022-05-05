@@ -1,6 +1,9 @@
 package kz.spt.app.component;
 
 
+import kz.spt.app.job.StatusCheckJob;
+import kz.spt.app.model.dto.CameraStatusDto;
+import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.service.CameraService;
 import kz.spt.lib.model.Camera;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,7 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.pf4j.util.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -39,27 +43,47 @@ import java.util.concurrent.Future;
 @RequiredArgsConstructor
 public class SnapshotSaver {
 
-
     @Value("${images.file.path}")
     String imagePath;
 
-    private final CameraService cameraService;
-
     @Scheduled(fixedDelay = 2000)
     public void runner() {
-        List<Camera> cameraList = cameraService.cameraList();
         ExecutorService executorService = Executors.newCachedThreadPool();
-        List<Future<Camera>> futures = new ArrayList<Future<Camera>>();
-        for (final Camera camera : cameraList) {
-            futures.add(executorService.submit(new Callable() {
-                @Override
-                public Object call() throws Exception {
-                    getSnapshot(camera);
-                    return null;
-                }
-            }));
+        List<Future<CameraStatusDto>> futures = new ArrayList<>();
+        for (GateStatusDto gateStatusDto : StatusCheckJob.globalGateDtos) {
+            CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
+            if(cameraStatusDto != null && StringUtils.isNotNullOrEmpty(cameraStatusDto.login) && StringUtils.isNotNullOrEmpty(cameraStatusDto.password) && StringUtils.isNotNullOrEmpty(cameraStatusDto.snapshotUrl)){
+                futures.add(executorService.submit(new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        getSnapshot(cameraStatusDto);
+                        return null;
+                    }
+                }));
+            }
+            CameraStatusDto cameraStatusDto2 = gateStatusDto.frontCamera2;
+            if(cameraStatusDto2 != null && StringUtils.isNotNullOrEmpty(cameraStatusDto2.login) && StringUtils.isNotNullOrEmpty(cameraStatusDto2.password) && StringUtils.isNotNullOrEmpty(cameraStatusDto2.snapshotUrl)){
+                futures.add(executorService.submit(new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        getSnapshot(cameraStatusDto2);
+                        return null;
+                    }
+                }));
+            }
+            CameraStatusDto backCameraStatusDto = gateStatusDto.backCamera;
+            if(backCameraStatusDto != null && StringUtils.isNotNullOrEmpty(backCameraStatusDto.login) && StringUtils.isNotNullOrEmpty(backCameraStatusDto.password) && StringUtils.isNotNullOrEmpty(backCameraStatusDto.snapshotUrl)){
+                futures.add(executorService.submit(new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        getSnapshot(backCameraStatusDto);
+                        return null;
+                    }
+                }));
+            }
         }
-        for (Future<Camera> future : futures) {
+
+        for (Future<CameraStatusDto> future : futures) {
             try {
                 future.get();
             } catch (Exception ex) {
@@ -70,12 +94,12 @@ public class SnapshotSaver {
     }
 
 
-    private void getSnapshot(Camera camera) throws Exception {
+    private void getSnapshot(CameraStatusDto cameraStatusDto) throws Exception {
 
-        String ip = camera.getIp();
+        String ip = cameraStatusDto.ip;
         HttpHost host = new HttpHost(ip, 8080, "http");
         CloseableHttpClient client = HttpClientBuilder.create().
-                setDefaultCredentialsProvider(provider(camera.getLogin(), camera.getPassword()))
+                setDefaultCredentialsProvider(provider(cameraStatusDto.login, cameraStatusDto.password))
                 .useSystemProperties()
                 .build();
         HttpComponentsClientHttpRequestFactory requestFactory =
@@ -89,7 +113,7 @@ public class SnapshotSaver {
         StringBuilder address = new StringBuilder();
         address.append("http://");
         address.append(ip);
-        address.append(camera.getSnapshotUrl());
+        address.append(cameraStatusDto.snapshotUrl);
         HttpEntity entity = new HttpEntity(headers);
         byte[] imageBytes = restTemplate.getForObject(address.toString(), byte[].class, entity);
         Files.write(Paths.get(imagePath+"/"+ip.replace(".", "-") + ".jpeg"), imageBytes);

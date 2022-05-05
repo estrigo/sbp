@@ -12,6 +12,9 @@ public class CameraStatusDto {
     public int timeout = 1;
     public boolean enabled = true;
     public Long gateId;
+    public String login;
+    public String password;
+    public String snapshotUrl;
 
     public Map<String, Object> properties = new HashMap<>();
     public CarEventDto carEventDto = null;

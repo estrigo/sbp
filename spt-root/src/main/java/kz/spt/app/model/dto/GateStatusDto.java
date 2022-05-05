@@ -154,6 +154,9 @@ public class GateStatusDto {
                         gateStatusDto.frontCamera.timeout = camera.getTimeout() != null ? camera.getTimeout(): 1;
                         gateStatusDto.frontCamera.enabled = camera.isEnabled();
                         gateStatusDto.frontCamera.gateId = gate.getId();
+                        gateStatusDto.frontCamera.login = camera.getLogin();
+                        gateStatusDto.frontCamera.password = camera.getPassword();
+                        gateStatusDto.frontCamera.snapshotUrl = camera.getSnapshotUrl();
                     } else {
                         gateStatusDto.frontCamera2 = new CameraStatusDto();
                         gateStatusDto.frontCamera2.id = camera.getId();
@@ -161,6 +164,9 @@ public class GateStatusDto {
                         gateStatusDto.frontCamera2.timeout = camera.getTimeout() != null ? camera.getTimeout(): 1;
                         gateStatusDto.frontCamera2.enabled = camera.isEnabled();
                         gateStatusDto.frontCamera2.gateId = gate.getId();
+                        gateStatusDto.frontCamera2.login = camera.getLogin();
+                        gateStatusDto.frontCamera2.password = camera.getPassword();
+                        gateStatusDto.frontCamera2.snapshotUrl = camera.getSnapshotUrl();
                     }
                 }
                 if (Camera.CameraType.BACK.equals(camera.getCameraType())) {
@@ -169,6 +175,9 @@ public class GateStatusDto {
                     gateStatusDto.backCamera.timeout = camera.getTimeout() != null ? camera.getTimeout(): 1;
                     gateStatusDto.backCamera.enabled = camera.isEnabled();
                     gateStatusDto.backCamera.gateId = gate.getId();
+                    gateStatusDto.backCamera.login = camera.getLogin();
+                    gateStatusDto.backCamera.password = camera.getPassword();
+                    gateStatusDto.backCamera.snapshotUrl = camera.getSnapshotUrl();
                 }
             }
         }
