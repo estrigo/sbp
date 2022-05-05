@@ -92,7 +92,7 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
             }
         } else {
             List<Whitelist> groupWhitelists = whitelistService.listByGroupId(whitelistGroups.getId());
-            List<String> groupWhitelistPlateNumbers = new ArrayList<>();
+            List<String> groupWhitelistPlateNumbers = new ArrayList<>(groupWhitelists.size());
             for (Whitelist w : groupWhitelists) {
                 groupWhitelistPlateNumbers.add(w.getCar().getPlatenumber());
             }

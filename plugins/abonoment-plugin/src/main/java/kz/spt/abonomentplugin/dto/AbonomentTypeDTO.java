@@ -29,7 +29,7 @@ public class AbonomentTypeDTO {
     }
 
     public static List<AbonomentTypeDTO> convertToDto(List<AbonomentTypes> abonomentTypes){
-        List<AbonomentTypeDTO> dtoList = new ArrayList<>();
+        List<AbonomentTypeDTO> dtoList = new ArrayList<>(abonomentTypes.size());
         for (AbonomentTypes abonomentType: abonomentTypes){
             dtoList.add(convertToDto(abonomentType));
         }

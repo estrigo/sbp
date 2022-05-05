@@ -74,7 +74,7 @@ public class WebAppConfig implements WebMvcConfigurer {
         resolver.setContentNegotiationManager(manager);
 
         // Define all possible view resolvers
-        List<ViewResolver> resolvers = new ArrayList<>();
+        List<ViewResolver> resolvers = new ArrayList<>(4);
 
         resolvers.add(csvViewResolver());
         resolvers.add(excelViewResolver());

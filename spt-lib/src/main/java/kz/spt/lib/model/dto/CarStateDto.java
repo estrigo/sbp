@@ -83,7 +83,7 @@ public class CarStateDto {
     }
 
     public static List<CarStateDto> fromCarStates(List<CarState> carStates) {
-        List<CarStateDto> carStateDtos = new ArrayList<>();
+        List<CarStateDto> carStateDtos = new ArrayList<>(carStates.size());
         for (CarState carState : carStates) {
             carStateDtos.add(fromCarState(carState));
         }

@@ -30,7 +30,7 @@ public class PaymentDto {
     }
 
     public static List<PaymentDto> fromPayments(List<Payment> payments){
-        List<PaymentDto> list = new ArrayList<>();
+        List<PaymentDto> list = new ArrayList<>(payments.size());
         for(Payment payment:payments){
             list.add(fromPayment(payment));
         }

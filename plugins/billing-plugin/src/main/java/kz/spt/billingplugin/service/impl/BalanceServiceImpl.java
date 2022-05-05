@@ -247,7 +247,7 @@ public class BalanceServiceImpl implements BalanceService {
         CarStateService carStateService = rootServicesGetterService.getCarStateService();
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
-        List<TransactionDto> filteredDto = new ArrayList<>();
+        List<TransactionDto> filteredDto = new ArrayList<>(transactionsList.getSize());
         for(Transaction transaction : transactionsList.toList()){
             TransactionDto transactionDto = TransactionDto.fromTransaction(transaction);
             if(transaction.getCarStateId() != null){

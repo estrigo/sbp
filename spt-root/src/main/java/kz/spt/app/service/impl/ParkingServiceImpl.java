@@ -139,9 +139,9 @@ public class ParkingServiceImpl implements ParkingService {
         Iterable<CarState> carStates = carStateService.getAllNotLeft();
         List<Parking> parkings = (List<Parking>) listAllParking();
 
-        List<ParkingCarsDTO> carsInParkings = new ArrayList<>();
+        List<ParkingCarsDTO> carsInParkings = new ArrayList<>(parkings.size());
 
-        List<Cars> resultCars = new ArrayList<>();
+        List<Cars> resultCars = new ArrayList<>(parkings.size());
         for (Parking parking : parkings) {
             ParkingCarsDTO parkingCarsDTO = new ParkingCarsDTO();
             parkingCarsDTO.setParking(parking);

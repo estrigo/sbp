@@ -65,7 +65,7 @@ public class PaymentLogDTO {
     }
 
     public static List<PaymentLogDTO> convertToDto(List<Payment> payments){
-        List<PaymentLogDTO> paymentLogDTOS = new ArrayList<>();
+        List<PaymentLogDTO> paymentLogDTOS = new ArrayList<>(payments.size());
         for (Payment payment:payments){
             paymentLogDTOS.add(convertToDto(payment));
         }

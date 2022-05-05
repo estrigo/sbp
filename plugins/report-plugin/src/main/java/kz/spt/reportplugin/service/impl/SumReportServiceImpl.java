@@ -55,7 +55,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
     public List<SumReportDto> countSum(FilterSumReportDto filterSumReportDto){
 
-        List<SumReportDto> results = new ArrayList<>();
+//        List<String> providers = entityManager.createNativeQuery("select * fr");
 
         String query = "select DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%Y.%m.%d') as datetime, " +
                 "       count(cs.id) as count, " +
@@ -87,6 +87,8 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
         SimpleDateFormat checkFormat = new SimpleDateFormat("yyyy.MM.dd");
         SimpleDateFormat correctFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+
+        List<SumReportDto> results = new ArrayList<>(objects.size());
 
         for(Object[] object: objects){
             String dateTime = (String) object[0];

@@ -22,7 +22,7 @@ public class ParkingDto {
     }
 
     public static List<ParkingDto>fromParking(List<Parking> parkings){
-        List<ParkingDto> parkingDtos = new ArrayList<>();
+        List<ParkingDto> parkingDtos = new ArrayList<>(parkings.size());
         for(Parking parking : parkings){
             parkingDtos.add(fromParking(parking));
         }

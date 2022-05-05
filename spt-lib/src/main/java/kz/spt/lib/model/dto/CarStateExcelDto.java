@@ -73,7 +73,7 @@ public class CarStateExcelDto {
     }
 
     public static List<CarStateExcelDto> fromCarStates(List<CarState> carStates) {
-        List<CarStateExcelDto> carStateDtos = new ArrayList<>();
+        List<CarStateExcelDto> carStateDtos = new ArrayList<>(carStates.size());
         for (CarState carState : carStates) {
             carStateDtos.add(fromCarState(carState));
         }

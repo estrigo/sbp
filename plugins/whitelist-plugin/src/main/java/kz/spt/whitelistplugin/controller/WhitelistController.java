@@ -152,7 +152,7 @@ public class WhitelistController {
             ObjectError error = new ObjectError("emptyCarList", bundle.getString("whitelist.fillTheLicensePlate"));
             bindingResult.addError(error);
         } else {
-            List<String> plateNumbers = new ArrayList<>();
+            List<String> plateNumbers = new ArrayList<>(whitelistGroups.getPlateNumbers().size());
             for (String plateNumber : whitelistGroups.getPlateNumbers()) {
                 plateNumbers.add(Utils.changeCyrillicToLatin(plateNumber.toUpperCase()));
             }
@@ -277,7 +277,7 @@ public class WhitelistController {
             ObjectError error = new ObjectError("emptyCarList", bundle.getString("whitelist.fillTheLicensePlate"));
             bindingResult.addError(error);
         } else {
-            List<String> plateNumbers = new ArrayList<>();
+            List<String> plateNumbers = new ArrayList<>(whitelistGroups.getPlateNumbers().size());
             for (String plateNumber : whitelistGroups.getPlateNumbers()) {
                 plateNumbers.add(plateNumber.toUpperCase());
             }

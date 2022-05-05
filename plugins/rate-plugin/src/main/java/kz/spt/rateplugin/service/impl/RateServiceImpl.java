@@ -311,10 +311,9 @@ public class RateServiceImpl implements RateService {
 
     @Override
     public List<ParkingRateDto> listPaymentParkings() {
-        List<ParkingRateDto> list = new ArrayList<>();
-
         List<ParkingRate> rates = rateRepository.findAll();
         List<Parking> paymentParkings = parkingRepository.listPaymentParkings();
+        List<ParkingRateDto> list = new ArrayList<>(paymentParkings.size());
 
         for (Parking parking : paymentParkings) {
             ParkingRateDto dto = new ParkingRateDto();
