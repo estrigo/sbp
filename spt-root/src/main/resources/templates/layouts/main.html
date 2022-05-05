@@ -86,7 +86,7 @@
                                                                                    th:text=" ${submenu['label']} "></a></li>
                             </ul>
                         </li>
-                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_AUDIT', 'ROLE_READ') && !hasRole('ROLE_ACCOUNTANT')">
+                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_AUDIT', 'ROLE_READ') && !hasRole('ROLE_ACCOUNTANT')">
                             <a th:href="@{|/parking/cars|}" class="waves-effect waves-primary"><i
                                     class="ti-files"></i><span th:text=" #{parking.cars} "></span></a>
                         </li>
