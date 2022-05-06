@@ -11,7 +11,8 @@ public class StaticValues {
         MANUAL, // ручной выезд авто
         ABONOMENT, // выезд через абономент
         REGISTER, // только регистрировать выезды
-        FREE; //  Бесплатный заездь
+        FREE, //  Бесплатный заездь
+        THIRD_PARTY_PAYMENT; // Оплата на стороннем приложении
     }
 
     public static String dateFormatTZ = "yyyy-MM-dd'T'HH:mm:ssZ";
@@ -28,4 +29,5 @@ public class StaticValues {
     public static String carImagePropertyName = "carImageUrl";
     public static String carSmallImagePropertyName = "carSmallImageUrl";
     public static String carmodelPlugin = "carmodel-plugin";
+    public static String megaPlugin = "mega-plugin";
 }

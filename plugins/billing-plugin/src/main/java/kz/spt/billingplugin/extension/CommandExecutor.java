@@ -14,10 +14,12 @@ import kz.spt.billingplugin.model.dto.rekassa.DateTime;
 import kz.spt.billingplugin.model.dto.rekassa.RekassaCheckRequest;
 import kz.spt.billingplugin.model.dto.rekassa.Time;
 import kz.spt.billingplugin.model.dto.webkassa.*;
+import kz.spt.billingplugin.repository.PaymentRepository;
 import kz.spt.billingplugin.service.*;
 import kz.spt.billingplugin.service.impl.ReKassaServiceImpl;
 import kz.spt.billingplugin.service.impl.WebKassaServiceImpl;
 import kz.spt.lib.extension.PluginRegister;
+import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Customer;
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.model.dto.payment.CommandDto;
@@ -40,6 +42,7 @@ public class CommandExecutor implements PluginRegister {
     private BalanceService balanceService;
     private WebKassaService webKassaService;
     private WebKassaService reKassaService;
+    private PaymentRepository paymentRepository;
 
     @Override
     public JsonNode execute(JsonNode command) throws Exception {
@@ -103,6 +106,19 @@ public class CommandExecutor implements PluginRegister {
                     node.set("paymentArray", paymentArray);
                 }
 
+            } else if("saveOnlyPayment".equals(commandName)) {
+                PaymentProvider paymentProvider = getRootServicesGetterService().getPaymentProviderRepository().findByName("mega");
+                CarState carState = getRootServicesGetterService().getCarStateService().getLastCarState(command.get("carNumber").textValue());
+                Payment payment = new Payment();
+                payment.setCarNumber(command.get("carNumber").textValue());
+                payment.setCarStateId(carState.getId());
+                payment.setCreated(format.parse(command.get("entryDate").textValue()));
+                payment.setInDate(format.parse(command.get("entryDate").textValue()));
+                payment.setOutDate(format.parse(command.get("exitDate").textValue()));
+                payment.setPrice(command.get("rateResult").decimalValue());
+                payment.setProvider(paymentProvider);
+                payment.setParking(carState.getParking());
+                getPaymentRepository().save(payment);
             } else if ("getCurrentBalance".equals(commandName)) {
                 if (command.has("plateNumber")) {
                     node.put("currentBalance", getBalanceService().getBalance(command.get("plateNumber").textValue()));
@@ -211,6 +227,14 @@ public class CommandExecutor implements PluginRegister {
             paymentProviderService = (PaymentProviderService) BillingPlugin.INSTANCE.getApplicationContext().getBean("paymentProviderServiceImpl");
         }
         return paymentProviderService;
+    }
+
+    private PaymentRepository getPaymentRepository() {
+        if (paymentRepository == null) {
+            paymentRepository = (PaymentRepository) BillingPlugin.INSTANCE.getApplicationContext()
+                    .getBean("paymentRepository");
+        }
+        return paymentRepository;
     }
 
     private PaymentService getPaymentService() {

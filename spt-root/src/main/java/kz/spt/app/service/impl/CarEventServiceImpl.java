@@ -703,6 +703,7 @@ public class CarEventServiceImpl implements CarEventService {
         BigDecimal balance = BigDecimal.ZERO;
         BigDecimal rateResult = null;
         BigDecimal zerotouchValue = null;
+        Boolean paidByThirdParty = false;
         StaticValues.CarOutBy carOutBy = null;
         Boolean leftFromThisSecondsBefore = false;
         JsonNode whitelists = null;
@@ -781,6 +782,14 @@ public class CarEventServiceImpl implements CarEventService {
             } else {
                 CarState lastLeft = carStateService.getIfLastLeft(eventDto.car_number, eventDto.ip_address);
                 if (lastLeft == null || System.currentTimeMillis() - lastLeft.getOutTimestamp().getTime() > 1000 * 60) { // Повторное прием фотособытии на выезд и если выехал 1 мин назад
+                    PluginRegister megaPluginRegister = pluginService.getPluginRegister((StaticValues.megaPlugin));
+                    if (megaPluginRegister != null) {
+                        ObjectNode node = this.objectMapper.createObjectNode();
+                        node.put("command", "checkInThirdPartyPayment");
+                        node.put("plateNumber", carState.getCarNumber());
+                        JsonNode nodeResult = megaPluginRegister.execute(node);
+                        paidByThirdParty = nodeResult.get("paidByThirdParty").booleanValue();
+                    }
                     if(Parking.ParkingType.PREPAID.equals(camera.getGate().getParking().getParkingType())){
                         hasAccess = true;
                         carOutBy = StaticValues.CarOutBy.PREPAID;
@@ -848,7 +857,28 @@ public class CarEventServiceImpl implements CarEventService {
                                         } else if (BigDecimal.ZERO.compareTo(rateResult) == 0) {
                                             carOutBy = StaticValues.CarOutBy.PAYMENT_PROVIDER;
                                             hasAccess = true;
-                                        } else {
+                                        } else if (paidByThirdParty) {
+                                        ObjectNode nodeThPP = this.objectMapper.createObjectNode();
+                                        nodeThPP.put("command", "sendPaymentToThPP");
+                                        nodeThPP.put("plateNumber", carState.getCarNumber());
+                                        String entryDate = format.format(carState.getInTimestamp());
+                                        String exitDate = format.format(eventDto.event_date_time);
+                                        nodeThPP.put("entryDate", entryDate);
+                                        nodeThPP.put("exitDate", exitDate);
+                                        nodeThPP.put("rateAmount", rateResult);
+                                        megaPluginRegister.execute(nodeThPP);
+                                        carOutBy = StaticValues.CarOutBy.THIRD_PARTY_PAYMENT;
+                                        hasAccess = true;
+                                        ObjectNode billinNode2 = this.objectMapper.createObjectNode();
+                                        billinNode2.put("command", "saveOnlyPayment");
+                                        billinNode2.put("clientId", "1");
+                                        billinNode2.put("carNumber", carState.getCarNumber());
+                                        billinNode2.put("rateResult", rateResult);
+                                        billinNode2.put("entryDate", entryDate);
+                                        billinNode2.put("exitDate", entryDate);
+                                        billinNode2.put("carStateId", carState.getId());
+                                        JsonNode billingPl = billingPluginRegister.execute(billinNode2);
+                                    } else {
                                             if (balance.compareTo(rateResult) >= 0) {
                                                 carOutBy = StaticValues.CarOutBy.PAYMENT_PROVIDER;
                                                 hasAccess = true;
@@ -968,6 +998,12 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("type", EventLog.StatusType.Allow);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто по предоплате: Авто с гос. номером" + eventDto.car_number, "For prepaid exit is allowed on prepaid basis. Car with license plate " + eventDto.car_number);
             eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Выпускаем авто по предоплате: Авто с гос. номером" + eventDto.car_number, "For prepaid exit is allowed on prepaid basis. Car with license plate " + eventDto.car_number);
+        } else if (StaticValues.CarOutBy.THIRD_PARTY_PAYMENT.equals(carOutBy)) {
+            carState.setRateAmount(rateResult);
+            carStateService.createOUTState(eventDto.car_number, eventDto.event_date_time, camera, carState, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
+            properties.put("type", EventLog.StatusType.Allow);
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто, оплата будет на стороннем приложении: Авто с гос. номером " + eventDto.car_number, "For prepaid exit is allowed, payment will be on third party application. Car with license plate " + eventDto.car_number);
+            eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Выпускаем авто, оплата будет на стороннем приложении: Авто с гос. номером " + eventDto.car_number, "For prepaid exit is allowed, payment will be on third party application. Car with license plate " + eventDto.car_number);
         } else if (StaticValues.CarOutBy.ABONOMENT.equals(carOutBy)) {
             properties.put("type", EventLog.StatusType.Allow);
             String message_ru = "Пропускаем авто: Найдено действущий абономент на номер авто " + eventDto.car_number + ". Проезд разрешен.";

@@ -13,4 +13,7 @@ public interface PaymentProviderRepository extends JpaRepository<PaymentProvider
 
     @Query("from PaymentProvider p where p.clientId = ?1")
     PaymentProvider findByClientId(String clienId);
+
+    @Query("from PaymentProvider p where p.name = ?1")
+    PaymentProvider findByName(String name);
 }
