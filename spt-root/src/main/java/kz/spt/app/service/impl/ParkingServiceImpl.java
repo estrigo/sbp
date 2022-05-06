@@ -84,6 +84,7 @@ public class ParkingServiceImpl implements ParkingService {
     @Transactional
     public void deleteById(Long id) throws Exception{
         Parking parking = findById(id);
+        carStateService.deleteParkingFromCarStates(parking);
         if (parking.getGateList() != null) {
             for (Gate gate : parking.getGateList()) {
                 if (gate.getBarrier() != null) {
@@ -101,8 +102,6 @@ public class ParkingServiceImpl implements ParkingService {
             }
         }
 
-
-        carStateService.deleteParkingFromCarStates(parking);
 
         PluginRegister whitelistPluginRegister = pluginService.getPluginRegister(whitelistPlugin);
         if (whitelistPluginRegister != null) {

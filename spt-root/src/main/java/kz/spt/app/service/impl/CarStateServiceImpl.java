@@ -73,6 +73,10 @@ public class CarStateServiceImpl implements CarStateService {
         if (carStates.size()>0) {
             for (int i=0; i<carStates.size(); i++) {
                 carStates.get(i).setParking(null);
+                carStates.get(i).setInBarrier(null);
+                carStates.get(i).setOutBarrier(null);
+                carStates.get(i).setInGate(null);
+                carStates.get(i).setOutGate(null);
                 carStateRepository.save(carStates.get(i));
             }
         }
