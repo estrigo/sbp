@@ -41,9 +41,9 @@ public class CarmodelRepositoryImpl implements CarmodelRepository {
         query += " group by c.platenumber  " +
                 " order by cs.id desc";
 
-        List<Map<String, Object>> res = new ArrayList<>();
         Query q = this.em.createNativeQuery(query);
         List<Object[]> resultList = q.getResultList();
+        List<Map<String, Object>> res = new ArrayList<>(resultList.size());
         for (Object[] o : resultList) {
             HashMap<String, Object> resultMap = new HashMap<>();
             if (o[0] != null)
