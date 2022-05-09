@@ -96,12 +96,12 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-8">
+            <div class="col-md-12">
                 <div class="form-group">
                     <label for="dontSendZero" class="control-label" th:text="#{barrier.workWithController}"></label>
                     <select th:field="*{dontSendZero}" th:value="*{dontSendZero}" class="form-control" id="dontSendZero">
-                        <option value="false">sendZeroToCancel</option>
-                        <option value="true">doNotSendZeroToCancel</option>
+                        <option value="false" th:text="#{barrier.sendZeroToCancel}">sendZeroToCancel</option>
+                        <option value="true" th:text="#{barrier.doNotSendZeroToCancel}"></option>
                     </select>
                 </div>
             </div>
