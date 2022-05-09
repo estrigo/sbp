@@ -15,6 +15,7 @@ public class BarrierStatusDto {
     public String modbusDeviceVersion;
     public Integer modbusOpenRegister;
     public Integer modbusCloseRegister;
+    public Boolean dontSendZero = false;
     public Integer loopModbusRegister;
     public Integer photoElementModbusRegister;
 
@@ -31,6 +32,7 @@ public class BarrierStatusDto {
         barrierStatusDto.modbusDeviceVersion = barrier.getModbusDeviceVersion();
         barrierStatusDto.modbusOpenRegister = barrier.getModbusOpenRegister();
         barrierStatusDto.modbusCloseRegister = barrier.getModbusCloseRegister();
+        barrierStatusDto.dontSendZero = barrier.getDontSendZero() != null ? barrier.getDontSendZero() : false;
         barrierStatusDto.loopModbusRegister = barrier.getLoopModbusRegister();
         barrierStatusDto.photoElementModbusRegister = barrier.getPhotoElementModbusRegister();
         return barrierStatusDto;

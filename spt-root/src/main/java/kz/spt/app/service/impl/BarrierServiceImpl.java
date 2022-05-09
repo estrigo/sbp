@@ -265,10 +265,6 @@ public class BarrierServiceImpl implements BarrierService {
                             break;
                         }
                     }
-                    if (!changed) {
-                        result = false;
-                        eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 0 для остановки удержания открытия" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 0 for terminating opening process" + (carNumber != null ? " for car number " + carNumber : ""));
-                    }
                 }
             }
         }
@@ -303,9 +299,6 @@ public class BarrierServiceImpl implements BarrierService {
                                 break;
                             }
                         }
-                        if (!isReturnValueChanged) {
-                            eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 0 for terminating opening process " + (carNumber != null ? " for car number " + carNumber : ""));
-                        }
                     }
                 }
             }
@@ -317,9 +310,6 @@ public class BarrierServiceImpl implements BarrierService {
                     if (isReturnValueChanged) {
                         break;
                     }
-                }
-                if (!isReturnValueChanged) {
-                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 0 for terminating opening process " + (carNumber != null ? " for car number " + carNumber : ""));
                 }
             }
         }
@@ -384,7 +374,7 @@ public class BarrierServiceImpl implements BarrierService {
                     result = false;
                     eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение true чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
                 }
-            } else {
+            } else if(!barrier.dontSendZero) {
                 Thread.sleep(500);
                 registerValues = m.readHoldingRegisters(slaveId, offset, quantity);
                 Boolean valueKeepHolding = false;
@@ -411,9 +401,6 @@ public class BarrierServiceImpl implements BarrierService {
                             if (isReturnValueChanged) {
                                 break;
                             }
-                        }
-                        if (!isReturnValueChanged) {
-                            eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 0 for terminating opening process " + (carNumber != null ? " for car number " + carNumber : ""));
                         }
                     }
                 }
@@ -461,7 +448,7 @@ public class BarrierServiceImpl implements BarrierService {
                     result = false;
                     eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение true чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
                 }
-            } else {
+            } else if(!barrier.dontSendZero) {
                 Thread.sleep(500);
                 boolean[] currentValue = null;
                 try {
@@ -482,6 +469,7 @@ public class BarrierServiceImpl implements BarrierService {
                         currentValue = modbusRetryRead(m, slaveId, offset, 1);
                     }
                     Boolean isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
+                    log.info("modbus isReturnValueChanged: " + isReturnValueChanged);
                     if (!isReturnValueChanged) {
                         for (int i = 0; i < 3; i++) {
                             try {
@@ -499,9 +487,6 @@ public class BarrierServiceImpl implements BarrierService {
                             if (isReturnValueChanged) {
                                 break;
                             }
-                        }
-                        if (!isReturnValueChanged) {
-                            eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 0 для остановки удержания закрытия " + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 0 for terminating opening process " + (carNumber != null ? " for car number " + carNumber : ""));
                         }
                     }
                 }

@@ -76,6 +76,8 @@ public class Barrier {
     @Column(name = "sensors_type")
     private Barrier.SensorsType sensorsType;
 
+    @Column(name = "dont_send_zero")
+    private Boolean dontSendZero = false;
 
     // --- Данные петли для проверки присуствия машины  (После шлагбаума)
     private String loopIp;
