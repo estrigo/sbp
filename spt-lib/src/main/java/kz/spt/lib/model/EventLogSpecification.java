@@ -21,4 +21,8 @@ public class EventLogSpecification {
     public static Specification<EventLog> equalGateId(Long gateId){
         return (root, query, builder) -> builder.and(builder.equal(root.get(EventLog_.objectClass), "Gate"), builder.equal(root.get(EventLog_.objectId), gateId));
     }
+
+    public static Specification<EventLog> equalType(EventLog.EventType eventType) {
+        return (root, query, builder) -> builder.equal(root.get(EventLog_.eventType), eventType);
+    }
 }

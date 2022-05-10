@@ -44,6 +44,19 @@
                                         </option>
                                     </select>
                                 </div>
+                                <div class="col-4">
+                                    <select class="form-control select2 filter" id="eventType" th:field="*{eventType}">
+                                        <option value="" th:text="#{events.type}"></option>
+                                        <option th:value="PAID" th:text="#{events.paid}"></option>
+                                        <option th:value="WHITELIST" th:text="#{events.bywhitelist}"></option>
+                                        <option th:value="DEBT" th:text="#{events.debt}"></option>
+                                        <option th:value="NEW_CAR_DETECTED" th:text="#{events.newcardetected}"></option>
+                                        <option th:value="MANUAL_GATE_OPEN" th:text="#{events.manualgateopen}"></option>
+                                        <option th:value="MANUAL_GATE_CLOSE" th:text="#{events.manualgateclose}"></option>
+                                        <option th:value="PASS" th:text="#{events.pass}"></option>
+                                        <option th:value="NOT_PASS" th:text="#{events.notpass}"></option>
+                                    </select>
+                                </div>
                             </div>
                         </form>
 
@@ -58,7 +71,7 @@
                                         <th><a th:text="#{car.platenumber}"></a></th>
                                         <th><a th:text="#{events.date}"></a></th>
                                         <th><a th:text="#{parking.description}"></a></th>
-                                        <th><a th:text="#{events.type}"></a></th>
+                                        <th><a th:text="#{events.status}"></a></th>
                                         <th><a th:text="#{events.gate}"></a></th>
                                         <th><a th:text="#{events.photo}"></a></th>
                                     </tr>
@@ -94,10 +107,11 @@
 <script type="text/javascript" th:inline="javascript">
     var locale = [[${#locale}]];
     var descriptionColumn = locale == "en" ? "descriptionEn" : "description";
+    console.log($('#eventType').val())
 
     function buildAjaxUrl(){
         return "/rest/events?dateFromString=" + $('#dateFromString').val() + "&dateToString=" + $('#dateToString').val() +
-            "&plateNumber=" + $('#plateNumber').val() + "&gateId=" + $('#gateId').val();
+            "&plateNumber=" + $('#plateNumber').val() + "&gateId=" + $('#gateId').val() + "&eventType=" + $('#eventType').val();
     }
 
     const table = $('#eventTable').DataTable({

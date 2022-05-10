@@ -102,6 +102,22 @@ public class EventLogServiceImpl implements EventLogService {
         eventLogRepository.save(eventLog);
     }
 
+    @Override
+    public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, EventLog.EventType eventType) {
+        EventLog eventLog = new EventLog();
+        eventLog.setObjectClass(objectClass);
+        eventLog.setObjectId(objectId);
+        eventLog.setPlateNumber((properties != null && properties.containsKey("carNumber")) ? (String) properties.get("carNumber") : "");
+        eventLog.setStatusType((properties != null && properties.containsKey("type")) ? EventLog.StatusType.valueOf(properties.get("type").toString()) : null);
+        eventLog.setEventType((properties != null && properties.containsKey("event")) ? EventLog.EventType.valueOf(properties.get("event").toString()) : null);
+        eventLog.setDescription(description);
+        eventLog.setDescriptionEn(descriptionEn);
+        eventLog.setCreated(new Date());
+        eventLog.setProperties(properties != null ? properties : new HashMap<>());
+        eventLog.setEventType(eventType);
+        eventLogRepository.save(eventLog);
+    }
+
     public void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long id, String plateNumber, String message, String messageEng) {
 
         if (ArmEventType.Photo.equals(eventType) && message == null && messageEng == null) {
@@ -216,6 +232,9 @@ public class EventLogServiceImpl implements EventLogService {
         if (eventFilterDto.gateId != null && !"".equals(eventFilterDto.gateId)) {
             specification = specification == null ? EventLogSpecification.equalGateId(eventFilterDto.gateId) : specification.and(EventLogSpecification.equalGateId(eventFilterDto.gateId));
         }
+        if (eventFilterDto.eventType != null && !"".equals(eventFilterDto.eventType.toString())) {
+            specification = specification == null ? EventLogSpecification.equalType(eventFilterDto.eventType) : specification.and(EventLogSpecification.equalType(eventFilterDto.eventType));
+        }
         return specification;
     }
 
@@ -234,6 +253,7 @@ public class EventLogServiceImpl implements EventLogService {
                 .map(m -> {
                     String type = m.getProperties().containsKey("type") && m.getProperties().get("type") != null ? StringExtensions.locale("events.".concat(m.getProperties().get("type").toString().toLowerCase())) : "";
                     String gate = m.getProperties().containsKey("gateName") ? m.getProperties().get("gateName").toString() : "";
+//                    String eventType = m.getProperties().containsKey("EventType")
                     return EventsDto.builder()
                             .id(m.getId())
                             .created(m.getCreated())

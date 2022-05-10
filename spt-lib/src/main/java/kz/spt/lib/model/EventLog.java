@@ -24,6 +24,11 @@ public class EventLog {
     public enum EventType {
         MANUAL_GATE_OPEN,
         MANUAL_GATE_CLOSE,
+        DEBT,NOT_ENOUGH_BALANCE,
+        PASS,NOT_PASS,
+        ERROR,NEW_CAR_DETECTED,
+        ZERO_TOUCH,FIFTEEN_FREE,PREPAID,WHITELIST,
+        PAID
     }
 
     public enum StatusType{
