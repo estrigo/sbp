@@ -17,7 +17,6 @@ import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.service.*;
-import kz.spt.lib.service.EventLogService.ArmEventType;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.utils.Utils;
 import lombok.extern.java.Log;
@@ -34,6 +33,8 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
+
+import static kz.spt.lib.service.EventLogService.ArmEventType;
 
 @Log
 @Service
