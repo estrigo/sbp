@@ -42,11 +42,12 @@ public class PaymentServiceImpl implements PaymentService {
     private final EventLogService eventLogService;
     private final AbonomentService abonomentService;
     private final WhitelistRootService whitelistRootService;
+    private final QrPanelService qrPanelService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
     public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService, ParkingService parkingService, EventLogService eventLogService,
-                              CarModelService carModelService, AbonomentService abonomentService, WhitelistRootService whitelistRootService) {
+                              CarModelService carModelService, AbonomentService abonomentService, WhitelistRootService whitelistRootService, QrPanelService qrPanelService) {
         this.pluginService = pluginService;
         this.carStateService = carStateService;
         this.carService = carService;
@@ -55,6 +56,7 @@ public class PaymentServiceImpl implements PaymentService {
         this.carModelService = carModelService;
         this.abonomentService = abonomentService;
         this.whitelistRootService = whitelistRootService;
+        this.qrPanelService = qrPanelService;
     }
 
     @Override
@@ -303,10 +305,10 @@ public class PaymentServiceImpl implements PaymentService {
                         long leftFreeMinutes = paymentOfflineResult.left_free_time_minutes - minutes;
 
                         parkomatBillingInfoSuccessDto.setLeft_free_time_minutes((leftFreeMinutes > 0) ? (int) leftFreeMinutes : 0);
-
+                        if (qrPanelService!=null) {
+                            parkomatBillingInfoSuccessDto.setKaspiQr(qrPanelService.generateUrl(null,carState.getCarNumber()));
+                        }
                         return parkomatBillingInfoSuccessDto;
-
-
                     }
                     return dto;
                 }

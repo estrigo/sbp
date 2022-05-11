@@ -12,4 +12,6 @@ public interface GateRepository extends JpaRepository<Gate, Long> {
 
     @Query("from Gate g LEFT JOIN FETCH g.cameraList cl LEFT JOIN FETCH g.barrier b")
     Iterable<Gate> findByGatesByDependents();
+
+    Gate findFirstByGateTypeAndQrPanelIpNotNull(Gate.GateType type);
 }
