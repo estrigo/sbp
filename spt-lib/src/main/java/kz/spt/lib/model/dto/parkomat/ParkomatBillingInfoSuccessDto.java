@@ -21,6 +21,7 @@ public class ParkomatBillingInfoSuccessDto {
     BigDecimal onlineSum;       // сумма платежа через онлайн-провайдеры
     String payed_till;          // дата и время до которого оплачено
     int hours;                  // количество часов проведенных на парковке
+    String kaspiQr;             // Ссылка для KaspiQR
 
 
     public static ParkomatBillingInfoSuccessDto convert(BillingInfoSuccessDto billingPaymentSuccessDto) {
