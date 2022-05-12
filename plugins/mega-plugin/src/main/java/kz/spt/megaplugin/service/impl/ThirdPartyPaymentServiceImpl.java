@@ -101,7 +101,14 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
     public ResponseThPP addClient(RequestThPP requestThPP) {
         ThirdPartyCars thirdPartyCars = thirdPartyCarsRepository.findByPlateNumber(requestThPP.getPlatenumber());
         ResponseThPP res = new ResponseThPP();
-        if(thirdPartyCars != null && requestThPP.getCommand().equals("add")) {
+        if(thirdPartyCars != null && requestThPP.getCommand().equals("add") &&
+                !requestThPP.getType().equals(thirdPartyCars.getType())) {
+            thirdPartyCars.setType(requestThPP.getType());
+            thirdPartyCarsRepository.save(thirdPartyCars);
+            res.setResult(1);
+            res.setMessage("номер успешно переведен на другой тип оплаты");
+        } else if (thirdPartyCars != null && requestThPP.getCommand().equals("add") &&
+                requestThPP.getType().equals(thirdPartyCars.getType())) {
             res.setResult(2);
             res.setMessage("машина с таким номером уже существует");
         } else if (thirdPartyCars != null && requestThPP.getCommand().equals("restore")) {
