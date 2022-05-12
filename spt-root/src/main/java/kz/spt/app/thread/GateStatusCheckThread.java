@@ -4,14 +4,11 @@ import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.app.job.StatusCheckJob;
-import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.SensorStatusDto;
 import kz.spt.app.service.BarrierService;
-import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Gate;
-import kz.spt.lib.service.CarEventService;
 import lombok.extern.java.Log;
 
 import java.io.IOException;
