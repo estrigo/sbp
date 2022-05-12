@@ -740,7 +740,7 @@ public class CarEventServiceImpl implements CarEventService {
                 if (leftFromThisSecondsBefore) {
                     hasAccess = true;
                 } else {
-                    if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
+                    if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType()) || checkBooking(eventDto.car_number)) {
                         properties.put("type", EventLog.StatusType.Allow);
                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
                         eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
@@ -787,7 +787,7 @@ public class CarEventServiceImpl implements CarEventService {
                     } else if(parkingOnlyRegisterCars){
                         hasAccess = true;
                         carOutBy = StaticValues.CarOutBy.REGISTER;
-                    } else if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())){
+                    } else if(Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType()) || checkBooking(eventDto.car_number)){
                         hasAccess = true;
                         carOutBy = StaticValues.CarOutBy.WHITELIST;
                     } else {
