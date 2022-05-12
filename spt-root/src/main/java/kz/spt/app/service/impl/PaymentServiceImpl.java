@@ -678,8 +678,6 @@ public class PaymentServiceImpl implements PaymentService {
 
         node.put("clientId", clientId);
 
-        System.out.println(clientId);
-
         Cars cars = carService.findByPlatenumberWithCustomer(commandDto.account);
         if (cars != null && cars.getCustomer() != null) {
             node.put("customerId", cars.getCustomer().getId());
@@ -773,6 +771,9 @@ public class PaymentServiceImpl implements PaymentService {
 
     private BillingInfoSuccessDto checkAbonomentExtraPayment(CommandDto commandDto, CarState carState, SimpleDateFormat format, JsonNode abonementJson, BillingInfoSuccessDto dto) throws Exception {
 
+        JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
+        dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue();
+
         Date inDate = carState.getInTimestamp();
         Date outDate = new Date();
 
@@ -781,45 +782,40 @@ public class PaymentServiceImpl implements PaymentService {
         if(periods.size() == 0){
             return dto;
         } else {
-
-            Calendar calcEndCalendar = Calendar.getInstance();
-            Date calcBegin = periods.get(0).getStart();
-            calcEndCalendar.setTime(periods.get(0).getStart());
-
+            BigDecimal totalRate = BigDecimal.ZERO;
             for(Period p:periods){
-                log.info("payment service adding period: begin: " + p.getStart() + " end: " + p.getEnd());
-                calcEndCalendar.add(Calendar.MILLISECOND, (int) (p.getEnd().getTime()-p.getStart().getTime()));
-            }
-            log.info("calculate rate for: " + calcBegin + " end: " + calcEndCalendar.getTime());
-            BigDecimal rate = null;
-            PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
-            if (ratePluginRegister != null) {
-                ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
-                ratePluginNode.put("parkingId", carState.getParking().getId());
-                ratePluginNode.put("inDate", format.format(calcBegin));
-                ratePluginNode.put("outDate", format.format(calcEndCalendar.getTime()));
-                ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
-                ratePluginNode.put("isCheck", false);
-                ratePluginNode.put("paymentsJson", carState.getPaymentJson());
+                PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+                if (ratePluginRegister != null) {
+                    ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
+                    ratePluginNode.put("parkingId", carState.getParking().getId());
+                    ratePluginNode.put("inDate", format.format(p.getStart()));
+                    ratePluginNode.put("outDate", format.format(p.getEnd()));
+                    ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
+                    ratePluginNode.put("isCheck", false);
+                    ratePluginNode.put("paymentsJson", carState.getPaymentJson());
 
-                JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
-                rate = ratePluginResult.get("rateResult").decimalValue().setScale(2);
-                dto.tariff = ratePluginResult.get("rateName") != null ? ratePluginResult.get("rateName").textValue() : "";
-                dto.hours = ratePluginResult.get("payed_till") != null ? (int) ratePluginResult.get("payed_till").longValue() : 0;
+                    JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
+                    BigDecimal rate = ratePluginResult.get("rateResult").decimalValue().setScale(2);
+                    dto.tariff = ratePluginResult.get("rateName") != null ? ratePluginResult.get("rateName").textValue() : "";
+                    dto.hours = ratePluginResult.get("payed_till") != null ? (int) ratePluginResult.get("payed_till").longValue() : 0;
+                    log.info("payment service abonements calculated rate = " + rate + " for period: begin: " + p.getStart() + " end: " + p.getEnd());
+                    totalRate = totalRate.add(rate);
+                }
             }
 
-            if(rate == null){
+            if(totalRate.equals(BigDecimal.ZERO)){
                 return dto;
             } else {
-                JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
-                dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue();
-                dto.sum = rate;
+                dto.sum = totalRate;
             }
         }
         return dto;
     }
 
     private BillingInfoSuccessDto checkWhiteListExtraPayment(CommandDto commandDto, CarState carState, SimpleDateFormat format, JsonNode whiteListJson, BillingInfoSuccessDto dto) throws Exception {
+
+        JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
+        dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue();
 
         Date inDate = carState.getInTimestamp();
         Date outDate = new Date();
@@ -829,39 +825,32 @@ public class PaymentServiceImpl implements PaymentService {
         if(periods.size() == 0){
             return dto;
         } else {
-
-            Calendar calcEndCalendar = Calendar.getInstance();
-            Date calcBegin = periods.get(0).getStart();
-            calcEndCalendar.setTime(periods.get(0).getStart());
-
+            BigDecimal totalRate = BigDecimal.ZERO;
             for(Period p:periods){
-                log.info("payment service adding period: begin: " + p.getStart() + " end: " + p.getEnd());
-                calcEndCalendar.add(Calendar.MILLISECOND, (int) (p.getEnd().getTime()-p.getStart().getTime()));
-            }
-            log.info("calculate whitelist rate for: " + calcBegin + " end: " + calcEndCalendar.getTime());
-            BigDecimal rate = null;
-            PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
-            if (ratePluginRegister != null) {
-                ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
-                ratePluginNode.put("parkingId", carState.getParking().getId());
-                ratePluginNode.put("inDate", format.format(calcBegin));
-                ratePluginNode.put("outDate", format.format(calcEndCalendar.getTime()));
-                ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
-                ratePluginNode.put("isCheck", false);
-                ratePluginNode.put("paymentsJson", carState.getPaymentJson());
+                PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+                if (ratePluginRegister != null) {
+                    ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
+                    ratePluginNode.put("parkingId", carState.getParking().getId());
+                    ratePluginNode.put("inDate", format.format(p.getStart()));
+                    ratePluginNode.put("outDate", format.format(p.getEnd()));
+                    ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
+                    ratePluginNode.put("isCheck", true);
+                    ratePluginNode.put("paymentsJson", carState.getPaymentJson());
 
-                JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
-                rate = ratePluginResult.get("rateResult").decimalValue().setScale(2);
-                dto.tariff = ratePluginResult.get("rateName") != null ? ratePluginResult.get("rateName").textValue() : "";
-                dto.hours = ratePluginResult.get("payed_till") != null ? (int) ratePluginResult.get("payed_till").longValue() : 0;
+                    JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
+                    BigDecimal rate = ratePluginResult.get("rateResult").decimalValue().setScale(2);
+                    dto.tariff = ratePluginResult.get("rateName") != null ? ratePluginResult.get("rateName").textValue() : "";
+                    dto.hours = ratePluginResult.get("payed_till") != null ? (int) ratePluginResult.get("payed_till").longValue() : 0;
+
+                    log.info("payment service whitelist calculated rate = " + rate + "  period: begin: " + p.getStart() + " end: " + p.getEnd());
+                    totalRate = totalRate.add(rate);
+                }
             }
 
-            if(rate == null){
+            if(totalRate.equals(BigDecimal.ZERO)){
                 return dto;
             } else {
-                JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
-                dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue();
-                dto.sum = rate;
+                dto.sum = totalRate;
             }
         }
         return dto;

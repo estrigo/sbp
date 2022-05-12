@@ -69,10 +69,9 @@ public class RateServiceImpl implements RateService {
 
         BigDecimal result = BigDecimal.ZERO;
 
-        log.info("inDate: " + inCalendar.getTime());
-        log.info("outDate: " + outCalendar.getTime());
+        int outDateToCurrentDateDiffSeconds = (int) ((new Date()).getTime() - outDate.getTime()) / 1000;
 
-        if(parkingRate != null && parkingRate.getAfterFreeMinutes() != null){
+        if(parkingRate != null && parkingRate.getAfterFreeMinutes() != null && outDateToCurrentDateDiffSeconds < parkingRate.getAfterFreeMinutes() * 60){
             log.info("parkingRate.getAfterFreeMinutes(): " +  parkingRate.getAfterFreeMinutes());
             Date lastPaymentDate = getLastPaymentDate(paymentsJson); // Если была оплата проверяем прошли минуты до которые даются для выезда
             if(lastPaymentDate != null){
@@ -88,9 +87,6 @@ public class RateServiceImpl implements RateService {
                 }
             }
         }
-
-        log.info("inDate 2: " + inCalendar.getTime());
-        log.info("outDate 2: " + outCalendar.getTime());
 
         Calendar inDayCalendar = Calendar.getInstance();
         inDayCalendar.setTime(inCalendar.getTime());

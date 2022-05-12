@@ -172,6 +172,8 @@ public class AbonomentServiceImpl implements AbonomentService {
         Iterator<JsonNode> iterator = abonements.iterator();
         List<Period> periods = new ArrayList<>();
         JsonNode prevAbonoment = null;
+        Period p = null;
+
         while (iterator.hasNext()) {
             JsonNode abonoment = iterator.next();
             Date start = abonementFormat.parse(abonoment.get("begin").textValue());
@@ -181,17 +183,26 @@ public class AbonomentServiceImpl implements AbonomentService {
 
             if(prevAbonoment == null){
                 if(inDate.before(start)){
-                    Period period = new Period();
-                    period.setStart(inDate);
-                    period.setEnd(start);
-                    periods.add(period);
+                    p = new Period();
+                    p.setStart(inDate);
+                    p.setEnd(start);
                 }
             } else {
-                if(abonementFormat.parse(prevAbonoment.get("end").textValue()).getTime() - start.getTime() > 1000*60*5){ // Если промежуток больше 5 минут добавляем
-                    Period period = new Period();
-                    period.setStart(inDate);
-                    period.setEnd(start);
-                    periods.add(period);
+                if(abonementFormat.parse(prevAbonoment.get("end").textValue()).getTime() - start.getTime() > 0){
+                    if(p == null){
+                        p = new Period();
+                        p.setStart(inDate);
+                        p.setEnd(start);
+                    } else {
+                        if(p.getEnd().equals(abonementFormat.parse(prevAbonoment.get("end").textValue()))){
+                            p.setEnd(start);
+                        } else {
+                            periods.add(p);
+                            p = new Period();
+                            p.setStart(abonementFormat.parse(prevAbonoment.get("end").textValue()));
+                            p.setEnd(start);
+                        }
+                    }
                 }
             }
 
@@ -220,15 +231,8 @@ public class AbonomentServiceImpl implements AbonomentService {
                             hasAccess = false;
                         }
 
+                        int minute = startCalendar.get(Calendar.MINUTE);
                         if(hasAccess){
-                            startCalendar.add(Calendar.HOUR_OF_DAY, 1);
-                            if(startCalendar.getTime().after(outDate)){
-                                startCalendar.setTime(outDate);
-                            }
-                        } else {
-                            int minute = startCalendar.get(Calendar.MINUTE);
-                            Period p = new Period();
-                            p.setStart(startCalendar.getTime());
                             startCalendar.add(Calendar.HOUR_OF_DAY, 1);
                             if(minute > 0){
                                 startCalendar.set(Calendar.MINUTE, 0);
@@ -238,8 +242,33 @@ public class AbonomentServiceImpl implements AbonomentService {
                             if(startCalendar.getTime().after(outDate)){
                                 startCalendar.setTime(outDate);
                             }
-                            p.setEnd(startCalendar.getTime());
-                            periods.add(p);
+                        } else {
+                            Date periodStart = startCalendar.getTime();
+                            startCalendar.add(Calendar.HOUR_OF_DAY, 1);
+                            if(minute > 0){
+                                startCalendar.set(Calendar.MINUTE, 0);
+                                startCalendar.set(Calendar.SECOND, 0);
+                                startCalendar.set(Calendar.MILLISECOND, 0);
+                            }
+                            if(startCalendar.getTime().after(outDate)){
+                                startCalendar.setTime(outDate);
+                            }
+                            Date periodEnd = startCalendar.getTime();
+
+                            if(p == null){
+                                p = new Period();
+                                p.setStart(periodStart);
+                                p.setEnd(periodEnd);
+                            } else {
+                                if(p.getEnd().equals(periodStart)){
+                                    p.setEnd(periodEnd);
+                                } else {
+                                    periods.add(p);
+                                    p = new Period();
+                                    p.setStart(periodStart);
+                                    p.setEnd(periodEnd);
+                                }
+                            }
                         }
                     }
                 }
@@ -255,6 +284,10 @@ public class AbonomentServiceImpl implements AbonomentService {
             } else {
                 prevAbonoment = abonoment;
             }
+        }
+
+        if(p != null){
+            periods.add(p);
         }
 
         return periods;

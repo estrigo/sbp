@@ -56,19 +56,20 @@ public class WhitelistRootServiceImpl implements WhitelistRootService {
         List<Period> periods = new ArrayList<>();
         while (iterator.hasNext()) {
             JsonNode whitelist = iterator.next();
-
             String type = whitelist.has("type") && whitelist.get("type") != null ? whitelist.get("type").textValue() : null;
 
             if("UNLIMITED".equals(type)){
                 return new ArrayList<>();
             } else if("CUSTOM".equals(type)){
-                String custom_numbers = whitelist.has("customJson") && whitelist.get("customJson") != null ? whitelist.get("customJson").textValue() : null;
+                String customJson = whitelist.has("customJson") && whitelist.get("customJson") != null ? whitelist.get("customJson").toString() : null;
 
                 Calendar startCalendar = Calendar.getInstance();
                 startCalendar.setTime(inDate);
 
-                if(custom_numbers != null){
-                    JsonNode custom_numbersJson = objectMapper.readTree(custom_numbers);
+                if(customJson != null){
+                    JsonNode custom_numbersJson = objectMapper.readTree(customJson);
+
+                    Period p = null;
 
                     while (startCalendar.getTime().before(outDate)){
                         LocalDate localDate = LocalDate.of(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
@@ -88,15 +89,8 @@ public class WhitelistRootServiceImpl implements WhitelistRootService {
                             hasAccess = false;
                         }
 
+                        int minute = startCalendar.get(Calendar.MINUTE);
                         if(hasAccess){
-                            startCalendar.add(Calendar.HOUR_OF_DAY, 1);
-                            if(startCalendar.getTime().after(outDate)){
-                                startCalendar.setTime(outDate);
-                            }
-                        } else {
-                            int minute = startCalendar.get(Calendar.MINUTE);
-                            Period p = new Period();
-                            p.setStart(startCalendar.getTime());
                             startCalendar.add(Calendar.HOUR_OF_DAY, 1);
                             if(minute > 0){
                                 startCalendar.set(Calendar.MINUTE, 0);
@@ -106,22 +100,51 @@ public class WhitelistRootServiceImpl implements WhitelistRootService {
                             if(startCalendar.getTime().after(outDate)){
                                 startCalendar.setTime(outDate);
                             }
-                            p.setEnd(startCalendar.getTime());
-                            periods.add(p);
+                        } else {
+                            Date start = startCalendar.getTime();
+                            startCalendar.add(Calendar.HOUR_OF_DAY, 1);
+                            if(minute > 0){
+                                startCalendar.set(Calendar.MINUTE, 0);
+                                startCalendar.set(Calendar.SECOND, 0);
+                                startCalendar.set(Calendar.MILLISECOND, 0);
+                            }
+                            if(startCalendar.getTime().after(outDate)){
+                                startCalendar.setTime(outDate);
+                            }
+                            Date end = startCalendar.getTime();
+
+                            if(p == null){
+                                p = new Period();
+                                p.setStart(start);
+                                p.setEnd(end);
+                            } else {
+                                if(p.getEnd().equals(start)){
+                                    p.setEnd(end);
+                                } else {
+                                    periods.add(p);
+                                    p = new Period();
+                                    p.setStart(start);
+                                    p.setEnd(end);
+                                }
+                            }
                         }
+                    }
+
+                    if(p != null){
+                        periods.add(p);
                     }
                 }
             } else {
                 Date start = whitelist.has("accessStart") && whitelist.get("accessStart") != null? whitelistFormat.parse(whitelist.get("accessStart").textValue()) : null;
                 Date end = whitelist.has("accessEnd") && whitelist.get("accessEnd") != null? whitelistFormat.parse(whitelist.get("accessEnd").textValue()) : null;
 
-                if(inDate.before(start) && start.getTime() - inDate.getTime() > 1000*60*5){ // Если промежуток больше 5 минут добавляем
+                if(inDate.before(start)){
                     Period period = new Period();
                     period.setStart(inDate);
                     period.setEnd(start);
                     periods.add(period);
                 }
-                if(outDate.after(end) && outDate.getTime() - end.getTime() > 1000*60*5){ // Если промежуток больше 5 минут добавляем
+                if(outDate.after(end)){
                     Period period = new Period();
                     period.setStart(end);
                     period.setEnd(outDate);

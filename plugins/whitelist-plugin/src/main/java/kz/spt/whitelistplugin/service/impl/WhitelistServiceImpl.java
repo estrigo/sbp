@@ -349,8 +349,8 @@ public class WhitelistServiceImpl implements WhitelistService {
                         objectNode.put("accessEnd", format.format(whitelist.getGroup().getAccess_end()));
                     }
                 }
-                if (Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null) {
-                    objectNode.set("customJson", objectMapper.readTree(whitelist.getCustomJson()));
+                if (Whitelist.Type.CUSTOM.equals(whitelist.getGroup().getType()) && whitelist.getGroup().getCustomJson() != null) {
+                    objectNode.set("customJson", objectMapper.readTree(whitelist.getGroup().getCustomJson()));
                 }
                 arrayNode.add(objectNode);
             }

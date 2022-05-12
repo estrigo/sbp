@@ -1149,18 +1149,13 @@ public class CarEventServiceImpl implements CarEventService {
         if(periods.size() == 0){
             return BigDecimal.ZERO;
         } else {
-            Calendar calcEndCalendar = Calendar.getInstance();
-            Date calcBegin = periods.get(0).getStart();
-            calcEndCalendar.setTime(periods.get(0).getStart());
-
+            BigDecimal totalRate = BigDecimal.ZERO;
             for(Period p:periods){
-                log.info("adding period: begin: " + p.getStart() + " end: " + p.getEnd());
-                calcEndCalendar.add(Calendar.MILLISECOND, (int) (p.getEnd().getTime()-p.getStart().getTime()));
+                BigDecimal rate = calculateRate(p.getStart(), p.getEnd(), camera, carState, eventDto, format, properties, true);
+                log.info("calculated rate " + rate + " for: begin: " + p.getStart() + " end: " + p.getEnd());
+                totalRate = totalRate.add(rate);
             }
-            log.info("calculate rate for: " + calcBegin + " end: " + calcEndCalendar.getTime());
-            BigDecimal rate = calculateRate(calcBegin, calcEndCalendar.getTime(), camera, carState, eventDto, format, properties, true);
-
-            return rate;
+            return totalRate;
         }
     }
 
@@ -1175,18 +1170,13 @@ public class CarEventServiceImpl implements CarEventService {
         if(periods.size() == 0){
             return BigDecimal.ZERO;
         } else {
-            Calendar calcEndCalendar = Calendar.getInstance();
-            Date calcBegin = periods.get(0).getStart();
-            calcEndCalendar.setTime(periods.get(0).getStart());
-
+            BigDecimal totalRate = BigDecimal.ZERO;
             for(Period p:periods){
-                log.info("adding period: begin: " + p.getStart() + " end: " + p.getEnd());
-                calcEndCalendar.add(Calendar.MILLISECOND, (int) (p.getEnd().getTime()-p.getStart().getTime()));
+                BigDecimal rate = calculateRate(p.getStart(), p.getEnd(), camera, carState, eventDto, format, properties, true);
+                log.info("calculated rate " + rate + " for: begin: " + p.getStart() + " end: " + p.getEnd());
+                totalRate = totalRate.add(rate);
             }
-            log.info("calculate rate for: " + calcBegin + " end: " + calcEndCalendar.getTime());
-            BigDecimal rate = calculateRate(calcBegin, calcEndCalendar.getTime(), camera, carState, eventDto, format, properties, false);
-
-            return rate;
+            return totalRate;
         }
     }
 }
