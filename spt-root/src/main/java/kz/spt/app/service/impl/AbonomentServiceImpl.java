@@ -145,6 +145,23 @@ public class AbonomentServiceImpl implements AbonomentService {
     }
 
     @Override
+    public JsonNode getAbonomentsDetails(String plateNumber,Long parkingId, Date date, SimpleDateFormat format) throws Exception {
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
+        if (abonomentPluginRegister != null) {
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("command", "getSatisfiedAbonomentDetails");
+            node.put("plateNumber", plateNumber);
+            node.put("parkingId", parkingId);
+            node.put("carInDate", format.format(date));
+            JsonNode result = abonomentPluginRegister.execute(node);
+            if(result.has("abonementsDetails")){
+                return result.get("abonementsDetails");
+            }
+        }
+        return null;
+    }
+
+    @Override
     public List<Period> calculatePaymentPeriods(JsonNode abonementJson, Date inDate, Date outDate) throws JsonProcessingException, ParseException {
 
         ArrayNode abonements = (ArrayNode) abonementJson;

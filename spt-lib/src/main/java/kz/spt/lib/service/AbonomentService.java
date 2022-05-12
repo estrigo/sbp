@@ -22,5 +22,7 @@ public interface AbonomentService {
 
     JsonNode getAbonomentsDetails(String plateNumber, CarState carState, SimpleDateFormat format) throws Exception;
 
+    JsonNode getAbonomentsDetails(String plateNumber, Long parkingId, Date date, SimpleDateFormat format) throws Exception;
+
     List<Period> calculatePaymentPeriods(JsonNode abonementJson, Date inDate, Date outDate) throws JsonProcessingException, ParseException;
 }

@@ -34,7 +34,7 @@ public class AbonomentController {
     @GetMapping("/list")
     public String showList(Model model, @AuthenticationPrincipal UserDetails currentUser) {
         parkingService = rootServicesGetterService.getParkingService();
-        model.addAttribute("parkingList", parkingService.listPaymentParkings());
+        model.addAttribute("parkingList", parkingService.listWhitelistParkings());
         model.addAttribute("typeList", abonomentPluginService.getAllAbonomentTypes());
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
         return "list";
