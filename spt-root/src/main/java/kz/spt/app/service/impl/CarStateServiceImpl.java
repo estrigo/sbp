@@ -58,28 +58,8 @@ public class CarStateServiceImpl implements CarStateService {
         return carStateRepository.findById(carStateId).get();
     }
 
-    public void deleteAllInParking(Parking parking) {
-        List<CarState> carStates = carStateRepository.getCarStateByParkingId(parking);
-        if (carStates.size()>0) {
-            for (int i=0; i<carStates.size();i++) {
-                carStateRepository.delete(carStates.get(i));
-            }
-//            carStateRepository.deleteAll(carStates);
-        }
-    }
-
     public void deleteParkingFromCarStates(Parking parking) {
-        List<CarState> carStates = carStateRepository.getCarStateByParkingId(parking);
-        if (carStates.size()>0) {
-            for (int i=0; i<carStates.size(); i++) {
-                carStates.get(i).setParking(null);
-                carStates.get(i).setInBarrier(null);
-                carStates.get(i).setOutBarrier(null);
-                carStates.get(i).setInGate(null);
-                carStates.get(i).setOutGate(null);
-                carStateRepository.save(carStates.get(i));
-            }
-        }
+        carStateRepository.updateCarStateByParkingId(parking.getId());
     }
 
     @Override

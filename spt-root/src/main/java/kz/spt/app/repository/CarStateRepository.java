@@ -5,9 +5,11 @@ import kz.spt.lib.model.Parking;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -46,6 +48,9 @@ public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSp
     @Query("from CarState cs where cs.carNumber = :carNumber order by cs.inTimestamp desc")
     List<CarState> getLastCarState(@Param("carNumber") String carNumber, Pageable page);
 
-    @Query("from CarState cs where cs.parking = :parking")
-    List<CarState> getCarStateByParkingId(@Param("parking") Parking parking);
+    @Transactional
+    @Modifying
+    @Query(value = "update car_state cs set cs.out_barrier=null, cs.in_barrier=null, cs.in_gate=null, cs.out_gate=null," +
+            " cs.parking=null where cs.parking = :parkingId", nativeQuery = true)
+    void updateCarStateByParkingId(@Param("parkingId") Long parkingId);
 }
