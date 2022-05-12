@@ -180,7 +180,7 @@
     }
     function deleteCamera(cameraId) {
         console.log("cameraId: " + cameraId);
-        if(confirm("Вы уверены что хотите удалить камеру?")) {
+        if(confirm('[[#{crm.alertBeforeRemoveCamera}]]')) {
             if(cameraId) {
                 $.get("/parking/cameras/remove/" + cameraId, function (data) {
                     console.log("camera is deleted!");
@@ -193,7 +193,7 @@
     }
     function removeBarrier(barrierId) {
         console.log("barrierId: " + barrierId);
-        if(confirm("Вы уверены что хотите удалить шлагбаум?")) {
+        if(confirm('[[#{crm.alertBeforeRemoveBarrier}]]')) {
             if(barrierId) {
                 $.get("/parking/barrier/remove/" + barrierId, function (data) {
                     console.log("barrier is deleted");
