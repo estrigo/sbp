@@ -1,11 +1,14 @@
 package kz.spt.app.controller;
 
+import kz.spt.app.repository.CarStateRepository;
 import kz.spt.app.service.CameraService;
 import kz.spt.lib.model.*;
+import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.ParkingService;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.ControllerService;
 import kz.spt.app.service.GateService;
+import lombok.extern.java.Log;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,8 +17,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @org.springframework.stereotype.Controller
+@Log
 @RequestMapping("/parking")
 public class ParkingController {
 
@@ -24,14 +29,19 @@ public class ParkingController {
     private GateService gateService;
     private BarrierService barrierService;
     private ControllerService controllerService;
+    private CarStateRepository carStateRepository;
+    private CarStateService carStateService;
 
     public ParkingController(ParkingService parkingService, CameraService cameraService, GateService gateService,
-                             BarrierService barrierService, ControllerService controllerService){
+                             BarrierService barrierService, ControllerService controllerService,
+                             CarStateRepository carStateRepository, CarStateService carStateService){
         this.parkingService = parkingService;
         this.cameraService = cameraService;
         this.gateService = gateService;
         this.barrierService = barrierService;
         this.controllerService = controllerService;
+        this.carStateRepository = carStateRepository;
+        this.carStateService = carStateService;
     }
 
     @GetMapping("/list")
@@ -183,5 +193,24 @@ public class ParkingController {
     public String calibration(@PathVariable Long id, Model model){
         model.addAttribute("camera" ,cameraService.getCameraById(id));
         return "parking/camera/calibration";
+    }
+
+    @GetMapping("/cameras/remove/{id}")
+    public String removeCamera(@PathVariable Long id) {
+        log.info("camera: " + id);
+        Camera camera = cameraService.getCameraById(id);
+        if (camera != null) {
+            cameraService.deleteCamera(camera);
+        }
+        return "redirect:/parking/list";
+    }
+
+    @GetMapping("/barrier/remove/{barrierId}")
+    public String removeBarrier(@PathVariable Long barrierId) {
+        Barrier barrier = barrierService.getBarrierById(barrierId);
+        if (barrier != null) {
+                carStateService.UpdateAndRemoveByBarrier(barrier);
+        }
+        return "redirect:/parking/list";
     }
 }

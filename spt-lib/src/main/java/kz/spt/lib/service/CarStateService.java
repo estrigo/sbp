@@ -3,6 +3,7 @@ package kz.spt.lib.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
+import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Parking;
@@ -58,4 +59,6 @@ public interface CarStateService {
     void deleteParkingFromCarStates(Parking parking);
 
     CarState manualOutWithDebt(String carNumber, Date outTimestamp, CarState carState) throws Exception ;
+
+    void UpdateAndRemoveByBarrier(Barrier barrier);
 }

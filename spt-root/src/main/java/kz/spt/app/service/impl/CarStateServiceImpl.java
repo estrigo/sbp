@@ -3,6 +3,7 @@ package kz.spt.app.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.app.service.BarrierService;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.util.StringUtils;
 
 import java.math.BigDecimal;
@@ -41,16 +43,18 @@ public class CarStateServiceImpl implements CarStateService {
     private final CarsService carsService;
     private final PluginService pluginService;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private BarrierService barrierService;
 
     private static final Comparator<CarStateDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
 
     public CarStateServiceImpl(CarStateRepository carStateRepository, EventLogService eventLogService,
-                               CarsService carsService, PluginService pluginService) {
+                               CarsService carsService, PluginService pluginService, BarrierService barrierService) {
         this.carStateRepository = carStateRepository;
         this.eventLogService = eventLogService;
         this.carsService = carsService;
         this.pluginService = pluginService;
+        this.barrierService = barrierService;
     }
 
     @Override
@@ -466,6 +470,15 @@ public class CarStateServiceImpl implements CarStateService {
         String messageEn = "Manual pass. Car with license plate " + carState.getCarNumber() + ". User " + username + " initiated manual open gate from parking " + carState.getParking().getName() + ". Deducted from the client's balance: " + rateResult + ".";
         eventLogService.createEventLog("Rate", null, properties, messageRu, messageEn);
         return carState;
+    }
+
+    @Override
+    @Transactional
+    public void UpdateAndRemoveByBarrier(Barrier barrier) {
+        carStateRepository.updateCarStateByOutBarrier(barrier.getId());
+        carStateRepository.updateCarStateByInBarrier(barrier.getId());
+        log.info("carStates updated!");
+        barrierService.deleteBarrier(barrier);
     }
 
     private BigDecimal calculateRate(Date inDate, Date outDate, CarState carState, SimpleDateFormat format,

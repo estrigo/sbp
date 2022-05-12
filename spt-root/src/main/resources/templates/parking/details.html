@@ -6,7 +6,7 @@
 <link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
 
 <div class="content">
-    <div class="container">
+    <div class="container" id="mydiv">
         <div class="row">
             <div class="col-12 m-b-20">
                 <div class="card-box">
@@ -47,6 +47,11 @@
                                             <a class="dropdown-item" href="#"
                                                th:text="#{camera.calibration}"
                                                th:href="@{|/parking/cars/calibration/${camera.id}|}">Calibration</a>
+                                            <a class="dropdown-item"
+                                               th:text="#{camera.remove}"
+                                               th:cameraId="${camera.id}"
+                                               onclick="deleteCamera(this.getAttribute('cameraId'))"
+                                            >Delete</a>
                                         </div>
                                     </div>
                                   </div>
@@ -64,12 +69,26 @@
                         </div>
                         <div class="tab-pane fade" th:id="${'barrier' + iterStat.count}">
                             <div class="col-12" th:if="${gate.barrier != null}">
-                                <a href="#" data-toggle="modal" data-target="#barrier-close-modal" th:barrierId="${gate.barrier?.id}" th:onclick="barrierModalContent(this.getAttribute('barrierId'), null)">
-                                    <h4 class="header-title m-t-0 m-b-0"><span th:text="${gate.barrier?.name}"></span> <i class="ion-edit"></i></h4>
-                                </a>
+<!--                                <a href="#" data-toggle="modal" data-target="#barrier-close-modal" th:barrierId="${gate.barrier?.id}" th:onclick="barrierModalContent(this.getAttribute('barrierId'), null)">-->
+<!--                                    <h4 class="header-title m-t-0 m-b-0"><span th:text="${gate.barrier?.name}"></span> <i class="ion-edit"></i></h4>-->
+<!--                                </a>-->
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
+                                        <span th:text="${gate.barrier?.name}"></span> <i class="ion-edit"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#barrier-close-modal"
+                                           th:text="#{barrier.editBarrier}"
+                                           th:barrierId="${gate.barrier?.id}"
+                                           th:onclick="barrierModalContent(this.getAttribute('barrierId'), null)"></a>
+                                        <a class="dropdown-item"
+                                           th:text="#{barrier.removeBarrier}"
+                                           th:barrierId="${gate.barrier?.id}"
+                                           onclick="removeBarrier(this.getAttribute('barrierId'))"></a>
+                                    </div>
+                                </div>
                                 <p class="text-muted m-b-0" th:text="${gate.barrier?.ip}"></p>
                                 <p class="text-muted m-b-0" th:text="${gate.barrier?.description}"></p>
-
                             </div>
                             <p sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')">
                             <div class="form-group row" th:if="${gate.barrier == null}">
@@ -157,6 +176,32 @@
             $.get("/parking/" + gateId + "/new/camera/", function (data) {
                 $('#camera-close-modal').find('#cameraModalBody').html(data);
             });
+        }
+    }
+    function deleteCamera(cameraId) {
+        console.log("cameraId: " + cameraId);
+        if(confirm("Вы уверены что хотите удалить камеру?")) {
+            if(cameraId) {
+                $.get("/parking/cameras/remove/" + cameraId, function (data) {
+                    console.log("camera is deleted!");
+                    $("#mydiv").load(location.href + " #mydiv");
+                });
+            } else {
+                $("#mydiv").load(location.href + " #mydiv");
+            }
+        }
+    }
+    function removeBarrier(barrierId) {
+        console.log("barrierId: " + barrierId);
+        if(confirm("Вы уверены что хотите удалить шлагбаум?")) {
+            if(barrierId) {
+                $.get("/parking/barrier/remove/" + barrierId, function (data) {
+                    console.log("barrier is deleted");
+                    $("#mydiv").load(location.href + " #mydiv");
+                });
+            } else {
+                console.log("No barrier id");
+            }
         }
     }
     function barrierModalContent(barrierId, gateId){

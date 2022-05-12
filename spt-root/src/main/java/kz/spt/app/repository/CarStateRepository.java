@@ -1,5 +1,6 @@
 package kz.spt.app.repository;
 
+import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Parking;
 import org.springframework.data.domain.Pageable;
@@ -53,4 +54,14 @@ public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSp
     @Query(value = "update car_state cs set cs.out_barrier=null, cs.in_barrier=null, cs.in_gate=null, cs.out_gate=null," +
             " cs.parking=null where cs.parking = :parkingId", nativeQuery = true)
     void updateCarStateByParkingId(@Param("parkingId") Long parkingId);
+
+    @Transactional
+    @Modifying
+    @Query(value = "update car_state set out_barrier = null where out_barrier = :barrierId", nativeQuery = true)
+    void updateCarStateByOutBarrier(@Param("barrierId") Long barrierId);
+
+    @Transactional
+    @Modifying
+    @Query(value = "update car_state set in_barrier = null where in_barrier = :barrierId", nativeQuery = true)
+    void updateCarStateByInBarrier(@Param("barrierId") Long barrierId);
 }
