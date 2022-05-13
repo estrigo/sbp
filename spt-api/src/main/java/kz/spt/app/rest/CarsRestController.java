@@ -53,4 +53,15 @@ public class CarsRestController {
     public List<String> getCalibrationByIp(@PathVariable("text") String text) {
         return carsService.searchByPlateNumberContaining(text.toUpperCase());
     }
+
+    @RequestMapping(value = "/rta/event", method = RequestMethod.POST, consumes = "multipart/form-data")
+    @Transactional
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void addCarEvent(@RequestParam("event_descriptor") String event_descriptor,
+                            @RequestParam(value = "event_cropped_image_0", required = false) MultipartFile event_cropped_image_0,
+                            @RequestParam("event_image_0") MultipartFile event_image_0,
+                            @RequestParam(value = "event_timestamp", required = false) String event_timestamp) throws Exception{
+        carEventService.handleRtaCarEvent(event_image_0, event_cropped_image_0, event_descriptor, event_timestamp);
+    }
 }

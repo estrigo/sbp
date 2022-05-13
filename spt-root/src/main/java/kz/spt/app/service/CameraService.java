@@ -10,6 +10,8 @@ public interface CameraService {
 
     Camera findCameraById(Long id);
 
+    Camera findCameraByDetectorId(String detectorId);
+
     List<Camera> cameraList();
 
     Camera getCameraById(Long id);

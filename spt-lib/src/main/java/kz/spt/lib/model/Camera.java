@@ -44,6 +44,8 @@ public class Camera {
 
     private String password;
 
+    private String detectorId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "camera_type")
     private CameraType cameraType;
