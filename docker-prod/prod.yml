@@ -141,6 +141,11 @@ telegram:
   bot:
     external:
       enabled: false
+parkings:
+  uid: test
+notification:
+  url: http://app.magnum.kz/test-services/parking-api/v2/parking/tickets
+  send: false
 kaspi:
   qr-link: https://kaspi.kz/pay/%s?service_id=%s&%s=
 management:

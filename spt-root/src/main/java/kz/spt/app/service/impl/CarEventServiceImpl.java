@@ -1031,6 +1031,8 @@ public class CarEventServiceImpl implements CarEventService {
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
                 }
 //                send notification to third party
+                log.info("notification: " + notification);
+                log.info("notificationUrl: " + notificationUrl);
                 if(notification) {
                     sendNotification(carState, eventDto.event_date_time, rateResult);
                 }

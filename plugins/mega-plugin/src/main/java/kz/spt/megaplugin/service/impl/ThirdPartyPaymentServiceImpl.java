@@ -63,7 +63,7 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
 
     private void sendPayment(String plateNumber, Date entryDate, Date exitDate, BigDecimal rate, String parkingUid) {
         RestTemplate restTemplate = new RestTemplate();
-        String url = "http://yurta.eu-central-1.elasticbeanstalk.com/mega/client/notify";
+        String url = "https://mega.parqour.com/mega/client/notify";
         Map<String, String> params = new HashMap<>();
         params.put("plate", plateNumber);
         params.put("sum", String.valueOf(rate));
