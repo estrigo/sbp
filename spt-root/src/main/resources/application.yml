@@ -114,7 +114,9 @@ parking:
 parkomat.ip:
 parkings:
   uid: test
-notification: true
+notification:
+  url: https://mega.parqour.com/mega/client/notify
+  send: true
 cors:
   allowed:
     origins:

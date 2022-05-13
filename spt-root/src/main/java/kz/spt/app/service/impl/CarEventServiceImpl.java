@@ -75,8 +75,11 @@ public class CarEventServiceImpl implements CarEventService {
     @Value("${parking.ignore.entered.seconds}")
     int parkingIgnoreEnteredSeconds;
 
-    @Value("${notification}")
+    @Value("${notification.send}")
     Boolean notification;
+
+    @Value("${notification.url}")
+    String notificationUrl;
 
     @Value("${parkings.uid}")
     String parkingUid;
@@ -1054,7 +1057,7 @@ public class CarEventServiceImpl implements CarEventService {
         String dt_finish = sdf.format(dateOut);
 
         RestTemplate restTemplate = new RestTemplate();
-        String url = "https://mega.parqour.com/mega/client/notify";
+        String url = notificationUrl;
         Map<String, String> params = new HashMap<>();
         params.put("plate_number", carState.getCarNumber());
         params.put("sum", String.valueOf(rate));

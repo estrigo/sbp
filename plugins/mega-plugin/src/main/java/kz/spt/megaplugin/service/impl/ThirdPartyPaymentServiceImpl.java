@@ -26,13 +26,9 @@ import java.util.Map;
 @Service
 public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
 
-//    @Value("${parkings.uid}")
-    String parkingUid = "dd";
-
     private ThirdPartyCarsRepository thirdPartyCarsRepository;
     private RootServicesGetterService rootServicesGetterService;
     private ThirdPartyPaymentRepository thirdPartyPaymentRepository;
-
 
     public ThirdPartyPaymentServiceImpl (RootServicesGetterService rootServicesGetterService,
                                          ThirdPartyCarsRepository thirdPartyCarsRepository,
