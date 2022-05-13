@@ -24,8 +24,13 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -69,6 +74,12 @@ public class CarEventServiceImpl implements CarEventService {
 
     @Value("${parking.ignore.entered.seconds}")
     int parkingIgnoreEnteredSeconds;
+
+    @Value("${notification}")
+    Boolean notification;
+
+    @Value("${parkings.uid}")
+    String parkingUid;
 
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
     private ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(LocaleContextHolder.getLocale().toString().substring(0, 2)));
@@ -930,6 +941,7 @@ public class CarEventServiceImpl implements CarEventService {
                                         nodeThPP.put("entryDate", entryDate);
                                         nodeThPP.put("exitDate", exitDate);
                                         nodeThPP.put("rateAmount", rateResult);
+                                        nodeThPP.put("parkingUid", parkingUid);
                                         megaPluginRegister.execute(nodeThPP);
                                         carOutBy = StaticValues.CarOutBy.THIRD_PARTY_PAYMENT;
                                         hasAccess = true;
@@ -1015,6 +1027,10 @@ public class CarEventServiceImpl implements CarEventService {
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
                 }
+//                send notification to third party
+                if(notification) {
+                    sendNotification(carState, eventDto.event_date_time, rateResult);
+                }
             } catch (Exception e){
                 String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
                 String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
@@ -1030,6 +1046,25 @@ public class CarEventServiceImpl implements CarEventService {
                 log.log(Level.WARNING, "Error while display qrpanel for gate " + gate.gateName);
             }
         }
+    }
+
+    private void sendNotification(CarState carState, Date dateOut, BigDecimal rate) {
+        SimpleDateFormat sdf = new SimpleDateFormat(StaticValues.dateFormatTZ);
+        String dt_start = sdf.format(carState.getInTimestamp());
+        String dt_finish = sdf.format(dateOut);
+
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "https://mega.parqour.com/mega/client/notify";
+        Map<String, String> params = new HashMap<>();
+        params.put("plate_number", carState.getCarNumber());
+        params.put("sum", String.valueOf(rate));
+        params.put("dt_start", dt_start);
+        params.put("dt_finish", dt_finish);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity request = new HttpEntity<>(params, headers);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, request, String.class );
+        log.info("Notification response: " + responseEntity.getBody());
     }
 
     private void saveCarOutState(CarEventDto eventDto, Camera camera, CarState carState, Map<String, Object> properties, BigDecimal balance, BigDecimal rateResult, BigDecimal zerotouchValue, SimpleDateFormat format, StaticValues.CarOutBy carOutBy, JsonNode abonements) throws Exception {

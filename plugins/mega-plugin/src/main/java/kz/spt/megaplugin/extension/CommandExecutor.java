@@ -37,7 +37,8 @@ public class CommandExecutor implements PluginRegister {
                 Date entryDate = format.parse(command.get("entryDate").textValue());
                 Date exitDate = format.parse(command.get("exitDate").textValue());
                 BigDecimal rateAmount = command.get("rateAmount").decimalValue();
-                thirdPartyPaymentService.saveThirdPartyPayment(carNumber, entryDate, exitDate, rateAmount);
+                String parkingUid = command.get("parkingUid").textValue();
+                thirdPartyPaymentService.saveThirdPartyPayment(carNumber, entryDate, exitDate, rateAmount, parkingUid);
             }
         }
         return node;

@@ -24,7 +24,6 @@ spring:
       - "booking-plugin"
       - "zerotouch-plugin"
       - "tgbot-plugin"
-      - "mega-plugin"
     main:
       banner-mode: off
   datasource:
@@ -113,6 +112,9 @@ parking:
     entered:
       seconds: 20 # ignore from any camera if car entered from other camera, default 20 seconds
 parkomat.ip:
+parkings:
+  uid: test
+notification: true
 cors:
   allowed:
     origins:

@@ -11,6 +11,7 @@ import kz.spt.megaplugin.repository.ThirdPartyPaymentRepository;
 import kz.spt.megaplugin.service.RootServicesGetterService;
 import kz.spt.megaplugin.service.ThirdPartyPaymentService;
 import lombok.extern.java.Log;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -24,6 +25,9 @@ import java.util.Map;
 @Log
 @Service
 public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
+
+//    @Value("${parkings.uid}")
+    String parkingUid = "dd";
 
     private ThirdPartyCarsRepository thirdPartyCarsRepository;
     private RootServicesGetterService rootServicesGetterService;
@@ -50,7 +54,7 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
         }
     }
 
-    public void saveThirdPartyPayment (String plateNumber, Date entryDate, Date exitDate, BigDecimal rate) {
+    public void saveThirdPartyPayment (String plateNumber, Date entryDate, Date exitDate, BigDecimal rate, String parkingUid) {
         ThirdPartyPayment thirdPartyPayment = new ThirdPartyPayment();
         thirdPartyPayment.setCar_number(plateNumber);
         thirdPartyPayment.setEntryDate(entryDate);
@@ -58,10 +62,10 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
         thirdPartyPayment.setRateAmount(rate);
         thirdPartyPaymentRepository.save(thirdPartyPayment);
         log.info("Payment rate sent to third party.");
-        sendPayment(plateNumber, entryDate, exitDate, rate);
+        sendPayment(plateNumber, entryDate, exitDate, rate, parkingUid);
     }
 
-    private void sendPayment(String plateNumber, Date entryDate, Date exitDate, BigDecimal rate) {
+    private void sendPayment(String plateNumber, Date entryDate, Date exitDate, BigDecimal rate, String parkingUid) {
         RestTemplate restTemplate = new RestTemplate();
         String url = "http://yurta.eu-central-1.elasticbeanstalk.com/mega/client/notify";
         Map<String, String> params = new HashMap<>();
@@ -70,7 +74,7 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
         params.put("in_date", format.format(entryDate));
         params.put("out_date", format.format(exitDate));
         params.put("message", "Сумма оплаты по безакцептному методу");
-        params.put("parking_uid", "demo");
+        params.put("parking_uid", parkingUid);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity request = new HttpEntity<>(params, headers);
