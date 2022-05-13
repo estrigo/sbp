@@ -13,6 +13,8 @@ public interface CameraService {
 
     Camera findCameraByDetectorId(String detectorId);
 
+    Camera findCameraByDetectorId(String detectorId);
+
     List<Camera> cameraList();
 
     List<Camera> cameraListWithoutTab();

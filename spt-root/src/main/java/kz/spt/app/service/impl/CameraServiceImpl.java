@@ -43,6 +43,11 @@ public class CameraServiceImpl implements CameraService {
     }
 
     @Override
+    public Camera findCameraByDetectorId(String detectorId) {
+        return cameraRepository.findCameraByDetectorId(detectorId);
+    }
+
+    @Override
     public List<Camera> cameraList() {
         return cameraRepository.findEnabledCameras();
     }
