@@ -81,7 +81,7 @@ public class StatusCheckJob {
 
     public static CameraStatusDto findCameraStatusDtoByIp(String cameraIp){
         for(GateStatusDto gate: StatusCheckJob.globalGateDtos){
-            if(cameraIp.equals(gate.frontCamera.ip)){
+            if(gate.frontCamera != null && cameraIp.equals(gate.frontCamera.ip)){
                 return gate.frontCamera;
             } else if(gate.frontCamera2 != null && cameraIp.equals(gate.frontCamera2.ip)){
                 return gate.frontCamera2;
