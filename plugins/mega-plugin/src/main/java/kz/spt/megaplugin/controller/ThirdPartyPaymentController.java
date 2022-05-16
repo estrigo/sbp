@@ -26,6 +26,15 @@ public class ThirdPartyPaymentController {
     @PostMapping(value = "/client/add", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addClient(@RequestBody RequestThPP requestThPP) {
         try {
+            if (requestThPP != null) {
+                if (requestThPP.getType() == null){
+                    throw new Exception("Не указан тип оплаты!");
+                } else if (requestThPP.getPlatenumber() == null){
+                    throw new Exception("Не указан номер машины!");
+                } else if (requestThPP.getCommand() == null) {
+                    throw new Exception("Не указана команда!");
+                }
+            }
             ResponseThPP res = thirdPartyPaymentService.addClient(requestThPP);
             return new ResponseEntity<>(res, HttpStatus.OK);
         } catch (Exception e) {
@@ -36,6 +45,9 @@ public class ThirdPartyPaymentController {
     @PostMapping(value = "/client/change", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity removeClient(@RequestBody RequestThPP requestThPP) {
         try {
+            if (requestThPP.getPlatenumber() == null){
+                throw new Exception("Не указан номер машины!");
+            }
             ResponseThPP res = thirdPartyPaymentService.removeClient(requestThPP);
             return new ResponseEntity<>(res, HttpStatus.OK);
         } catch (Exception e) {
@@ -46,7 +58,7 @@ public class ThirdPartyPaymentController {
     @GetMapping(value = "/testingReq")
     public ResponseEntity testReq(@RequestBody RequestThPP requestThPP) {
         thirdPartyPaymentService.saveThirdPartyPayment(requestThPP.getPlatenumber(),
-                new Date(), new Date(), new BigDecimal(200), "parkingUid");
+                new Date(), new Date(), new BigDecimal(200), "DEMO");
         return null;
     }
 
