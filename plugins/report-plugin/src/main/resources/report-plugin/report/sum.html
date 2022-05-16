@@ -39,23 +39,8 @@
                                 </div>
                             </form>
                         </div>
-                        <table id="sumReport" class="table table-bordered table-bordered">
-                            <thead>
-                            <tr>
-                                <th th:text="#{report.dateTime}"></th>
-                                <th th:text="#{report.records}"></th>
-                                <th th:text="#{report.paymentRecords}"></th>
-                                <th th:text="#{report.whitelistRecords}"></th>
-                                <th th:text="#{report.abonementRecords}"></th>
-                                <th th:text="#{report.kaspiSum}"></th>
-                                <th th:text="#{report.yurtaSum}"></th>
-                                <!--th th:text="#{report.bankCardSum}"></th>
-                                <th th:text="#{report.cashSum}"></th>
-                                <th th:text="#{report.halykSum}"></th>
-                                <th th:text="#{report.rahmetSum}"></th-->
-                                <th th:text="#{report.totalSum}"></th>
-                            </tr>
-                            </thead>
+                        <div class="mb-5"></div>
+                        <table id="sumReport" class="table table-bordered table-striped dataTable no-footer">
                         </table>
                     </div>
                 </div>
@@ -88,53 +73,60 @@
     $('#dateFrom').val(dateFrom.substring(0, dateFrom.length-1));
     $('#dateTo').val(dateTo.substring(0, dateTo.length-1));
 
-    var localizationAddress = '/plugins/datatables/json/ru.json';
-    var locale = [[${#locale}]];
-    if (locale == "en") {
-        localizationAddress = "";
-    }
-
-    const table = $('#sumReport').DataTable({
-        "processing": true,
-        "serverSide": true,
-        "searching": false,
-        "ajax": {
-            "url": "/rest/report/sum",
-            "type": "POST",
-            "dataType": "json",
-            "contentType": "application/json",
-            "data": function (d) {
-                d.customFilters = {
-                    "dateFrom": $('#dateFrom').val(),
-                    "dateTo": $('#dateTo').val(),
-                };
-                return JSON.stringify(d);
-            }
-        },
-        columnDefs: [{
-            "defaultContent": "0",
-            "targets": "_all"
-        }],
-        "columns": [
-            {"data": "dateTime"},
-            {"data": "count"},
-            {"data": "paymentsCount"},
-            {"data": "whitelistsCount"},
-            {"data": "abonementsCount"},
-            {"data": "kaspiSum"},
-            {"data": "yurtaSum"},
-            {"data": "totalSum"}
-        ],
-        "order": [ //[[ in thymeleaf is inline script
-            [0, "desc"]
-        ],
-        language: {
-            url: localizationAddress
-        }
-    });
-
     function find() {
-        table.ajax.reload();
+        let request = {
+            "dateFrom": $('#dateFrom').val(),
+            "dateTo": $('#dateTo').val(),
+        };
+
+        let predefinedFields = ['dateTime','records','paymentRecords','whitelistRecords','abonementRecords'];
+
+        $.ajax({
+            url: "/rest/report/sum/excel",
+            type: "POST",
+            data: JSON.stringify(request),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                let html = '<thead><tr>';
+                $.each(predefinedFields, function(value) {
+                    html = html + '<td>' + data[0].fields[predefinedFields[value]] + '</td>';
+                });
+                if(data[0].fields['bankCardSum']){
+                    html = html + '<td>' + data[0].fields['bankCardSum'] + '</td>';
+                    predefinedFields.push('bankCardSum');
+                }
+                if(data[0].fields['cashSum']){
+                    html = html + '<td>' + data[0].fields['cashSum'] + '</td>';
+                    predefinedFields.push('cashSum');
+                }
+                $.each(data[0].fields, function( key, value ) {
+                    if(predefinedFields.indexOf(key) === -1 && key !== 'totalSum'){
+                        html = html + '<td>' + value + '</td>';
+                        predefinedFields.push(key);
+                    }
+                });
+                html = html + '<td>' + data[0].fields['totalSum'] + '</td></tr></thead>';
+                predefinedFields.push('totalSum');
+
+                if(data.length > 1){
+                    html = html + '<tbody>';
+                    let i = 0;
+                    $.each(data, function(result) {
+                        if(i++ > 0){
+                            html = html + '<tr>';
+                            $.each(predefinedFields, function(value) {
+                                html = html + '<td>' + (data[result].results[predefinedFields[value]] ? data[result].results[predefinedFields[value]] : 0) + '</td>';
+                            });
+                            html = html + '</tr>';
+                        }
+                    });
+                    html = html + '</tbody>';
+                }
+                $('#sumReport').html(html);
+            }
+        })
     }
 
     function clear() {
@@ -147,31 +139,10 @@
     });
 
     function excel() {
-        let request = {
-            "dateFrom": $('#dateFrom').val(),
-            "dateTo": $('#dateTo').val(),
-        };
-        $.ajax({
-            url: "/rest/report/sum/excel",
-            type: "POST",
-            data: JSON.stringify(request),
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (data) {
-                try {
-                    let arr = [];
-                    for (let i = 0; i < data.length; i++) {
-                        arr.push(data[i]);
-                    }
-                    let ws = XLSX.utils.json_to_sheet(arr);
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, 'Sum');
-                    XLSX.writeFile(wb, "report.xls", {type: "buffer"});
-                } catch (e) {
-                    console.log(e);
-                }
-            }
-        })
+        const wb = XLSX.utils.book_new();
+        var ws = XLSX.utils.table_to_sheet(document.getElementById("sumReport"));
+        XLSX.utils.book_append_sheet(wb, ws, 'billing');
+        XLSX.writeFile(wb, "billing.xlsx", { type: "buffer" });
     }
 </script>
 
