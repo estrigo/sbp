@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -269,8 +270,10 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     }
 
     @Override
-    public JsonNode getPaidNotExpiredAbonoment(String plateNumber, Long parkingId, Date carInDate) {
-        List<Abonoment> abonoments = abonomentRepository.findPaidNotExpiredAbonoment(plateNumber, parkingId, carInDate, new Date());
+    public JsonNode getPaidNotExpiredAbonoment(String plateNumber, Long parkingId, Date carInDate) throws JsonProcessingException {
+
+        Date newDate = new Date();
+        List<Abonoment> abonoments = abonomentRepository.findPaidNotExpiredAbonoment(plateNumber, parkingId, carInDate, newDate);
 
         ArrayNode abonements = objectMapper.createArrayNode();
 
@@ -284,7 +287,38 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
                 result.put("end", format.format(abonement.getEnd()));
                 result.put("type", abonement.getPaidType());
                 result.put("custom_numbers", abonement.getCustomNumbers());
-                abonements.add(result);
+
+                if("CUSTOM".equals(abonement.getPaidType())){
+                    Boolean hasValueInsidePeriod = false;
+                    JsonNode custom_numbersJson = objectMapper.readTree(abonement.getCustomNumbers());
+
+                    Calendar startCalendar = Calendar.getInstance();
+                    startCalendar.setTime(carInDate);
+
+                    while (startCalendar.getTime().before(newDate)){
+                        LocalDate localDate = LocalDate.of(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
+                        int day = localDate.getDayOfWeek().getValue() - 1;
+                        int hour = startCalendar.get(Calendar.HOUR_OF_DAY);
+
+                        if (custom_numbersJson.has(day + "")) {
+                            TreeSet<Integer> sortedHours = new TreeSet<>();
+                            for (final JsonNode h : custom_numbersJson.get("" + day)) {
+                                sortedHours.add(h.intValue());
+                            }
+                            if (sortedHours.contains(hour)) {
+                                hasValueInsidePeriod = true;
+                                break;
+                            }
+                        }
+                        startCalendar.add(Calendar.HOUR_OF_DAY, 1);
+                    }
+
+                    if(hasValueInsidePeriod){
+                        abonements.add(result);
+                    }
+                } else {
+                    abonements.add(result);
+                }
             }
         }
         return abonements.size() > 0? abonements : null;

@@ -328,9 +328,37 @@ public class WhitelistServiceImpl implements WhitelistService {
                     }
                 }
                 if (Whitelist.Type.CUSTOM.equals(whitelist.getType()) && whitelist.getCustomJson() != null) {
-                    objectNode.set("customJson", objectMapper.readTree(whitelist.getCustomJson()));
+                    Boolean hasValueInsidePeriod = false;
+                    JsonNode custom_numbersJson = objectMapper.readTree(whitelist.getCustomJson());
+
+                    Calendar startCalendar = Calendar.getInstance();
+                    startCalendar.setTime(inDate);
+
+                    while (startCalendar.getTime().before(outDate)){
+                        LocalDate localDate = LocalDate.of(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
+                        int day = localDate.getDayOfWeek().getValue() - 1;
+                        int hour = startCalendar.get(Calendar.HOUR_OF_DAY);
+
+                        if (custom_numbersJson.has(day + "")) {
+                            TreeSet<Integer> sortedHours = new TreeSet<>();
+                            for (final JsonNode h : custom_numbersJson.get("" + day)) {
+                                sortedHours.add(h.intValue());
+                            }
+                            if (sortedHours.contains(hour)) {
+                                hasValueInsidePeriod = true;
+                                break;
+                            }
+                        }
+                        startCalendar.add(Calendar.HOUR_OF_DAY, 1);
+                    }
+
+                    if(hasValueInsidePeriod){
+                        objectNode.set("customJson", objectMapper.readTree(whitelist.getCustomJson()));
+                        arrayNode.add(objectNode);
+                    }
+                } else {
+                    arrayNode.add(objectNode);
                 }
-                arrayNode.add(objectNode);
             }
             for (Whitelist whitelist : groupWhitelists) {
                 ObjectNode objectNode = objectMapper.createObjectNode();
@@ -350,9 +378,37 @@ public class WhitelistServiceImpl implements WhitelistService {
                     }
                 }
                 if (Whitelist.Type.CUSTOM.equals(whitelist.getGroup().getType()) && whitelist.getGroup().getCustomJson() != null) {
-                    objectNode.set("customJson", objectMapper.readTree(whitelist.getGroup().getCustomJson()));
+                    Boolean hasValueInsidePeriod = false;
+                    JsonNode custom_numbersJson = objectMapper.readTree(whitelist.getGroup().getCustomJson());
+
+                    Calendar startCalendar = Calendar.getInstance();
+                    startCalendar.setTime(inDate);
+
+                    while (startCalendar.getTime().before(outDate)){
+                        LocalDate localDate = LocalDate.of(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
+                        int day = localDate.getDayOfWeek().getValue() - 1;
+                        int hour = startCalendar.get(Calendar.HOUR_OF_DAY);
+
+                        if (custom_numbersJson.has(day + "")) {
+                            TreeSet<Integer> sortedHours = new TreeSet<>();
+                            for (final JsonNode h : custom_numbersJson.get("" + day)) {
+                                sortedHours.add(h.intValue());
+                            }
+                            if (sortedHours.contains(hour)) {
+                                hasValueInsidePeriod = true;
+                                break;
+                            }
+                        }
+                        startCalendar.add(Calendar.HOUR_OF_DAY, 1);
+                    }
+
+                    if(hasValueInsidePeriod){
+                        objectNode.set("customJson", objectMapper.readTree(whitelist.getGroup().getCustomJson()));
+                        arrayNode.add(objectNode);
+                    }
+                } else {
+                    arrayNode.add(objectNode);
                 }
-                arrayNode.add(objectNode);
             }
         }
         if (arrayNode.isEmpty() && platenumber.length() > 2) {
