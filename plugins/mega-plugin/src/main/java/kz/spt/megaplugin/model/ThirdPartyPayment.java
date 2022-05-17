@@ -33,5 +33,9 @@ public class ThirdPartyPayment {
     @Column ( name="rate_amount", precision = 8, scale = 2 )
     private BigDecimal rateAmount;
 
+    @Column(name="parkingUid")
+    String parkingUID;
 
+    @Column(name="sent")
+    private Boolean sent;
 }

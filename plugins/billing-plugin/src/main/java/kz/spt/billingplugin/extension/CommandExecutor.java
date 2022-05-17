@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.billingplugin.BillingPlugin;
 import kz.spt.billingplugin.model.Payment;
 import kz.spt.billingplugin.model.PaymentProvider;
+import kz.spt.billingplugin.model.PaymentProviderAbstract;
 import kz.spt.billingplugin.model.dto.OfdCheckData;
 import kz.spt.billingplugin.model.dto.PaymentDto;
 import kz.spt.billingplugin.model.dto.rekassa.Date;
@@ -14,6 +15,7 @@ import kz.spt.billingplugin.model.dto.rekassa.DateTime;
 import kz.spt.billingplugin.model.dto.rekassa.RekassaCheckRequest;
 import kz.spt.billingplugin.model.dto.rekassa.Time;
 import kz.spt.billingplugin.model.dto.webkassa.*;
+import kz.spt.billingplugin.repository.PaymentProviderRepository;
 import kz.spt.billingplugin.repository.PaymentRepository;
 import kz.spt.billingplugin.service.*;
 import kz.spt.billingplugin.service.impl.ReKassaServiceImpl;
@@ -43,6 +45,7 @@ public class CommandExecutor implements PluginRegister {
     private WebKassaService webKassaService;
     private WebKassaService reKassaService;
     private PaymentRepository paymentRepository;
+    private PaymentProviderRepository paymentProviderRepository;
 
     @Override
     public JsonNode execute(JsonNode command) throws Exception {
@@ -107,7 +110,18 @@ public class CommandExecutor implements PluginRegister {
                 }
 
             } else if("saveOnlyPayment".equals(commandName)) {
-                PaymentProvider paymentProvider = getRootServicesGetterService().getPaymentProviderRepository().findByName("mega");
+                PaymentProvider paymentProvider = getRootServicesGetterService().getPaymentProviderRepository().
+                        findByClientId("ThirdParty");
+                if (paymentProvider==null) {
+                    paymentProvider = new PaymentProvider();
+                    paymentProvider.setName("ThirdParty");
+                    paymentProvider.setClientId("ThirdParty");
+                    paymentProvider.setProvider("ThirdParty");
+                    paymentProvider.setOfdProviderType(PaymentProviderAbstract.OFD_PROVIDER_TYPE.WebKassa);
+                    paymentProvider.setEnabled(true);
+                    paymentProvider.setCashlessPayment(true);
+                    getPaymentProviderRepository().save(paymentProvider);
+                }
                 CarState carState = getRootServicesGetterService().getCarStateService().getLastCarState(command.get("carNumber").textValue());
                 Payment payment = new Payment();
                 payment.setCarNumber(command.get("carNumber").textValue());
@@ -227,6 +241,14 @@ public class CommandExecutor implements PluginRegister {
             paymentProviderService = (PaymentProviderService) BillingPlugin.INSTANCE.getApplicationContext().getBean("paymentProviderServiceImpl");
         }
         return paymentProviderService;
+    }
+
+    private PaymentProviderRepository getPaymentProviderRepository() {
+        if(paymentProviderRepository == null) {
+            paymentProviderRepository = (PaymentProviderRepository) BillingPlugin.INSTANCE.getApplicationContext()
+                    .getBean("paymentProviderRepository");
+        }
+        return paymentProviderRepository;
     }
 
     private PaymentRepository getPaymentRepository() {

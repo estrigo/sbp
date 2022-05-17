@@ -55,11 +55,4 @@ public class ThirdPartyPaymentController {
         }
     }
 
-    @GetMapping(value = "/testingReq")
-    public ResponseEntity testReq(@RequestBody RequestThPP requestThPP) {
-        thirdPartyPaymentService.saveThirdPartyPayment(requestThPP.getPlatenumber(),
-                new Date(), new Date(), new BigDecimal(200), "DEMO");
-        return null;
-    }
-
 }

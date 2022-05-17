@@ -11,62 +11,95 @@ import kz.spt.megaplugin.repository.ThirdPartyPaymentRepository;
 import kz.spt.megaplugin.service.RootServicesGetterService;
 import kz.spt.megaplugin.service.ThirdPartyPaymentService;
 import lombok.extern.java.Log;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Log
 @Service
+@EnableScheduling
 public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
 
+    @Value("${thirdPartyPayment.url}")
+    String thirdPartyPaymentUrl;
+
     private ThirdPartyCarsRepository thirdPartyCarsRepository;
-    private RootServicesGetterService rootServicesGetterService;
     private ThirdPartyPaymentRepository thirdPartyPaymentRepository;
 
-    public ThirdPartyPaymentServiceImpl (RootServicesGetterService rootServicesGetterService,
-                                         ThirdPartyCarsRepository thirdPartyCarsRepository,
-                                         ThirdPartyPaymentRepository thirdPartyPaymentRepository) {
-        this.rootServicesGetterService = rootServicesGetterService;
+    public ThirdPartyPaymentServiceImpl(ThirdPartyCarsRepository thirdPartyCarsRepository,
+                                        ThirdPartyPaymentRepository thirdPartyPaymentRepository) {
         this.thirdPartyCarsRepository = thirdPartyCarsRepository;
         this.thirdPartyPaymentRepository = thirdPartyPaymentRepository;
     }
 
     SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public Boolean checkCarIfThirdPartyPayment (String plateNumber){
+    public Boolean checkCarIfThirdPartyPayment(String plateNumber) {
         ThirdPartyCars thirdPartyCars = thirdPartyCarsRepository.findByPlateNumber(plateNumber);
-        if (thirdPartyCars != null && thirdPartyCars.getCar_number()!=null && thirdPartyCars.getType().equals("direct")) {
+        if (thirdPartyCars != null && thirdPartyCars.getCar_number() != null
+                && thirdPartyCars.getType().equals("direct") && thirdPartyCars.getStatus()) {
             return true;
         } else {
             return false;
         }
     }
 
-    public void saveThirdPartyPayment (String plateNumber, Date entryDate, Date exitDate, BigDecimal rate, String parkingUid) {
+    @Transactional
+    public void saveThirdPartyPayment(String plateNumber, Date entryDate, Date exitDate, BigDecimal rate,
+                                      String parkingUid, String thPPUrl) throws Exception {
+        Object statusResp = sendPayment(plateNumber, entryDate, exitDate, rate, parkingUid, thPPUrl);
         ThirdPartyPayment thirdPartyPayment = new ThirdPartyPayment();
         thirdPartyPayment.setCar_number(plateNumber);
         thirdPartyPayment.setEntryDate(entryDate);
         thirdPartyPayment.setExitDate(exitDate);
         thirdPartyPayment.setRateAmount(rate);
+        thirdPartyPayment.setParkingUID(parkingUid);
+        if (statusResp != null && statusResp.equals("OK")) {
+            thirdPartyPayment.setSent(true);
+        } else {
+            thirdPartyPayment.setSent(false);
+        }
         thirdPartyPaymentRepository.save(thirdPartyPayment);
-        log.info("Payment rate sent to third party.");
-        sendPayment(plateNumber, entryDate, exitDate, rate, parkingUid);
     }
 
-    private void sendPayment(String plateNumber, Date entryDate, Date exitDate, BigDecimal rate, String parkingUid) {
+    @Scheduled(fixedRate = 900000)
+    public void resendPayments() throws Exception {
+        List<ThirdPartyPayment> thPPList = thirdPartyPaymentRepository.findNotSentThirdPartyPayments();
+        if (thPPList != null) {
+            for (ThirdPartyPayment pp : thPPList) {
+                Object statusResp = sendPayment(pp.getCar_number(), pp.getEntryDate(), pp.getExitDate(),
+                        pp.getRateAmount(), pp.getParkingUID(), thirdPartyPaymentUrl);
+                if (statusResp != null && statusResp.equals("OK")) {
+                    pp.setSent(true);
+                } else {
+                    pp.setSent(false);
+                }
+                thirdPartyPaymentRepository.save(pp);
+            }
+        }
+    }
+
+    private Object sendPayment(String plateNumber, Date entryDate, Date exitDate, BigDecimal rate,
+                               String parkingUid, String thPPUrl) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
-        String url = "https://mega.parqour.com/mega/client/notify";
-        Map<String, String> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         params.put("plate", plateNumber);
-        params.put("sum", String.valueOf(rate));
+        params.put("sum", rate);
         params.put("in_date", format.format(entryDate));
         params.put("out_date", format.format(exitDate));
         params.put("message", "Сумма оплаты по безакцептному методу");
@@ -74,8 +107,14 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity request = new HttpEntity<>(params, headers);
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, request, String.class );
-        log.info("Response: " + responseEntity.getBody());
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(thPPUrl, request, String.class);
+        log.info("Response: " + responseEntity.getBody() + ", carNumber: " + plateNumber);
+        if (responseEntity.getBody() != null) {
+            JSONObject jsonResp = new JSONObject(responseEntity.getBody());
+            Object status = jsonResp.get("status");
+            return status;
+        }
+        return null;
     }
 
     public ResponseThPP removeClient(RequestThPP requestThPP) {
@@ -90,8 +129,7 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
             thirdPartyCarsRepository.save(thirdPartyCars);
             res.setResult(0);
             res.setMessage("успешно изменен");
-        }
-        else {
+        } else {
             res.setResult(1);
             res.setMessage("машина с таким номером не существует");
         }
@@ -101,7 +139,7 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
     public ResponseThPP addClient(RequestThPP requestThPP) {
         ThirdPartyCars thirdPartyCars = thirdPartyCarsRepository.findByPlateNumber(requestThPP.getPlatenumber());
         ResponseThPP res = new ResponseThPP();
-        if(thirdPartyCars != null && requestThPP.getCommand().equals("add") &&
+        if (thirdPartyCars != null && requestThPP.getCommand().equals("add") &&
                 !requestThPP.getType().equals(thirdPartyCars.getType())) {
             thirdPartyCars.setType(requestThPP.getType());
             thirdPartyCarsRepository.save(thirdPartyCars);
@@ -116,8 +154,7 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
             thirdPartyCarsRepository.save(thirdPartyCars);
             res.setResult(0);
             res.setMessage("успешно добавлен");
-        }
-        else {
+        } else {
             ThirdPartyCars ss = new ThirdPartyCars();
             ss.setCar_number(requestThPP.getPlatenumber());
             ss.setType(requestThPP.getType());
@@ -128,7 +165,6 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
         }
         return res;
     }
-
 
 
 }

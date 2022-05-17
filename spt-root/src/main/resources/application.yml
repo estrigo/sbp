@@ -24,7 +24,6 @@ spring:
       - "booking-plugin"
       - "zerotouch-plugin"
       - "tgbot-plugin"
-      - "mega-plugin"
     main:
       banner-mode: off
   datasource:
@@ -114,7 +113,9 @@ parking:
       seconds: 20 # ignore from any camera if car entered from other camera, default 20 seconds
 parkomat.ip:
 parkings:
-  uid: test
+  uid: DEMO
+thirdPartyPayment:
+  url: https://mega.parqour.com/mega/client/notify
 notification:
   url: http://app.magnum.kz/test-services/parking-api/v2/parking/tickets
   send: false

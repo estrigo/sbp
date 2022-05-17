@@ -81,6 +81,9 @@ public class CarEventServiceImpl implements CarEventService {
     @Value("${notification.url}")
     String notificationUrl;
 
+    @Value("${thirdPartyPayment.url}")
+    String thirdPartyPaymentUrl;
+
     @Value("${parkings.uid}")
     String parkingUid;
 
@@ -945,6 +948,7 @@ public class CarEventServiceImpl implements CarEventService {
                                         nodeThPP.put("exitDate", exitDate);
                                         nodeThPP.put("rateAmount", rateResult);
                                         nodeThPP.put("parkingUid", parkingUid);
+                                        nodeThPP.put("thPPUrl", thirdPartyPaymentUrl);
                                         megaPluginRegister.execute(nodeThPP);
                                         carOutBy = StaticValues.CarOutBy.THIRD_PARTY_PAYMENT;
                                         hasAccess = true;
@@ -957,6 +961,7 @@ public class CarEventServiceImpl implements CarEventService {
                                         billinNode2.put("exitDate", entryDate);
                                         billinNode2.put("carStateId", carState.getId());
                                         JsonNode billingPl = billingPluginRegister.execute(billinNode2);
+
                                     } else {
                                             if (balance.compareTo(rateResult) >= 0) {
                                                 carOutBy = StaticValues.CarOutBy.PAYMENT_PROVIDER;
@@ -1032,7 +1037,6 @@ public class CarEventServiceImpl implements CarEventService {
                 }
 //                send notification to third party
                 log.info("notification: " + notification);
-                log.info("notificationUrl: " + notificationUrl);
                 if(notification) {
                     sendNotification(carState, eventDto.event_date_time, rateResult);
                 }

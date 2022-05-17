@@ -10,7 +10,8 @@ public interface ThirdPartyPaymentService {
 
     Boolean checkCarIfThirdPartyPayment (String plateNumber);
 
-    void saveThirdPartyPayment (String plateNumber, Date entryDate, Date exitDate, BigDecimal rate, String parkingUid);
+    void saveThirdPartyPayment (String plateNumber, Date entryDate, Date exitDate, BigDecimal rate,
+                                String parkingUid, String thPPUrl) throws Exception;
 
     ResponseThPP addClient(RequestThPP requestThPP);
 
