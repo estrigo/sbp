@@ -23,7 +23,6 @@ import java.util.ResourceBundle;
 
 @Controller
 @RequiredArgsConstructor
-@PreAuthorize("")
 public class AuthController {
     private final UserService userService;
 

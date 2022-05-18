@@ -20,14 +20,14 @@
                             <tr>
                                 <th><a th:text="#{car.platenumber}"></a></th>
                                 <th><a th:text="#{blacklist.type}"></a></th>
-                                <th sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')"></th>
+                                <th sec:authorize="hasRole('ROLE_ADMIN')"></th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr th:each="item : ${blacklists}">
                                 <td th:text="${item.plateNumber}"></td>
                                 <td th:text="${item.type}"></td>
-                                <td sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_OPERATOR')">
+                                <td sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')">
                                     <a th:text="#{crm.delete}"
                                        th:href="@{/blacklist/delete(id=${item.id})}"></a>
                                 </td>

@@ -23,14 +23,14 @@ public class ArmRestController {
         this.armService = armService;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_OPERATOR')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
     @RequestMapping(value = "/open/barrier", method = RequestMethod.POST, consumes = "multipart/form-data")
     public Boolean openGateBarrier(@RequestParam("cameraId") Long cameraId,
                                    @RequestParam("snapshot") String snapshot) throws Exception {
         return armService.openGate(cameraId, snapshot);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_OPERATOR')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
     @GetMapping(value = "/open/{cameraId}")
     public Boolean openGate(@PathVariable("cameraId") Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
         return armService.openGate(cameraId);

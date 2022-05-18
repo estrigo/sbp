@@ -38,17 +38,17 @@
                           <td>
                             <a th:href="@{|/parking/details/${parking.id}|}" th:text="#{parking.settings}"></a>
                           </td>
-                          <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                          <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN')">
                           <td><a th:href="@{|/parking/edit/${parking.id}|}" th:text="#{crm.edit}"></a></td>
                           </p>
-                          <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                          <p sec:authorize="hasRole( 'ROLE_ADMIN')">
                             <td><a th:href="@{|/parking/delete/${parking.id}|}" th:text="#{crm.delete}"></a></td>
                           </p>
                         </tr>
                         </tbody>
                       </table>
                     </div>
-                    <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                    <p sec:authorize="hasRole('ROLE_ADMIN')">
                     <div class="form-group row">
                       <div class="col-12">
                         <a th:href="@{|/parking/add|}" class="btn btn-success waves-effect waves-light" th:text="#{crm.add}"></a>

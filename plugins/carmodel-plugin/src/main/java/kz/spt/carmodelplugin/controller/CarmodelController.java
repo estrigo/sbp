@@ -46,7 +46,7 @@ public class CarmodelController {
                     .dateToString(format.format(dateTo))
                     .build());
         }
-        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
         return "carmodel/list";
     }
 
@@ -56,7 +56,7 @@ public class CarmodelController {
         if(carmodelDto != null) {
             model.addAttribute("carmodelDto", carmodelDto);
         }
-        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN").contains(m.getAuthority())));
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN").contains(m.getAuthority())));
         return "carmodel/list";
     }
 

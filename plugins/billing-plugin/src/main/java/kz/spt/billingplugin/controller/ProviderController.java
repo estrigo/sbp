@@ -34,7 +34,7 @@ public class ProviderController {
 
     @GetMapping("/list")
     public String showAllProviders(Model model, @AuthenticationPrincipal UserDetails currentUser) {
-        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
         return "/billing/providers/list";
     }
 

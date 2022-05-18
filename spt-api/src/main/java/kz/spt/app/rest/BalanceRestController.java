@@ -21,7 +21,7 @@ public class BalanceRestController {
         return pluginService.checkBalance(platenumber);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping(value = "/change", method = RequestMethod.POST, consumes = "multipart/form-data")
     public BigDecimal openGateBarrier(@RequestParam("plateNumber") String plateNumber,
                                    @RequestParam("value") BigDecimal value) throws Exception {

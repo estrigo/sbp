@@ -43,7 +43,7 @@ public class EventRestController {
         return eventLogService.getEventLogs(pagingRequest,eventFilterDto);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "/check/{propertyName}")
     public String openGate(@PathVariable("propertyName") String propertyName) throws Exception {
         /*if("camera".equals(propertyName)){
