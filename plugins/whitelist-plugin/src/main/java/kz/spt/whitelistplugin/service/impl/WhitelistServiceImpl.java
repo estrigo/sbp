@@ -412,7 +412,7 @@ public class WhitelistServiceImpl implements WhitelistService {
                 }
             }
         }
-        if (arrayNode.isEmpty() && platenumber.length() > 2) {
+        if (arrayNode.isEmpty() && platenumber.length() > 4) {
             SimpleDateFormat format = new SimpleDateFormat(datePrettyFormat);
             if (platenumber.length() == 9) {
                 platenumber = platenumber.substring(0, platenumber.length() - 3);
