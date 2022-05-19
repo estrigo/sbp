@@ -30,30 +30,25 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class BookingServiceImpl implements BookingService {
 
-    private BookingRepository bookingRepository;
-
+    private static String halaparkToken;
+    private static Long lastTokenCheck;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    private BookingRepository bookingRepository;
     @Value("${booking.halapark.check}")
     private Boolean bookingHalaparkCheck;
-
     @Value("${booking.halapark.tokenUrl}")
     private String halaparkTokenUrl;
-
     @Value("${booking.halapark.postUrl}")
     private String halaparkPostUrl;
 
-    private static String halaparkToken;
-    private static Long lastTokenCheck;
-
-    public BookingServiceImpl(BookingRepository bookingRepository){
-        this.bookingRepository  = bookingRepository;
+    public BookingServiceImpl(BookingRepository bookingRepository) {
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
-    public Boolean checkBookingValid(String plateNumber) throws IOException, URISyntaxException {
+    public Boolean checkBookingValid(String plateNumber, String position) throws IOException, URISyntaxException {
         boolean valid = false;
-        if(bookingHalaparkCheck){
+        if (bookingHalaparkCheck) {
             String desiredFormat = convertToHalaparkRequestFormat(plateNumber);
             log.info("halapark checking platenumer: " + plateNumber + "by desired format: " + desiredFormat);
 
@@ -62,11 +57,12 @@ public class BookingServiceImpl implements BookingService {
             getToken();
 
             ObjectNode halaparkPostNode = objectMapper.createObjectNode();
-            halaparkPostNode.put("medium","Plate Number"); //medium : Plate Number (As default for Parquor)
-            halaparkPostNode.put("timestamp", String.valueOf(System.currentTimeMillis()/1000));
-            halaparkPostNode.put("lane_id","1");
-            halaparkPostNode.put("site_id","2010"); // Reference id for building its unique and for concord its 2010
+            halaparkPostNode.put("medium", "Plate Number"); //medium : Plate Number (As default for Parquor)
+            halaparkPostNode.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));
+            halaparkPostNode.put("lane_id", "1");
+            halaparkPostNode.put("site_id", "2010"); // Reference id for building its unique and for concord its 2010
             halaparkPostNode.put("identifier", desiredFormat); //  Plate Number (Emirate Code - Plate Code - Plate No)
+            halaparkPostNode.put("position", position); // position  = 1 (Entry ), position  = 2 (Exit )
 
             //{"identifier":"1-22-15788","site_id":"2010","lane_id":"1","medium":"Plate Number","timestamp":"1641798345"}
 
@@ -92,18 +88,18 @@ public class BookingServiceImpl implements BookingService {
             JsonNode halaparkResponseNode = objectMapper.readTree(halaparkPostResponseBodyString);
             //{"response":{"status":false,"message":"Token has been expired"}}
             //{"response":{"status":true,"message":"Valid Booking","result":[{"identifier":"3-S-12345"},{"identifier":"3-S-12345"}]}}
-            if(halaparkResponseNode.has("response") && halaparkResponseNode.get("response") != null){
+            if (halaparkResponseNode.has("response") && halaparkResponseNode.get("response") != null) {
                 JsonNode responseData = halaparkResponseNode.get("response");
-                if(responseData.has("status") && responseData.get("status").booleanValue()){
+                if (responseData.has("status") && responseData.get("status").booleanValue()) {
                     String parqourCheckFormat = parqourCheckFormat(plateNumber);
-                    if (responseData.has("result")){
-                        ArrayNode results = (ArrayNode)responseData.get("result");
+                    if (responseData.has("result")) {
+                        ArrayNode results = (ArrayNode) responseData.get("result");
                         Iterator<JsonNode> iterator = results.iterator();
-                        while (iterator.hasNext()){
+                        while (iterator.hasNext()) {
                             JsonNode result = iterator.next();
-                            if(result.has("identifier")){
+                            if (result.has("identifier")) {
                                 String halaparkNumber = result.get("identifier").textValue();
-                                if(halaparkNumber.toUpperCase().replaceAll(" ", "").endsWith(parqourCheckFormat)){
+                                if (halaparkNumber.toUpperCase().replaceAll(" ", "").endsWith(parqourCheckFormat)) {
                                     bookingLog.setHasBooking(true);
                                     valid = true;
                                 }
@@ -134,7 +130,7 @@ public class BookingServiceImpl implements BookingService {
         lastTokenCheck = System.currentTimeMillis();
     }
 
-    private String convertToHalaparkRequestFormat(String platenumber){
+    private String convertToHalaparkRequestFormat(String platenumber) {
 /*        if(platenumber.contains("-")){
             return platenumber;
         } else {
@@ -147,9 +143,9 @@ public class BookingServiceImpl implements BookingService {
             return copy;
         }
 */
-    // Temporary cod
+        // Temporary cod
         String copy = platenumber;
-        if(platenumber.length() < 7){
+        if (platenumber.length() < 7) {
             copy = copy.substring(1);
         } else {
             copy = copy.substring(2);
@@ -157,9 +153,9 @@ public class BookingServiceImpl implements BookingService {
         return copy;
     }
 
-    private String parqourCheckFormat(String platenumber){
+    private String parqourCheckFormat(String platenumber) {
         String copy = platenumber;
-        if(platenumber.length() < 7){
+        if (platenumber.length() < 7) {
             copy = copy.substring(0, 1) + "-" + copy.substring(1);
         } else {
             copy = copy.substring(0, 2) + "-" + copy.substring(2);
