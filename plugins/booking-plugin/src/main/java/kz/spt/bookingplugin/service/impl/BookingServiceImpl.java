@@ -2,7 +2,6 @@ package kz.spt.bookingplugin.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.bookingplugin.model.BookingLog;
 import kz.spt.bookingplugin.repository.BookingRepository;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 @Log
@@ -46,11 +44,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Boolean checkBookingValid(String plateNumber, String position) throws IOException, URISyntaxException {
+    public Boolean checkBookingValid(String plateNumber, String region, String position) throws IOException, URISyntaxException {
         boolean valid = false;
         if (bookingHalaparkCheck) {
-            String desiredFormat = convertToHalaparkRequestFormat(plateNumber);
-            log.info("halapark checking platenumer: " + plateNumber + "by desired format: " + desiredFormat);
+            String desiredFormat = convertToHalaparkRequestFormat(plateNumber, region);
+            log.info("halapark checking platenumer: " + plateNumber + " by desired format: " + desiredFormat);
 
             CloseableHttpClient halaparkHttpClient = HttpClients.custom().setConnectionTimeToLive(5, TimeUnit.SECONDS).build();
 
@@ -91,7 +89,10 @@ public class BookingServiceImpl implements BookingService {
             if (halaparkResponseNode.has("response") && halaparkResponseNode.get("response") != null) {
                 JsonNode responseData = halaparkResponseNode.get("response");
                 if (responseData.has("status") && responseData.get("status").booleanValue()) {
-                    String parqourCheckFormat = parqourCheckFormat(plateNumber);
+                    bookingLog.setHasBooking(true);
+                    valid = true;
+
+                    /*String parqourCheckFormat = parqourCheckFormat(plateNumber);
                     if (responseData.has("result")) {
                         ArrayNode results = (ArrayNode) responseData.get("result");
                         Iterator<JsonNode> iterator = results.iterator();
@@ -100,12 +101,11 @@ public class BookingServiceImpl implements BookingService {
                             if (result.has("identifier")) {
                                 String halaparkNumber = result.get("identifier").textValue();
                                 if (halaparkNumber.toUpperCase().replaceAll(" ", "").endsWith(parqourCheckFormat)) {
-                                    bookingLog.setHasBooking(true);
-                                    valid = true;
+
                                 }
                             }
                         }
-                    }
+                    }*/
                 }
             }
             halaparkHttpClient.close();
@@ -130,27 +130,44 @@ public class BookingServiceImpl implements BookingService {
         lastTokenCheck = System.currentTimeMillis();
     }
 
-    private String convertToHalaparkRequestFormat(String platenumber) {
-/*        if(platenumber.contains("-")){
+    private String convertToHalaparkRequestFormat(String platenumber, String region) {
+        /*if (platenumber.contains("-")) {
             return platenumber;
         } else {
             String copy = platenumber;
-            if(platenumber.length() < 7){
+            if (platenumber.length() < 7) {
                 copy = "0-" + copy.substring(0, 1) + "-" + copy.substring(1);
             } else {
                 copy = "0-" + copy.substring(0, 2) + "-" + copy.substring(2);
             }
             return copy;
-        }
-*/
+        }*/
+
         // Temporary cod
-        String copy = platenumber;
-        if (platenumber.length() < 7) {
-            copy = copy.substring(1);
-        } else {
-            copy = copy.substring(2);
+        String copy = parqourCheckFormat(platenumber);
+        String code = region != null ? convertRegion(region) : "";
+        return code + "-" + platenumber;
+    }
+
+    private String convertRegion(String region) {
+        switch (region) {
+            case "ae-az":
+                return "1";
+            case "ae-aj":
+                return "2";
+            case "ae-du":
+                return "3";
+            case "ae-fu":
+                return "4";
+            case "ae-rk":
+                return "5";
+            case "ae-sh":
+                return "6";
+            case "ae-uq":
+                return "7";
+            default:
+                return "";
         }
-        return copy;
     }
 
     private String parqourCheckFormat(String platenumber) {

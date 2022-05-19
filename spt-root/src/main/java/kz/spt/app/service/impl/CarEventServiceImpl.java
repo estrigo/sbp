@@ -632,7 +632,7 @@ public class CarEventServiceImpl implements CarEventService {
             }
             if (hasAccess) {
                 return true;
-            } else if (checkBooking(eventDto.car_number, "1")) {
+            } else if (checkBooking(eventDto.car_number, eventDto.region, "1")) {
                 properties.put("type", EventLog.StatusType.Allow);
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.");
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.", EventLog.EventType.PASS);
@@ -646,7 +646,7 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, description, description_en, EventLog.EventType.NOT_PASS);
                 return false;
             }
-        } else if (checkBooking(eventDto.car_number, "1")) {
+        } else if (checkBooking(eventDto.car_number, eventDto.region, "1")) {
             properties.put("type", EventLog.StatusType.Allow);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.");
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.", EventLog.EventType.PASS);
@@ -659,12 +659,13 @@ public class CarEventServiceImpl implements CarEventService {
         }
     }
 
-    private boolean checkBooking(String platenumber, String position) throws Exception {
+    private boolean checkBooking(String plateNumber, String region, String position) throws Exception {
         PluginRegister bookingPluginRegister = pluginService.getPluginRegister(StaticValues.bookingPlugin);
         if (bookingPluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
-            node.put("platenumber", platenumber);
+            node.put("platenumber", plateNumber);
             node.put("position", position);
+            node.put("region", region);
             node.put("command", "checkBooking");
             JsonNode result = bookingPluginRegister.execute(node);
             return result.get("bookingResult").booleanValue();
@@ -821,7 +822,7 @@ public class CarEventServiceImpl implements CarEventService {
                 if (leftFromThisSecondsBefore) {
                     hasAccess = true;
                 } else {
-                    if (checkBooking(eventDto.car_number, "2") || Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
+                    if (checkBooking(eventDto.car_number, eventDto.region, "2") || Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
                         properties.put("type", EventLog.StatusType.Allow);
                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
                         eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed", EventLog.EventType.WHITELIST);
@@ -876,7 +877,7 @@ public class CarEventServiceImpl implements CarEventService {
                     } else if (parkingOnlyRegisterCars) {
                         hasAccess = true;
                         carOutBy = StaticValues.CarOutBy.REGISTER;
-                    } else if (checkBooking(eventDto.car_number, "2") || Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
+                    } else if (checkBooking(eventDto.car_number, eventDto.region, "2") || Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
                         hasAccess = true;
                         carOutBy = StaticValues.CarOutBy.WHITELIST;
                     } else {

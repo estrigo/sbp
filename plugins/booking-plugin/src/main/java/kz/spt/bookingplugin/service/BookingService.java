@@ -5,5 +5,5 @@ import java.net.URISyntaxException;
 
 public interface BookingService {
 
-    Boolean checkBookingValid(String plateNumber, String position) throws IOException, URISyntaxException;
+    Boolean checkBookingValid(String plateNumber, String region, String position) throws IOException, URISyntaxException;
 }
