@@ -47,7 +47,7 @@
                     <div class="modal-body">
                         <div class="col-md form-group">
                             <label class="form-label" th:text="#{car.platenumber}"></label>
-                            <input type="text" class="form-control" name="plateNumber" required>
+                            <input type="text" class="form-control" id="plateNumber" name="plateNumber" required autocomplete="off">
                         </div>
                         <div class="col-md form-group">
                             <label class="form-label" th:text="#{blacklist.type}"></label>
@@ -121,6 +121,19 @@
     function showModal(){
         $('#blacklist-add').modal('show');
     }
+    $('#plateNumber').autoComplete({
+        resolver: 'custom',
+        minLength: 3,
+        events: {
+            search: function (q, callback) {
+                $.ajax(
+                    '/rest/whitelist/platenums/'+q
+                ).done(function (res) {
+                    callback(res);
+                });
+            }
+        }
+    });
 </script>
 
 </html>

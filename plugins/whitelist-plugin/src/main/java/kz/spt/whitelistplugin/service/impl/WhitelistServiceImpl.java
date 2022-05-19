@@ -11,6 +11,7 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.Parking;
+import kz.spt.lib.service.CarsService;
 import kz.spt.whitelistplugin.bootstrap.datatable.WhiteListComparators;
 import kz.spt.whitelistplugin.model.AbstractWhitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
@@ -753,6 +754,22 @@ public class WhitelistServiceImpl implements WhitelistService {
             whitelistGroupsRepository.deleteById(whitelistGroups.get(i).getId());
         }
 
+    }
+
+    public List<String> findCarsByPlatenumber(String platenumber){
+        CarsService carsService = rootServicesGetterService.getCarsService();
+        List<Cars> cars = carsService.findByPlatenumberContaining(platenumber);
+        List<String> platenumbers = new ArrayList<>();
+        for (int i = 0;i<cars.size();i++){
+            platenumbers.add(cars.get(i).getPlatenumber());
+        }
+        return platenumbers;
+    }
+
+    public List<String> findPlatenumbersByPlatenumber(String platenumber){
+        CarsService carsService = rootServicesGetterService.getCarsService();
+        List<String> platenumbers = carsService.searchByPlateNumberContaining(platenumber);
+        return platenumbers;
     }
 
 }
