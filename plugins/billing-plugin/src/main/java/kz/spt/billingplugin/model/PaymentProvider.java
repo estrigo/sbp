@@ -37,8 +37,6 @@ public class PaymentProvider extends PaymentProviderAbstract {
     @Transient
     private String password;
 
-
-
     /* Для Вебкассы - ID кассы, для ReKassa API TOKEN */
     String webKassaID;
 
@@ -46,4 +44,6 @@ public class PaymentProvider extends PaymentProviderAbstract {
     String webKassaLogin;
 
     String webKassaPassword;
+    /* IP-адрес паркомата */
+    String parkomatIP;
 }
