@@ -32,14 +32,13 @@ public class CarmodelController {
 
     @GetMapping("/list")
     public String getCarmodelList(Model model, @AuthenticationPrincipal UserDetails currentUser) {
-        log.info("getCarmodelList request started!");
         CarmodelDto CarmodelDto = null;
         if (!model.containsAttribute("CarmodelDto")) {
             SimpleDateFormat format = new SimpleDateFormat(dateformat);
             Calendar calendar = Calendar.getInstance();
             Date dateTo = calendar.getTime();
             calendar.add(Calendar.MINUTE, 1);
-            calendar.add(Calendar.MONTH, -1);
+            calendar.add(Calendar.DAY_OF_MONTH, -1);
             Date dateFrom = calendar.getTime();
             model.addAttribute("CarmodelDto", CarmodelDto.builder()
                     .dateFromString(format.format(dateFrom))

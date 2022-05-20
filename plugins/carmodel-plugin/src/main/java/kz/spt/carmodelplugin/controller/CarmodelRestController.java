@@ -35,7 +35,7 @@ public class CarmodelRestController {
 
     @PostMapping("/carmodel/list")
     public Page<CarmodelDto> getCarmodelDtoList (@RequestBody PagingRequest pagingRequest, @RequestParam String dateFromString,
-                                                 @RequestParam String plateNumber){
+                                                 @RequestParam String plateNumber) {
 //        CarmodelDto filter = pagingRequest.convertTo(CarmodelDto.builder().build());
         CarmodelDto filter = new CarmodelDto();
         filter.setPlateNumber(plateNumber);

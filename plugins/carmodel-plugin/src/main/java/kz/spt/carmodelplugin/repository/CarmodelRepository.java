@@ -15,4 +15,6 @@ public interface CarmodelRepository {
 
     List<Map<String, Object>> getAllCarsByFilter(CarmodelDto filter);
 
+    Long countCarsByFilter(CarmodelDto filter);
+
 }

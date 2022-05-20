@@ -11,12 +11,16 @@ import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.EventLog;
+import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
 import java.math.BigInteger;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Predicate;
@@ -40,9 +44,11 @@ public class CarmodelServiceImpl implements CarmodelService {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    public Page<CarmodelDto> listCarsBy(PagingRequest pagingRequest, CarmodelDto filter) {
+        Long count = carmodelRepository.countCarsByFilter(filter);
 
-    public Page<CarmodelDto> listCarsBy(PagingRequest pagingRequest, CarmodelDto filter){
-
+        filter.setPage(pagingRequest.getStart());
+        filter.setElements(pagingRequest.getLength());
         List<Map<String, Object>> queryResult = carmodelRepository.getAllCarsByFilter(filter);
         List<CarmodelDto> resultList = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -85,21 +91,22 @@ public class CarmodelServiceImpl implements CarmodelService {
             carmodelDto.setDimension(dimension);
             resultList.add(carmodelDto);
         }
-        return getPage(resultList, pagingRequest);
+        return getPage(count, resultList, pagingRequest);
     }
 
-    private Page<CarmodelDto> getPage(List<CarmodelDto> cars, PagingRequest pagingRequest) {
-        List<CarmodelDto> filtered = cars.stream()
-                .sorted(sortCars(pagingRequest))
-                .filter(filterCars(pagingRequest))
-                .skip(pagingRequest.getStart())
-                .limit(pagingRequest.getLength())
-                .collect(Collectors.toList());
-        long count = cars.stream()
-                .filter(filterCars(pagingRequest))
-                .count();
+    private Page<CarmodelDto> getPage(long count, List<CarmodelDto> cars, PagingRequest pagingRequest) {
+//        List<CarmodelDto> filtered = cars.stream()
+//                .sorted(sortCars(pagingRequest))
+//                .filter(filterCars(pagingRequest))
+//                .skip(pagingRequest.getStart())
+//                .limit(pagingRequest.getLength())
+//                .collect(Collectors.toList());
+//        long count = cars.stream()
+//                .filter(filterCars(pagingRequest))
+//                .count();
 
-        Page<CarmodelDto> page = new Page<>(filtered);
+//        Page<CarmodelDto> page = new Page<>(filtered);
+        Page<CarmodelDto> page = new Page<>(cars);
         page.setRecordsFiltered((int) count);
         page.setRecordsTotal((int) count);
         page.setDraw(pagingRequest.getDraw());
