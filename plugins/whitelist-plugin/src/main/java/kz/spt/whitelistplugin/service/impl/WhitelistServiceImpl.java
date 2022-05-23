@@ -106,10 +106,10 @@ public class WhitelistServiceImpl implements WhitelistService {
             whitelist.setParking(rootServicesGetterService.getParkingService().findById(whitelist.getParkingId()));
         }
         if(whitelist.getGroup() == null && AbstractWhitelist.Type.UNLIMITED.equals(whitelist.getType())){
-            rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
+            rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber(), false);
         } else if(whitelist.getGroup() != null){
             if (AbstractWhitelist.Type.UNLIMITED.equals(whitelist.getGroup().getType())){
-                rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
+                rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber(), false);
             }
         }
         whitelistRepository.save(whitelist);
@@ -484,9 +484,8 @@ public class WhitelistServiceImpl implements WhitelistService {
             }
         }
         whitelist.setParking(parking);
-        log.info("group.getType(): " + group.getType());
         if(group.getType() != Whitelist.Type.PERIOD) {
-            rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
+            rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber(), false);
         }
         whitelistRepository.save(whitelist);
     }

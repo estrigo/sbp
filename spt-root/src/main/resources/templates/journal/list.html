@@ -327,7 +327,7 @@
             {
                 "data": function (carState) {
                     let text = '';
-                    if (!carState.paid && carState.whitelistJson) {
+                    if (carState.whitelistJson) {
                         const whitelists = JSON.parse(carState.whitelistJson);
 
                         for (const w of whitelists) {

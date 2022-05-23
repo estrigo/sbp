@@ -135,7 +135,7 @@ public class WhitelistRootServiceImpl implements WhitelistRootService {
                     }
                 }
             } else {
-                Date start = whitelist.has("accessStart") && whitelist.get("accessStart") != null? whitelistFormat.parse(whitelist.get("accessStart").textValue()) : null;
+                Date start = whitelist.has("accessStart") && whitelist.get("accessStart") != null? whitelistFormat.parse(whitelist.get("accessStart").textValue()) : inDate;
                 Date end = whitelist.has("accessEnd") && whitelist.get("accessEnd") != null? whitelistFormat.parse(whitelist.get("accessEnd").textValue()) : null;
 
                 if(inDate.before(start)){

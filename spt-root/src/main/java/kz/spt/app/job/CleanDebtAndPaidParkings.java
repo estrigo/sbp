@@ -41,7 +41,7 @@ public class CleanDebtAndPaidParkings {
                 if(carState.getPaid()){
                     log.info("Removing debt for car = " + carState.getCarNumber());
                     try {
-                        carStateService.removeDebt(carState.getCarNumber());
+                        carStateService.removeDebt(carState.getCarNumber(), true);
                     } catch (Exception e){
                         e.printStackTrace();
                     }

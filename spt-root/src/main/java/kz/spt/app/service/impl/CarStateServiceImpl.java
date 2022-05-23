@@ -31,8 +31,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Log
 @Service
@@ -295,7 +293,7 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
-    public Boolean removeDebt(String carNumber) throws Exception {
+    public Boolean removeDebt(String carNumber, Boolean changeCurrentParkingToFree) throws Exception {
 
         Boolean result = false;
 
@@ -318,10 +316,12 @@ public class CarStateServiceImpl implements CarStateService {
             }
         }
 
-        CarState carState = getLastNotLeft(carNumber);
-        if (carState != null) {
-            cancelPaid(carState);
-            result = true;
+        if(changeCurrentParkingToFree){
+            CarState carState = getLastNotLeft(carNumber);
+            if (carState != null) {
+                cancelPaid(carState);
+                result = true;
+            }
         }
 
         return result;

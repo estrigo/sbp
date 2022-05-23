@@ -796,7 +796,7 @@ public class CarEventServiceImpl implements CarEventService {
         if (gate.notControlBarrier != null && gate.notControlBarrier) {
             carState = carStateService.getLastNotLeft(eventDto.car_number);
             carOutBy = StaticValues.CarOutBy.REGISTER;
-            saveCarOutState(eventDto, camera, carState, properties, balance, rateResult, zerotouchValue, format, carOutBy, abonements);
+            saveCarOutState(eventDto, camera, carState, properties, balance, rateResult, zerotouchValue, format, carOutBy, abonements, whitelists);
             return;
         }
 
@@ -1026,7 +1026,7 @@ public class CarEventServiceImpl implements CarEventService {
                     gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
                     gate.lastTriggeredTime = System.currentTimeMillis();
                     if (!gate.isSimpleWhitelist && !leftFromThisSecondsBefore && carState != null) {
-                        saveCarOutState(eventDto, camera, carState, properties, balance, rateResult, zerotouchValue, format, carOutBy, abonements);
+                        saveCarOutState(eventDto, camera, carState, properties, balance, rateResult, zerotouchValue, format, carOutBy, abonements, whitelists);
                     } else if (leftFromThisSecondsBefore) {
                         properties.put("type", EventLog.StatusType.Allow);
                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
@@ -1080,7 +1080,7 @@ public class CarEventServiceImpl implements CarEventService {
         log.info("Notification response: " + responseEntity.getBody());
     }
 
-    private void saveCarOutState(CarEventDto eventDto, Camera camera, CarState carState, Map<String, Object> properties, BigDecimal balance, BigDecimal rateResult, BigDecimal zerotouchValue, SimpleDateFormat format, StaticValues.CarOutBy carOutBy, JsonNode abonements) throws Exception {
+    private void saveCarOutState(CarEventDto eventDto, Camera camera, CarState carState, Map<String, Object> properties, BigDecimal balance, BigDecimal rateResult, BigDecimal zerotouchValue, SimpleDateFormat format, StaticValues.CarOutBy carOutBy, JsonNode abonements, JsonNode whitelists) throws Exception {
         if (StaticValues.CarOutBy.FREE.equals(carOutBy)) {
             properties.put("type", EventLog.StatusType.Allow);
             carStateService.createOUTState(eventDto.car_number, eventDto.event_date_time, camera, carState, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
@@ -1096,6 +1096,7 @@ public class CarEventServiceImpl implements CarEventService {
                 decreaseBalance(carState.getCarNumber(), carState.getParking().getName(), carState.getId(), rateResult, properties);
             }
             carState.setRateAmount(zerotouchValue != null ? rateResult.add(zerotouchValue) : rateResult);
+            carState.setWhitelistJson(whitelists != null ? whitelists.toString() : null);
             carStateService.createOUTState(eventDto.car_number, eventDto.event_date_time, camera, carState, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
 
             if (billingPluginRegister != null) {
