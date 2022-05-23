@@ -119,7 +119,8 @@ thirdPartyPayment:
   url: https://mega.parqour.com/mega/client/notify
 notification:
   url: http://app.magnum.kz/test-services/parking-api/v2/parking/tickets
-  send: false
+  send: true
+  parkingUid: DEMO
 cors:
   allowed:
     origins:

@@ -78,6 +78,9 @@ public class CarEventServiceImpl implements CarEventService {
     @Value("${notification.send}")
     Boolean notification;
 
+    @Value("${notification.parkingUid}")
+    String parking_uid;
+
     @Value("${notification.url}")
     String notificationUrl;
 
@@ -1035,11 +1038,6 @@ public class CarEventServiceImpl implements CarEventService {
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
                 }
-//                send notification to third party
-                log.info("notification: " + notification);
-                if (notification) {
-                    sendNotification(carState, eventDto.event_date_time, rateResult);
-                }
             } catch (Exception e) {
                 String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
                 String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
@@ -1048,6 +1046,11 @@ public class CarEventServiceImpl implements CarEventService {
                 log.info("Error opening barrier: " + e.getMessage());
             }
             barrierOutProcessingHashtable.remove(camera.getGate().getBarrier().getIp());
+//          send notification to third party
+            log.info("notification: " + notification);
+            if (notification) {
+                sendNotification(carState, eventDto.event_date_time, rateResult);
+            }
         } else {
             try {
                 qrPanelService.display(camera.getGate(), eventDto.car_number);
@@ -1066,9 +1069,11 @@ public class CarEventServiceImpl implements CarEventService {
         String url = notificationUrl;
         Map<String, String> params = new HashMap<>();
         params.put("plate_number", carState.getCarNumber());
+        params.put("parking_uid", parking_uid);
         params.put("sum", String.valueOf(rate));
         params.put("dt_start", dt_start);
         params.put("dt_finish", dt_finish);
+        log.info("params: " + params);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity request = new HttpEntity<>(params, headers);
