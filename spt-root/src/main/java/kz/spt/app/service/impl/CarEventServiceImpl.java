@@ -1073,7 +1073,6 @@ public class CarEventServiceImpl implements CarEventService {
         params.put("sum", String.valueOf(rate));
         params.put("dt_start", dt_start);
         params.put("dt_finish", dt_finish);
-        log.info("params: " + params);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity request = new HttpEntity<>(params, headers);
