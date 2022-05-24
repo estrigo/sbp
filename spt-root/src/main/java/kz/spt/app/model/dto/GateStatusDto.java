@@ -157,6 +157,9 @@ public class GateStatusDto {
                         gateStatusDto.frontCamera.login = camera.getLogin();
                         gateStatusDto.frontCamera.password = camera.getPassword();
                         gateStatusDto.frontCamera.snapshotUrl = camera.getSnapshotUrl();
+                        gateStatusDto.frontCamera.carmenIp = camera.getCarmenIp();
+                        gateStatusDto.frontCamera.carmenLogin = camera.getCarmenLogin();
+                        gateStatusDto.frontCamera.carmenPassword = camera.getCarmenPassword();
                     } else {
                         gateStatusDto.frontCamera2 = new CameraStatusDto();
                         gateStatusDto.frontCamera2.id = camera.getId();
@@ -167,6 +170,9 @@ public class GateStatusDto {
                         gateStatusDto.frontCamera2.login = camera.getLogin();
                         gateStatusDto.frontCamera2.password = camera.getPassword();
                         gateStatusDto.frontCamera2.snapshotUrl = camera.getSnapshotUrl();
+                        gateStatusDto.frontCamera2.carmenIp = camera.getCarmenIp();
+                        gateStatusDto.frontCamera2.carmenLogin = camera.getCarmenLogin();
+                        gateStatusDto.frontCamera2.carmenPassword = camera.getCarmenPassword();
                     }
                 }
                 if (Camera.CameraType.BACK.equals(camera.getCameraType())) {
@@ -178,6 +184,9 @@ public class GateStatusDto {
                     gateStatusDto.backCamera.login = camera.getLogin();
                     gateStatusDto.backCamera.password = camera.getPassword();
                     gateStatusDto.backCamera.snapshotUrl = camera.getSnapshotUrl();
+                    gateStatusDto.backCamera.carmenIp = camera.getCarmenIp();
+                    gateStatusDto.backCamera.carmenLogin = camera.getCarmenLogin();
+                    gateStatusDto.backCamera.carmenPassword = camera.getCarmenPassword();
                 }
             }
         }

@@ -223,6 +223,44 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     @Override
+    public void handleLiveStreamEvent(byte[] event_image, String event_descriptor, String event_timestamp) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(event_descriptor);
+
+        String detectorID = jsonNode.get("DetectorID").asText();
+        Camera camera = cameraService.findCameraByDetectorId(detectorID);
+
+        if (camera != null) {
+            log.warning("Camera " + camera.getIp() + " found for detector id = " + detectorID);
+            String car_number = jsonNode.get("EventInfo").get("Text").textValue();
+
+            log.info("EventInfo: " + jsonNode.get("EventInfo"));
+            log.info("event_timestamp: " + event_timestamp);
+
+            String country = null;
+            if (jsonNode.get("EventInfo").has("Country") && jsonNode.get("EventInfo").get("Country") != null && jsonNode.get("EventInfo").get("Country").textValue() != null) {
+                country = jsonNode.get("EventInfo").get("Country").textValue();
+            }
+
+            String base64 = null;
+            String base64_lp = null;
+            base64 = StringUtils.newStringUtf8(Base64.encodeBase64(event_image, false));
+
+            CarEventDto eventDto = new CarEventDto();
+            eventDto.car_number = car_number;
+            eventDto.event_date_time = event_timestamp != null ? new Date(Long.valueOf(event_timestamp)) : new Date();
+            eventDto.ip_address = camera.getIp();
+            eventDto.car_picture = base64;
+            eventDto.lp_picture = base64_lp;
+            eventDto.region = country;
+            eventDto.vecihleType = null;
+            saveCarEvent(eventDto);
+        } else {
+            log.warning("Camera not found for detector id = " + detectorID);
+        }
+    }
+
+    @Override
     public void saveCarEvent(CarEventDto eventDto) throws Exception {
 
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);

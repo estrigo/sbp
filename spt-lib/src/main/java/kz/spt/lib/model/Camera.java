@@ -64,4 +64,8 @@ public class Camera {
 
     @Column(columnDefinition="tinyint(1) default 1")
     private boolean enabled = true;
+
+    private String carmenIp;
+    private String carmenLogin;
+    private String carmenPassword;
 }

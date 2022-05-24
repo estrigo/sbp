@@ -9,6 +9,7 @@ import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.ControllerService;
 import kz.spt.app.service.GateService;
 import lombok.extern.java.Log;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +32,9 @@ public class ParkingController {
     private ControllerService controllerService;
     private CarStateRepository carStateRepository;
     private CarStateService carStateService;
+
+    @Value("${carmen.live.enabled}")
+    Boolean carmenLiveEnabled;
 
     public ParkingController(ParkingService parkingService, CameraService cameraService, GateService gateService,
                              BarrierService barrierService, ControllerService controllerService,
@@ -103,6 +107,7 @@ public class ParkingController {
     @GetMapping("/camera/{cameraId}")
     public String getEditingCameraId(Model model, @PathVariable Long cameraId) {
         model.addAttribute("camera", cameraService.getCameraById(cameraId));
+        model.addAttribute("carmenLiveEnabled",carmenLiveEnabled);
         return "parking/camera/edit";
     }
 
