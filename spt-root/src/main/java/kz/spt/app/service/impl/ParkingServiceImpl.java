@@ -3,7 +3,6 @@ package kz.spt.app.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import kz.spt.app.repository.CarStateRepository;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
 import kz.spt.app.service.ControllerService;
@@ -120,7 +119,7 @@ public class ParkingServiceImpl implements ParkingService {
             JsonNode ratePluginResult = ratePluginRegister.execute(command);
         }
 
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonomentPlugin);
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonementPlugin);
         if (abonomentPluginRegister != null) {
             ObjectNode command = objectMapper.createObjectNode();
             command.put("command", "deleteParkingAbonoments");

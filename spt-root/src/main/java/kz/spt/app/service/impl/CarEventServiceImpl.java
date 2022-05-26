@@ -446,6 +446,9 @@ public class CarEventServiceImpl implements CarEventService {
             return;
         }
 
+        // Проверка абонемента на истечение срока или близко к истечению срока
+        abonomentService.checkAbonementExpireDate(eventDto.car_number, camera.getId(), gate.parkingId, properties);
+
         CarState carState = carStateService.getLastNotLeft(eventDto.car_number);
         if (carState != null) {
             Calendar current = Calendar.getInstance();
@@ -851,6 +854,9 @@ public class CarEventServiceImpl implements CarEventService {
             return;
         }
 
+        // Проверка абонемента на истечение срока или близко к истечению срока
+        abonomentService.checkAbonementExpireDate(eventDto.car_number, camera.getId(), gate.parkingId, properties);
+
         if (gate.isSimpleWhitelist) {
             carOutBy = StaticValues.CarOutBy.WHITELIST;
             hasAccess = true;
@@ -1157,7 +1163,7 @@ public class CarEventServiceImpl implements CarEventService {
             eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, "Выпускаем авто, оплата будет на стороннем приложении: Авто с гос. номером " + eventDto.car_number, "For prepaid exit is allowed, payment will be on third party application. Car with license plate " + eventDto.car_number, EventLog.EventType.PREPAID);
         } else if (StaticValues.CarOutBy.ABONOMENT.equals(carOutBy)) {
             properties.put("type", EventLog.StatusType.Allow);
-            String message_ru = "Пропускаем авто: Найдено дейсgitтвущий абономент на номер авто " + eventDto.car_number + ". Проезд разрешен.";
+            String message_ru = "Пропускаем авто: Найдено действущий абономент на номер авто " + eventDto.car_number + ". Проезд разрешен.";
             String message_en = "Allowed: Found valid subscription for car late number " + eventDto.car_number + ". Allowed.";
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, message_ru, message_en, EventLog.EventType.PASS);
@@ -1209,7 +1215,7 @@ public class CarEventServiceImpl implements CarEventService {
                 String descriptionEn = "Allowed: Paid for parking. Total sum: " + rateResult + ". Balance left: " + subtractResult + ". Allowed.";
                 eventType = EventLog.EventType.DEBT;
                 if (BigDecimal.ZERO.compareTo(rateResult) == 0) {
-                    if ((eventDto.event_date_time.getTime() - carState.getInTimestamp().getTime()) < 900000) {
+                    if ((eventDto.event_date_time.getTime() - carState.getInTimestamp().getTime()) <= 900000) {
                         descriptionRu = "Пропускаем авто: Первые 15 минут бесплатно. Проезд разрешен.";
                         descriptionEn = "Allowed: First 15 minutes free. Allowed";
                         eventType = EventLog.EventType.FIFTEEN_FREE;

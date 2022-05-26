@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
@@ -19,7 +21,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Audited
 @Table(name = "abonoment")
-public class Abonoment {
+public class Abonement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,4 +62,10 @@ public class Abonoment {
     @ManyToOne
     @JoinColumn(name = "parking_id")
     private Parking parking;
+
+    @CreationTimestamp
+    private Date created;
+
+    @UpdateTimestamp
+    private Date updated;
 }

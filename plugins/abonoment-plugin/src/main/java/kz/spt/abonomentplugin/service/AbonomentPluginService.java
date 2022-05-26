@@ -4,8 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import kz.spt.abonomentplugin.dto.AbonomentDTO;
 import kz.spt.abonomentplugin.dto.AbonomentTypeDTO;
-import kz.spt.abonomentplugin.model.Abonoment;
+import kz.spt.abonomentplugin.model.Abonement;
 import kz.spt.abonomentplugin.model.AbonomentTypes;
+import kz.spt.abonomentplugin.model.dto.AbonementFilterDto;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 
@@ -23,13 +24,13 @@ public interface AbonomentPluginService {
 
     List<AbonomentTypes> getAllAbonomentTypes();
 
-    Abonoment createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws ParseException;
+    Abonement createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws ParseException;
 
     void deleteAbonoment(Long id);
 
     void deleteAbonomentByParkingID(Long parkingId);
 
-    Page<AbonomentDTO> abonomentDtoList(PagingRequest pagingRequest);
+    Page<AbonomentDTO> abonomentDtoList(PagingRequest pagingRequest, AbonementFilterDto filter) throws ParseException;
 
     JsonNode getUnpaidNotExpiredAbonoment(String plateNumber);
 
@@ -39,4 +40,9 @@ public interface AbonomentPluginService {
 
     Boolean checkAbonomentIntersection(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws ParseException;
 
+    void deleteNotPaidExpired();
+
+    void creteNewForOld();
+
+    String checkExpiration(String plateNumber, Long parkingId);
 }

@@ -2,13 +2,11 @@ package kz.spt.app.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.model.dto.Period;
 import kz.spt.app.service.WhitelistRootService;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
-import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.model.dto.RateQueryDto;
 import kz.spt.lib.model.dto.parkomat.ParkomatBillingInfoSuccessDto;
 import kz.spt.lib.model.dto.parkomat.ParkomatCommandDTO;
@@ -25,7 +23,6 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -728,7 +725,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private JsonNode getNotPaidAbonoment(CommandDto commandDto) throws Exception {
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonementPlugin);
         if (abonomentPluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("command", "hasUnpaidNotExpiredAbonoment");
@@ -759,7 +756,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private void setAbonomentPaid(Long id) throws Exception {
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonementPlugin);
         if (abonomentPluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("command", "setAbonomentPaid");
@@ -773,6 +770,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
         dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue();
+        dto.left_free_time_minutes = 0;
 
         Date inDate = carState.getInTimestamp();
         Date outDate = new Date();
@@ -816,6 +814,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
         dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue();
+        dto.left_free_time_minutes = 0;
 
         Date inDate = carState.getInTimestamp();
         Date outDate = new Date();

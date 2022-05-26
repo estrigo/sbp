@@ -28,7 +28,7 @@ public class EventLog {
         PASS,NOT_PASS,
         ERROR,NEW_CAR_DETECTED,
         ZERO_TOUCH,FIFTEEN_FREE,PREPAID,WHITELIST,
-        PAID
+        PAID, ABONEMENT
     }
 
     public enum StatusType{
@@ -37,7 +37,8 @@ public class EventLog {
         Error,
         Success,
         Debt,
-        NotFound
+        NotFound,
+        Warning
     }
 
     @Id

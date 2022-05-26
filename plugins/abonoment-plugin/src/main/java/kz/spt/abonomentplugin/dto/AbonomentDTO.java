@@ -1,19 +1,14 @@
 package kz.spt.abonomentplugin.dto;
 
-import kz.spt.abonomentplugin.model.Abonoment;
-import kz.spt.abonomentplugin.model.AbonomentTypes;
+import kz.spt.abonomentplugin.model.Abonement;
 import kz.spt.lib.utils.StaticValues;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.context.i18n.LocaleContextHolder;
 
-import java.beans.SimpleBeanInfo;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 @Data @NoArgsConstructor
 public class AbonomentDTO {
@@ -27,27 +22,31 @@ public class AbonomentDTO {
     public BigDecimal price;
     public String parking;
     public String type;
+    public String created;
 
-    public static AbonomentDTO convertToDto(Abonoment abonoment){
+    public static AbonomentDTO convertToDto(Abonement abonement){
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
 
         AbonomentDTO dto = new AbonomentDTO();
-        dto.id = abonoment.getId();
-        dto.platenumber = abonoment.getCar().getPlatenumber();
-        dto.begin = format.format(abonoment.getBegin());
-        dto.end = format.format(abonoment.getEnd());
-        dto.months = abonoment.getMonths();
-        dto.parking = abonoment.getParking().getName();
-        dto.price = abonoment.getPrice();
-        dto.paid = abonoment.getPaid();
-        dto.type = abonoment.getType();
+        dto.id = abonement.getId();
+        dto.platenumber = abonement.getCar().getPlatenumber();
+        dto.begin = format.format(abonement.getBegin());
+        dto.end = format.format(abonement.getEnd());
+        dto.months = abonement.getMonths();
+        dto.parking = abonement.getParking().getName();
+        dto.price = abonement.getPrice();
+        dto.paid = abonement.getPaid();
+        dto.type = abonement.getType();
+        if(abonement.getCreated() != null){
+            dto.created = format.format(abonement.getCreated());
+        }
         return dto;
     }
 
-    public static List<AbonomentDTO> convertToDto(List<Abonoment> abonoments){
-        List<AbonomentDTO> dtoList = new ArrayList<>(abonoments.size());
-        for (Abonoment abonoment: abonoments){
-            dtoList.add(convertToDto(abonoment));
+    public static List<AbonomentDTO> convertToDto(List<Abonement> abonements){
+        List<AbonomentDTO> dtoList = new ArrayList<>(abonements.size());
+        for (Abonement abonement : abonements){
+            dtoList.add(convertToDto(abonement));
         }
         return dtoList;
     }

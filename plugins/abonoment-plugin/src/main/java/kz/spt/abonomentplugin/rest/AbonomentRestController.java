@@ -2,9 +2,11 @@ package kz.spt.abonomentplugin.rest;
 
 import kz.spt.abonomentplugin.dto.AbonomentDTO;
 import kz.spt.abonomentplugin.dto.AbonomentTypeDTO;
+import kz.spt.abonomentplugin.model.dto.AbonementFilterDto;
 import kz.spt.abonomentplugin.service.AbonomentPluginService;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
+import kz.spt.lib.model.dto.CarStateFilterDto;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +31,7 @@ public class AbonomentRestController {
 
     @PostMapping("/list")
     public Page<AbonomentDTO> list(@RequestBody PagingRequest pagingRequest) throws ParseException {
-        return abonomentPluginService.abonomentDtoList(pagingRequest);
+        AbonementFilterDto filter = pagingRequest.convertTo(AbonementFilterDto.builder().build());
+        return abonomentPluginService.abonomentDtoList(pagingRequest, filter);
     }
 }

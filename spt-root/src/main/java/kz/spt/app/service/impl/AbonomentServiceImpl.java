@@ -8,7 +8,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.model.dto.Period;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CarState;
+import kz.spt.lib.model.EventLog;
+import kz.spt.lib.model.Gate;
 import kz.spt.lib.service.AbonomentService;
+import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
@@ -19,17 +22,19 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 
-import static kz.spt.lib.utils.StaticValues.abonomentPlugin;
+import static kz.spt.lib.utils.StaticValues.abonementPlugin;
 
 @Log
 @Service
 public class AbonomentServiceImpl implements AbonomentService {
 
     private final PluginService pluginService;
+    private final EventLogService eventLogService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public AbonomentServiceImpl(PluginService pluginService){
+    public AbonomentServiceImpl(PluginService pluginService, EventLogService eventLogService){
         this.pluginService = pluginService;
+        this.eventLogService = eventLogService;
     }
 
     @Override
@@ -37,7 +42,7 @@ public class AbonomentServiceImpl implements AbonomentService {
         ObjectNode result = objectMapper.createObjectNode();
         result.put("result", false);
 
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonomentPlugin);
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonementPlugin);
         if(abonomentPluginRegister != null){
             ObjectNode command = objectMapper.createObjectNode();
             command.put("command", "createType");
@@ -61,7 +66,7 @@ public class AbonomentServiceImpl implements AbonomentService {
         ObjectNode result = objectMapper.createObjectNode();
         result.put("result", false);
 
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonomentPlugin);
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonementPlugin);
         if(abonomentPluginRegister != null){
             ObjectNode command = objectMapper.createObjectNode();
             command.put("command", "deleteType");
@@ -84,7 +89,7 @@ public class AbonomentServiceImpl implements AbonomentService {
         ObjectNode result = objectMapper.createObjectNode();
         result.put("result", false);
 
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonomentPlugin);
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonementPlugin);
         if(abonomentPluginRegister != null){
             ObjectNode command = objectMapper.createObjectNode();
             command.put("command", "createAbonoment");
@@ -109,7 +114,7 @@ public class AbonomentServiceImpl implements AbonomentService {
         ObjectNode result = objectMapper.createObjectNode();
         result.put("result", false);
 
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonomentPlugin);
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(abonementPlugin);
         if(abonomentPluginRegister != null){
             ObjectNode command = objectMapper.createObjectNode();
             command.put("command", "deleteAbonoment");
@@ -128,7 +133,7 @@ public class AbonomentServiceImpl implements AbonomentService {
 
     @Override
     public JsonNode getAbonomentsDetails(String plateNumber, CarState carState, SimpleDateFormat format) throws Exception {
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonementPlugin);
         if (abonomentPluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("command", "getSatisfiedAbonomentDetails");
@@ -146,7 +151,7 @@ public class AbonomentServiceImpl implements AbonomentService {
 
     @Override
     public JsonNode getAbonomentsDetails(String plateNumber,Long parkingId, Date date, SimpleDateFormat format) throws Exception {
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonementPlugin);
         if (abonomentPluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("command", "getSatisfiedAbonomentDetails");
@@ -291,5 +296,32 @@ public class AbonomentServiceImpl implements AbonomentService {
         }
 
         return periods;
+    }
+
+    @Override
+    public void checkAbonementExpireDate(String plateNumber, Long cameraId, Long parkingId, Map<String, Object> properties) throws Exception {
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonementPlugin);
+        if (abonomentPluginRegister != null) {
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("command", "checkExpiration");
+            node.put("plateNumber", plateNumber);
+            node.put("parkingId", parkingId);
+            JsonNode result = abonomentPluginRegister.execute(node);
+            log.info("result : " + result);
+            if(result.has("expirationResult")){
+                if("expired".equals(result.get("expirationResult").textValue())){
+                    String descriptionRu = "Срок абонемента просрочен. Авто с гос. номером " + plateNumber;
+                    String descriptionEn = "Subscription expired. Car with number " + plateNumber;
+                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Warning, cameraId, plateNumber, descriptionRu, descriptionEn);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), cameraId, properties, descriptionRu, descriptionEn, EventLog.EventType.ABONEMENT);
+                }
+                if("closeToExire".equals(result.get("expirationResult").textValue())){
+                    String descriptionRu = "Осталось менее 24 часа срока истечения абонемента. Авто с гос. номером " + plateNumber;
+                    String descriptionEn = "Less than 24 hours left to subscription expire. Car with number " + plateNumber;
+                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Warning, cameraId, plateNumber, descriptionRu, descriptionEn);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), cameraId, properties, descriptionRu, descriptionEn, EventLog.EventType.ABONEMENT);
+                }
+            }
+        }
     }
 }
