@@ -42,8 +42,11 @@ public class SpringDataUserDetailsService implements UserDetailsService {
             }
         }
         if(hasSuperAdmin){
+
             for(Role role:roleService.listAllRoles()){
-                grantedAuthorities.add(new SimpleGrantedAuthority(role.getName()));
+                if (!"ROLE_ACCOUNTANT".equals(role.getName()) && !"ROLE_RTA".equals(role.getName())){
+                    grantedAuthorities.add(new SimpleGrantedAuthority(role.getName()));
+                }
             }
         } else {
             for(Role role:user.getRoles()){
