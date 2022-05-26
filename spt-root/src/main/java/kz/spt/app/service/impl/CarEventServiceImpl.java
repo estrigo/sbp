@@ -1199,7 +1199,7 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, message_ru, message_en, EventLog.EventType.PASS);
             }
         } else {
-            EventLog.EventType eventType = EventLog.EventType.PASS;
+            EventLog.EventType eventType;
             if (StaticValues.CarOutBy.ZERO_TOUCH.equals(carOutBy)) {
                 properties.put("type", EventLog.StatusType.Allow);
                 carStateService.createOUTState(eventDto.car_number, eventDto.event_date_time, camera, carState, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
@@ -1215,9 +1215,20 @@ public class CarEventServiceImpl implements CarEventService {
                 String descriptionEn = "Allowed: Paid for parking. Total sum: " + rateResult + ". Balance left: " + subtractResult + ". Allowed.";
                 eventType = EventLog.EventType.DEBT;
                 if (BigDecimal.ZERO.compareTo(rateResult) == 0) {
-                    if ((eventDto.event_date_time.getTime() - carState.getInTimestamp().getTime()) <= 900000) {
-                        descriptionRu = "Пропускаем авто: Первые 15 минут бесплатно. Проезд разрешен.";
-                        descriptionEn = "Allowed: First 15 minutes free. Allowed";
+                    int freeMinutesValue = 15;
+                    PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+                    if (ratePluginRegister != null) {
+                        ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
+                        ratePluginNode.put("parkingId", camera.getGate().getParking().getId());
+                        ratePluginNode.put("command", "getBeforeFreeMinutesValue");
+                        JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
+                        if(ratePluginResult.has("beforeFreeMinutesValue")){
+                            freeMinutesValue = ratePluginResult.get("beforeFreeMinutesValue").intValue();
+                        }
+                    }
+                    if ((eventDto.event_date_time.getTime() - carState.getInTimestamp().getTime()) <= freeMinutesValue*60*1000) {
+                        descriptionRu = "Пропускаем авто: Первые " + freeMinutesValue + " минут бесплатно. Проезд разрешен.";
+                        descriptionEn = "Allowed: First " + freeMinutesValue + " minutes free. Allowed";
                         eventType = EventLog.EventType.FIFTEEN_FREE;
                     } else {
                         descriptionRu = "Пропускаем авто: Оплата не требуется. Проезд разрешен.";

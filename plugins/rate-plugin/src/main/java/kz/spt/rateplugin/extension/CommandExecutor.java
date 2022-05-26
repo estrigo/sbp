@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@Log
 @Extension
 public class CommandExecutor implements PluginRegister {
 
@@ -54,6 +55,12 @@ public class CommandExecutor implements PluginRegister {
                     getRateRepository().delete(parkingRate);
                 }
                 node.put("reply: ", "deleted parking rate");
+            } else if ("getBeforeFreeMinutesValue".equals(commandName)) {
+                Long parkingId = command.get("parkingId").longValue();
+                ParkingRate parkingRate = getRateService().getByParkingId(parkingId);
+                if(parkingRate != null) {
+                    node.put("beforeFreeMinutesValue", parkingRate.getBeforeFreeMinutes() != null ? parkingRate.getBeforeFreeMinutes() : 0);
+                }
             }
             else{
                 node.put("rateResult", BigDecimal.ZERO);

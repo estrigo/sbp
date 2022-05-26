@@ -148,7 +148,7 @@ public class RateServiceImpl implements RateService {
             while (inCalendar.before(outCalendar)) {
                 inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY);
                 if (intervalFrom == intervalTo || (intervalFrom < intervalTo && inCalendarHour >= intervalFrom && inCalendarHour < intervalTo) || (intervalFrom > intervalTo && (inCalendarHour >= intervalFrom || inCalendarHour < intervalTo))) {
-                    log.info("inCalendarHour inside interval");
+
                 } else {
                     current = getSatisfiedJsonNode(inCalendarHour, intervalJson);
                     conditionJson = (ArrayNode) current.get("condition");
