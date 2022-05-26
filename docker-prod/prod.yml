@@ -151,6 +151,9 @@ notification:
   parkingUid: DEMO
 kaspi:
   qr-link: https://kaspi.kz/pay/%s?service_id=%s&%s=
+carmen:
+  live:
+    enabled: false
 management:
   endpoints:
     web:
