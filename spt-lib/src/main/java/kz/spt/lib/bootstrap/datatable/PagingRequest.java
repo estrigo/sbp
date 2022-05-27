@@ -12,7 +12,9 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.java.Log;
 
+@Log
 @Setter
 @Getter
 @NoArgsConstructor
@@ -44,9 +46,11 @@ public class PagingRequest {
                 }else if(Date.class.equals(field.getType())){
                     if(value.length() == 10){ // 2022-05-04
                         field.set(object, new SimpleDateFormat("yyyy-MM-dd").parse(value));
-                    } else if(value.length() == 18){
+                    } else if(value.length() == 16){
                         field.set(object, new SimpleDateFormat("yyyy-MM-dd'T'hh:mm").parse(value));
-                    } else if(value.length() == 21){ //yyyy-MM-dd'T'hh:mm
+                    } else if(value.length() == 19){ //2022-05-27T11:00:00
+                        field.set(object, new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").parse(value));
+                    } else if(value.length() == 23){ //2022-05-27T11:00:00.000
                         field.set(object, new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").parse(value));
                     }
                 }else if(boolean.class.equals(field.getType())){
