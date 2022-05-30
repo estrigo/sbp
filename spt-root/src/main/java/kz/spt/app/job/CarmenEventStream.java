@@ -3,6 +3,7 @@ package kz.spt.app.job;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.lib.model.dto.carmen.CarmenImage;
+import kz.spt.lib.model.dto.carmen.CarmenThread;
 import kz.spt.lib.service.CarEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -29,10 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Log
@@ -41,12 +39,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CarmenEventStream {
     private final CarEventService carEventService;
+
     @Value("${carmen.live.enabled}")
     Boolean carmenLiveEnabled;
-    private Map<String, Future> streams = new HashMap<>();
+
+    private Map<String, CarmenThread> streams = new ConcurrentHashMap<>();
 
     @SneakyThrows
-    //@Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelay = 2000)
     public void run() {
         if (!carmenLiveEnabled) return;
 
@@ -67,12 +67,16 @@ public class CarmenEventStream {
                     });
                     try {
                         task.get();
-                        streams.put(frontCamera.carmenIp, task);
+                        streams.put(frontCamera.carmenIp, new CarmenThread(true, task));
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
                 } else {
-                    if (streams.containsKey(frontCamera.carmenIp)) streams.remove(frontCamera.carmenIp);
+                    if (streams.containsKey(frontCamera.carmenIp)) {
+                        CarmenThread thread = streams.get(frontCamera.carmenIp);
+                        thread.setActive(false);
+                        streams.remove(frontCamera.carmenIp);
+                    }
                 }
             }
 
@@ -90,12 +94,16 @@ public class CarmenEventStream {
                     });
                     try {
                         task.get();
-                        streams.put(frontCamera2.carmenIp, task);
+                        streams.put(frontCamera2.carmenIp, new CarmenThread(true, task));
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
                 } else {
-                    if (streams.containsKey(frontCamera2.carmenIp)) streams.remove(frontCamera2.carmenIp);
+                    if (streams.containsKey(frontCamera2.carmenIp)) {
+                        CarmenThread thread = streams.get(frontCamera2.carmenIp);
+                        thread.setActive(false);
+                        streams.remove(frontCamera2.carmenIp);
+                    }
                 }
             }
 
@@ -113,12 +121,16 @@ public class CarmenEventStream {
                     });
                     try {
                         task.get();
-                        streams.put(backCamera.carmenIp, task);
+                        streams.put(backCamera.carmenIp, new CarmenThread(true, task));
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
                 } else {
-                    if (streams.containsKey(backCamera.carmenIp)) streams.remove(backCamera.carmenIp);
+                    if (streams.containsKey(backCamera.carmenIp)) {
+                        CarmenThread thread = streams.get(backCamera.carmenIp);
+                        thread.setActive(false);
+                        streams.remove(backCamera.carmenIp);
+                    }
                 }
             }
         }
@@ -163,6 +175,9 @@ public class CarmenEventStream {
                         Map<String, CarmenImage> imageBuffer = new HashMap<>();
 
                         while (b > -1) {
+                            CarmenThread thread = streams.get(ip);
+                            if (!thread.isActive()) throw new InterruptedException();
+
                             if (header == null) {
                                 headerAccumulator += new String(new byte[]{(byte) b});
                                 int indexOfBoundary = headerAccumulator.indexOf(boundary);
