@@ -125,7 +125,7 @@ notification:
   send: false
   parkingUid: DEMO
 booking:
-  check.out: true
+  check.out: false
 cors:
   allowed:
     origins:
