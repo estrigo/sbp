@@ -28,7 +28,7 @@ public class ScheduleWorks {
     @Value("${parking.remove.all.debts:false}")
     Boolean parkingRemoveAllDebts;
 
-    @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "0 0 3 * * ?")
     public void nightSchedule() {
         if(parkingRemoveAllDebts){ // Если включено удаление долга и платных парковок
             log.info("Remove debt enabled");

@@ -357,8 +357,8 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     @Override
     public void deleteNotPaidExpired() {
         LocalDateTime current = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
-        current.minusDays(31); // Если больше 31 дней не оплачивал то удалять
-        Date checkDate = java.util.Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
+        current = current.minusDays(31); // Если больше 31 дней не оплачивал то удалять
+        Date checkDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
 
         List<Abonement> abonements = abonomentRepository.findExpiredNotPaid(checkDate);
         abonomentRepository.deleteAll(abonements);
@@ -369,7 +369,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         LocalDateTime current = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS); // Если до окончания срока осталась 2 дня то продлевать
         Date currentDate = java.util.Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
         current = current.plusDays(2);
-        Date checkDate = java.util.Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
+        Date checkDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
 
         List<Abonement> expiringAbonements = abonomentRepository.findPaidExpiresInFewDays(currentDate, checkDate);
         for(Abonement expiring : expiringAbonements){
