@@ -272,7 +272,9 @@ public class BarrierServiceImpl implements BarrierService {
         String oid = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
         String currentValue = barrierClient.getCurrentValue(oid);
 
-        if (BARRIER_OFF.equals(currentValue)) {
+        if(currentValue == null){
+            throw new RuntimeException("Snmp controller connection error");
+        } else if (BARRIER_OFF.equals(currentValue)) {
             Boolean isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
             log.info("snmp isOpenValueChanged: " + isOpenValueChanged);
             if (!isOpenValueChanged) {
