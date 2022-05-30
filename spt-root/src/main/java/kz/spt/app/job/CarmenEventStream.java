@@ -45,7 +45,7 @@ public class CarmenEventStream {
     private Map<String, Future> streams = new HashMap<>();
 
     @SneakyThrows
-    @Scheduled(fixedDelay = 2000)
+    //@Scheduled(fixedDelay = 2000)
     public void run() {
         if(!carmenLiveEnabled) return;
 

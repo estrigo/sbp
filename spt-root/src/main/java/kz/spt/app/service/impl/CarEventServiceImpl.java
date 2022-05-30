@@ -210,7 +210,7 @@ public class CarEventServiceImpl implements CarEventService {
 
             CarEventDto eventDto = new CarEventDto();
             eventDto.car_number = car_number;
-            eventDto.event_time = event_timestamp != null ? new Date(Long.valueOf(event_timestamp)).toString() : new Date().toString();
+            eventDto.event_date_time = event_timestamp != null ? new Date(Long.valueOf(event_timestamp)) : new Date();
             eventDto.ip_address = camera.getIp();
             eventDto.car_picture = base64;
             eventDto.lp_picture = base64_lp;
