@@ -124,6 +124,8 @@ notification:
   url: http://app.magnum.kz/test-services/parking-api/v2/parking/tickets
   send: false
   parkingUid: DEMO
+booking:
+  check.out: true
 cors:
   allowed:
     origins:
