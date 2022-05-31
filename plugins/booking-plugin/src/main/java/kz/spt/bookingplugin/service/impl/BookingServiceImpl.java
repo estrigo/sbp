@@ -146,7 +146,7 @@ public class BookingServiceImpl implements BookingService {
         // Temporary cod
         String copy = parqourCheckFormat(platenumber);
         String code = region != null ? convertRegion(region) : "";
-        return code + "-" + platenumber;
+        return (code.isEmpty() ? "" : code + "-") + platenumber;
     }
 
     private String convertRegion(String region) {
