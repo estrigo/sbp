@@ -150,6 +150,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private String convertRegion(String region) {
+        log.info("Region: " + region);
         switch (region) {
             case "ae-az":
                 return "1";
