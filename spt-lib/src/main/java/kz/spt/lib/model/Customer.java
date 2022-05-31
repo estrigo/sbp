@@ -25,18 +25,13 @@ public class Customer {
 
     private String lastName;
 
+    @Column(unique=true)
     private String phoneNumber;
-
 
     @OneToMany(mappedBy = "customer")
     private List<Cars> cars;
 
-
     @Transient
     List<String> plateNumbers;
-
-
-
-
 
 }

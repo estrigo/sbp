@@ -37,7 +37,8 @@
                                     <div class="form-group row">
                                         <label class="col-2 col-form-label" th:text="#{customer.phone}"></label>
                                         <div class="col-10">
-                                            <input type="number" class="form-control" th:field="*{phoneNumber}" min="0">
+                                            <input type="number" id = "phoneNumber" class="form-control" th:field="*{phoneNumber}" onkeyup="searchNumber(value)" style="width: 40%" min="0">
+                                            <strong id = "alertText" style="width: 40%"></strong>
                                         </div>
                                     </div>
                                     <div class="form-group row" id="carsList">
@@ -74,9 +75,22 @@
         $('.bootstrap-tagsinput').addClass('form-control');
     });
 
-
-
-
+    function searchNumber(phoneNumber){
+        console.log(phoneNumber)
+        if (phoneNumber.toString().length > 9) {
+            console.log(("Sotka do: " + phoneNumber))
+            $.get("/rest/customers/customerExist/" + phoneNumber, function (data) {
+                console.log("Result message: " + data);
+                if (data===1){
+                    $('#alertText').text("Такой номер телефона уже добавлен");
+                    $('#submitButton').children().prop('disabled',true);
+                }else {
+                    $('#alertText').text("");
+                    $('#submitButton').children().prop('disabled',false);
+                }
+            });
+        }
+    };
 
 </script>
 </html>
