@@ -12,6 +12,7 @@ import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.SensorStatusDto;
+import kz.spt.app.model.strategy.AbstractStrategy;
 import kz.spt.app.repository.BarrierRepository;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.snmp.SNMPManager;
@@ -258,7 +259,7 @@ public class BarrierServiceImpl implements BarrierService {
         String oid = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
         String currentValue = barrierClient.getCurrentValue(oid);
 
-        if(currentValue == null){
+        if (currentValue == null) {
             throw new RuntimeException("Snmp controller connection error");
         } else if (BARRIER_OFF.equals(currentValue)) {
             Boolean isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));

@@ -113,6 +113,21 @@ public class Barrier {
     @Column(name = "photo_element_jetson_pin")
     private Integer photoElementJetsonPin;
 
+    @Column(name = "open_status_oid")
+    private String openStatusOid;
+
+    @Column(name = "open_status_default")
+    private Integer openStatusDefault;
+
+    @Column(name = "close_status_oid")
+    private String closeStatusOid;
+
+    @Column(name = "close_status_default")
+    private Integer closeStatusDefault;
+
+    @Column(name = "status_check", nullable = false, columnDefinition = "boolean default false")
+    private boolean statusCheck;
+
     @CreationTimestamp
     private Date created;
 

@@ -51,6 +51,13 @@ public class GateStatusDto {
     public Long lastTriggeredTime = null;
     public Long lastClosedTime = null;
 
+    public SensorStatusDto fullOpenedSensor; //датчик ворота полностью открыты
+    public SensorStatusDto fullClosedSensor; //датчик ворота полностью закрыты
+    public Long lastLoopTriggeredTime = null;
+    public Long lastPhotoTriggeredTime = null;
+    public Long lastOpenCommandSentTime = null;
+    public Long lastCloseCommandSentTime = null;
+
     public void sensorsReverse(){
         sensor1 = loopStatus;
         sensor2 = photoElementStatus;
@@ -142,6 +149,32 @@ public class GateStatusDto {
                 gateStatusDto.photoElement.ip = barrier.getIp();
                 gateStatusDto.photoElement.oid = barrier.getPhotoElementJetsonPin().toString();
                 gateStatusDto.photoElement.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
+            }
+
+            if(barrier.isStatusCheck() && barrier.getOpenStatusOid() != null){
+                gateStatusDto.fullOpenedSensor = new SensorStatusDto();
+                gateStatusDto.fullOpenedSensor.barrierId = barrier.getId();
+                gateStatusDto.fullOpenedSensor.barrierIp = barrier.getIp();
+                gateStatusDto.fullOpenedSensor.sensorName = "fullOpenedSensor";
+                gateStatusDto.fullOpenedSensor.type = barrier.getBarrierType();
+                gateStatusDto.fullOpenedSensor.ip = barrier.getIp();
+                gateStatusDto.fullOpenedSensor.password = barrier.getPassword();
+                gateStatusDto.fullOpenedSensor.oid = barrier.getOpenStatusOid();
+                gateStatusDto.fullOpenedSensor.defaultValue = barrier.getOpenStatusDefault();
+                gateStatusDto.fullOpenedSensor.snmpVersion = barrier.getSnmpVersion();
+            }
+
+            if(barrier.isStatusCheck() && barrier.getCloseStatusOid() != null){
+                gateStatusDto.fullClosedSensor = new SensorStatusDto();
+                gateStatusDto.fullClosedSensor.barrierId = barrier.getId();
+                gateStatusDto.fullClosedSensor.barrierIp = barrier.getIp();
+                gateStatusDto.fullClosedSensor.sensorName = "fullClosedSensor";
+                gateStatusDto.fullClosedSensor.type = barrier.getBarrierType();
+                gateStatusDto.fullClosedSensor.ip = barrier.getIp();
+                gateStatusDto.fullClosedSensor.password = barrier.getPassword();
+                gateStatusDto.fullClosedSensor.oid = barrier.getCloseStatusOid();
+                gateStatusDto.fullClosedSensor.defaultValue = barrier.getCloseStatusDefault();
+                gateStatusDto.fullClosedSensor.snmpVersion = barrier.getSnmpVersion();
             }
         }
 

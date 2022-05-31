@@ -262,6 +262,45 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="statusCheck" class="control-label" th:text="#{barrier.statusCheck}"></label>
+                <input type="checkbox" id="statusCheck" th:field="*{statusCheck}" th:value="*{statusCheck}" onchange="changeStatusCheck(this)"/>
+            </div>
+        </div>
+        <div class="col-md-12 mt-1" id="statusSensorBlock" style="display: none;">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="openStatusOid" class="control-label" th:text="#{barrier.openStatusOid}"></label>
+                        <input type="text" class="form-control" id="openStatusOid" th:field="*{openStatusOid}" th:value="*{openStatusOid}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="openStatusDefault" class="control-label" th:text="#{barrier.statusDefault}"></label>
+                        <input type="number" min="0" max="1" class="form-control" id="openStatusDefault" th:field="*{openStatusDefault}" th:value="*{openStatusDefault}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="closeStatusOid" class="control-label" th:text="#{barrier.closeStatusOid}"></label>
+                        <input type="text" class="form-control" id="closeStatusOid" th:field="*{closeStatusOid}" th:value="*{closeStatusOid}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="closeStatusDefault" class="control-label" th:text="#{barrier.statusDefault}"></label>
+                        <input type="number" min="0" max="1" class="form-control" id="closeStatusDefault" th:field="*{closeStatusDefault}" th:value="*{closeStatusDefault}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-footer">
         <button type="submit" class="btn btn-success waves-effect waves-light" th:text="#{crm.saveChanges}"></button>
         <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>
