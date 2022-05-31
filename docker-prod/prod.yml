@@ -103,7 +103,6 @@ whitelist:
     show:
       advanced: false
 booking:
-  check.out: false
   halapark:
     check: false # включить проверку booking для разных операторов.
     tokenUrl: http://halapark.calltekky.com/api/auth/getToken
