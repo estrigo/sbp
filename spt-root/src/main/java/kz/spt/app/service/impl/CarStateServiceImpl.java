@@ -83,6 +83,7 @@ public class CarStateServiceImpl implements CarStateService {
     @Override
     public void createOUTState(String carNumber, Date outTimestamp, Camera camera, CarState carState, String outPhotoUrl) {
         if(carState != null){
+            carState = carStateRepository.getOne(carState.getId());
             carState.setOutTimestamp(outTimestamp);
             carState.setOutChannelIp(camera.getIp());
             carState.setOutGate(camera.getGate());
