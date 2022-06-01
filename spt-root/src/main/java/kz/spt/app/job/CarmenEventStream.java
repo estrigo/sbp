@@ -21,7 +21,6 @@ import org.apache.http.protocol.HTTP;
 import org.pf4j.util.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -76,7 +75,7 @@ public class CarmenEventStream {
     }
 
     @SneakyThrows
-    @Scheduled(fixedDelay = 2000)
+    //@Scheduled(fixedDelay = 2000)
     public void run() {
         if (!carmenLiveEnabled) return;
 
@@ -394,7 +393,7 @@ public class CarmenEventStream {
                                 switch (contentType) {
                                     case "application/json":
                                         String eventDescriptor = new String(eventPack.content);
-                                        carEventService.handleLiveStreamEvent(null, eventDescriptor, timestamp);
+                                        carEventService.handleLiveStreamEvent((byte[]) null, eventDescriptor, timestamp);
                                         log.info(eventDescriptor);
                                         break;
                                 }
