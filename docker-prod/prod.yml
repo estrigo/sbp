@@ -108,7 +108,6 @@ booking:
     check: false # включить проверку booking для разных операторов.
     tokenUrl: http://halapark.calltekky.com/api/auth/getToken
     postUrl: http://halapark.calltekky.com/api/auth/getBookingByParquorcameras
-  check.out: false
 zero:
   touch:
     rahmet:
