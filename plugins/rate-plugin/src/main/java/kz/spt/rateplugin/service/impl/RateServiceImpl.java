@@ -166,6 +166,10 @@ public class RateServiceImpl implements RateService {
                         intervalParkomatHours = Integer.valueOf(conditionNode.get("intervalParkomatHours").textValue());
                     }
                 }
+                else if (intervalType.equals("entrance")) {
+                    intervalOnlineHours = 0;
+                    intervalParkomatHours = 0;
+                }
                 if (cashlessPayment) {
                     result = result.add(BigDecimal.valueOf(intervalOnlineHours));
                 } else {
