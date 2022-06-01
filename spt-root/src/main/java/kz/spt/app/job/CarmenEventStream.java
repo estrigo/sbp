@@ -267,12 +267,8 @@ public class CarmenEventStream {
     }
 
     private void stream(String ip, String user, String password) {
-        String url;
-        if (carmenImageEnabled) {
-            url = String.format("http://%s/live/events?&user=%s&password=%s", ip, user, password);
-        } else {
-            url = String.format("http://%s/live/events?image=0&user=%s&password=%s", ip, user, password);
-        }
+        String url = String.format("http://%s/live/events?image=0&user=%s&password=%s", ip, user, password);
+        log.info("Streaming: " + url);
 
         ConnectionKeepAliveStrategy keepAliveStrategy = (response, context) -> {
             HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));

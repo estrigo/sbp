@@ -228,7 +228,7 @@ public class CarEventServiceImpl implements CarEventService {
     @Override
     public void handleLiveStreamEvent(byte[] event_image, String event_descriptor, String event_timestamp) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = objectMapper.readTree(event_descriptor);
+        JsonNode jsonNode = objectMapper.readTree("{" + event_descriptor);
 
         String detectorID = jsonNode.get("DetectorID").asText();
         Camera camera = cameraService.findCameraByDetectorId(detectorID);
@@ -875,12 +875,12 @@ public class CarEventServiceImpl implements CarEventService {
                     if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
                         if (bookingCheckOut) {
                             hasAccess = checkBooking(eventDto.car_number, eventDto.region, "2");
-                            if(hasAccess){
+                            if (hasAccess) {
                                 properties.put("type", EventLog.StatusType.Allow);
                                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
                                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed", EventLog.EventType.WHITELIST);
                                 carOutBy = StaticValues.CarOutBy.WHITELIST;
-                            }else{
+                            } else {
                                 properties.put("type", EventLog.StatusType.Deny);
                                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Выезд не разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". Exit is not allowed");
                                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Выезд не разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". Exit is not allowed", EventLog.EventType.WHITELIST);
