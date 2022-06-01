@@ -114,8 +114,8 @@ parking:
       seconds: 20 # ignore from any camera if car entered from other camera, default 20 seconds
 parkomat.ip:
 carmen:
-  live:
-    enabled: true
+  live.enabled: false
+  image.enabled: false
 parkings:
   uid: DEMO
 thirdPartyPayment:

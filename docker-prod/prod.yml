@@ -154,8 +154,8 @@ notification:
 kaspi:
   qr-link: https://kaspi.kz/pay/%s?service_id=%s&%s=
 carmen:
-  live:
-    enabled: false
+  live.enabled: false
+  image.enabled: false
 management:
   endpoints:
     web:

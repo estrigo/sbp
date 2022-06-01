@@ -12,5 +12,5 @@ import java.util.Map;
 @AllArgsConstructor
 public class CarmenImage {
     public Map<String, String> header;
-    public List<Byte> content;
+    public byte[] content;
 }
