@@ -64,4 +64,14 @@ public class CarsRestController {
                             @RequestParam(value = "event_timestamp", required = false) String event_timestamp) throws Exception{
         carEventService.handleRtaCarEvent(event_image_0, event_cropped_image_0, event_descriptor, event_timestamp);
     }
+
+    @RequestMapping(value = "/carmen/event", method = RequestMethod.POST, consumes = "multipart/form-data")
+    @Transactional
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void carmenEvent(@RequestParam("event_descriptor") String event_descriptor,
+                            @RequestParam(value = "event_image_0", required = false) MultipartFile event_image_0,
+                            @RequestParam(value = "event_timestamp", required = false) String event_timestamp) throws Exception {
+        carEventService.handleLiveStreamEvent(null, event_descriptor, event_timestamp);
+    }
 }
