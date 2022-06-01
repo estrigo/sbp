@@ -68,8 +68,8 @@
 
 <script th:inline="javascript">
     let date=new Date();
-    var dateFrom = (new Date(date.getFullYear(),date.getMonth(),date.getDate(), 6, 0, 0, 0)).toISOString();
-    var dateTo = (new Date(date.getFullYear(),date.getMonth(),date.getDate(), date.getHours()+6, date.getMinutes())).toISOString();
+    let dateFrom = (new Date(date.getFullYear(),date.getMonth(),date.getDate(), 6, 0, 0, 0)).toISOString();
+    let dateTo = (new Date(date.getFullYear(),date.getMonth(),date.getDate(), date.getHours()+6, date.getMinutes())).toISOString();
     $('#dateFrom').val(dateFrom.substring(0, dateFrom.length-1));
     $('#dateTo').val(dateTo.substring(0, dateTo.length-1));
 
@@ -79,7 +79,7 @@
             "dateTo": $('#dateTo').val(),
         };
 
-        let predefinedFields = ['dateTime','records','paymentRecords','whitelistRecords','abonementRecords'];
+        let predefinedFields = ['dateTime','records','inDateCount','paymentRecords','whitelistRecords','abonementRecords'];
 
         $.ajax({
             url: "/rest/report/sum/excel",

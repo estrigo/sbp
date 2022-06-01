@@ -53,6 +53,24 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
     public List<SumReportDto> countSum(FilterSumReportDto filterSumReportDto){
 
+        //----------------------------------------------- In cars count --------------
+        List<Object[]> inCars = entityManager
+                .createNativeQuery("select DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%Y.%m.%d') as datetime, count(cs.id) " +
+                        "                from car_state cs " +
+                        "        where cs.in_timestamp between :dateFrom and :dateTo " +
+                        "        group by DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%Y.%m.%d') " +
+                        "        order by DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%Y.%m.%d') desc")
+                .setParameter("dateFrom", filterSumReportDto.getDateFrom())
+                .setParameter("dateTo", filterSumReportDto.getDateTo())
+                .getResultList();
+        Map<String, Object> inCarsMap = new HashMap<>(inCars.size());
+        for(Object[] inCar: inCars){
+            inCarsMap.put((String) inCar[0], inCar[1]);
+        }
+
+        //------------------------------------------------Out cars count--------------
+
+
         List<Object[]> providers = entityManager.createNativeQuery("select pp.client_id, pp.name, pp.cashless_payment from payment_provider pp where name not like ('%test%')").getResultList();
 
         Boolean hasCashPayment = false;
@@ -140,7 +158,8 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
         Map<String, String> fieldsMap = new HashMap<>(10);
         fieldsMap.put("dateTime", bundle.getString("report.dateTime"));
-        fieldsMap.put("records", bundle.getString("report.records"));
+        fieldsMap.put("records", bundle.getString("report.outDateCount"));
+        fieldsMap.put("inDateCount", bundle.getString("report.inDateCount"));
         fieldsMap.put("paymentRecords", bundle.getString("report.paymentRecords"));
         fieldsMap.put("whitelistRecords", bundle.getString("report.whitelistRecords"));
         fieldsMap.put("abonementRecords", bundle.getString("report.abonementRecords"));
@@ -197,6 +216,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                 values.put((String) provider[0], object[it++]);
             }
             values.put("totalSum", object[it++]);
+            values.put("inDateCount", inCarsMap.containsKey(dateTime) ? inCarsMap.get(dateTime) : 0);
             sumReportDto.setResults(values);
             results.add(sumReportDto);
         }
