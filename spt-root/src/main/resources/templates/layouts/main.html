@@ -95,7 +95,7 @@
                             <a th:href="@{|/blacklist/list|}" class="waves-effect waves-primary"><i
                                     class="ti-list-ol"></i><span th:text=" #{blacklist.title} "></span></a>
                         </li>
-                        <li sec:authorize="hasRole('ROLE_ADMIN') && !hasRole('ROLE_ACCOUNTANT')">
+                        <li sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_BAQORDA') && !hasRole('ROLE_ACCOUNTANT')">
                             <a th:href="@{|/balance/operation|}" class="waves-effect waves-primary"><i
                                     class="ti-list-ol"></i><span th:text=" #{balance.balance} "></span></a>
                         </li>
