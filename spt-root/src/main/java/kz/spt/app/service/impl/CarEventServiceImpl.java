@@ -247,7 +247,9 @@ public class CarEventServiceImpl implements CarEventService {
 
             String base64 = null;
             try {
-                base64 = StringUtils.newStringUtf8(Base64.encodeBase64(event_image_0.getInputStream().readAllBytes(), false));
+                if (event_image_0 != null) {
+                    base64 = StringUtils.newStringUtf8(Base64.encodeBase64(event_image_0.getInputStream().readAllBytes(), false));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
