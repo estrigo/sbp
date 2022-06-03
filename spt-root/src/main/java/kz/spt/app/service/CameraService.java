@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface CameraService {
 
-    Camera findCameraByIp(String ip);
+    List<Camera> findCameraByIp(String ip);
 
     Camera findCameraById(Long id);
 

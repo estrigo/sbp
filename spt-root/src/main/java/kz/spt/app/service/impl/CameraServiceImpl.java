@@ -18,7 +18,7 @@ public class CameraServiceImpl implements CameraService {
     }
 
     @Override
-    public Camera findCameraByIp(String ip) {
+    public List<Camera> findCameraByIp(String ip) {
         return cameraRepository.findCameraByIp(ip);
     }
 

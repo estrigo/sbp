@@ -11,7 +11,7 @@ import java.util.List;
 public interface CameraRepository extends JpaRepository<Camera, Long> {
 
     @Query("from Camera c LEFT JOIN FETCH c.gate g LEFT JOIN FETCH g.parking WHERE c.ip = ?1")
-    Camera findCameraByIp(String ip);
+    List<Camera> findCameraByIp(String ip);
 
     @Query("from Camera c LEFT JOIN FETCH c.gate g LEFT JOIN FETCH g.parking WHERE c.id = ?1")
     Camera findCameraById(Long id);

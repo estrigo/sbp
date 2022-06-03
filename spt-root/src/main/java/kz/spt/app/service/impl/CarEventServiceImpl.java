@@ -9,10 +9,7 @@ import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.Period;
 import kz.spt.app.repository.CarModelRepository;
-import kz.spt.app.service.BarrierService;
-import kz.spt.app.service.BlacklistService;
-import kz.spt.app.service.CameraService;
-import kz.spt.app.service.WhitelistRootService;
+import kz.spt.app.service.*;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarEventDto;
@@ -50,6 +47,8 @@ public class CarEventServiceImpl implements CarEventService {
     private static Hashtable<String, Long> barrierOutProcessingHashtable = new Hashtable<>();
     private final CarsService carsService;
     private final CameraService cameraService;
+    private final GateService gateService;
+    private final ParkingService parkingService;
     private final EventLogService eventLogService;
     private final CarStateService carStateService;
     private final CarImageService carImageService;
@@ -100,7 +99,7 @@ public class CarEventServiceImpl implements CarEventService {
                                CarStateService carStateService, CarImageService carImageService,
                                BarrierService barrierService, BlacklistService blacklistService, PluginService pluginService, QrPanelService qrPanelService,
                                AbonomentService abonomentService, CarModelService carModelService, CarModelRepository carModelRepository,
-                               WhitelistRootService whitelistRootService) {
+                               WhitelistRootService whitelistRootService, GateService gateService, ParkingService parkingService) {
         this.carsService = carsService;
         this.cameraService = cameraService;
         this.eventLogService = eventLogService;
@@ -114,6 +113,8 @@ public class CarEventServiceImpl implements CarEventService {
         this.carModelService = carModelService;
         this.carModelRepository = carModelRepository;
         this.whitelistRootService = whitelistRootService;
+        this.gateService = gateService;
+        this.parkingService = parkingService;
     }
 
     @Override
@@ -383,9 +384,43 @@ public class CarEventServiceImpl implements CarEventService {
 
             if (eventDto.manualOpen || isAllow(eventDto, cameraStatusDto, properties, gate)) {
                 log.info("Gate type: " + gate.gateType);
+                CarState carStateForCheckGateType = carStateService.getLastNotLeft(eventDto.car_number);
+
+//                createNewCarEvent(cameraStatusDto, gate, eventDto, properties);
+
+                Camera camera = null;
+                List<Camera> cameraList = cameraService.findCameraByIp(cameraStatusDto.ip);
+
+                if (Gate.GateType.OUT.equals(gate.gateType)) {
+                    if (carStateForCheckGateType!=null){
+                        List<Camera> cameraIn = cameraService.findCameraByIp(carStateForCheckGateType.getInChannelIp());
+                        Parking parkingEntried = cameraIn.get(0).getGate().getParking();
+
+                        for (Camera cm : cameraList) {
+                            if (cm.getGate().getParking().equals(parkingEntried)) {
+                                camera = cm;
+                            }
+                        }
+                    } else {
+                        for (Camera cm : cameraList) {
+                            if (cm.getGate().getGateType().equals(Gate.GateType.OUT)) {
+                                camera = cm;
+                            }
+                        }
+                    }
+                } else {
+                    for (Camera cm : cameraList) {
+                        if (cm.getGate().getGateType()!= null && cm.getGate().getGateType().equals(gate.gateType)) {
+                            camera = cm;
+                        }
+                    }
+                }
+                log.info("AAAAAAAAAAAAAAAAAAAAAAAA");
+                log.info("Aaa: " + camera.getId() + ", old: " + cameraStatusDto.id);
+                cameraStatusDto.id=camera.getId();
                 createNewCarEvent(cameraStatusDto, gate, eventDto, properties);
 
-                Camera camera = cameraService.findCameraByIp(cameraStatusDto.ip);
+
                 if (Gate.GateType.REVERSE.equals(gate.gateType)) {
                     handleCarReverseInEvent(eventDto, camera, gate, properties, format);
                 } else if (Gate.GateType.IN.equals(gate.gateType)) {
