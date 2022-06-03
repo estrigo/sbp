@@ -95,6 +95,7 @@ public class CommandExecutor implements PluginRegister {
                 payment.setIkkm(command.has("paymentType") ? command.get("paymentType").intValue() == 1 : false);
 
                 Payment savedPayment = getPaymentService().savePayment(payment);
+                log.info("client_id: " + command.get("client_id").textValue());
                 node.put("paymentId", savedPayment.getId());
                 node.put("cashlessPayment", payment.getProvider().getCashlessPayment() != null ? payment.getProvider().getCashlessPayment() : false);
 
