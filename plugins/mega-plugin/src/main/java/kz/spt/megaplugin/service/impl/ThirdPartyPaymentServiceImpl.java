@@ -62,39 +62,41 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
     @Transactional
     public void saveThirdPartyPayment(String plateNumber, Date entryDate, Date exitDate, BigDecimal rate,
                                       String parkingUid, String thPPUrl) throws Exception {
-        Object statusResp = sendPayment(plateNumber, entryDate, exitDate, rate, parkingUid, thPPUrl);
+//        Object statusResp = sendPayment(plateNumber, entryDate, exitDate, rate, parkingUid, thPPUrl);
         ThirdPartyPayment thirdPartyPayment = new ThirdPartyPayment();
         thirdPartyPayment.setCar_number(plateNumber);
         thirdPartyPayment.setEntryDate(entryDate);
         thirdPartyPayment.setExitDate(exitDate);
         thirdPartyPayment.setRateAmount(rate);
         thirdPartyPayment.setParkingUID(parkingUid);
-        if (statusResp != null && statusResp.equals("OK")) {
-            thirdPartyPayment.setSent(true);
-        } else {
-            thirdPartyPayment.setSent(false);
-        }
+//        if (statusResp != null && statusResp.equals("OK")) {
+//            thirdPartyPayment.setSent(true);
+//        } else {
+//            thirdPartyPayment.setSent(false);
+//        }
+        thirdPartyPayment.setSent(false);
         thirdPartyPaymentRepository.save(thirdPartyPayment);
+        sendPayment(plateNumber, entryDate, exitDate, rate, parkingUid, thPPUrl);
     }
 
-    @Scheduled(fixedRate = 900000)
-    public void resendPayments() throws Exception {
-        List<ThirdPartyPayment> thPPList = thirdPartyPaymentRepository.findNotSentThirdPartyPayments();
-        if (thPPList != null) {
-            for (ThirdPartyPayment pp : thPPList) {
-                Object statusResp = sendPayment(pp.getCar_number(), pp.getEntryDate(), pp.getExitDate(),
-                        pp.getRateAmount(), pp.getParkingUID(), thirdPartyPaymentUrl);
-                if (statusResp != null && statusResp.equals("OK")) {
-                    pp.setSent(true);
-                } else {
-                    pp.setSent(false);
-                }
-                thirdPartyPaymentRepository.save(pp);
-            }
-        }
-    }
+//    @Scheduled(fixedRate = 900000)
+//    public void resendPayments() throws Exception {
+//        List<ThirdPartyPayment> thPPList = thirdPartyPaymentRepository.findNotSentThirdPartyPayments();
+//        if (thPPList != null) {
+//            for (ThirdPartyPayment pp : thPPList) {
+//                Object statusResp = sendPayment(pp.getCar_number(), pp.getEntryDate(), pp.getExitDate(),
+//                        pp.getRateAmount(), pp.getParkingUID(), thirdPartyPaymentUrl);
+//                if (statusResp != null && statusResp.equals("OK")) {
+//                    pp.setSent(true);
+//                } else {
+//                    pp.setSent(false);
+//                }
+//                thirdPartyPaymentRepository.save(pp);
+//            }
+//        }
+//    }
 
-    private Object sendPayment(String plateNumber, Date entryDate, Date exitDate, BigDecimal rate,
+    private void sendPayment(String plateNumber, Date entryDate, Date exitDate, BigDecimal rate,
                                String parkingUid, String thPPUrl) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
         Map<String, Object> params = new HashMap<>();
@@ -108,13 +110,13 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity request = new HttpEntity<>(params, headers);
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(thPPUrl, request, String.class);
-        log.info("Response: " + responseEntity.getBody() + ", carNumber: " + plateNumber);
+//        log.info("Response: " + responseEntity.getBody() + ", carNumber: " + plateNumber);
         if (responseEntity.getBody() != null) {
             JSONObject jsonResp = new JSONObject(responseEntity.getBody());
             Object status = jsonResp.get("status");
-            return status;
+//            return status;
         }
-        return null;
+//        return null;
     }
 
     public ResponseThPP removeClient(RequestThPP requestThPP) {
