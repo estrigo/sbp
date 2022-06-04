@@ -76,7 +76,7 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
 //        }
         thirdPartyPayment.setSent(false);
         thirdPartyPaymentRepository.save(thirdPartyPayment);
-        sendPayment(plateNumber, entryDate, exitDate, rate, parkingUid, thPPUrl);
+//        sendPayment(plateNumber, entryDate, exitDate, rate, parkingUid, thPPUrl);
     }
 
 //    @Scheduled(fixedRate = 900000)
