@@ -1,5 +1,7 @@
 package kz.spt.lib.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
@@ -29,4 +31,8 @@ public interface ArmService {
     byte[] snapshot(Long cameraId) throws Throwable;
 
     Future<byte[]> getSnapshot(String ip, String login, String password, String url) throws Throwable;
+
+    JsonNode getTabsWithCameraList();
+
+    Boolean configureArm(String json) throws JsonProcessingException;
 }

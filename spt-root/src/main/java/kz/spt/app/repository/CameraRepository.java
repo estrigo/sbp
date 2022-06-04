@@ -19,6 +19,12 @@ public interface CameraRepository extends JpaRepository<Camera, Long> {
     @Query("from Camera c WHERE c.enabled = true")
     List<Camera> findEnabledCameras();
 
+    @Query("from Camera c WHERE c.enabled = true and c.cameraTab.id = ?1")
+    List<Camera> findEnabledWithTabCameras(Long id);
+
+    @Query("from Camera c WHERE c.enabled = true and c.cameraTab is null")
+    List<Camera> findEnabledWithoutTabCameras();
+
     @Query("from Camera c LEFT JOIN FETCH c.gate g LEFT JOIN FETCH g.parking WHERE c.detectorId = ?1")
     Camera findCameraByDetectorId(String detectorId);
 }

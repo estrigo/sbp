@@ -1,15 +1,17 @@
 package kz.spt.app.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.app.component.HttpRequestFactoryDigestAuth;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.service.CameraService;
-import kz.spt.lib.model.Camera;
-import kz.spt.lib.model.CurrentUser;
-import kz.spt.lib.model.EventLog;
-import kz.spt.lib.model.Gate;
+import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.service.*;
 import kz.spt.app.service.BarrierService;
@@ -25,6 +27,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -50,6 +53,7 @@ import java.util.concurrent.Future;
 @Service
 public class ArmServiceImpl implements ArmService {
 
+    private ObjectMapper objectMapper = new ObjectMapper();
     private static Hashtable<String, Long> hashtable = new Hashtable<>();
     private CameraService cameraService;
     private BarrierService barrierService;
@@ -316,6 +320,126 @@ public class ArmServiceImpl implements ArmService {
 
         HttpEntity entity = new HttpEntity(headers);
         return new AsyncResult<>(restTemplate.getForObject(address.toString(), byte[].class, entity));
+    }
+
+    @Override
+    public JsonNode getTabsWithCameraList() {
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru";
+        }
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
+
+        ArrayNode tabsWithCameras = objectMapper.createArrayNode();
+
+        ObjectNode camerasWithoutTab = objectMapper.createObjectNode();
+        camerasWithoutTab.put("name", bundle.getString("arm.withoutTab"));
+        camerasWithoutTab.put("id", 0);
+
+        List<Camera> cameraListWithoutTab = cameraService.cameraListWithoutTab();
+        ArrayNode camerasWithoutTabs = objectMapper.createArrayNode();
+        if(cameraListWithoutTab.size() > 0){
+            for(Camera camera: cameraListWithoutTab){
+                ObjectNode cameraNode = objectMapper.createObjectNode();
+                cameraNode.put("id", camera.getId());
+                cameraNode.put("name", camera.getName());
+                cameraNode.put("ip", camera.getIp());
+                cameraNode.put("parking", camera.getGate().getParking().getName());
+                camerasWithoutTabs.add(cameraNode);
+            }
+        }
+        camerasWithoutTab.set("cameras", camerasWithoutTabs);
+        tabsWithCameras.add(camerasWithoutTab);
+
+        List<CameraTab> cameraTabs = cameraService.cameraTabList();
+        for(CameraTab cameraTab: cameraTabs){
+            ObjectNode cameraTabNode = objectMapper.createObjectNode();
+            cameraTabNode.put("name", cameraTab.getName());
+            cameraTabNode.put("id", cameraTab.getId());
+            ArrayNode cameras = objectMapper.createArrayNode();
+            for(Camera camera: cameraTab.getCameraList()){
+                ObjectNode cameraNode = objectMapper.createObjectNode();
+                cameraNode.put("id", camera.getId());
+                cameraNode.put("name", camera.getName());
+                cameraNode.put("ip", camera.getIp());
+                cameraNode.put("parking", camera.getGate().getParking().getName());
+                cameras.add(cameraNode);
+            }
+            cameraTabNode.set("cameras", cameras);
+            tabsWithCameras.add(cameraTabNode);
+        }
+
+        return tabsWithCameras;
+    }
+
+    @Override
+    public Boolean configureArm(String json) throws JsonProcessingException {
+        Map<Long, CameraTab> cameraTabMap = new HashMap<>(10);
+        List<Long> tabsToDelete = new ArrayList<>(10);
+
+        List<CameraTab> cameraTabList = cameraService.cameraTabList();
+        List<Long> allPreviousTabs = new ArrayList<>(cameraTabList.size());
+        for(CameraTab cameraTab:cameraTabList){
+            allPreviousTabs.add(cameraTab.getId());
+        }
+
+        JsonNode jsonNode = objectMapper.readTree(json);
+        Iterator<JsonNode> tabIterator = jsonNode.iterator();
+        while (tabIterator.hasNext()) {
+            JsonNode tab = tabIterator.next();
+            if("0".equals(tab.get("id").textValue())){
+                JsonNode cameraJsonNode = tab.get("cameraArray");
+                Iterator<JsonNode> cameraIterator = cameraJsonNode.iterator();
+                while (cameraIterator.hasNext()) {
+                    JsonNode camera = cameraIterator.next();
+                    Camera c = cameraService.getCameraById(Long.parseLong(camera.get("id").textValue()));
+                    c.setCameraTab(null);
+                    cameraService.saveCamera(c);
+                }
+            } else {
+                String tabIdString = tab.get("id").textValue();
+                String tabName = tab.get("name").textValue();
+                JsonNode cameraJsonNode = tab.get("cameraArray");
+                if(cameraJsonNode.size() > 0){
+                    if(allPreviousTabs.contains(Long.parseLong(tabIdString))){
+                        allPreviousTabs.remove(Long.parseLong(tabIdString));
+                    }
+                    Iterator<JsonNode> cameraIterator = cameraJsonNode.iterator();
+                    while (cameraIterator.hasNext()) {
+                        JsonNode camera = cameraIterator.next();
+                        CameraTab cameraTab = null;
+                        if(cameraTabMap.containsKey(Long.parseLong(tabIdString))){
+                            cameraTab = cameraTabMap.get(Long.parseLong(tabIdString));
+                        } else {
+                            cameraTab = cameraService.findCameraTabByIdOrReturnNull(Long.parseLong(tabIdString));
+                        }
+                        if(cameraTab == null){
+                            cameraTab = new CameraTab();
+                            cameraTab.setName(tabName);
+                            cameraService.saveCameraTab(cameraTab);
+                        }
+                        Camera c = cameraService.getCameraById(Long.parseLong(camera.get("id").textValue()));
+                        c.setCameraTab(cameraTab);
+                        cameraService.saveCamera(c);
+                        cameraTabMap.put(Long.parseLong(tabIdString), cameraTab);
+                    }
+                } else {
+                    tabsToDelete.add(Long.parseLong(tabIdString));
+                }
+            }
+        }
+
+        tabsToDelete.addAll(allPreviousTabs);
+
+        for(Long tabId: tabsToDelete){
+            CameraTab cameraTab = cameraService.findCameraTabByIdOrReturnNull(tabId);
+            if(cameraTab != null){
+                cameraService.deleteCameraTab(cameraTab);
+            }
+        }
+
+        return null;
     }
 
     /*public String snapshot(String ip, String login, String password, String url) throws Throwable {

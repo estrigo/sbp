@@ -53,6 +53,10 @@ public class Camera {
     @JoinColumn(name = "gate")
     private Gate gate;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "camera_tab")
+    private CameraTab cameraTab;
+
     @CreationTimestamp
     private Date created;
 
