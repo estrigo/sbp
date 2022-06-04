@@ -24,7 +24,6 @@ spring:
       - "booking-plugin"
       - "zerotouch-plugin"
       - "tgbot-plugin"
-      - "mega-plugin"
     main:
       banner-mode: off
   datasource:
@@ -119,7 +118,7 @@ carmen:
 parkings:
   uid: DEMO
 thirdPartyPayment:
-  url: https://mega.parqour.com/mega/client/notify
+  url: http://213.5.190.51:8000/api/parking_payments/post_link_spt/
 notification:
   url: http://app.magnum.kz/test-services/parking-api/v2/parking/tickets
   send: false
