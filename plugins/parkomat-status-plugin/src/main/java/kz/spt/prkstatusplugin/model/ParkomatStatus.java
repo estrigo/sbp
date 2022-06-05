@@ -1,4 +1,4 @@
-package kz.spt.parkomatplugin.model;
+package kz.spt.prkstatusplugin.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

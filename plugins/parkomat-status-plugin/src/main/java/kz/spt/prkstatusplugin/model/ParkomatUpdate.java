@@ -1,6 +1,6 @@
-package kz.spt.parkomatplugin.model;
+package kz.spt.prkstatusplugin.model;
 
-import kz.spt.parkomatplugin.enums.SoftwareType;
+import kz.spt.prkstatusplugin.enums.SoftwareType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

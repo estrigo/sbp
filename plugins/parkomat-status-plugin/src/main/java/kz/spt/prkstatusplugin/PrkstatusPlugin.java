@@ -1,4 +1,4 @@
-package kz.spt.parkomatplugin;
+package kz.spt.prkstatusplugin;
 
 import kz.spt.lib.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
@@ -8,21 +8,21 @@ import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.*;
 
-public class ParkomatStatusPlugin extends SpringBootPlugin implements CustomPlugin {
+public class PrkstatusPlugin extends SpringBootPlugin implements CustomPlugin {
 
-    public ParkomatStatusPlugin(PluginWrapper wrapper) {
+    public PrkstatusPlugin(PluginWrapper wrapper) {
         super(wrapper);
     }
 
     @Override
     protected SpringBootstrap createSpringBootstrap() {
-        return new SpringBootstrap(this, ParkomatStatusPluginStarter.class);
+        return new SpringBootstrap(this, PrkstatusPluginStarter.class);
     }
 
 
     @Override
     public String getTemplateUrl() {
-        return "parkomat-status";
+        return "prkstatus";
     }
 
     public List<Map<String, Object>> getLinks(){
@@ -31,7 +31,7 @@ public class ParkomatStatusPlugin extends SpringBootPlugin implements CustomPlug
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
         }
-        ResourceBundle bundle = ResourceBundle.getBundle("parkomat-status-plugin", Locale.forLanguageTag(language));
+        ResourceBundle bundle = ResourceBundle.getBundle("prkstatus-plugin", Locale.forLanguageTag(language));
         List<Map<String, Object>> list = new ArrayList<>();
 
         Map<String, Object> mainMenu = new HashMap<>();
@@ -42,7 +42,7 @@ public class ParkomatStatusPlugin extends SpringBootPlugin implements CustomPlug
 
         Map<String, Object> status = new HashMap<>();
         status.put("label",bundle.getString("parkomat.status.title"));
-        status.put("url", "parkomat-monitor/status");
+        status.put("url", "prkstatus/status/list");
         status.put("role", "MANAGER");
         subMenus.add(status);
 

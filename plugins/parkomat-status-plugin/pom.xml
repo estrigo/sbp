@@ -10,14 +10,14 @@
     </parent>
 
     <groupId>kz.spt</groupId>
-    <artifactId>parkomat-status-plugin</artifactId>
+    <artifactId>prkstatus-plugin</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
         <java.version>11</java.version>
         <plugin.id>parkomat-status-plugin</plugin.id>
-        <plugin.class>kz.spt.parkomatplugin.ParkomatStatusPlugin</plugin.class>
+        <plugin.class>kz.spt.prkstatusplugin.PrkstatusPlugin</plugin.class>
         <plugin.version>0.0.1-SNAPSHOT</plugin.version>
         <plugin.provider>spt-sbp-parkomat-status</plugin.provider>
         <plugin.dependencies />
@@ -41,12 +41,6 @@
         <dependency>
             <groupId>kz.spt</groupId>
             <artifactId>spt-root</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>kz.spt</groupId>
-            <artifactId>billing-plugin</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

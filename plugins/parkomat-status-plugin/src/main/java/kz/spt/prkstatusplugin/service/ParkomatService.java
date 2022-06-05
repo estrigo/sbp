@@ -1,6 +1,4 @@
-package kz.spt.parkomatplugin.service;
-
-import kz.spt.billingplugin.repository.PaymentProviderRepository;
+package kz.spt.prkstatusplugin.service;
 
 import java.util.List;
 

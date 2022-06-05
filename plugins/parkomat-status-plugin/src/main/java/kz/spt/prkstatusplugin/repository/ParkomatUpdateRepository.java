@@ -1,7 +1,6 @@
-package kz.spt.parkomatplugin.repository;
+package kz.spt.prkstatusplugin.repository;
 
-import kz.spt.parkomatplugin.model.ParkomatLog;
-import kz.spt.parkomatplugin.model.ParkomatUpdate;
+import kz.spt.prkstatusplugin.model.ParkomatUpdate;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ParkomatUpdateRepository extends JpaRepository<ParkomatUpdate, Long> {

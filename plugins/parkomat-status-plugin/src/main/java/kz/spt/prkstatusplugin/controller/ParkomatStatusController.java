@@ -1,17 +1,14 @@
-package kz.spt.parkomatplugin.controller;
+package kz.spt.prkstatusplugin.controller;
 
-import kz.spt.parkomatplugin.service.ParkomatService;
+import kz.spt.prkstatusplugin.service.ParkomatService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @Controller
-@RequestMapping(value = "/parkomat-monitor")
+@RequestMapping(value = "/prkstatus/status")
 public class ParkomatStatusController {
 
     private ParkomatService parkomatService;
@@ -20,11 +17,12 @@ public class ParkomatStatusController {
         this.parkomatService = parkomatService;
     }
 
-    @GetMapping("/status")
+    @GetMapping("/list")
     public String showTestList(Model model) {
 
-        List<?> parList =  parkomatService.getParkomatProviders();
-        return "parkomat-status/index";
+        model.addAttribute("whitelist", null);
+        //List<?> parList =  parkomatService.getParkomatProviders();
+        return "prkstatus/balance/list";
     }
 
     @PostMapping("/log")
