@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ParkingRepository extends JpaRepository<Parking, Long> {
 
-    @Query("from Parking p where p.parkingType = 'WHITELIST' or p.parkingType = 'WHITELIST_PAYMENT'")
+    @Query("from Parking p where p.parkingType = 'WHITELIST' or p.parkingType = 'WHITELIST_PAYMENT' or p.parkingType = 'PREPAID'")
     List<Parking> whitelistParkings();
 
     List<Parking> findParkingByParkingType(Parking.ParkingType parkingType);

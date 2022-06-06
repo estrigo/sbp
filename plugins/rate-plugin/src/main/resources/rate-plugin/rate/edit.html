@@ -336,6 +336,7 @@
         } else {
             $('#dimensions').hide();
         }
+        console.log(val);
         if(val === 'PREPAID'){
             $('#prepaid').show();
             $('#freeMinutes').hide();
@@ -349,10 +350,6 @@
             $('#prepaid').hide();
             $('#freeMinutes').hide();
             $('#dayPayment').hide();
-        } else {
-            $('#prepaid').hide();
-            $('#freeMinutes').show();
-            $('#dayPayment').show();
         }
     }
 
