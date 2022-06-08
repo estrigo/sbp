@@ -79,7 +79,7 @@
             "dateTo": $('#dateTo').val(),
         };
 
-        let predefinedFields = ['dateTime','records','inDateCount','paymentRecords','whitelistRecords','abonementRecords'];
+        let predefinedFields = ['dateTime','records','inDateCount','paymentRecords','whitelistRecords','abonementRecords','freeMinuteRecords','debtRecords','fromBalanceRecords','freeRecords','autoClosedRecords'];
 
         $.ajax({
             url: "/rest/report/sum/excel",

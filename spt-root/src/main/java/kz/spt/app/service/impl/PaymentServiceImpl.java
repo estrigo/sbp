@@ -495,7 +495,7 @@ public class PaymentServiceImpl implements PaymentService {
             String descriptionRu = "Выпускаем авто: Авто с гос. номером " + carNumber + " с долгом -" + rateResult;
             String descriptionEn = "Releasing: Car with license plate " + carNumber + " with debt -" + rateResult;
             eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), carNumber, descriptionRu, descriptionEn);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.DEBT_OUT);
         }
     }
 

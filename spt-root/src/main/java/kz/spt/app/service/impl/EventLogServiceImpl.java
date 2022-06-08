@@ -233,7 +233,17 @@ public class EventLogServiceImpl implements EventLogService {
             specification = specification == null ? EventLogSpecification.equalGateId(eventFilterDto.gateId) : specification.and(EventLogSpecification.equalGateId(eventFilterDto.gateId));
         }
         if (eventFilterDto.eventType != null && !"".equals(eventFilterDto.eventType.toString())) {
-            specification = specification == null ? EventLogSpecification.equalType(eventFilterDto.eventType) : specification.and(EventLogSpecification.equalType(eventFilterDto.eventType));
+            if(EventLog.EventType.PASS.equals(eventFilterDto.eventType)){
+                specification = specification == null ?
+                        EventLogSpecification.inEventType(eventFilterDto.eventType, EventLog.EventType.PAID_PASS, EventLog.EventType.ABONEMENT_PASS, EventLog.EventType.BOOKING_PASS, EventLog.EventType.FREE_PASS, EventLog.EventType.REGISTER_PASS)
+                        : specification.and(EventLogSpecification.inEventType(eventFilterDto.eventType, EventLog.EventType.PAID_PASS, EventLog.EventType.ABONEMENT_PASS, EventLog.EventType.BOOKING_PASS, EventLog.EventType.FREE_PASS, EventLog.EventType.REGISTER_PASS));
+            } else if(EventLog.EventType.DEBT.equals(eventFilterDto.eventType)){
+                specification = specification == null ?
+                        EventLogSpecification.inEventType(eventFilterDto.eventType, EventLog.EventType.DEBT_OUT)
+                        : specification.and(EventLogSpecification.inEventType(eventFilterDto.eventType, EventLog.EventType.DEBT_OUT));
+            } else {
+                specification = specification == null ? EventLogSpecification.equalType(eventFilterDto.eventType) : specification.and(EventLogSpecification.equalType(eventFilterDto.eventType));
+            }
         }
         return specification;
     }

@@ -53,13 +53,21 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
     public List<SumReportDto> countSum(FilterSumReportDto filterSumReportDto){
 
+        Calendar dateFrom = Calendar.getInstance();
+        dateFrom.setTime(filterSumReportDto.getDateFrom());
+        dateFrom.add(Calendar.MINUTE, -6);
+
+        Calendar dateTo = Calendar.getInstance();
+        dateTo.setTime(filterSumReportDto.getDateTo());
+        dateTo.add(Calendar.MINUTE, 6);
+
         //----------------------------------------------- In cars count --------------
         List<Object[]> inCars = entityManager
                 .createNativeQuery("select DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%Y.%m.%d') as datetime, count(cs.id) " +
-                        "                from car_state cs " +
-                        "        where cs.in_timestamp between :dateFrom and :dateTo " +
-                        "        group by DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%Y.%m.%d') " +
-                        "        order by DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%Y.%m.%d') desc")
+        "                from car_state cs " +
+        "        where cs.in_timestamp between :dateFrom and :dateTo " +
+        "        group by DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%Y.%m.%d') " +
+        "        order by DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%Y.%m.%d') desc")
                 .setParameter("dateFrom", filterSumReportDto.getDateFrom())
                 .setParameter("dateTo", filterSumReportDto.getDateTo())
                 .getResultList();
@@ -81,51 +89,45 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
             }
         }
 
-        ArrayList<String> fields = new ArrayList<>(10);
-
         String headerQuery = "select DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%Y.%m.%d') as datetime, " +
-                "       count(cs.id) as count, " +
-                "       count(cs.amount) as paymentsCount, " +
-                "       count(cs.whitelist_json) as whitelistsCount, " +
-                "       count(cs.abonoment_json) as abonementCount";
-        fields.add("dateTime");
-        fields.add("records");
-        fields.add("paymentRecords");
-        fields.add("whitelistRecords");
-        fields.add("abonementRecords");
+        "       count(cs.id) as count, " +
+        "       sum(if(payments.totalSumma>0 and paidEvent.car_state_id is not null and cs.out_gate is not null,1,0)) as paymentsCount, " +
+        "       sum(if(whitelistEvent.car_state_id is not null and cs.out_gate is not null, 1, 0)) as whitelistsCount, " +
+        "       sum(if(abonementEvent.car_state_id is not null and cs.out_gate is not null, 1, 0)) as abonementEvent," +
+        "       sum(if(freeMinutes.car_state_id is not null and cs.out_gate is not null,1,0)) as min15Free," +
+        "       sum(if(debt.car_state_id is not null and cs.out_gate is not null,1,0)) as debt," +
+        "       sum(if((payments.totalSumma is null or payments.totalSumma=0) and paidEvent.car_state_id is not null and cs.out_gate is not null,1,0)) as fromBalance," +
+        "       sum(if(free.car_state_id is not null and freeMinutes.car_state_id is null and whitelistEvent.car_state_id is null and paidEvent.car_state_id is null and debt.car_state_id is null and abonementEvent.car_state_id is null and cs.out_gate is not null,1,0)) as free," +
+        "       sum(if(cs.out_gate is null,1,0)) as autoClosed ";
 
         if(hasCashPayment){
             headerQuery = headerQuery +
-                    "        ,sum(payments.cardsSumma) as cardsSumma " +
-                    "        ,sum(payments.cashSumma) as cashSumma ";
-            fields.add("bankCardSum");
-            fields.add("cashSum");
+           "        ,sum(payments.cardsSumma) as cardsSumma " +
+           "        ,sum(payments.cashSumma) as cashSumma ";
         }
         for(Object[] provider: providers){
             headerQuery = headerQuery +
-                    "       ,sum(payments." + provider[0] + "Summa) as " + provider[0] + "Summa ";
-            fields.add((String) provider[1]);
+           "       ,sum(payments." + provider[0] + "Summa) as " + provider[0] + "Summa ";
         }
 
         headerQuery = headerQuery +
-                "       ,sum(payments.totalSumma) as totalSum ";
-        fields.add("totalSum");
+        "       ,sum(payments.totalSumma) as totalSum ";
 
         String bodyQuery =
-                "from car_state cs " +
-                "    left outer join ( " +
-                "        select p.car_state_id as car_state_id, " +
-                "        sum(p.amount) as totalSumma ";
+        "from car_state cs " +
+        "    left outer join ( " +
+        "        select p.car_state_id as car_state_id, " +
+        "        sum(p.amount) as totalSumma ";
 
         if(hasCashPayment){
             bodyQuery = bodyQuery +
-                "        ,sum(if(pp.cashless_payment = false and p.ikkm = true, p.amount, 0)) as cardsSumma " +
-                "        ,sum(if(pp.cashless_payment = false and (p.ikkm is null or p.ikkm = false), p.amount, 0)) as cashSumma ";
+        "        ,sum(if(pp.cashless_payment = false and p.ikkm = true, p.amount, 0)) as cardsSumma " +
+        "        ,sum(if(pp.cashless_payment = false and (p.ikkm is null or p.ikkm = false), p.amount, 0)) as cashSumma ";
 
         }
         for(Object[] provider: providers){
             bodyQuery = bodyQuery +
-                    "        ,sum(if(pp.provider = '" + provider[0] + "', p.amount, 0)) as " + provider[0] + "Summa ";
+           "        ,sum(if(pp.provider = '" + provider[0] + "', p.amount, 0)) as " + provider[0] + "Summa ";
         }
 
         bodyQuery = bodyQuery +
@@ -133,15 +135,97 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
         "       from payments p " +
         "            inner join payment_provider pp on p.provider_id = pp.id " +
         "        group by p.car_state_id " +
-        "    ) as payments on payments.car_state_id = cs.id " +
-        "where cs.out_timestamp is not null " +
-        "and cs.out_timestamp between :dateFrom and :dateTo " +
-        "group by DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%Y.%m.%d') " +
-        "order by DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%Y.%m.%d') desc";
+        "    ) as payments on payments.car_state_id = cs.id " + 
+        " left outer join ( " +
+        "            select cs.id as car_state_id, count(l.id) " +
+        "            from event_log l" +
+        "                inner join ( " +
+        "                    select cs.id, cs.out_timestamp, cs.car_number " +
+        "                    from car_state cs " +
+        "                    where cs.out_timestamp between :dateFrom and :dateTo " +
+        "                ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
+        "            where l.object_class = 'Gate' " +
+        "            and l.created between :dateFromException and :dateToException " +
+        "            and l.event_type = 'WHITELIST_OUT' " +
+        "            group by cs.id " +
+        "       ) as whitelistEvent on whitelistEvent.car_state_id = cs.id" + 
+        "        left outer join ( " +
+        "            select cs.id as car_state_id, count(l.id) " +
+        "            from event_log l " +
+        "            inner join ( " +
+        "                select cs.id, cs.out_timestamp, cs.car_number " +
+        "                from car_state cs " +
+        "                where cs.out_timestamp between :dateFrom and :dateTo " +
+        "            ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
+        "            where l.object_class = 'Gate' " +
+        "              and l.created between :dateFromException and :dateToException " +
+        "              and l.event_type = 'ABONEMENT_PASS' " +
+        "            group by cs.id " +
+        "        ) as abonementEvent on abonementEvent.car_state_id = cs.id" +
+        "        left outer join ( " +
+        "            select cs.id as car_state_id, count(l.id) " +
+        "            from event_log l " +
+        "                     inner join ( " +
+        "                select cs.id, cs.out_timestamp, cs.car_number " +
+        "                from car_state cs " +
+        "                where cs.out_timestamp between :dateFrom and :dateTo " +
+        "            ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
+        "            where l.object_class = 'Gate' " +
+        "              and l.created between :dateFromException and :dateToException " +
+        "              and l.event_type = 'PAID_PASS' " +
+        "            group by cs.id " +
+        "       ) as paidEvent on paidEvent.car_state_id = cs.id" +
+        "       left outer join ( " +
+        "            select cs.id as car_state_id, count(l.id) " +
+        "            from event_log l " +
+        "                     inner join ( " +
+        "                select cs.id, cs.out_timestamp, cs.car_number " +
+        "                from car_state cs " +
+        "                where cs.out_timestamp between :dateFrom and :dateTo " +
+        "            ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
+        "            where l.object_class = 'Gate' " +
+        "              and l.created between :dateFromException and :dateToException " +
+        "              and l.event_type = 'FIFTEEN_FREE' " +
+        "            group by cs.id " +
+        "        ) as freeMinutes on freeMinutes.car_state_id = cs.id" +
+        "       left outer join (  " +
+        "            select cs.id as car_state_id, count(l.id)  " +
+        "            from event_log l  " +
+        "                     inner join (  " +
+        "                select cs.id, cs.out_timestamp, cs.car_number  " +
+        "                from car_state cs  " +
+        "                where cs.out_timestamp between :dateFrom and :dateTo  " +
+        "            ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second)  " +
+        "            where l.object_class = 'Gate'  " +
+        "              and l.created between :dateFromException and :dateToException  " +
+        "              and l.event_type = 'DEBT_OUT' " +
+        "            group by cs.id  " +
+        "        ) as debt on debt.car_state_id = cs.id" +
+        "       left outer join (  " +
+        "            select cs.id as car_state_id, count(l.id)  " +
+        "            from event_log l  " +
+        "                     inner join (  " +
+        "                select cs.id, cs.out_timestamp, cs.car_number  " +
+        "                from car_state cs  " +
+        "                where cs.out_timestamp between :dateFrom and :dateTo and cs.amount is null  " +
+        "            ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second)  " +
+        "            where l.object_class = 'Gate'  " +
+        "              and l.created between :dateFromException and :dateToException  " +
+        "              and l.event_type = 'FREE_PASS'  " +
+        "            group by cs.id  " +
+        "        ) as free on free.car_state_id = cs.id " +
+        " where cs.out_timestamp is not null " +
+        " and cs.out_timestamp between :dateFrom and :dateTo " +
+        " group by DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%Y.%m.%d') " +
+        " order by DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%Y.%m.%d') desc";
+
+        System.out.println(headerQuery + bodyQuery);
 
         List<Object[]> objects = entityManager.createNativeQuery(headerQuery + bodyQuery)
                 .setParameter("dateFrom", filterSumReportDto.getDateFrom())
                 .setParameter("dateTo", filterSumReportDto.getDateTo())
+                .setParameter("dateFromException", dateFrom.getTime())
+                .setParameter("dateToException", dateTo.getTime())
                 .getResultList();
 
         SimpleDateFormat checkFormat = new SimpleDateFormat("yyyy.MM.dd");
@@ -156,13 +240,19 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
         }
         ResourceBundle bundle = ResourceBundle.getBundle("report-plugin", Locale.forLanguageTag(language));
 
-        Map<String, String> fieldsMap = new HashMap<>(10);
+        Map<String, String> fieldsMap = new HashMap<>(15);
         fieldsMap.put("dateTime", bundle.getString("report.dateTime"));
         fieldsMap.put("records", bundle.getString("report.outDateCount"));
         fieldsMap.put("inDateCount", bundle.getString("report.inDateCount"));
         fieldsMap.put("paymentRecords", bundle.getString("report.paymentRecords"));
         fieldsMap.put("whitelistRecords", bundle.getString("report.whitelistRecords"));
         fieldsMap.put("abonementRecords", bundle.getString("report.abonementRecords"));
+        fieldsMap.put("freeMinuteRecords", bundle.getString("report.freeMinuteRecords"));
+        fieldsMap.put("debtRecords", bundle.getString("report.debtRecords"));
+        fieldsMap.put("fromBalanceRecords", bundle.getString("report.fromBalanceRecords"));
+        fieldsMap.put("freeRecords", bundle.getString("report.freeRecords"));
+        fieldsMap.put("autoClosedRecords", bundle.getString("report.autoClosedRecords"));
+
         if(hasCashPayment){
             fieldsMap.put("bankCardSum", bundle.getString("report.bankCardSum"));
             fieldsMap.put("cashSum", bundle.getString("report.cashSum"));
@@ -191,7 +281,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                 dateTimeString.append(dateTime, 2, 4);
                 dateTimeString.append(" 00:00");
             }
-            dateTimeString.append("\n");
+            dateTimeString.append(" ");
             if(dateTime.equals(checkFormat.format(filterSumReportDto.getDateTo()))){
                 dateTimeString.append(correctFormat.format(filterSumReportDto.getDateTo()));
             } else {
@@ -208,6 +298,12 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
             values.put("paymentRecords", object[it++]);
             values.put("whitelistRecords", object[it++]);
             values.put("abonementRecords", object[it++]);
+            values.put("freeMinuteRecords", object[it++]);
+            values.put("debtRecords", object[it++]);
+            values.put("fromBalanceRecords", object[it++]);
+            values.put("freeRecords", object[it++]);
+            values.put("autoClosedRecords", object[it++]);
+
             if(hasCashPayment){
                 values.put("bankCardSum", object[it++]);
                 values.put("cashSum", object[it++]);
