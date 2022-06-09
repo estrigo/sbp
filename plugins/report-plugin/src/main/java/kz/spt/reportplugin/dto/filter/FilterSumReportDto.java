@@ -14,8 +14,12 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FilterSumReportDto extends FilterReportDto{
+
+    private String type;
     private Date dateFrom;
     private Date dateTo;
+    private String eventType;
+    private String date;
 
     public String dateToString(Date date){
         if(date == null) return null;

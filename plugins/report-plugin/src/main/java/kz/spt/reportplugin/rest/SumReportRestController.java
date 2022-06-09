@@ -3,6 +3,7 @@ package kz.spt.reportplugin.rest;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.reportplugin.dto.SumReportDto;
+import kz.spt.reportplugin.dto.SumReportListDto;
 import kz.spt.reportplugin.dto.filter.FilterJournalReportDto;
 import kz.spt.reportplugin.dto.filter.FilterSumReportDto;
 import kz.spt.reportplugin.service.ReportService;
@@ -19,11 +20,6 @@ public class SumReportRestController extends BasicRestController<SumReportDto> {
 
     public SumReportRestController(ReportService<SumReportDto> sumReportService) {
         super(sumReportService);
-    }
-
-    @PostMapping
-    public Page<SumReportDto> list(@RequestBody PagingRequest pagingRequest){
-        return reportService.page(pagingRequest);
     }
 
     @PostMapping("/excel")

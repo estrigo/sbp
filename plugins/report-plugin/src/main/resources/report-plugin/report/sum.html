@@ -11,7 +11,7 @@
             <div class="col-12">
                 <div class="card table-responsive">
                     <div class="card-header" th:text="#{report.billing}"></div>
-                    <div class="card-body">
+                    <div class="card-body" id="main">
                         <div>
                             <form method="post">
                                 <div class="form-row">
@@ -41,6 +41,39 @@
                         </div>
                         <div class="mb-5"></div>
                         <table id="sumReport" class="table table-bordered table-striped dataTable no-footer">
+                        </table>
+                    </div>
+                    <div class="card-body" id="detailed">
+                        <div>
+                            <form method="post">
+                                <div class="form-row">
+                                    <div class="col-1">
+                                        <button type="button" class="btn btn-primary mr-1"
+                                                onclick="back()"
+                                                th:text="#{crm.back}"></button>
+                                    </div>
+                                    <div class="col-2">
+                                        <button type="button" class="btn btn-success mr-1"
+                                                onclick="excelDetailed()"
+                                                th:text="#{report.excel}"></button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="mb-5"></div>
+                        <table id="sumDetailed" class="table table-bordered table-striped dataTable no-footer">
+                            <thead>
+                                <tr>
+                                    <th>Номер авто</th>
+                                    <th>Дата въезда</th>
+                                    <th>Дата выезда</th>
+                                    <th>Место въезда</th>
+                                    <th>Место выезда</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -73,13 +106,19 @@
     $('#dateFrom').val(dateFrom.substring(0, dateFrom.length-1));
     $('#dateTo').val(dateTo.substring(0, dateTo.length-1));
 
+    var globalDateFrom = $('#dateFrom').val();
+    var globalDateTo = $('#dateTo').val();
+
     function find() {
+        globalDateFrom = $('#dateFrom').val();
+        globalDateTo = $('#dateTo').val();
         let request = {
-            "dateFrom": $('#dateFrom').val(),
-            "dateTo": $('#dateTo').val(),
+            "dateFrom": globalDateFrom,
+            "dateTo": globalDateTo
         };
 
         let predefinedFields = ['dateTime','records','inDateCount','paymentRecords','whitelistRecords','abonementRecords','freeMinuteRecords','debtRecords','fromBalanceRecords','freeRecords','autoClosedRecords'];
+        let hasLinkFileds = ['paymentRecords','whitelistRecords','abonementRecords','freeMinuteRecords','debtRecords','fromBalanceRecords','freeRecords','autoClosedRecords'];
 
         $.ajax({
             url: "/rest/report/sum/excel",
@@ -88,7 +127,6 @@
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (data) {
-                console.log(data);
                 let html = '<thead><tr>';
                 $.each(predefinedFields, function(value) {
                     html = html + '<td>' + data[0].fields[predefinedFields[value]] + '</td>';
@@ -117,7 +155,15 @@
                         if(i++ > 0){
                             html = html + '<tr>';
                             $.each(predefinedFields, function(value) {
-                                html = html + '<td>' + (data[result].results[predefinedFields[value]] ? data[result].results[predefinedFields[value]] : 0) + '</td>';
+                                html = html + '<td>';
+                                if(hasLinkFileds.indexOf(predefinedFields[value]) !== -1 && data[result].results[predefinedFields[value]]){
+                                    html = html +  "<a href='#' onclick='openList(\""+predefinedFields[value]+ "\",\"" + data[result].results['date'] + "\")'>";
+                                }
+                                html = html + (data[result].results[predefinedFields[value]] ? data[result].results[predefinedFields[value]] : 0);
+                                if(value !== 'dateTime'){
+                                    html = html +  '</a>';
+                                }
+                                html = html + '</td>';
                             });
                             html = html + '</tr>';
                         }
@@ -140,9 +186,56 @@
 
     function excel() {
         const wb = XLSX.utils.book_new();
-        var ws = XLSX.utils.table_to_sheet(document.getElementById("sumReport"));
+        let ws = XLSX.utils.table_to_sheet(document.getElementById("sumReport"));
         XLSX.utils.book_append_sheet(wb, ws, 'billing');
         XLSX.writeFile(wb, "billing.xlsx", { type: "buffer" });
+    }
+
+    function openList(val, date){
+        let request = {
+            "dateFrom": globalDateFrom,
+            "dateTo": globalDateTo,
+            "eventType": val,
+            "date": date,
+            "type": "detailed"
+        };
+
+        $('#main').hide();
+        $('#detailed').show();
+
+        $.ajax({
+            url: "/rest/report/sum/excel",
+            type: "POST",
+            data: JSON.stringify(request),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                let html = '';
+                $.each(data, function(result) {
+                    html = html + '<tr>';
+                    html = html + '<td>' + data[result].listResult.plateNumber + '</td>'
+                        + '<td>' + data[result].listResult.formattedInDate + '</td>'
+                        + '<td>' + data[result].listResult.formattedOutDate + '</td>'
+                        + '<td>' + data[result].listResult.inPlace + '</td>'
+                        + '<td>' + (data[result].listResult.outPlace ? data[result].listResult.outPlace : '' ) + '</td>';
+                    html = html + '</tr>';
+                });
+                $('#sumDetailed>tbody').html(html);
+            }
+        });
+    }
+
+    function excelDetailed() {
+        const wb = XLSX.utils.book_new();
+        let ws = XLSX.utils.table_to_sheet(document.getElementById("sumDetailed"));
+        XLSX.utils.book_append_sheet(wb, ws, 'detailed');
+        XLSX.writeFile(wb, "detailed.xlsx", { type: "buffer" });
+    }
+
+    function back() {
+        $('#main').show();
+        $('#detailed').hide();
     }
 </script>
 

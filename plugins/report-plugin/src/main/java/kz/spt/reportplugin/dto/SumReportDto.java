@@ -16,4 +16,5 @@ public class SumReportDto {
 
     Map<String,String> fields = new HashMap<>();
     Map<String, Object> results = new HashMap<>();
+    SumReportListDto listResult;
 }
