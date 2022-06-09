@@ -402,9 +402,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "     gate inGate on inGate.id = cs.in_gate " +
                         " left outer join " +
                         "     gate outGate on outGate.id = cs.out_gate" +
-                        " left outer join " +
-                        "     gate outGate on outGate.id = cs.out_gate " +
-                        "         left outer join ( " +
+                        " left outer join ( " +
                         "    select p.car_state_id as car_state_id, " +
                         "           sum(p.amount) as totalSumma " +
                         "    from payments p " +
@@ -429,9 +427,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "     gate inGate on inGate.id = cs.in_gate " +
                         " left outer join " +
                         "     gate outGate on outGate.id = cs.out_gate" +
-                        " left outer join " +
-                        "     gate outGate on outGate.id = cs.out_gate " +
-                        "         left outer join ( " +
+                        " left outer join ( " +
                         "    select p.car_state_id as car_state_id, " +
                         "           sum(p.amount) as totalSumma " +
                         "    from payments p " +

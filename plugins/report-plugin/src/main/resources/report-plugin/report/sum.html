@@ -43,7 +43,7 @@
                         <table id="sumReport" class="table table-bordered table-striped dataTable no-footer">
                         </table>
                     </div>
-                    <div class="card-body" id="detailed">
+                    <div class="card-body" id="detailed" style="display:none;">
                         <div>
                             <form method="post">
                                 <div class="form-row">
@@ -110,6 +110,9 @@
     var globalDateTo = $('#dateTo').val();
 
     function find() {
+        $('#main').show();
+        $('#detailed').hide();
+
         globalDateFrom = $('#dateFrom').val();
         globalDateTo = $('#dateTo').val();
         let request = {
@@ -192,6 +195,7 @@
     }
 
     function openList(val, date){
+        $('#sumDetailed>tbody').html('');
         let request = {
             "dateFrom": globalDateFrom,
             "dateTo": globalDateTo,
