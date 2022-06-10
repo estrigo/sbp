@@ -93,12 +93,24 @@ public class RateServiceImpl implements RateService {
         inDayCalendar.add(Calendar.DATE, 1);
 
         if (parkingRate != null && parkingRate.getDayPaymentValue() != null && inDayCalendar.before(outCalendar)) {
-            while (inDayCalendar.before(outCalendar)) {
-                result = result.add(BigDecimal.valueOf(parkingRate.getDayPaymentValue()));
-                inDayCalendar.add(Calendar.DATE, 1);
+            if(parkingRate.getMoreHoursCalcInDays()){
+                Calendar tmpInDayCalendar = Calendar.getInstance();
+                tmpInDayCalendar.setTime(inDayCalendar.getTime());
+
+                while (tmpInDayCalendar.before(outCalendar)) {
+                    result = result.add(BigDecimal.valueOf(parkingRate.getDayPaymentValue()));
+                    tmpInDayCalendar.add(Calendar.DATE, 1);
+                }
+                inDayCalendar.add(Calendar.DATE, -1);
+                outCalendar.setTime(tmpInDayCalendar.getTime());
+            } else {
+                while (inDayCalendar.before(outCalendar)) {
+                    result = result.add(BigDecimal.valueOf(parkingRate.getDayPaymentValue()));
+                    inDayCalendar.add(Calendar.DATE, 1);
+                }
+                inDayCalendar.add(Calendar.DATE, -1);
+                inCalendar.setTime(inDayCalendar.getTime());
             }
-            inDayCalendar.add(Calendar.DATE, -1);
-            inCalendar.setTime(inDayCalendar.getTime());
         }
 
         if (parkingRate != null && ParkingRate.RateType.PROGRESSIVE.equals(parkingRate.getRateType())) {
