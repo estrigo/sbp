@@ -63,6 +63,10 @@ public class RateServiceImpl implements RateService {
             return BigDecimal.ZERO;
         }
 
+        if(parkingRate != null && ParkingRate.RateType.PREPAID.equals(parkingRate.getRateType())){
+            return parkingRate.getPrepaidValue() != null ? BigDecimal.valueOf(parkingRate.getPrepaidValue()) : BigDecimal.ZERO;
+        }
+
         if(!isCheck){
             inCalendar.add(Calendar.MINUTE, (-1) * parkingRate.getBeforeFreeMinutes());
         }
