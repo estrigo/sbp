@@ -779,6 +779,7 @@ public class CarEventServiceImpl implements CarEventService {
                 return false;
             }
         } else if (checkBooking(eventDto.car_number, eventDto.region, "1")) {
+            log.info(eventDto.car_number + ": booking check booking return true");
             properties.put("type", EventLog.StatusType.Allow);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.");
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.", EventLog.EventType.BOOKING_PASS);
@@ -1032,8 +1033,21 @@ public class CarEventServiceImpl implements CarEventService {
                         hasAccess = true;
                         carOutBy = StaticValues.CarOutBy.REGISTER;
                     } else if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
-                        if (bookingCheckOut) {
+                        ArrayNode whitelistCheckResultArray = (ArrayNode) getWhiteLists(camera.getGate().getParking().getId(), eventDto.car_number, new Date(), format, properties);
+                        if (whitelistCheckResultArray != null && whitelistCheckResultArray.size() > 0) {
+                            hasAccess = true;
+                            carOutBy = StaticValues.CarOutBy.WHITELIST;
+                        } else if (bookingCheckOut) {
                             hasAccess = checkBooking(eventDto.car_number, eventDto.region, "2");
+                            if(hasAccess) {
+                                hasAccess = true;
+                                carOutBy = StaticValues.CarOutBy.BOOKING;
+                            } else {
+                                properties.put("type", EventLog.StatusType.Deny);
+                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Нет доступа для выезда " + eventDto.car_number, "Not allowed to exit:  No entry access " + eventDto.car_number);
+                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Нет доступа для выезда " + eventDto.car_number, "Not allowed to exit:  No entry access " + eventDto.car_number, EventLog.EventType.NOT_PASS);
+                                hasAccess = false;
+                            }
                         } else {
                             hasAccess = true;
                             carOutBy = StaticValues.CarOutBy.WHITELIST;

@@ -54,6 +54,8 @@ public class BookingServiceImpl implements BookingService {
 
             getToken();
 
+            log.info("halapark token retrieve finished: " + plateNumber);
+
             ObjectNode halaparkPostNode = objectMapper.createObjectNode();
             halaparkPostNode.put("medium", "Plate Number"); //medium : Plate Number (As default for Parquor)
             halaparkPostNode.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));
@@ -75,6 +77,10 @@ public class BookingServiceImpl implements BookingService {
 
             HttpEntity entity = contentHalaparkPostResponse.getEntity();
             String halaparkPostResponseBodyString = EntityUtils.toString(entity);
+
+            log.info("halapark main request retrieve finished: " + plateNumber);
+            log.info(plateNumber + " : " + halaparkPostResponseBodyString);
+
             EntityUtils.consume(contentHalaparkPostResponse.getEntity());
 
             BookingLog bookingLog = BookingLog.builder().build();
