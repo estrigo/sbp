@@ -57,6 +57,7 @@ public class CustomerServiceImpl implements CustomerService {
                     oldCustomer.getCars().add(newCar);
                 }
             }
+            oldCustomer.setPhoneNumber(customer.getPhoneNumber());
             customerRepository.save(oldCustomer);
         } else {
             for (String plateNumber : plateNumbers) {
