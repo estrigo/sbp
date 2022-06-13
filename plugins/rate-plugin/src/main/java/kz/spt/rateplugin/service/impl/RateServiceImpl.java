@@ -97,7 +97,7 @@ public class RateServiceImpl implements RateService {
         inDayCalendar.add(Calendar.DATE, 1);
 
         if (parkingRate != null && parkingRate.getDayPaymentValue() != null && inDayCalendar.before(outCalendar)) {
-            if(parkingRate.getMoreHoursCalcInDays()){
+            if(parkingRate.getMoreHoursCalcInDays()!=null && parkingRate.getMoreHoursCalcInDays()){
                 Calendar tmpInDayCalendar = Calendar.getInstance();
                 tmpInDayCalendar.setTime(inDayCalendar.getTime());
 
