@@ -51,7 +51,7 @@
                         <a th:href="@{|/users/list|}" class="waves-effect waves-primary"><i
                                 class="ti-user"></i><span th:text=" #{user.users} "></span></a>
                     </li>
-                    <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_READ')">
+                    <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_READ', 'ROLE_MANAGER')">
                         <a th:href="@{|/customers/list|}" class="waves-effect waves-primary"><i
                                 class="ti-home"></i><span th:text=" #{customer.customers}"></span></a>
                     </li>
