@@ -415,6 +415,9 @@ public class CarEventServiceImpl implements CarEventService {
                         }
                     }
                 }
+                if(camera == null){
+                    camera = cameraList.get(0);
+                }
                 cameraStatusDto.id=camera.getId();
                 createNewCarEvent(cameraStatusDto, gate, eventDto, properties);
 
