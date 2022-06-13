@@ -62,21 +62,24 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
     @Transactional
     public void saveThirdPartyPayment(String plateNumber, Date entryDate, Date exitDate, BigDecimal rate,
                                       String parkingUid, String thPPUrl) throws Exception {
-        Object statusResp = sendPayment(plateNumber, entryDate, exitDate, rate, parkingUid, thPPUrl);
-        log.info("statusResp : " + statusResp);
-        ThirdPartyPayment thirdPartyPayment = new ThirdPartyPayment();
-        thirdPartyPayment.setCar_number(plateNumber);
-        thirdPartyPayment.setEntryDate(entryDate);
-        thirdPartyPayment.setExitDate(exitDate);
-        thirdPartyPayment.setRateAmount(rate);
-        thirdPartyPayment.setParkingUID(parkingUid);
-        if (statusResp != null && statusResp.equals("OK")) {
-            thirdPartyPayment.setSent(true);
-        } else {
+        ThirdPartyPayment existPayment = thirdPartyPaymentRepository.findOneThirdPartyPayment(plateNumber, entryDate);
+        if (existPayment==null) {
+            Object statusResp = sendPayment(plateNumber, entryDate, exitDate, rate, parkingUid, thPPUrl);
+            log.info("statusResp : " + statusResp);
+            ThirdPartyPayment thirdPartyPayment = new ThirdPartyPayment();
+            thirdPartyPayment.setCar_number(plateNumber);
+            thirdPartyPayment.setEntryDate(entryDate);
+            thirdPartyPayment.setExitDate(exitDate);
+            thirdPartyPayment.setRateAmount(rate);
+            thirdPartyPayment.setParkingUID(parkingUid);
+            if (statusResp != null && statusResp.equals("OK")) {
+                thirdPartyPayment.setSent(true);
+            } else {
+                thirdPartyPayment.setSent(false);
+            }
             thirdPartyPayment.setSent(false);
+            thirdPartyPaymentRepository.save(thirdPartyPayment);
         }
-        thirdPartyPayment.setSent(false);
-        thirdPartyPaymentRepository.save(thirdPartyPayment);
     }
 
     @Scheduled(fixedRate = 900000)
