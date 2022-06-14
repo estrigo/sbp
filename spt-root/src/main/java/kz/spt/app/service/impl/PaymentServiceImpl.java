@@ -62,7 +62,7 @@ public class PaymentServiceImpl implements PaymentService {
             commandDto.account = commandDto.account.toUpperCase();
             commandDto.account = commandDto.account.replaceAll("\\s","");
             if ("check".equals(commandDto.command)) {
-                if (commandDto.prepaid != null && commandDto.prepaid) {
+                if (commandDto.service_id != null && commandDto.service_id==2) {
                     Parking parking = parkingService.findByType(Parking.ParkingType.PREPAID);
                     if (parking != null) {
                         return fillPrepaid(commandDto, parking);
