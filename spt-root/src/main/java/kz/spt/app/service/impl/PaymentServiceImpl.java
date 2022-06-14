@@ -141,7 +141,7 @@ public class PaymentServiceImpl implements PaymentService {
                 }
                 CarState carState = carStateService.getLastNotLeft(commandDto.account);
                 if (carState == null) {
-                    if (commandDto.prepaid != null && commandDto.prepaid) {
+                    if (commandDto.service_id != null && commandDto.service_id==2) {
                         Object payment = savePayment(commandDto, null, Parking.ParkingType.PREPAID, false);
                         if (BillingInfoErrorDto.class.equals(payment.getClass())) {
                             return payment;
