@@ -1,10 +1,6 @@
 package kz.spt.reportplugin.rest;
 
-import kz.spt.lib.bootstrap.datatable.Page;
-import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.reportplugin.dto.SumReportDto;
-import kz.spt.reportplugin.dto.SumReportListDto;
-import kz.spt.reportplugin.dto.filter.FilterJournalReportDto;
 import kz.spt.reportplugin.dto.filter.FilterSumReportDto;
 import kz.spt.reportplugin.service.ReportService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,8 +18,13 @@ public class SumReportRestController extends BasicRestController<SumReportDto> {
         super(sumReportService);
     }
 
-    @PostMapping("/excel")
-    public List<SumReportDto> excel(@RequestBody FilterSumReportDto filter){
+    @PostMapping
+    public List<SumReportDto> sum(@RequestBody FilterSumReportDto filter){
+        return reportService.list(filter);
+    }
+
+    @PostMapping("detail")
+    public List<SumReportDto> detail(@RequestBody FilterSumReportDto filter){
         return reportService.list(filter);
     }
 }

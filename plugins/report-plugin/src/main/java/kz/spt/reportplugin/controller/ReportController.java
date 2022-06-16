@@ -20,8 +20,8 @@ public class ReportController {
         return "report/manualOpen";
     }
 
-/*    @GetMapping("/sum")
+    @GetMapping("/sum")
     public String sum() {
         return "report/sum";
-    }*/
+    }
 }

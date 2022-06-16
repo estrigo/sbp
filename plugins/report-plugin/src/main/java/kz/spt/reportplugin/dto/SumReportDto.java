@@ -14,7 +14,6 @@ import java.util.*;
 @AllArgsConstructor
 public class SumReportDto {
 
-    Map<String,String> fields = new HashMap<>();
-    Map<String, Object> results = new HashMap<>();
-    SumReportListDto listResult;
+    Map<String,String> results = new HashMap<>();
+    List<String> dates = new ArrayList<>();
 }

@@ -55,15 +55,15 @@ public class ReportPlugin extends SpringBootPlugin implements CustomPlugin {
         Map<String, Object> subMenu3 = new HashMap<>();
         subMenu3.put("label", bundle.getString("menu.report.payments"));
         subMenu3.put("url", "billing/payments/list");
-/*
+
         Map<String, Object> subMenu4 = new HashMap<>();
         subMenu4.put("label", bundle.getString("menu.report.sum"));
         subMenu4.put("url", "report/sum");
-*/
+
         subMenus.add(subMenu1);
         subMenus.add(subMenu2);
         subMenus.add(subMenu3);
-//       subMenus.add(subMenu4);
+        subMenus.add(subMenu4);
 
         mainMenu.put("subMenus", subMenus);
         list.add(mainMenu);
