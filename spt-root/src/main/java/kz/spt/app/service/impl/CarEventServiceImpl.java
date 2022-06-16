@@ -662,16 +662,17 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
             }
-            log.info("openResult: " + openResult);
             if (openResult) {
                 gate.gateStatus = GateStatusDto.GateStatus.Open;
                 gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
                 gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
                 gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
                 gate.lastTriggeredTime = System.currentTimeMillis();
-                log.info("gate.isSimpleWhitelist: " + gate.isSimpleWhitelist);
+                if (Parking.ParkingType.PREPAID.equals(camera.getGate().getParking().getParkingType())){
+                    log.info("gate.isSimpleWhitelist: " + gate.isSimpleWhitelist);
+                    gate.isSimpleWhitelist=false;
+                }
                 if (!gate.isSimpleWhitelist && !enteredFromThisSecondsBefore) {
-                    log.info("saveCarInState: " + eventDto.car_number);
                     saveCarInState(eventDto, camera, whitelistCheckResults, properties);
                 } else if (enteredFromThisSecondsBefore) {
                     properties.put("type", EventLog.StatusType.Allow);
@@ -710,7 +711,6 @@ public class CarEventServiceImpl implements CarEventService {
             eventWithDimensionRu = ", габарит: " + dimension;
             eventWithDimensionEn = ", dimension: " + dimension;
         }
-        log.info("Parking type: " + camera.getGate().getParking().getParkingType());
         if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
             properties.put("type", EventLog.StatusType.Allow);
             String message_ru = "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа" + eventWithDimensionRu;
@@ -723,7 +723,6 @@ public class CarEventServiceImpl implements CarEventService {
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, message_ru, message_en, EventLog.EventType.WHITELIST);
         } else if (Parking.ParkingType.PREPAID.equals(camera.getGate().getParking().getParkingType())) {
-            log.info("create carInState, Prepaid parking");
             properties.put("type", EventLog.StatusType.Allow);
             carStateService.createINState(eventDto.car_number, eventDto.event_date_time, camera, false, null, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " по предоплате" + eventWithDimensionRu, "Permitted: Car with number " + eventDto.car_number + " on prepaid basis" + eventWithDimensionEn);
