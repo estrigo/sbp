@@ -16,4 +16,5 @@ public class SumReportDto {
 
     Map<String,String> results = new HashMap<>();
     List<String> dates = new ArrayList<>();
+    List<SumReportListDto> listResult = null;
 }

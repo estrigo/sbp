@@ -26,7 +26,10 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
-@Table(name = "car_state")
+@Table(name = "car_state", indexes = {
+        @Index(name = "car_number_idx", columnList = "car_number"),
+        @Index(name = "out_timestamp_idx", columnList = "out_timestamp")
+})
 public class CarState {
 
     public enum CarOutType {

@@ -67,7 +67,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         filterSumReportDto.setDateFrom(calendar.getTime());
-        calendar.add(Calendar.DATE, 1);
+        calendar.add(Calendar.DAY_OF_YEAR, 1);
         filterSumReportDto.setDateTo(calendar.getTime());
 
         Calendar dateFromException = Calendar.getInstance();
@@ -77,6 +77,11 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
         Calendar dateToException = Calendar.getInstance();
         dateToException.setTime(filterSumReportDto.getDateTo());
         dateToException.add(Calendar.MINUTE, 6);
+
+        log.info("filterSumReportDto.getDateFrom():" + filterSumReportDto.getDateFrom());
+        log.info("filterSumReportDto.getDateTo():" + filterSumReportDto.getDateTo());
+        log.info("dateFromException:" + dateFromException.getTime());
+        log.info("dateToException:" + dateToException.getTime());
 
         List<SumReportDto> results = new ArrayList<>(10);
 
@@ -163,7 +168,6 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
             bodyQuery = bodyQuery +
                     "        from payments p " +
                     "        inner join payment_provider pp on p.provider_id = pp.id " +
-                    "        where p.created >= :dateFrom" +
                     "        group by p.car_state_id " +
                     "    ) as payments on payments.car_state_id = cs.id " +
                     " where cs.out_timestamp between :dateFrom and :dateTo ";
@@ -199,103 +203,120 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "from car_state cs " +
                         "where cs.out_timestamp between :dateFrom and :dateTo";
             } else if("paymentRecords".equals(filterSumReportDto.getEventType())){
-                queryString = "select count(distinct cs.id) " +
-                        "from event_log l " +
+                queryString = "select count(distinct cs.car_state_id) " +
+                        "from ( " +
+                        "         select l.created, l.plate_number " +
+                        "         from event_log l " +
+                        "         where l.object_class = 'Gate' " +
+                        "           and l.created between :dateFromException and :dateToException " +
+                        "           and l.event_type = 'PAID_PASS' " +
+                        ") l " +
                         "inner join ( " +
-                        "    select cs.id, cs.out_timestamp, cs.car_number, payments.totalSumma " +
-                        "    from car_state cs " +
-                        "    left outer join ( " +
-                        "        select p.car_state_id as car_state_id, sum(p.amount) as totalSumma " +
-                        "        from payments p " +
-                        "        where p.created >= :dateFrom " +
-                        "        group by p.car_state_id " +
-                        "        having totalSumma > 0 " +
-                        "    ) as payments on payments.car_state_id = cs.id " +
+                        "    select p.car_state_id as car_state_id, cs.out_timestamp, cs.car_number, sum(p.amount) as totalSumma " +
+                        "    from payments p " +
+                        "             inner join car_state cs on cs.id = p.car_state_id " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
-                        "    and cs.out_gate is not null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
-                        "where l.object_class = 'Gate' " +
-                        "  and l.created between :dateFromException and :dateToException " +
-                        "  and l.event_type  = 'PAID_PASS'";
+                        "      and cs.out_gate is not null " +
+                        "    group by p.car_state_id " +
+                        "    having totalSumma > 0 " +
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second); ";
             } else if("whitelistRecords".equals(filterSumReportDto.getEventType())){
-                queryString = "select count(distinct l.id) " +
-                        "from event_log l " +
+                queryString = "select count(distinct cs.car_state_id) " +
+                        "from ( " +
+                        "         select l.created, l.plate_number " +
+                        "         from event_log l " +
+                        "         where l.object_class = 'Gate' " +
+                        "           and l.created between :dateFromException and :dateToException " +
+                        "           and l.event_type = 'WHITELIST_OUT' " +
+                        ") l " +
                         "inner join ( " +
-                        "    select cs.id, cs.out_timestamp, cs.car_number " +
+                        "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
                         "    from car_state cs " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
-                        "    and cs.out_gate is not null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
-                        "where l.object_class = 'Gate' " +
-                        "  and l.created between :dateFromException and :dateToException " +
-                        "  and l.event_type = 'WHITELIST_OUT'";
+                        "      and cs.out_gate is not null " +
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second)";
             } else if("abonementRecords".equals(filterSumReportDto.getEventType())){
-                queryString = "select count(distinct l.id) " +
-                        "from event_log l " +
+                queryString = "select count(distinct cs.car_state_id) " +
+                        "from ( " +
+                        "         select l.created, l.plate_number " +
+                        "         from event_log l " +
+                        "         where l.object_class = 'Gate' " +
+                        "           and l.created between :dateFromException and :dateToException " +
+                        "           and l.event_type = 'ABONEMENT_PASS' " +
+                        ") l " +
                         "inner join ( " +
-                        "    select cs.id, cs.out_timestamp, cs.car_number " +
+                        "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
                         "    from car_state cs " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
-                        "    and cs.out_gate is not null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
-                        "where l.object_class = 'Gate' " +
-                        "  and l.created between :dateFromException and :dateToException " +
-                        "  and l.event_type = 'ABONEMENT_PASS'";
+                        "      and cs.out_gate is not null " +
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second)";
             } else if("freeMinuteRecords".equals(filterSumReportDto.getEventType())){
-                queryString = "select count(distinct l.id) " +
-                        "from event_log l " +
+                queryString = "select count(distinct cs.car_state_id) " +
+                        "from ( " +
+                        "         select l.created, l.plate_number " +
+                        "         from event_log l " +
+                        "         where l.object_class = 'Gate' " +
+                        "           and l.created between :dateFromException and :dateToException " +
+                        "           and l.event_type = 'FIFTEEN_FREE' " +
+                        ") l " +
                         "inner join ( " +
-                        "    select cs.id, cs.out_timestamp, cs.car_number " +
+                        "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
                         "    from car_state cs " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
-                        "    and cs.out_gate is not null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
-                        "where l.object_class = 'Gate' " +
-                        "  and l.created between :dateFromException and :dateToException " +
-                        "  and l.event_type = 'FIFTEEN_FREE'";
+                        "      and cs.out_gate is not null " +
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second)";
             } else if("debtRecords".equals(filterSumReportDto.getEventType())){
-                queryString = "select count(distinct l.id) " +
-                        "from event_log l " +
+                queryString = "select count(distinct cs.car_state_id) " +
+                        "from ( " +
+                        "         select l.created, l.plate_number " +
+                        "         from event_log l " +
+                        "         where l.object_class = 'Gate' " +
+                        "           and l.created between :dateFromException and :dateToException " +
+                        "           and l.event_type = 'DEBT_OUT' " +
+                        ") l " +
                         "inner join ( " +
-                        "    select cs.id, cs.out_timestamp, cs.car_number " +
+                        "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
                         "    from car_state cs " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
-                        "    and cs.out_gate is not null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
-                        "where l.object_class = 'Gate' " +
-                        "  and l.created between :dateFromException and :dateToException " +
-                        "  and l.event_type = 'DEBT_OUT'";
+                        "      and cs.out_gate is not null " +
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second)";
             } else if("fromBalanceRecords".equals(filterSumReportDto.getEventType())){
-                queryString = "select count(distinct cs.id) " +
-                        "from event_log l " +
+                queryString = "select count(distinct cs.car_state_id) " +
+                        "from ( " +
+                        "         select l.created, l.plate_number " +
+                        "         from event_log l " +
+                        "         where l.object_class = 'Gate' " +
+                        "           and l.created between :dateFromException and :dateToException " +
+                        "           and l.event_type = 'PAID_PASS' " +
+                        ") l " +
                         "inner join ( " +
-                        "    select cs.id, cs.out_timestamp, cs.car_number, payments.totalSumma " +
+                        "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
                         "    from car_state cs " +
-                        "    left outer join ( " +
-                        "        select p.car_state_id as car_state_id, sum(p.amount) as totalSumma " +
-                        "        from payments p " +
-                        "        where p.created >= :dateFrom " +
-                        "        group by p.car_state_id " +
-                        "        having totalSumma = 0 " +
-                        "    ) as payments on payments.car_state_id = cs.id " +
+                        "        left outer join ( " +
+                        "            select p.car_state_id " +
+                        "            from payments p " +
+                        "            group by p.car_state_id " +
+                        "            having sum(p.amount)  > 0 " +
+                        "        ) payments on payments.car_state_id = cs.id " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
                         "    and cs.out_gate is not null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
-                        "where l.object_class = 'Gate' " +
-                        "  and l.created between :dateFromException and :dateToException " +
-                        "  and l.event_type  = 'PAID_PASS'";
+                        "    and payments.car_state_id is null " +
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second)";
             } else if("freeRecords".equals(filterSumReportDto.getEventType())){
-                queryString = "select count(distinct l.id) " +
-                        "from event_log l " +
+                queryString = "select count(distinct cs.car_state_id) " +
+                        "from ( " +
+                        "         select l.created, l.plate_number " +
+                        "         from event_log l " +
+                        "         where l.object_class = 'Gate' " +
+                        "           and l.created between :dateFromException and :dateToException " +
+                        "           and l.event_type = 'FREE_PASS' " +
+                        ") l " +
                         "inner join ( " +
-                        "    select cs.id, cs.out_timestamp, cs.car_number " +
+                        "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
                         "    from car_state cs " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
-                        "    and cs.out_gate is not null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
-                        "where l.object_class = 'Gate' " +
-                        "  and l.created between :dateFromException and :dateToException " +
-                        "  and l.event_type = 'FREE_PASS'";
+                        "      and cs.out_gate is not null " +
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second)";
             } else if("autoClosedRecords".equals(filterSumReportDto.getEventType())){
                 queryString = "select count(cs.id) " +
                         "from car_state cs " +
@@ -308,8 +329,8 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                     .setParameter("dateTo", filterSumReportDto.getDateTo());
 
             if(!"records".equals(filterSumReportDto.getEventType()) && !"autoClosedRecords".equals(filterSumReportDto.getEventType())){
-                query.setParameter("dateFromException", dateFromException)
-                        .setParameter("dateToException", dateToException);
+                query.setParameter("dateFromException", dateFromException.getTime())
+                        .setParameter("dateToException", dateToException.getTime());
             }
 
             Object result = query.getSingleResult();
@@ -326,117 +347,116 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
     public List<SumReportDto> listDetailed(FilterSumReportDto filterSumReportDto) throws ParseException {
 
-        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd");
-        Date date = format.parse(filterSumReportDto.getDate());
-
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+        calendar.setTime(filterSumReportDto.getDateFrom());
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        calendar.add(Calendar.HOUR_OF_DAY, -6);
+        filterSumReportDto.setDateFrom(calendar.getTime());
+        calendar.add(Calendar.DATE, 1);
+        filterSumReportDto.setDateTo(calendar.getTime());
 
         Calendar dateFromCalendar = Calendar.getInstance();
-        dateFromCalendar.setTime(calendar.getTime());
-        if(calendar.getTime().before(filterSumReportDto.getDateFrom())){
-            dateFromCalendar.setTime(filterSumReportDto.getDateFrom());
-        }
-        Date dateFrom = dateFromCalendar.getTime();
+        dateFromCalendar.setTime(filterSumReportDto.getDateFrom());
         dateFromCalendar.add(Calendar.MINUTE, -6);
         Date dateFromException = dateFromCalendar.getTime();
 
-        calendar.add(Calendar.DATE, 1);
-
         Calendar dateToCalendar = Calendar.getInstance();
-        dateToCalendar.setTime(calendar.getTime());
-        if(calendar.getTime().after(filterSumReportDto.getDateTo())){
-            dateToCalendar.setTime(filterSumReportDto.getDateTo());
-        }
-        Date dateTo = dateToCalendar.getTime();
+        dateToCalendar.setTime(filterSumReportDto.getDateTo());
         dateToCalendar.add(Calendar.MINUTE, 6);
         Date dateToException = dateToCalendar.getTime();
 
         String commonPart = " select distinct cs.car_number, DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%d.%m.%Y %H:%i') as inDate, DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%d.%m.%Y %H:%i') as outDate, inGate.name as gateIn, outGate.name as gateOut " +
-                " from event_log l " +
-                " inner join ( " +
-                "    select cs.id, cs.out_timestamp, cs.car_number, cs.in_timestamp, cs.out_gate, cs.in_gate " +
+                "from ( " +
+                "         select l.created, l.plate_number " +
+                "         from event_log l " +
+                "         where l.object_class = 'Gate' " +
+                "           and l.created between :dateFromException and :dateToException  " +
+                "           INDIVIDUAL_CONDITION " +
+                "     ) l " +
+                "inner join ( " +
+                "    select cs.id as car_state_id, cs.in_timestamp, cs.out_timestamp, cs.car_number, cs.in_gate, cs.out_gate " +
                 "    from car_state cs " +
                 "    where cs.out_timestamp between :dateFrom and :dateTo " +
-                " ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
-                " left outer join " +
+                "      and cs.out_gate is not null " +
+                ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
+                "left outer join " +
                 "     gate inGate on inGate.id = cs.in_gate " +
-                " left outer join " +
-                "     gate outGate on outGate.id = cs.out_gate " +
-                " where l.object_class = 'Gate' " +
-                "  and l.created between :dateFromException and :dateToException ";
+                "left outer join " +
+                "     gate outGate on outGate.id = cs.out_gate; ";
         String queryText = null;
 
         switch (filterSumReportDto.getEventType()) {
             case  ("whitelistRecords"):
-                queryText = commonPart + "  and l.event_type = 'WHITELIST_OUT'";
+                queryText = commonPart.replaceFirst("INDIVIDUAL_CONDITION","  and l.event_type = 'WHITELIST_OUT'");
                 break;
             case ("abonementRecords"):
-                queryText = commonPart + "  and l.event_type = 'ABONEMENT_PASS'";
+                queryText = commonPart.replaceFirst("INDIVIDUAL_CONDITION","  and l.event_type = 'ABONEMENT_PASS'");
                 break;
             case ("freeMinuteRecords"):
-                queryText = commonPart + "  and l.event_type = 'FIFTEEN_FREE'";
+                queryText = commonPart.replaceFirst("INDIVIDUAL_CONDITION","  and l.event_type = 'FIFTEEN_FREE'");
                 break;
             case ("debtRecords"):
-                queryText = commonPart + "  and l.event_type = 'DEBT_OUT'";
+                queryText = commonPart.replaceFirst("INDIVIDUAL_CONDITION","  and l.event_type = 'DEBT_OUT'");
                 break;
             case ("freeRecords"):
-                queryText = commonPart + "  and l.event_type = 'FREE_PASS'";
+                queryText = commonPart.replaceFirst("INDIVIDUAL_CONDITION","  and l.event_type = 'FREE_PASS'");
                 break;
             case ("paymentRecords"):
                 queryText = " select distinct cs.car_number, DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%d.%m.%Y %H:%i') as inDate, DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%d.%m.%Y %H:%i') as outDate, inGate.name as gateIn, outGate.name as gateOut " +
-                        " from event_log l " +
-                        " inner join ( " +
-                        "    select cs.id, cs.out_timestamp, cs.car_number, cs.in_timestamp, cs.out_gate, cs.in_gate " +
-                        "    from car_state cs " +
-                        "    where cs.out_timestamp between :dateFrom and :dateTo " +
+                        "from ( " +
+                        "         select l.created, l.plate_number " +
+                        "         from event_log l " +
+                        "         where l.object_class = 'Gate' " +
+                        "           and l.created between :dateFromException and :dateToException " +
+                        "           and l.event_type = 'PAID_PASS' " +
+                        "     ) l " +
+                        "inner join ( " +
+                        "     select cs.id as car_state_id, cs.in_timestamp, cs.out_timestamp, cs.car_number, cs.in_gate, cs.out_gate " +
+                        "     from car_state cs " +
+                        "         left outer join ( " +
+                        "             select p.car_state_id " +
+                        "             from payments p " +
+                        "             group by p.car_state_id " +
+                        "             having sum(p.amount)  > 0 " +
+                        "         ) payments on payments.car_state_id = cs.id " +
+                        "     where cs.out_timestamp between :dateFrom and :dateTo " +
+                        "     and cs.out_gate is not null " +
+                        "     and payments.car_state_id is null " +
                         " ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
-                        " left outer join " +
+                        "left outer join " +
                         "     gate inGate on inGate.id = cs.in_gate " +
-                        " left outer join " +
-                        "     gate outGate on outGate.id = cs.out_gate" +
-                        " left outer join ( " +
-                        "    select p.car_state_id as car_state_id, " +
-                        "           sum(p.amount) as totalSumma " +
-                        "    from payments p " +
-                        "             inner join car_state cs on cs.id = p.car_state_id and cs.out_timestamp between :dateFrom and :dateTo " +
-                        "             inner join payment_provider pp on p.provider_id = pp.id " +
-                        "    group by p.car_state_id " +
-                        ") as payments on payments.car_state_id = cs.id " +
-                        " where l.object_class = 'Gate' " +
-                        " and l.created between :dateFromException and :dateToException  " +
-                        " and l.event_type = 'PAID_PASS'" +
-                        " and payments.totalSumma > 0";
+                        "left outer join " +
+                        "     gate outGate on outGate.id = cs.out_gate;";
                 break;
             case ("fromBalanceRecords"):
                 queryText = " select distinct cs.car_number, DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%d.%m.%Y %H:%i') as inDate, DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%d.%m.%Y %H:%i') as outDate, inGate.name as gateIn, outGate.name as gateOut " +
-                        " from event_log l " +
-                        " inner join ( " +
-                        "    select cs.id, cs.out_timestamp, cs.car_number, cs.in_timestamp, cs.out_gate, cs.in_gate " +
+                        "from ( " +
+                        "         select l.created, l.plate_number " +
+                        "         from event_log l " +
+                        "         where l.object_class = 'Gate' " +
+                        "           and l.created between :dateFromException and :dateToException " +
+                        "           and l.event_type = 'PAID_PASS' " +
+                        "     ) l " +
+                        "inner join ( " +
+                        "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
                         "    from car_state cs " +
+                        "        left outer join ( " +
+                        "            select p.car_state_id " +
+                        "            from payments p " +
+                        "            group by p.car_state_id " +
+                        "            having sum(p.amount)  > 0 " +
+                        "        ) payments on payments.car_state_id = cs.id " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
+                        "    and cs.out_gate is not null " +
+                        "    and payments.car_state_id is null " +
                         " ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 6 second) and date_add(l.created, INTERVAL 6 second) " +
-                        " left outer join " +
+                        "left outer join " +
                         "     gate inGate on inGate.id = cs.in_gate " +
-                        " left outer join " +
-                        "     gate outGate on outGate.id = cs.out_gate" +
-                        " left outer join ( " +
-                        "    select p.car_state_id as car_state_id, " +
-                        "           sum(p.amount) as totalSumma " +
-                        "    from payments p " +
-                        "             inner join car_state cs on cs.id = p.car_state_id and cs.out_timestamp between :dateFrom and :dateTo " +
-                        "             inner join payment_provider pp on p.provider_id = pp.id " +
-                        "    group by p.car_state_id " +
-                        ") as payments on payments.car_state_id = cs.id " +
-                        " where l.object_class = 'Gate' " +
-                        " and l.created between :dateFromException and :dateToException  " +
-                        " and l.event_type = 'PAID_PASS'" +
-                        " and (payments.totalSumma is null or payments.totalSumma = 0)";
+                        "left outer join " +
+                        "     gate outGate on outGate.id = cs.out_gate;";
+
                 break;
             case ("autoClosedRecords"):
                 queryText = "select distinct cs.car_number, DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%d.%m.%Y %H:%i') as inDate, DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%d.%m.%Y %H:%i') as outDate, inGate.name as gateIn, outGate.name as gateOut " +
@@ -457,8 +477,8 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
         Query query = entityManager
                 .createNativeQuery(queryText)
-                .setParameter("dateFrom", dateFrom)
-                .setParameter("dateTo", dateTo);
+                .setParameter("dateFrom", filterSumReportDto.getDateFrom())
+                .setParameter("dateTo", filterSumReportDto.getDateTo());
 
         if(!"autoClosedRecords".equals(filterSumReportDto.getEventType())){
             query.setParameter("dateFromException", dateFromException).setParameter("dateToException", dateToException);
@@ -467,19 +487,23 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
         List<Object[]> queryResult = query.getResultList();
 
         List<SumReportDto> listResult = new ArrayList<>(queryResult.size());
+        SumReportDto sumReportDto = new SumReportDto();
+
+        List<SumReportListDto> sumReportList  = new ArrayList<>(queryResult.size());
 
         for(Object[] object: queryResult){
             int it = 0;
-            SumReportDto sumReportDto = new SumReportDto();
+
             SumReportListDto dto = new SumReportListDto();
             dto.setPlateNumber((String)object[it++]);
             dto.setFormattedInDate((String)object[it++]);
             dto.setFormattedOutDate((String)object[it++]);
             dto.setInPlace((String)object[it++]);
             dto.setOutPlace((String)object[it++]);
-           // sumReportDto.setListResult(dto);
-            listResult.add(sumReportDto);
+            sumReportList.add(dto);
         }
+        sumReportDto.setListResult(sumReportList);
+        listResult.add(sumReportDto);
         return listResult;
     }
 
