@@ -490,6 +490,7 @@ public class PaymentServiceImpl implements PaymentService {
                     billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
                 }
             }
+            carState.setCarOutType(CarState.CarOutType.DEBT_OUT);
             carStateService.createOUTState(carNumber, new Date(), camera, carState, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
 
             String descriptionRu = "Выпускаем авто: Авто с гос. номером " + carNumber + " с долгом -" + rateResult;

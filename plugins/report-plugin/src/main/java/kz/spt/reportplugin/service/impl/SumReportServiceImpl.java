@@ -454,10 +454,6 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
         }
 
         log.info(queryText);
-        log.info("dateFrom: " + dateFrom);
-        log.info("dateFrom: " + dateTo);
-        log.info("dateFromException: " + dateFromException);
-        log.info("dateToException: " + dateToException);
 
         Query query = entityManager
                 .createNativeQuery(queryText)

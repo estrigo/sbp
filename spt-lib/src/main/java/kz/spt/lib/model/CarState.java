@@ -29,6 +29,17 @@ import java.util.Date;
 @Table(name = "car_state")
 public class CarState {
 
+    public enum CarOutType {
+        REGISTER_PASS, // Регистрация выезда
+        BOOKING_PASS, //Выезд через букинг
+        DEBT_OUT, //Выезд с долгом
+        FIFTEEN_FREE, // Выезд по бесплатным минутам
+        ABONEMENT_PASS, // Выезд по абонементу
+        WHITELIST_OUT, // Выезд по белому списку
+        PAID_PASS, // платный выезд
+        FREE_PASS // бесплатный выезд
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -102,6 +113,10 @@ public class CarState {
     private String abonomentJson;
 
     private Boolean cashlessPayment = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "car_out_type")
+    private CarOutType carOutType;
 
     @CreationTimestamp
     private Date created;
