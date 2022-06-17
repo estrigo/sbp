@@ -74,13 +74,13 @@ public class PaymentServiceImpl implements PaymentService {
                         dto.txn_id = commandDto.txn_id;
                         return dto;
                     }
-                } else if (commandDto.service_id!=null && commandDto.service_id==3) {
+//                } else if (commandDto.service_id!=null && commandDto.service_id==3) {
+                } else {
+                    CarState carState = carStateService.getLastNotLeft(commandDto.account);
                     JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
                     if(abonomentResultNode != null && abonomentResultNode.has("price")){
                         return fillAbonomentDetails(abonomentResultNode, commandDto);
                     }
-                } else {
-                    CarState carState = carStateService.getLastNotLeft(commandDto.account);
                     if (carState == null) {
                         JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
                         if (currentBalanceResult.has("currentBalance") && BigDecimal.ZERO.compareTo(currentBalanceResult.get("currentBalance").decimalValue()) == 1) {
@@ -151,12 +151,12 @@ public class PaymentServiceImpl implements PaymentService {
                         Long paymentId = result.get("paymentId").longValue();
 
                         return successPayment(commandDto, paymentId);
-                    } else if (commandDto.service_id!=null && commandDto.service_id==3) {
+//                    } else if (commandDto.service_id!=null && commandDto.service_id==3) {
+                    } else {
                         JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
                         if(abonomentResultNode != null && abonomentResultNode.has("price")){
                             return payAbonoment(commandDto, carState, abonomentResultNode);
                         }
-                    } else {
                         CarState lastDebtCarState = carStateService.getLastCarState(commandDto.account); // Оплата долга
                         if(lastDebtCarState != null){
                             Object payment = savePayment(commandDto, lastDebtCarState, null, false);
@@ -180,12 +180,12 @@ public class PaymentServiceImpl implements PaymentService {
                         dto.txn_id = commandDto.txn_id;
                         return dto;
                     }
-                } else if (commandDto.service_id!=null && commandDto.service_id==3) {
+//                } else if (commandDto.service_id!=null && commandDto.service_id==3) {
+                } else {
                     JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
                     if(abonomentResultNode != null && abonomentResultNode.has("price")){
                         return payAbonoment(commandDto, carState, abonomentResultNode);
                     }
-                } else {
                     Object payment = savePayment(commandDto, carState, null, false);
                     if (BillingInfoErrorDto.class.equals(payment.getClass())) {
                         return payment;
@@ -657,16 +657,22 @@ public class PaymentServiceImpl implements PaymentService {
         if (parkingId != null) {
             node.put("parkingId", parkingId);
 
-            if (commandDto.service_id != null && commandDto.service_id!=3) {
-                JsonNode rateValue = getRateByParking(parkingId);
-                if (rateValue.has("rateName")) {
-                    node.put("rateName", rateValue.get("rateName").textValue());
-                }
-                if (rateValue.has("rateId")) {
-                    node.put("rateId", rateValue.get("rateId").longValue());
-                }
-            } else {
-                log.info("No Parking Rate !");
+            JsonNode rateValue = getRateByParking(parkingId);
+            if (rateValue.has("rateName")) {
+                node.put("rateName", rateValue.get("rateName").textValue());
+            }
+            if (rateValue.has("rateId")) {
+                node.put("rateId", rateValue.get("rateId").longValue());
+//            if (commandDto.service_id != null && commandDto.service_id!=3) {
+//                JsonNode rateValue = getRateByParking(parkingId);
+//                if (rateValue.has("rateName")) {
+//                    node.put("rateName", rateValue.get("rateName").textValue());
+//                }
+//                if (rateValue.has("rateId")) {
+//                    node.put("rateId", rateValue.get("rateId").longValue());
+//                }
+//            } else {
+//                log.info("No Parking Rate !");
             }
         } else {
             if (parkingType.equals(Parking.ParkingType.PREPAID)) {
