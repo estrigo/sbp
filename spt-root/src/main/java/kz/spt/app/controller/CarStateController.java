@@ -71,7 +71,7 @@ public class CarStateController {
         model.addAttribute("allInGates", allInGates);
         model.addAttribute("allOutGates", allOutGates);
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
-        model.addAttribute("canRemove", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR_NO_REVENUE_SHARE", "ROLE_OPERATOR", "ROLE_MANAGER").contains(m.getAuthority())));
+        model.addAttribute("canRemove", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR_NO_REVENUE_SHARE", "ROLE_MANAGER").contains(m.getAuthority())));
         model.addAttribute("canKick", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR").contains(m.getAuthority())));
 
         return "journal/list";
@@ -92,7 +92,7 @@ public class CarStateController {
         model.addAttribute("allInGates", allInGates);
         model.addAttribute("allOutGates", allOutGates);
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN").contains(m.getAuthority())));
-        model.addAttribute("canRemove", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR_NO_REVENUE_SHARE", "ROLE_OPERATOR").contains(m.getAuthority())));
+        model.addAttribute("canRemove", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR_NO_REVENUE_SHARE").contains(m.getAuthority())));
         model.addAttribute("canKick", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR").contains(m.getAuthority())));
 
         return "journal/list";
