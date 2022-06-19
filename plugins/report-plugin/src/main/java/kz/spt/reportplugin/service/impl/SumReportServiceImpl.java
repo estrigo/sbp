@@ -72,11 +72,11 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
         Calendar dateFromException = Calendar.getInstance();
         dateFromException.setTime(filterSumReportDto.getDateFrom());
-        dateFromException.add(Calendar.MINUTE, -10);
+        dateFromException.add(Calendar.MINUTE, -1);
 
         Calendar dateToException = Calendar.getInstance();
         dateToException.setTime(filterSumReportDto.getDateTo());
-        dateToException.add(Calendar.MINUTE, 10);
+        dateToException.add(Calendar.MINUTE, 1);
 
         List<SumReportDto> results = new ArrayList<>(10);
 
@@ -168,8 +168,6 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                     "    ) as payments on payments.car_state_id = cs.id " +
                     " where cs.out_timestamp between :dateFrom and :dateTo ";
 
-            log.info(headerQuery + bodyQuery);
-
             List<Object[]> objects = entityManager.createNativeQuery(headerQuery + bodyQuery)
                     .setParameter("dateFrom", filterSumReportDto.getDateFrom())
                     .setParameter("dateTo", filterSumReportDto.getDateTo())
@@ -216,7 +214,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "      and cs.out_gate is not null " +
                         "    group by p.car_state_id " +
                         "    having totalSumma > 0 " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 10 second) and date_add(l.created, INTERVAL 10 second); ";
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second) ";
             } else if("whitelistRecords".equals(filterSumReportDto.getEventType())){
                 queryString = "select count(distinct cs.car_state_id) " +
                         "from ( " +
@@ -231,7 +229,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "    from car_state cs " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
                         "      and cs.out_gate is not null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 10 second) and date_add(l.created, INTERVAL 10 second)";
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
             } else if("abonementRecords".equals(filterSumReportDto.getEventType())){
                 queryString = "select count(distinct cs.car_state_id) " +
                         "from ( " +
@@ -246,7 +244,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "    from car_state cs " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
                         "      and cs.out_gate is not null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 10 second) and date_add(l.created, INTERVAL 10 second)";
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
             } else if("freeMinuteRecords".equals(filterSumReportDto.getEventType())){
                 queryString = "select count(distinct cs.car_state_id) " +
                         "from ( " +
@@ -261,7 +259,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "    from car_state cs " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
                         "      and cs.out_gate is not null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 10 second) and date_add(l.created, INTERVAL 10 second)";
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
             } else if("debtRecords".equals(filterSumReportDto.getEventType())){
                 queryString = "select count(distinct cs.car_state_id) " +
                         "from ( " +
@@ -276,7 +274,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "    from car_state cs " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
                         "      and cs.out_gate is not null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 10 second) and date_add(l.created, INTERVAL 10 second)";
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
             } else if("fromBalanceRecords".equals(filterSumReportDto.getEventType())){
                 queryString = "select count(distinct cs.car_state_id) " +
                         "from ( " +
@@ -299,7 +297,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
                         "    and cs.out_gate is not null " +
                         "    and payments.car_state_id is null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 10 second) and date_add(l.created, INTERVAL 10 second)";
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
             } else if("freeRecords".equals(filterSumReportDto.getEventType())){
                 queryString = "select count(distinct cs.car_state_id) " +
                         "from ( " +
@@ -314,7 +312,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "    from car_state cs " +
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
                         "      and cs.out_gate is not null " +
-                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 10 second) and date_add(l.created, INTERVAL 10 second)";
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
             } else if("autoClosedRecords".equals(filterSumReportDto.getEventType())){
                 queryString = "select count(cs.id) " +
                         "from car_state cs " +
@@ -357,12 +355,12 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
         Calendar dateFromCalendar = Calendar.getInstance();
         dateFromCalendar.setTime(filterSumReportDto.getDateFrom());
-        dateFromCalendar.add(Calendar.MINUTE, -10);
+        dateFromCalendar.add(Calendar.MINUTE, -1);
         Date dateFromException = dateFromCalendar.getTime();
 
         Calendar dateToCalendar = Calendar.getInstance();
         dateToCalendar.setTime(filterSumReportDto.getDateTo());
-        dateToCalendar.add(Calendar.MINUTE, 10);
+        dateToCalendar.add(Calendar.MINUTE, 1);
         Date dateToException = dateToCalendar.getTime();
 
         String commonPart = " select distinct cs.car_number, DATE_FORMAT(date_add(cs.in_timestamp, INTERVAL 6 hour), '%d.%m.%Y %H:%i') as inDate, DATE_FORMAT(date_add(cs.out_timestamp, INTERVAL 6 hour), '%d.%m.%Y %H:%i') as outDate, inGate.name as gateIn, outGate.name as gateOut " +
@@ -378,7 +376,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                 "    from car_state cs " +
                 "    where cs.out_timestamp between :dateFrom and :dateTo " +
                 "      and cs.out_gate is not null " +
-                ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 10 second) and date_add(l.created, INTERVAL 10 second) " +
+                ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second) " +
                 "left outer join " +
                 "     gate inGate on inGate.id = cs.in_gate " +
                 "left outer join " +
@@ -422,7 +420,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "         ) payments on payments.car_state_id = cs.id " +
                         "     where cs.out_timestamp between :dateFrom and :dateTo " +
                         "     and cs.out_gate is not null " +
-                        " ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 10 second) and date_add(l.created, INTERVAL 10 second) " +
+                        " ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second) " +
                         "left outer join " +
                         "     gate inGate on inGate.id = cs.in_gate " +
                         "left outer join " +
@@ -450,7 +448,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "    where cs.out_timestamp between :dateFrom and :dateTo " +
                         "    and cs.out_gate is not null " +
                         "    and payments.car_state_id is null " +
-                        " ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 10 second) and date_add(l.created, INTERVAL 10 second) " +
+                        " ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second) " +
                         "left outer join " +
                         "     gate inGate on inGate.id = cs.in_gate " +
                         "left outer join " +
@@ -471,8 +469,6 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                 queryText = null;
                 break;
         }
-
-        log.info(queryText);
 
         Query query = entityManager
                 .createNativeQuery(queryText)
