@@ -163,6 +163,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
             bodyQuery = bodyQuery +
                     "        from payments p " +
                     "        inner join payment_provider pp on p.provider_id = pp.id " +
+                    "        where p.out_date between :dateFrom and :dateTo or p.out_date is null" +
                     "        group by p.car_state_id " +
                     "    ) as payments on payments.car_state_id = cs.id " +
                     " where cs.out_timestamp between :dateFrom and :dateTo ";
@@ -210,7 +211,8 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "    select p.car_state_id as car_state_id, cs.out_timestamp, cs.car_number, sum(p.amount) as totalSumma " +
                         "    from payments p " +
                         "             inner join car_state cs on cs.id = p.car_state_id " +
-                        "    where cs.out_timestamp between :dateFrom and :dateTo " +
+                        "    where (p.out_date between :dateFrom and :dateTo or p.out_date is null) " +
+                        "      and cs.out_timestamp between :dateFrom and :dateTo " +
                         "      and cs.out_gate is not null " +
                         "    group by p.car_state_id " +
                         "    having totalSumma > 0 " +
@@ -290,6 +292,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "        left outer join ( " +
                         "            select p.car_state_id " +
                         "            from payments p " +
+                        "            where p.out_date between :dateFrom and :dateTo or p.out_date is null " +
                         "            group by p.car_state_id " +
                         "            having sum(p.amount)  > 0 " +
                         "        ) payments on payments.car_state_id = cs.id " +
@@ -410,15 +413,15 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "inner join ( " +
                         "     select cs.id as car_state_id, cs.in_timestamp, cs.out_timestamp, cs.car_number, cs.in_gate, cs.out_gate " +
                         "     from car_state cs " +
-                        "         left outer join ( " +
+                        "         inner join ( " +
                         "             select p.car_state_id " +
                         "             from payments p " +
+                        "             where p.out_date between :dateFrom and :dateTo or p.out_date is null " +
                         "             group by p.car_state_id " +
                         "             having sum(p.amount)  > 0 " +
                         "         ) payments on payments.car_state_id = cs.id " +
                         "     where cs.out_timestamp between :dateFrom and :dateTo " +
                         "     and cs.out_gate is not null " +
-                        "     and payments.car_state_id is null " +
                         " ) cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 10 second) and date_add(l.created, INTERVAL 10 second) " +
                         "left outer join " +
                         "     gate inGate on inGate.id = cs.in_gate " +
@@ -435,11 +438,12 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "           and l.event_type = 'PAID_PASS' " +
                         "     ) l " +
                         "inner join ( " +
-                        "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
+                        "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number, cs.in_timestamp, cs.in_gate, cs.out_gate " +
                         "    from car_state cs " +
                         "        left outer join ( " +
                         "            select p.car_state_id " +
                         "            from payments p " +
+                        "            where p.out_date between :dateFrom and :dateTo or p.out_date is null " +
                         "            group by p.car_state_id " +
                         "            having sum(p.amount)  > 0 " +
                         "        ) payments on payments.car_state_id = cs.id " +

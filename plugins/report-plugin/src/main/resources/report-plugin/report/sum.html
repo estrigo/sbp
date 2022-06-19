@@ -64,11 +64,12 @@
                         <table id="sumDetailed" class="table table-bordered table-striped dataTable no-footer">
                             <thead>
                                 <tr>
-                                    <th>Номер авто</th>
-                                    <th>Дата въезда</th>
-                                    <th>Дата выезда</th>
-                                    <th>Место въезда</th>
-                                    <th>Место выезда</th>
+                                    <th>#</th>
+                                    <th th:text="#{car.platenumber}"></th>
+                                    <th th:text="#{report.enterDate}"></th>
+                                    <th th:text="#{report.leftDate}"></th>
+                                    <th th:text="#{report.enterPlace}"></th>
+                                    <th th:text="#{report.leftPlace}"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -232,8 +233,9 @@
             success: function (data) {
                 console.log(data);
                 let html = '';
+                let i = 1;
                 $.each(data[0].listResult, function(result) {
-                    html = html + '<tr>';
+                    html = html + '<tr><td>' + (i++) + '</td>';
                     html = html + '<td>' + data[0].listResult[result].plateNumber + '</td>'
                         + '<td>' + data[0].listResult[result].formattedInDate + '</td>'
                         + '<td>' + data[0].listResult[result].formattedOutDate + '</td>'
