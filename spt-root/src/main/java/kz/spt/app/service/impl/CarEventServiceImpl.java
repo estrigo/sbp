@@ -81,7 +81,7 @@ public class CarEventServiceImpl implements CarEventService {
     Boolean notification;
 
     @Value("${notification.parkingUid}")
-    String parking_uid;
+    Object parking_uid;
 
     @Value("${notification.url}")
     String notificationUrl;
@@ -1254,7 +1254,7 @@ public class CarEventServiceImpl implements CarEventService {
         String url = notificationUrl;
         Map<String, Object> params = new HashMap<>();
         params.put("plate_number", carState.getCarNumber());
-        params.put("parking_uid", parking_uid);
+        params.put("parking_uid", parking_uid.toString());
         params.put("sum", rate.intValue());
         params.put("dt_start", dt_start);
         params.put("dt_finish", dt_finish);
@@ -1266,7 +1266,6 @@ public class CarEventServiceImpl implements CarEventService {
         HttpEntity request = new HttpEntity<>(params, headers);
 
         try {
-            log.info("request: " + request);
             ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, request, String.class);
             log.info("Magnum notification response status: " + responseEntity.getStatusCode() + ", plate_number: " + carState.getCarNumber());
         } catch (Exception e) {
