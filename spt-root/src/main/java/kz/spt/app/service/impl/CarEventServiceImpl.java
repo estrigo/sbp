@@ -19,6 +19,7 @@ import kz.spt.lib.utils.Utils;
 import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpEntity;
@@ -33,6 +34,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -79,6 +82,9 @@ public class CarEventServiceImpl implements CarEventService {
 
     @Value("${notification.parkingUid}")
     String parking_uid;
+
+    @Value("${notification.token}")
+    String access_token;
 
     @Value("${notification.url}")
     String notificationUrl;
@@ -1243,23 +1249,32 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     private void sendNotification(CarState carState, Date dateOut, BigDecimal rate) {
-        SimpleDateFormat sdf = new SimpleDateFormat(StaticValues.dateFormatTZ);
-        String dt_start = sdf.format(carState.getInTimestamp());
-        String dt_finish = sdf.format(dateOut);
+        ZoneId id = ZoneId.systemDefault();
+        String dt_start = String.valueOf(ZonedDateTime.ofInstant(carState.getInTimestamp().toInstant(), id).withFixedOffsetZone());
+        String dt_finish = String.valueOf(ZonedDateTime.ofInstant(dateOut.toInstant(), id).withFixedOffsetZone());
 
         RestTemplate restTemplate = new RestTemplate();
         String url = notificationUrl;
-        Map<String, String> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         params.put("plate_number", carState.getCarNumber());
         params.put("parking_uid", parking_uid);
-        params.put("sum", String.valueOf(rate));
+        params.put("sum", rate.intValue());
         params.put("dt_start", dt_start);
         params.put("dt_finish", dt_finish);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + access_token);
         HttpEntity request = new HttpEntity<>(params, headers);
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, request, String.class);
-        log.info("Notification response: " + responseEntity.getBody());
+
+        try {
+            log.info("request: " + request);
+            ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, request, String.class);
+            log.info("Magnum notification response status: " + responseEntity.getStatusCode() + ", plate_number: " + carState.getCarNumber());
+        } catch (Exception e) {
+//            e.printStackTrace();
+            log.info("Magnum notification response error.");
+        }
+
     }
 
     private void saveCarOutState(CarEventDto eventDto, Camera camera, CarState carState, Map<String, Object> properties, BigDecimal balance, BigDecimal rateResult, BigDecimal zerotouchValue, SimpleDateFormat format, StaticValues.CarOutBy carOutBy, JsonNode abonements, JsonNode whitelists) throws Exception {
