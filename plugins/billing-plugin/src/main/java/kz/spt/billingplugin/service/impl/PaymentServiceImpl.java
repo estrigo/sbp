@@ -60,9 +60,21 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public List<PaymentLogDTO> getPaymentDtoList(FilterPaymentDTO filter){
-        List<Payment> allPayments = listByFilters(filter);
-        return PaymentLogDTO.convertToDto(allPayments);
+    public List<PaymentLogDTO> getPaymentDtoExcelList(FilterPaymentDTO filter) {
+        Specification<Payment> specification = getPaymentSpecification(filter);
+        List<Payment> payments = listByFiltersForExcel(specification);
+        return PaymentLogDTO.convertToDto(payments);
+    }
+
+
+    private List<Payment> listByFiltersForExcel(Specification<Payment> paymentSpecification) {
+        Sort sort = Sort.by("id").descending();
+        if (paymentSpecification != null) {
+            return paymentRepository.findAll(paymentSpecification, sort);
+        } else {
+            Pageable rows = PageRequest.of(0, 1000, sort);
+            return paymentRepository.findAll(rows).toList();
+        }
     }
 
     @Override

@@ -8,9 +8,11 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.dto.EventFilterDto;
+import kz.spt.lib.model.dto.EventLogExcelDto;
 import kz.spt.lib.model.dto.EventsDto;
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
 
 public interface EventLogService {
@@ -33,7 +35,7 @@ public interface EventLogService {
 
     Page<EventsDto> getEventLogs(PagingRequest pagingRequest, EventFilterDto eventFilterDto) throws ParseException;
 
-    String getEventExcel(EventFilterDto eventFilterDto) throws Exception;
+    List<EventLogExcelDto> getEventExcel(EventFilterDto eventFilterDto) throws Exception;
 
     void save(EventLog eventLog);
 
