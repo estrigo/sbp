@@ -24,6 +24,8 @@ public class ParkomatStatus {
 
     private String ip;
 
+    private String config;
+
 
 
 }

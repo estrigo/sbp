@@ -54,9 +54,11 @@ public class WebKassaServiceImpl implements WebKassaService {
 
             ObjectMapper mapper = new ObjectMapper();
             String requestBody = mapper.writeValueAsString(webcheck);
+            log.info("[WebKassa] Requesting check data " + webcheck.toString());
             HttpEntity<String> request = new HttpEntity(requestBody, headers);
             CheckResponse checkResponse =
                     restTemplate.postForObject(webkassaHost+"/api/Check", request, CheckResponse.class);
+            log.info("[WebKassa] Response check data " + checkResponse.toString());
             if (checkResponse != null && checkResponse.data != null) {
                 ofdCheckData = new OfdCheckData();
                 ofdCheckData.setCheckNumber(checkResponse.data.checkNumber);
@@ -103,15 +105,20 @@ public class WebKassaServiceImpl implements WebKassaService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
+            log.info("[WebKassa] Requesting token for " + authRequestDTO.getLogin());
             ObjectMapper mapper = new ObjectMapper();
             String requestBody = mapper.writeValueAsString(authRequestDTO);
+            log.info("[WebKassa] Requesting token data " + authRequestDTO.toString());
+            log.info("[WebKassa] Requesting token url " + webkassaHost+"/api/Authorize");
             HttpEntity<String> request = new HttpEntity(requestBody, headers);
             String authResponse =
                     restTemplate.postForObject(webkassaHost+"/api/Authorize", request, String.class);
+            log.info("[WebKassa] Response token data " + authResponse);
             JsonNode node = mapper.readTree(authResponse);
             if (node.has("Data") && node.get("Data").has("Token")) {
+
                 token = node.get("Data").get("Token").textValue();
+                log.info("[WebKassa] Token  " + token);
 
             }
         } catch (Exception ex) {

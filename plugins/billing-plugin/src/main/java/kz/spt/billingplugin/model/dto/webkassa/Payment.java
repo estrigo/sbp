@@ -1,5 +1,8 @@
 package kz.spt.billingplugin.model.dto.webkassa;
-import com.fasterxml.jackson.annotation.JsonProperty; 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.ToString;
+
+@ToString
 public class Payment{
 
     public static int TYPE_CARD = 1;

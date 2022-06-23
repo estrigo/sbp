@@ -50,4 +50,7 @@ public class PaymentProvider extends PaymentProviderAbstract {
 
     @Column(insertable=false, updatable=false)
     String parkomatIP;
+
+    @Column(insertable=false, updatable=false)
+    private Boolean isParkomat = false;
 }

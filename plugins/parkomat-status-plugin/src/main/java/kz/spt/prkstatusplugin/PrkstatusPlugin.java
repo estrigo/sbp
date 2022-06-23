@@ -31,7 +31,7 @@ public class PrkstatusPlugin extends SpringBootPlugin implements CustomPlugin {
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
         }
-        ResourceBundle bundle = ResourceBundle.getBundle("prkstatus-plugin", Locale.forLanguageTag(language));
+        ResourceBundle bundle = ResourceBundle.getBundle("parkomat-status-plugin", Locale.forLanguageTag(language));
         List<Map<String, Object>> list = new ArrayList<>();
 
         Map<String, Object> mainMenu = new HashMap<>();
@@ -48,13 +48,13 @@ public class PrkstatusPlugin extends SpringBootPlugin implements CustomPlugin {
 
         Map<String, Object> log = new HashMap<>();
         log.put("label", bundle.getString("parkomat.log.title"));
-        log.put("url", "parkomat-monitor/log");
+        log.put("url", "prkstatus/log/list");
         log.put("role", "MANAGER");
         subMenus.add(log);
 
         Map<String, Object> update = new HashMap<>();
         update.put("label", bundle.getString("parkomat.update.title"));
-        update.put("url", "parkomat-monitor/update");
+        update.put("url", "prkstatus/update/list");
         update.put("role", "MANAGER");
         subMenus.add(update);
 

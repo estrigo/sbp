@@ -181,10 +181,11 @@ public class CommandExecutor implements PluginRegister {
                     node.put("ticketUrl", ofdCheckData.getCheckUrl());
                     List<Payment> paymentList = getPaymentService().findByTransactionAndProvider(txn_id, provider);
                     if (!paymentList.isEmpty()) {
-                        paymentList.get(0).setCheckNumber(ofdCheckData.getCheckNumber());
-                        paymentList.get(0).setCheckUrl(ofdCheckData.getCheckUrl());
-                        paymentList.get(0).setIkkm(paymentType == 1);
-                        getPaymentService().savePayment(paymentList.get(0));
+                        Payment payment = paymentList.get(0);
+                        payment.setCheckNumber(ofdCheckData.getCheckNumber());
+                        payment.setCheckUrl(ofdCheckData.getCheckUrl());
+                        payment.setIkkm(paymentType == 1);
+                        getPaymentService().savePayment(payment);
                     }
 
                 }

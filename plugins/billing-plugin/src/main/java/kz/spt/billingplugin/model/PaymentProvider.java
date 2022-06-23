@@ -46,4 +46,6 @@ public class PaymentProvider extends PaymentProviderAbstract {
     String webKassaPassword;
     /* IP-адрес паркомата */
     String parkomatIP;
+
+    private Boolean isParkomat = false;
 }

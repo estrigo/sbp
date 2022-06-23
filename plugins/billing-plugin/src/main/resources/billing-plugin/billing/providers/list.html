@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
 
-<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
 
 <div class="content">
     <div class="container-fluid">
@@ -12,8 +12,15 @@
                 <div class="card">
                     <div class="card-header" th:text="#{billing.providers}"></div>
                     <div class="card-body">
+                        <div class="form-group row" id="addBlockId" style="display: none;">
+                            <div class="col-12">
+                                <button data-toggle="modal" data-target="#provider-close-modal"
+                                        class="btn btn-danger waves-effect waves-light"
+                                        th:text="#{crm.add}" th:onclick="providerModalContent(null)"></button>
+                            </div>
+                        </div>
                         <hr>
-                        <table  class="table table-striped table-bordered" style="width:100%" id="providers">
+                        <table class="table table-striped table-bordered" style="width:100%" id="providers">
                             <thead>
                             <tr>
                                 <th>№</th>
@@ -21,24 +28,22 @@
                                 <th th:text="#{billing.name}"></th>
                                 <th th:text="#{billing.clientId}"></th>
                                 <th th:text="#{billing.allowed}"></th>
-                                <th th:test="#{billing.paymentType}"></th>
+                                <th th:text="#{billing.paymentType}"></th>
+                                <th th:text="#{billing.isParkomat}"></th>
+
                                 <th></th>
                             </tr>
                             </thead>
                         </table>
-                        <div class="form-group row" id="addBlockId" style="display: none;">
-                            <div class="col-12">
-                                <button data-toggle="modal" data-target="#provider-close-modal" class="btn btn-danger waves-effect waves-light"
-                                        th:text="#{crm.add}" th:onclick="providerModalContent(null)"></button>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div id="provider-close-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-        <div class="modal-dialog">
+    <div id="provider-close-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true" style="display: none;">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <div class="modal-header">
@@ -72,14 +77,14 @@
     var locale = [[${#locale}]];
     let canEdit = [[${canEdit}]];
 
-    if(canEdit){
+    if (canEdit) {
         $('#addBlockId').show();
     }
 
     if (locale == "en") {
         address = "";
     }
-    $(document).ready(function() {
+    $(document).ready(function () {
 
         var table = $('#providers').DataTable({
             "processing": true,
@@ -89,30 +94,45 @@
                 "type": "POST"
             },
             "columns": [
-                { "data": "id" },
-                { "data": "provider" },
-                { "data": "name" },
-                { "data": "clientId" },
-                { "data": "enabled" },
-                { "data": "cashlessPayment" },
-                {"data": "id",
+                {"data": "id"},
+                {"data": "provider"},
+                {"data": "name"},
+                {"data": "clientId"},
+                {"data": "enabled",
+                    "render": function (val) {
+                        return val=='Allowed'  ? '<i class="fa fa-check" aria-hidden="true"></i>' : '';
+                    }},
+                {"data": "cashlessPayment",
+                    "render": function (val) {
+                        return val=='Allowed'  ? '<i class="fa fa-check" aria-hidden="true"></i>' : '';
+                    }},
+                {
+                    "data": "parkomat",
+                    "render": function (val) {
+                        return val  ? '<i class="fa fa-check" aria-hidden="true"></i>' : '';
+                    }
+                },
+                {
+                    "data": "id",
                     "orderable": false,
                     "visible": canEdit,
-                    "render" : function(id){
-                        return '<a href="#" data-toggle="modal" data-target="#provider-close-modal" providerid="' + id + '" onClick="providerModalContent(this.getAttribute(\'providerid\'))">'+ [[#{crm.edit}]] + ' </a>';
-                }}
+                    "render": function (id) {
+                        return '<a href="#" class="btn btn-light" data-toggle="modal" data-target="#provider-close-modal" providerid="' + id + '" onClick="providerModalContent(this.getAttribute(\'providerid\'))"><i class="fa fa-pencil" aria-hidden="true"></i></a>';
+                    }
+                }
             ],
+
             language: {
                 url: address
             }
-        } );
+        });
 
         table.buttons().container()
             .appendTo('#providers-buttons_wrapper .col-md-6:eq(0)');
     });
 
-    function providerModalContent(providerId){
-        if(providerId){
+    function providerModalContent(providerId) {
+        if (providerId) {
             $.get("/billing/providers/edit/" + providerId, function (data) {
                 $('#provider-close-modal').find('#providerModalBody').html(data);
             });

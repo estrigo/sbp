@@ -1,5 +1,8 @@
 package kz.spt.billingplugin.model.dto.webkassa;
-import com.fasterxml.jackson.annotation.JsonProperty; 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.ToString;
+
+@ToString
 public class Position{
     @JsonProperty("Count") 
     public int count = 1;
