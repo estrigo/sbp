@@ -21,4 +21,6 @@ public interface CarEventService {
     void handleLiveStreamEvent(MultipartFile event_image_0, String event_descriptor, String event_timestamp) throws Exception;
 
     void handleLiveStreamEvent(byte[] event_image,String event_descriptor, String event_timestamp) throws Exception;
+
+    void handleRtaCarEvent(String event_descriptor) throws Exception;
 }

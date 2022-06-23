@@ -52,7 +52,12 @@ public class SnapshotSaver {
         List<Future<CameraStatusDto>> futures = new ArrayList<>();
         for (GateStatusDto gateStatusDto : StatusCheckJob.globalGateDtos) {
             CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
-            if(cameraStatusDto != null && StringUtils.isNotNullOrEmpty(cameraStatusDto.login) && StringUtils.isNotNullOrEmpty(cameraStatusDto.password) && StringUtils.isNotNullOrEmpty(cameraStatusDto.snapshotUrl)){
+            if(cameraStatusDto != null &&
+                    StringUtils.isNotNullOrEmpty(cameraStatusDto.login) &&
+                    StringUtils.isNotNullOrEmpty(cameraStatusDto.password) &&
+                    StringUtils.isNotNullOrEmpty(cameraStatusDto.snapshotUrl)){
+                if(cameraStatusDto.snapshotEnabled!=null && !cameraStatusDto.snapshotEnabled) return;
+
                 futures.add(executorService.submit(new Callable() {
                     @Override
                     public Object call() throws Exception {
@@ -62,7 +67,12 @@ public class SnapshotSaver {
                 }));
             }
             CameraStatusDto cameraStatusDto2 = gateStatusDto.frontCamera2;
-            if(cameraStatusDto2 != null && StringUtils.isNotNullOrEmpty(cameraStatusDto2.login) && StringUtils.isNotNullOrEmpty(cameraStatusDto2.password) && StringUtils.isNotNullOrEmpty(cameraStatusDto2.snapshotUrl)){
+            if(cameraStatusDto2 != null &&
+                    StringUtils.isNotNullOrEmpty(cameraStatusDto2.login) &&
+                    StringUtils.isNotNullOrEmpty(cameraStatusDto2.password) &&
+                    StringUtils.isNotNullOrEmpty(cameraStatusDto2.snapshotUrl)){
+                if(cameraStatusDto2.snapshotEnabled!=null && !cameraStatusDto2.snapshotEnabled) return;
+
                 futures.add(executorService.submit(new Callable() {
                     @Override
                     public Object call() throws Exception {
@@ -72,7 +82,12 @@ public class SnapshotSaver {
                 }));
             }
             CameraStatusDto backCameraStatusDto = gateStatusDto.backCamera;
-            if(backCameraStatusDto != null && StringUtils.isNotNullOrEmpty(backCameraStatusDto.login) && StringUtils.isNotNullOrEmpty(backCameraStatusDto.password) && StringUtils.isNotNullOrEmpty(backCameraStatusDto.snapshotUrl)){
+            if(backCameraStatusDto != null &&
+                    StringUtils.isNotNullOrEmpty(backCameraStatusDto.login) &&
+                    StringUtils.isNotNullOrEmpty(backCameraStatusDto.password) &&
+                    StringUtils.isNotNullOrEmpty(backCameraStatusDto.snapshotUrl)){
+                if(backCameraStatusDto.snapshotEnabled!=null && !backCameraStatusDto.snapshotEnabled) return;
+
                 futures.add(executorService.submit(new Callable() {
                     @Override
                     public Object call() throws Exception {
@@ -93,9 +108,7 @@ public class SnapshotSaver {
 
     }
 
-
     private void getSnapshot(CameraStatusDto cameraStatusDto) throws Exception {
-
         String ip = cameraStatusDto.ip;
         HttpHost host = new HttpHost(ip, 8080, "http");
         CloseableHttpClient client = HttpClientBuilder.create().

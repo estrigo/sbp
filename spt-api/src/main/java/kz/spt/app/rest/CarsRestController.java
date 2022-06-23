@@ -64,4 +64,12 @@ public class CarsRestController {
                             @RequestParam(value = "event_timestamp", required = false) String event_timestamp) throws Exception{
         carEventService.handleRtaCarEvent(event_image_0, event_cropped_image_0, event_descriptor, event_timestamp);
     }
+
+    @RequestMapping(value = "/turan/event", method = RequestMethod.POST)
+    @Transactional
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void addCarEvent(@RequestBody String event_descriptor) throws Exception{
+        carEventService.handleRtaCarEvent(event_descriptor);
+    }
 }

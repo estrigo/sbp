@@ -71,4 +71,5 @@ public class Camera {
     private String carmenIp;
     private String carmenLogin;
     private String carmenPassword;
+    private Boolean snapshotEnabled;
 }
