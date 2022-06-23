@@ -18,6 +18,7 @@ public class CameraStatusDto {
     public String carmenIp;
     public String carmenLogin;
     public String carmenPassword;
+    public Boolean snapshotEnabled;
 
     public Map<String, Object> properties = new HashMap<>();
     public CarEventDto carEventDto = null;

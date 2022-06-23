@@ -37,7 +37,7 @@
         <div class="row">
             <div class="item" th:each="camera, iterStat : ${cameras}"
                  th:id="${'item_' + camera.id}"
-                 th:attr="data-id=${camera.id},data-url=${camera.snapshotUrl},data-ip=${camera.ip}">
+                 th:attr="data-id=${camera.id},data-url=${camera.snapshotUrl},data-ip=${camera.ip},data-enabled=${camera.snapshotEnabled}">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="btn-group" role="group">
@@ -423,8 +423,10 @@
             const $id = $input.data("id");
             const $url = $input.data("url");
             const $ip = $input.data("ip");
+            const $enabled = $input.data("enabled");
 
             if (!$url) return;
+            if (!$enabled) return;
             if (!cameras[$id]) {
                 initCamera($id);
             }

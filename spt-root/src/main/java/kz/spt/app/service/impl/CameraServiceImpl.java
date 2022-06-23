@@ -6,6 +6,7 @@ import kz.spt.lib.model.Camera;
 import kz.spt.app.repository.CameraRepository;
 import kz.spt.app.service.CameraService;
 import kz.spt.lib.model.CameraTab;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -69,7 +70,11 @@ public class CameraServiceImpl implements CameraService {
 
     @Override
     public Camera getCameraById(Long id) {
-        return cameraRepository.getOne(id);
+        Camera camera = cameraRepository.getOne(id);
+        if (camera.getDetectorId() == null || StringUtils.isEmpty(camera.getDetectorId())) {
+            camera.setDetectorId(camera.getId().toString());
+        }
+        return camera;
     }
 
     @Override

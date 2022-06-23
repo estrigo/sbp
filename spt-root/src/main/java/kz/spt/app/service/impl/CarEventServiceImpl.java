@@ -310,6 +310,33 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     @Override
+    public void handleRtaCarEvent(String event_descriptor) throws Exception {
+        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(event_descriptor);
+
+        String detectorID = jsonNode.get("camera_id").asText();
+        String event_timestamp = jsonNode.get("timestamp").asText();
+        Camera camera = cameraService.findCameraByDetectorId(detectorID);
+
+        if (camera != null) {
+            log.warning("Camera " + camera.getIp() + " found for detector id = " + detectorID);
+            String car_number = jsonNode.get("plate_no").textValue();
+
+            log.info("plate_number: " + car_number);
+            log.info("event_timestamp: " + event_timestamp);
+
+            CarEventDto eventDto = new CarEventDto();
+            eventDto.car_number = car_number;
+            eventDto.event_date_time = event_timestamp != null ? format.parse(event_timestamp) : new Date();
+            eventDto.ip_address = camera.getIp();
+            saveCarEvent(eventDto);
+        } else {
+            log.warning("Camera not found for detector id = " + detectorID);
+        }
+    }
+
+    @Override
     public void saveCarEvent(CarEventDto eventDto) throws Exception {
 
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
