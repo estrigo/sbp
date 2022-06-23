@@ -15,6 +15,6 @@ public interface CalibrationRepository extends JpaRepository<Calibration,Long> {
     Optional<Calibration> findByCamera(@Param("cameraId") Long cameraId);
 
     @Query("select t from Calibration t" +
-            " where t.ip=:ip")
+            " where t.ip=:ip group by t.ip")
     Optional<Calibration> findByIp(@Param("ip") String ip);
 }

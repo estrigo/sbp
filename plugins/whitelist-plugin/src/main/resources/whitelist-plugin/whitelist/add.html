@@ -21,8 +21,8 @@
                             </div>
                             <div class="form-group row" id="platenumber">
                                 <label class="col-2 col-form-label" th:text="#{car.platenumber}"></label>
-                                <div class="col-10" style="width: 35px">
-                                    <input id="platenumberInput" type="text" class="form-control" th:field="*{platenumber}" oninput="checkInvalidNumbers()" style="width: 40%">
+                                <div class="col-10">
+                                    <input id="platenumberInput" type="text" class="form-control" name ="plateNumber" th:field="*{platenumber}" required autocomplete="off" oninput="checkInvalidNumbers()" onkeyup="checkSelectedTypes(value)" style="width: 40%">
                                     <strong id = "alertText" style="width: 40%"></strong>
                                 </div>
                             </div>
@@ -112,6 +112,23 @@
         </div>
     </div>
 </div>
+
+<!-- Required datatable js -->
+<script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
+<script th:src="@{/plugins/datatables/dataTables.bootstrap4.min.js}"></script>
+<!-- Buttons examples -->
+<script th:src="@{/plugins/datatables/dataTables.buttons.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.bootstrap4.min.js}"></script>
+<script th:src="@{/plugins/datatables/jszip.min.js}"></script>
+<script th:src="@{/plugins/datatables/pdfmake.min.js}"></script>
+<script th:src="@{/plugins/datatables/vfs_fonts.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.html5.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.print.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.colVis.min.js}"></script>
+<!-- Responsive examples -->
+<script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
+<script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+<script th:src="@{/assets/js/bootstrap-autocomplete.min.js}"></script>
 
 <script th:src="@{/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js}"></script>
 <script th:src="@{/assets/js/week-hours-picker.js}"></script>
@@ -268,5 +285,19 @@
         checkSelectedTypes($('#types').val());
         checkSelectedParking($('#parkingId').val());
     });
+    $('#platenumberInput').autoComplete({
+        resolver: 'custom',
+        minLength: 3,
+        events: {
+            search: function (q, callback) {
+                $.ajax(
+                    '/rest/whitelist/platenums/'+q
+                ).done(function (res) {
+                    callback(res);
+                });
+            }
+        }
+    });
+
 </script>
 </html>

@@ -30,14 +30,14 @@
                     <button type="button" class="btn btn-primary" th:text="#{arm.restart}"
                             th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart
                     </button>
+                    <button type="button" class="btn btn-primary" th:text="#{arm.configure}" th:onclick="configure()">Configure</button>
                 </div>
-
             </div>
         </th:block>
         <div class="row">
             <div class="item" th:each="camera, iterStat : ${cameras}"
                  th:id="${'item_' + camera.id}"
-                 th:attr="data-id=${camera.id},data-url=${camera.snapshotUrl},data-ip=${camera.ip}">
+                 th:attr="data-id=${camera.id},data-url=${camera.snapshotUrl},data-ip=${camera.ip},data-enabled=${camera.snapshotEnabled}">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="btn-group" role="group">
@@ -67,20 +67,20 @@
                         </a>
                         <div class="align-content-center p-1"
                              style="background-color: rgba(74, 82, 95, .5); position: absolute; bottom: 0;right: 10px;display: none">
-                            <img th:id="${'lp' + camera.id}"/>
+                            <img th:id="${'lp' + camera.id}" width="150" height="50"/>
                         </div>
                     </div>
                     <th:block sec:authorize="!hasRole('ROLE_RTA')">
                         <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100">
                             <div class="col-md-6 col-sm-12 col-xs-12"
-                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-success w-100"
                                         th:cameraId="${camera.id}"
                                         th:onclick="openGate(this.getAttribute('cameraId'))"
                                         th:text="#{arm.open}"></button>
                             </div>
                             <div class="col-md-6 col-sm-12 col-xs-12"
-                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-warning w-100"
                                         th:cameraId="${camera.id}"
                                         th:onclick="closeGate(this.getAttribute('cameraId'))"
@@ -89,20 +89,20 @@
                         </div>
                         <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100">
                             <div class="p-2 col-sm-12 col-xs-12"
-                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
                                        th:placeholder="#{arm.licensePlate}"
                                        th:onkeydown="onTextEnter(this.getAttribute('cameraId'))"
                                        class="form-control w-100">
                             </div>
                             <div class="p-1 col-sm-12 col-xs-12"
-                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
                                         th:onclick="passCar(this.getAttribute('cameraId'))"
                                         th:text="#{crm.letIn}"></button>
                             </div>
                             <div class="p-1 col-sm-12 col-xs-12"
-                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN','ROLE_OPERATOR')">
+                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-primary w-100"
                                         th:cameraId="${camera.id}"
                                         th:onclick="checkBalance(this.getAttribute('cameraId'))"
@@ -128,6 +128,59 @@
                 <p th:text="#{arm.restartSuccess}"></p>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" th:text="#{crm.close}">Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="configure-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <div class="modal-header">
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body" id="configureModalBody">
+
+                <div class="row" style="margin-bottom: 20px;">
+                    <div class="col-6">
+                        <input type="text" class="form-control" id="newTabName" th:placeholder="#{arm.newTab}">
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-secondary" onclick="addNewTab()" th:text="#{crm.add}"></button>
+                    </div>
+                </div>
+                <div id="cameraTabsAccordion" role="tablist" aria-multiselectable="true" class="m-b-20">
+                    <div class="card">
+                        <div class="card-header" role="tab" id="headingOne">
+                            <h5 class="mb-0 mt-0 font-16">
+                                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne" class="collapsed" th:text="#{arm.camerasWithoutTab}">
+                                </a>
+                            </h5>
+                        </div>
+
+                        <div id="collapseOne" class="collapse" role="tabpanel" aria-labelledby="headingOne" aria-expanded="false" style="">
+                            <div class="card-block">
+                                <table id="cameraTabsTable" class="table table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th th:text="#{crm.name}"></th>
+                                        <th>Ip</th>
+                                        <th th:text="#{whitelist.parking}"></th>
+                                    </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="save()" th:text="#{crm.save}">Save
+                </button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" th:text="#{crm.close}">Close
                 </button>
             </div>
@@ -236,6 +289,9 @@
                 break;
             case "Debt":
                 p.className += " bg-warning";
+                p.className += " text-white";
+            case "Warning":
+                p.className += " bg-purple";
                 p.className += " text-white";
                 break;
             case "Allow":
@@ -367,8 +423,10 @@
             const $id = $input.data("id");
             const $url = $input.data("url");
             const $ip = $input.data("ip");
+            const $enabled = $input.data("enabled");
 
             if (!$url) return;
+            if (!$enabled) return;
             if (!cameras[$id]) {
                 initCamera($id);
             }
@@ -482,5 +540,152 @@
             initCamera(id);
         });
     });
+
+    let tabs = [];
+    let maxId = 0;
+    let maxIdIncrement = 0;
+    let moveOptions = "<option value=''></option>";
+
+    const armMove = [[#{arm.move}]];
+    const crmName = [[#{crm.name}]];
+    const parkingName = [[#{whitelist.parking}]];
+    const crmDelete = [[#{crm.delete}]];
+
+    function configure(){
+        tabs = [];
+        maxId = 0;
+        maxIdIncrement = 0;
+        moveOptions = "<option value=''></option>";
+        $.get("/rest/arm/tab/camera", function (data) {
+            tabs = data;
+            for(let i = 0; i < data.length; i++){
+                if(data[i].id > 0){
+                    moveOptions  = moveOptions + "<option value='" + data[i].id + "'>" + data[i].name + "</option>";
+                }
+                maxIdIncrement = maxId = maxId < data[i].id ? data[i].id : maxId;
+            }
+            let html = "";
+            for(let i = 0; i < data.length; i++){
+                html = html + "<div class='card' id='card" + data[i].id + "' name='" + data[i].name + "'><div class='card-header' role='tab' id='headingOne" + data[i].id + "'>\n" +
+                      "                            <h5 class='mb-0 mt-0 font-16'>\n" +
+                      "                                <a data-toggle='collapse' data-parent='#cameraTabsAccordion' href='#collapseOne" + data[i].id + "' aria-expanded='false' aria-controls='collapseOne" + data[i].id + "' class='collapsed'>\n" +
+                      "                                    "  + data[i].name +
+                      "                                </a>\n";
+                if(data[i].id > 0){
+                    html = html +
+                        "                                   <button type='button' className='btn btn-secondary' onClick='removeTab(" + data[i].id + ",\"" + data[i].name + "\")'>" + crmDelete +
+                        "                                   </button>\n";
+                }
+                html = html +
+                      "                            </h5>\n" +
+                      "                        </div><div id='collapseOne" + data[i].id + "' class='collapse' role='tabpanel' aria-labelledby='headingOne" + data[i].id + "' aria-expanded='false' style=''>\n" +
+                      "                            <div class='card-block'>" +
+                      "                                 <table id='cameraTabsTable" + data[i].id + "' class='table table-bordered'>\n" +
+                      "                                    <thead>\n" +
+                      "                                    <tr>\n" +
+                      "                                        <th>" + armMove + "</th>\n" +
+                      "                                        <th>" + crmName + "</th>\n" +
+                      "                                        <th>Ip</th>\n" +
+                      "                                        <th>" + parkingName + "</th>\n" +
+                      "                                    </tr>\n" +
+                      "                                    </thead><tbody>";
+                for(let j = 0; j < data[i].cameras.length; j++){
+                    html = html + "<tr id='camera" + data[i].cameras[j].id + "'><td><select id='cameraSelect" + data[i].cameras[j].id + "' onchange='moveCameraToTab(" + data[i].cameras[j].id + ")'>" + moveOptions + "</select></td>\n" +
+                        "          <td>" + data[i].cameras[j].name + "</td>\n" +
+                        "          <td>" + data[i].cameras[j].ip + "</td>\n" +
+                        "          <td>" + data[i].cameras[j].parking + "</td></tr>\n"
+                }
+                html = html + "</tbody></table>\n" +
+                      "                            </div>\n" +
+                      "                        </div>\n" +
+                      "                    </div>";
+                $('#cameraTabsAccordion').html(html);
+            }
+        });
+        $('#configure-modal').modal('show');
+    }
+
+    function addNewTab(){
+        let newTabName = $('#newTabName').val();
+
+        maxIdIncrement++;
+
+        $('#cameraTabsAccordion').append("<div class='card' id='card" + maxIdIncrement + "' name='" + newTabName + "'><div class='card-header' role='tab' id='headingOne" + maxIdIncrement + "'>\n" +
+            "                            <h5 class='mb-0 mt-0 font-16'>\n" +
+            "                                <a data-toggle='collapse' data-parent='#cameraTabsAccordion' href='#collapseOne" + maxIdIncrement + "' aria-expanded='false' aria-controls='collapseOne" + maxIdIncrement + "' class='collapsed'>\n" +
+            "                                    "  + newTabName +
+            "                                </a>\n" +
+            "                                   <button type='button' className='btn btn-secondary' onClick='removeTab(" + maxIdIncrement + ",\"" + newTabName + "\")'>" + crmDelete +
+            "                                   </button>\n" +
+            "                            </h5>\n" +
+            "                        </div><div id='collapseOne" + maxIdIncrement + "' class='collapse' role='tabpanel' aria-labelledby='headingOne" + maxIdIncrement + "' aria-expanded='false' style=''>\n" +
+            "                            <div class='card-block'><table id='cameraTabsTable" + maxIdIncrement + "' class='table table-bordered'>\n" +
+            "                                    <thead>\n" +
+            "                                    <tr>\n" +
+            "                                        <th>" + armMove + "</th>\n" +
+            "                                        <th>" + crmName + "</th>\n" +
+            "                                        <th>Ip</th>\n" +
+            "                                        <th>" + parkingName + "</th>\n" +
+            "                                    </tr>\n" +
+            "                                    </thead><tbody></tbody></table>\n" +
+        "                            </div>\n" +
+        "                        </div>\n" +
+        "                    </div>");
+
+        $('#newTabName').val(undefined);
+        moveOptions = moveOptions + "<option value='" + maxIdIncrement + "'>"  + newTabName + "</option>";
+        $('#cameraTabsAccordion').find('select').html(moveOptions);
+    }
+
+    function moveCameraToTab(cameraId){
+        let tr = $('#camera'+cameraId);
+        let newTabId = $('#cameraSelect'+cameraId).val();
+        $('#cameraTabsAccordion').find('#card' + newTabId).find('table>tbody').append(tr);
+        $('#element').remove();
+    }
+
+    function removeTab(tabId, tabName){
+        let trList = $('#cameraTabsAccordion').find('#card' + tabId).find('table>tbody>tr');
+        $('#cameraTabsAccordion').find('#card0').find('table>tbody').append(trList);
+        $("#card" + tabId).remove();
+        moveOptions = moveOptions.replace("<option value='" + tabId + "'>"  + tabName + "</option>","");
+        $('#cameraTabsAccordion').find('select').html(moveOptions);
+    }
+
+    function save(){
+        let result = [];
+        let cardList = $('#cameraTabsAccordion').find('.card');
+
+        $( "#cameraTabsAccordion>.card" ).each(function( index ) {
+            let card = $(this);
+            let tab = {
+                id: card.attr("id").replace('card',''),
+                name: card.attr("name")
+            };
+
+            let cameraArray = [];
+            $('#cameraTabsAccordion>#' + card.attr("id") + '>div>div>table>tbody>tr').each(function( index ) {
+                let camera = { id: $(this).attr('id').replace('camera','')  };
+                cameraArray.push(camera);
+            });
+            tab.cameraArray = cameraArray;
+            result.push(tab);
+        });
+
+        var form = new FormData();
+        form.append("json", JSON.stringify(result));
+
+        var settings = {
+            "url": "/rest/arm/save/tab/camera",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (response) {
+            window.location.reload();
+        });
+    }
 </script>
 </html>

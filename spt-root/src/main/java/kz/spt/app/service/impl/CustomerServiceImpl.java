@@ -57,6 +57,7 @@ public class CustomerServiceImpl implements CustomerService {
                     oldCustomer.getCars().add(newCar);
                 }
             }
+            oldCustomer.setPhoneNumber(customer.getPhoneNumber());
             customerRepository.save(oldCustomer);
         } else {
             for (String plateNumber : plateNumbers) {
@@ -142,5 +143,14 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         return EMPTY_COMPARATOR;
+    }
+
+    public List<Customer> getCustomerIfAnyExist(String phoneNumber){
+        try{
+            List<Customer> customers = customerRepository.getCustomerIfAnyExist(phoneNumber);
+            return customers;
+        }catch (Exception e){
+            return new ArrayList<>();
+        }
     }
 }

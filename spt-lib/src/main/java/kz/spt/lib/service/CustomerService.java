@@ -19,5 +19,5 @@ public interface CustomerService {
 
     void deleteCustomer(Customer customer);
 
-
+    List<Customer> getCustomerIfAnyExist(String phoneNumber);
 }

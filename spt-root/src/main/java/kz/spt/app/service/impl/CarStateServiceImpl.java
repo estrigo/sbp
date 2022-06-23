@@ -31,8 +31,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Log
 @Service
@@ -85,6 +83,7 @@ public class CarStateServiceImpl implements CarStateService {
     @Override
     public void createOUTState(String carNumber, Date outTimestamp, Camera camera, CarState carState, String outPhotoUrl) {
         if(carState != null){
+            carState = carStateRepository.getOne(carState.getId());
             carState.setOutTimestamp(outTimestamp);
             carState.setOutChannelIp(camera.getIp());
             carState.setOutGate(camera.getGate());
@@ -295,7 +294,7 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
-    public Boolean removeDebt(String carNumber) throws Exception {
+    public Boolean removeDebt(String carNumber, Boolean changeCurrentParkingToFree) throws Exception {
 
         Boolean result = false;
 
@@ -318,10 +317,12 @@ public class CarStateServiceImpl implements CarStateService {
             }
         }
 
-        CarState carState = getLastNotLeft(carNumber);
-        if (carState != null) {
-            cancelPaid(carState);
-            result = true;
+        if(changeCurrentParkingToFree){
+            CarState carState = getLastNotLeft(carNumber);
+            if (carState != null) {
+                cancelPaid(carState);
+                result = true;
+            }
         }
 
         return result;
@@ -427,10 +428,12 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     private List<CarState> listByFiltersForExcel(Specification<CarState> carStateSpecification) {
+        Sort sort = Sort.by("id").descending();
         if (carStateSpecification != null) {
-            return carStateRepository.findAll(carStateSpecification);
+            return carStateRepository.findAll(carStateSpecification, sort);
         } else {
-            return carStateRepository.findAll();
+            Pageable rows = PageRequest.of(0, 1000, sort);
+            return carStateRepository.findAll(rows).toList();
         }
     }
 

@@ -11,15 +11,15 @@
             <div class="col-12">
                 <div class="card table-responsive">
                     <div class="card-header" th:text="#{report.billing}"></div>
-                    <div class="card-body">
+                    <div class="card-body" id="main">
                         <div>
                             <form method="post">
                                 <div class="form-row">
                                     <div class="col-4">
-                                        <input id="dateFrom" type="datetime-local" class="form-control" />
+                                        <input id="dateFrom" type="date" class="form-control" />
                                     </div>
-                                    <div class="col-4">
-                                        <input id="dateTo" type="datetime-local" class="form-control" />
+                                    <div class="col-4" style="display: none">
+                                        <input id="dateTo" type="date" class="form-control" />
                                     </div>
                                     <div class="col-1">
                                         <button type="button" class="btn btn-primary mr-1"
@@ -41,6 +41,40 @@
                         </div>
                         <div class="mb-5"></div>
                         <table id="sumReport" class="table table-bordered table-striped dataTable no-footer">
+                        </table>
+                    </div>
+                    <div class="card-body" id="detailed" style="display:none;">
+                        <div>
+                            <form method="post">
+                                <div class="form-row">
+                                    <div class="col-1">
+                                        <button type="button" class="btn btn-primary mr-1"
+                                                onclick="back()"
+                                                th:text="#{crm.back}"></button>
+                                    </div>
+                                    <div class="col-2">
+                                        <button type="button" class="btn btn-success mr-1"
+                                                onclick="excelDetailed()"
+                                                th:text="#{report.excel}"></button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="mb-5"></div>
+                        <table id="sumDetailed" class="table table-bordered table-striped dataTable no-footer">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th th:text="#{car.platenumber}"></th>
+                                    <th th:text="#{report.enterDate}"></th>
+                                    <th th:text="#{report.leftDate}"></th>
+                                    <th th:text="#{report.enterPlace}"></th>
+                                    <th th:text="#{report.leftPlace}"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -68,81 +102,201 @@
 
 <script th:inline="javascript">
     let date=new Date();
-    var dateFrom = (new Date(date.getFullYear(),date.getMonth(),date.getDate(), 6, 0, 0, 0)).toISOString();
-    var dateTo = (new Date(date.getFullYear(),date.getMonth(),date.getDate(), date.getHours()+6, date.getMinutes())).toISOString();
-    $('#dateFrom').val(dateFrom.substring(0, dateFrom.length-1));
-    $('#dateTo').val(dateTo.substring(0, dateTo.length-1));
+    $('#dateFrom').val((new Date(date.getFullYear(),date.getMonth(),date.getDate(), 6, 0, 0, 0)).toISOString().substring(0,10));
+    $('#dateTo').val((new Date(date.getFullYear(),date.getMonth(),date.getDate(), date.getHours()+6, date.getMinutes())).toISOString().substring(0,10));
+
+    var globalDateFrom = $('#dateFrom').val();
+    var globalDateTo = $('#dateTo').val();
 
     function find() {
+        $('#main').show();
+        $('#detailed').hide();
+
+        globalDateFrom = $('#dateFrom').val();
+        globalDateTo = $('#dateTo').val();
         let request = {
-            "dateFrom": $('#dateFrom').val(),
-            "dateTo": $('#dateTo').val(),
+            "dateFrom": globalDateFrom,
+            "dateTo": globalDateTo,
         };
 
-        let predefinedFields = ['dateTime','records','paymentRecords','whitelistRecords','abonementRecords'];
+        let predefinedFields = ['dateTime', 'records', 'paymentRecords', 'whitelistRecords', 'abonementRecords', 'freeMinuteRecords', 'debtRecords', 'fromBalanceRecords', 'freeRecords', 'autoClosedRecords'];
+        let hasLinkFields = ['paymentRecords', 'whitelistRecords', 'abonementRecords', 'freeMinuteRecords', 'debtRecords', 'fromBalanceRecords', 'freeRecords', 'autoClosedRecords'];
+        let cashFields = [];
 
+        request.eventType = "fields";
         $.ajax({
-            url: "/rest/report/sum/excel",
+            url: "/rest/report/sum",
             type: "POST",
             data: JSON.stringify(request),
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (data) {
-                console.log(data);
                 let html = '<thead><tr>';
+                let tdList = '';
+
                 $.each(predefinedFields, function(value) {
-                    html = html + '<td>' + data[0].fields[predefinedFields[value]] + '</td>';
-                });
-                if(data[0].fields['bankCardSum']){
-                    html = html + '<td>' + data[0].fields['bankCardSum'] + '</td>';
-                    predefinedFields.push('bankCardSum');
-                }
-                if(data[0].fields['cashSum']){
-                    html = html + '<td>' + data[0].fields['cashSum'] + '</td>';
-                    predefinedFields.push('cashSum');
-                }
-                $.each(data[0].fields, function( key, value ) {
-                    if(predefinedFields.indexOf(key) === -1 && key !== 'totalSum'){
-                        html = html + '<td>' + value + '</td>';
-                        predefinedFields.push(key);
+                    html = html + '<th>' + data[0].results[predefinedFields[value]] + '</th>';
+                    if(predefinedFields[value] !== 'dateTime'){
+                        if(hasLinkFields.indexOf(predefinedFields[value]) != -1){
+                            tdList = tdList + '<td>';
+                            tdList = tdList +  "<a href='#' id='" + predefinedFields[value] + "' onclick='openList(\""+predefinedFields[value]+ "\")'></a>";
+                            tdList = tdList + '</td>';
+                        } else {
+                            tdList = tdList + '<td id="' + predefinedFields[value] + '"></td>';
+                        }
                     }
                 });
-                html = html + '<td>' + data[0].fields['totalSum'] + '</td></tr></thead>';
-                predefinedFields.push('totalSum');
-
-                if(data.length > 1){
-                    html = html + '<tbody>';
-                    let i = 0;
-                    $.each(data, function(result) {
-                        if(i++ > 0){
-                            html = html + '<tr>';
-                            $.each(predefinedFields, function(value) {
-                                html = html + '<td>' + (data[result].results[predefinedFields[value]] ? data[result].results[predefinedFields[value]] : 0) + '</td>';
-                            });
-                            html = html + '</tr>';
-                        }
-                    });
-                    html = html + '</tbody>';
+                if(data[0].results['bankCardSum']){
+                    html = html + '<th>' + data[0].results['bankCardSum'] + '</th>';
+                    cashFields.push('bankCardSum');
+                    tdList = tdList + '<td id="bankCardSum"></td>';
                 }
-                $('#sumReport').html(html);
-            }
-        })
-    }
+                if(data[0].results['cashSum']){
+                    html = html + '<th>' + data[0].results['cashSum'] + '</th>';
+                    cashFields.push('cashSum');
+                    tdList = tdList + '<td id="cashSum"></td>';
+                }
+                $.each(data[0].results, function( key, value ) {
+                    if(predefinedFields.indexOf(key) === -1 && cashFields.indexOf(key) === -1 && key !== 'totalSum'){
+                        html = html + '<th>' + value + '</th>';
+                        cashFields.push(key);
+                        tdList = tdList + '<td id="' + key + '"></td>';
+                    }
+                });
+                html = html + '<th>' + data[0].results['totalSum'] + '</th></tr></thead>';
+                cashFields.push('totalSum');
+                tdList = tdList + '<td id="totalSum"></td>';
 
-    function clear() {
-        $('#dateFrom').val(dateFrom.substring(0, dateFrom.length-1));
-        $('#dateTo').val(dateTo.substring(0, dateTo.length-1));
+                let dateToAd = globalDateFrom.substring(8,10) + '.' + globalDateFrom.substring(5,7) + '.' + globalDateFrom.substring(0,4);
+                html = html + '<tbody> ' +
+                    '<tr><td>' + dateToAd + ' 00:00 - ' + dateToAd + ' 23:59' + '</td>' +
+                    tdList +
+                    '</tr>' +
+                    '</tbody>';
+
+                $('#sumReport').html(html);
+
+                $.each(predefinedFields, function(value) {
+                    request.eventType = predefinedFields[value];
+                    if(predefinedFields[value] !== 'dateTime'){
+                        $.ajax({
+                            url: "/rest/report/sum",
+                            type: "POST",
+                            data: JSON.stringify(request),
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: function (data) {
+                                $('#' + data[0].results.eventType).text(data[0].results.result);
+                            }
+                        });
+                    }
+                });
+                request.eventType = 'payments';
+                $.ajax({
+                    url: "/rest/report/sum",
+                    type: "POST",
+                    data: JSON.stringify(request),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data) {
+                        for (var key in data[0].results){
+                            $('#' + key).text(data[0].results[key] === 'null' ? 0 : data[0].results[key]);
+                        }
+                    }
+                });
+            }
+        });
     }
 
     $(document).on('ready',function(){
         find();
     });
 
+    function openList(val){
+        $('#sumDetailed>tbody').html('');
+        let request = {
+            "dateFrom": globalDateFrom,
+            "dateTo": globalDateTo,
+            "eventType": val,
+            "type": "detailed"
+        };
+
+        $('#main').hide();
+        $('#detailed').show();
+
+        $.ajax({
+            url: "/rest/report/sum",
+            type: "POST",
+            data: JSON.stringify(request),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                let html = '';
+                let i = 1;
+                $.each(data[0].listResult, function(result) {
+                    html = html + '<tr><td>' + (i++) + '</td>';
+                    html = html + '<td>' + data[0].listResult[result].plateNumber + '</td>'
+                        + '<td>' + data[0].listResult[result].formattedInDate + '</td>'
+                        + '<td>' + data[0].listResult[result].formattedOutDate + '</td>'
+                        + '<td>' + data[0].listResult[result].inPlace + '</td>'
+                        + '<td>' + (data[0].listResult[result].outPlace ? data[0].listResult[result].outPlace : '' ) + '</td>';
+                    html = html + '</tr>';
+                });
+                $('#sumDetailed>tbody').html(html);
+            }
+        });
+    }
+
+    function clear() {
+        $('#dateFrom').val(dateFrom.substring(0, dateFrom.length-1));
+    }
+
     function excel() {
+        let arr = [];
+        let headers = [];
+        $('#sumReport th').each(function(index, item) {
+            headers[index] = $(item).html();
+        });
+        $('#sumReport tr').has('td').each(function() {
+            let arrayItem = {};
+            $('td', $(this)).each(function(index, item) {
+                arrayItem[headers[index]] = $(item).text();
+            });
+            arr.push(arrayItem);
+        });
+
+        let ws = XLSX.utils.json_to_sheet(arr, {header:headers});
+
         const wb = XLSX.utils.book_new();
-        var ws = XLSX.utils.table_to_sheet(document.getElementById("sumReport"));
-        XLSX.utils.book_append_sheet(wb, ws, 'billing');
-        XLSX.writeFile(wb, "billing.xlsx", { type: "buffer" });
+        XLSX.utils.book_append_sheet(wb, ws, 'Billing');
+        XLSX.writeFile(wb, "billing.xls", {type: "buffer"});
+    }
+
+    function excelDetailed() {
+        let arr1 = [];
+        let headers1 = [];
+        $('#sumDetailed th').each(function(index, item) {
+            headers1[index] = $(item).html();
+        });
+        $('#sumDetailed tr').has('td').each(function() {
+            let arrayItem = {};
+            $('td', $(this)).each(function(index, item) {
+                arrayItem[headers1[index]] = $(item).text();
+            });
+            arr1.push(arrayItem);
+        });
+
+        let ws1 = XLSX.utils.json_to_sheet(arr1, {header:headers1});
+
+        const wb1 = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb1, ws1, 'Detailed');
+        XLSX.writeFile(wb1, "detailed.xls", {type: "buffer"});
+    }
+
+    function back() {
+        $('#main').show();
+        $('#detailed').hide();
     }
 </script>
 

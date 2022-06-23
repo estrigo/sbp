@@ -53,6 +53,12 @@ public class CustomerController {
         if (bindingResult.hasErrors()) {
             return "redirect:/customers/edit/" + id;
         } else {
+            String phoneNum = customer.getPhoneNumber();
+            phoneNum = phoneNum.replace("+","");
+            if (phoneNum.substring(0,1).equals("8")){
+                phoneNum = "7" + phoneNum.substring(1);
+            }
+            customer.setPhoneNumber(phoneNum);
             customerService.saveCustomer(customer);
             return "redirect:/customers/list";
         }
@@ -95,12 +101,16 @@ public class CustomerController {
             }
 
             if (!bindingResult.hasErrors()) {
+                String phoneNum = customer.getPhoneNumber();
+                phoneNum = phoneNum.replace("+","");
+                if (phoneNum.substring(0,1).equals("8")){
+                    phoneNum = "7" + phoneNum.substring(1);
+                }
+                customer.setPhoneNumber(phoneNum);
                 customerService.saveCustomer(customer);
                 return "redirect:/customers/list";
             }
             return "customers/add";
         }
     }
-
-
 }

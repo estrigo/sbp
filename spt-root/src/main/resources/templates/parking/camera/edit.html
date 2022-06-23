@@ -55,13 +55,43 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-16">
             <div class="form-group">
                 <label for="login" class="control-label" th:text="#{camera.snapshot}"></label>
                 <input type="text" class="form-control" id="login" th:field="*{snapshotUrl}" th:value="*{snapshotUrl}">
             </div>
         </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="snapshotEnabled" class="control-label" th:text="#{camera.snapshotEnabled}"></label>
+                <input type="checkbox" id="snapshotEnabled" class="form-control" th:field="*{snapshotEnabled}" th:value="*{snapshotEnabled}">
+            </div>
+        </div>
     </div>
+    <th:block th:if="${carmenLiveEnabled}">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="login" class="control-label" th:text="#{carmen.login}"></label>
+                    <input type="text" class="form-control" id="login" th:field="*{carmenLogin}" th:value="*{carmenLogin}">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="password" class="control-label" th:text="#{carmen.password}"></label>
+                    <input type="text" class="form-control" id="password" th:field="*{carmenPassword}" th:value="*{carmenPassword}">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label for="login" class="control-label" th:text="#{carmen.snapshot}"></label>
+                    <input type="text" class="form-control" id="login" th:field="*{carmenIp}" th:value="*{carmenIp}">
+                </div>
+            </div>
+        </div>
+    </th:block>
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">

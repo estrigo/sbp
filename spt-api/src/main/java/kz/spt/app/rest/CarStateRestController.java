@@ -2,7 +2,6 @@ package kz.spt.app.rest;
 
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
-import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.model.dto.CarStateExcelDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
@@ -32,7 +31,7 @@ public class CarStateRestController {
     @PreAuthorize("hasAnyRole('ROLE_OPERATOR_NO_REVENUE_SHARE')")
     @GetMapping("/remove/debt")
     public Boolean removeDebt(@RequestParam String plateNumber) throws Exception {
-        return carStateService.removeDebt(plateNumber);
+        return carStateService.removeDebt(plateNumber, true);
     }
 
 

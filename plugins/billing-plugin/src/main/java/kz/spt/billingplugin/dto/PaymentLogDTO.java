@@ -56,7 +56,7 @@ public class PaymentLogDTO {
         paymentLogDTO.setOutDate(payment.getOutDate());
         paymentLogDTO.setDescription(payment.getDescription());
         paymentLogDTO.setPrice(payment.getPrice());
-        paymentLogDTO.setProvider(payment.getProvider().getName());
+        paymentLogDTO.setProvider(payment.getProvider()!=null ? payment.getProvider().getName(): "");
         paymentLogDTO.setTransaction(payment.getTransaction());
         paymentLogDTO.setRateDetails(payment.getRateDetails());
         paymentLogDTO.setParking(payment.getParking() != null ? payment.getParking().getName() : "");

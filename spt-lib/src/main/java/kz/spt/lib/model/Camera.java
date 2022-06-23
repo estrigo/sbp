@@ -37,7 +37,6 @@ public class Camera {
 
     private Integer timeout;
 
-    @Column(unique=true)
     private String ip;
 
     private String login;
@@ -54,6 +53,10 @@ public class Camera {
     @JoinColumn(name = "gate")
     private Gate gate;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "camera_tab")
+    private CameraTab cameraTab;
+
     @CreationTimestamp
     private Date created;
 
@@ -64,4 +67,9 @@ public class Camera {
 
     @Column(columnDefinition="tinyint(1) default 1")
     private boolean enabled = true;
+
+    private String carmenIp;
+    private String carmenLogin;
+    private String carmenPassword;
+    private Boolean snapshotEnabled;
 }

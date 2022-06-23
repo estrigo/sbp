@@ -1,9 +1,6 @@
 package kz.spt.reportplugin.rest;
 
-import kz.spt.lib.bootstrap.datatable.Page;
-import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.reportplugin.dto.SumReportDto;
-import kz.spt.reportplugin.dto.filter.FilterJournalReportDto;
 import kz.spt.reportplugin.dto.filter.FilterSumReportDto;
 import kz.spt.reportplugin.service.ReportService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,12 +19,12 @@ public class SumReportRestController extends BasicRestController<SumReportDto> {
     }
 
     @PostMapping
-    public Page<SumReportDto> list(@RequestBody PagingRequest pagingRequest){
-        return reportService.page(pagingRequest);
+    public List<SumReportDto> sum(@RequestBody FilterSumReportDto filter){
+        return reportService.list(filter);
     }
 
-    @PostMapping("/excel")
-    public List<SumReportDto> excel(@RequestBody FilterSumReportDto filter){
+    @PostMapping("detail")
+    public List<SumReportDto> detail(@RequestBody FilterSumReportDto filter){
         return reportService.list(filter);
     }
 }

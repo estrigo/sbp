@@ -47,24 +47,40 @@
             <div id="sidebar-menu">
                 <ul sec:authorize="isAuthenticated()">
                     <li class="menu-title" th:text="#{crm.main}"></li>
-                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                    <li sec:authorize="hasRole('ROLE_ADMIN')">
                         <a th:href="@{|/users/list|}" class="waves-effect waves-primary"><i
                                 class="ti-user"></i><span th:text=" #{user.users} "></span></a>
                     </li>
-                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_READ')">
+                    <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_READ', 'ROLE_MANAGER')">
                         <a th:href="@{|/customers/list|}" class="waves-effect waves-primary"><i
                                 class="ti-home"></i><span th:text=" #{customer.customers}"></span></a>
                     </li>
-                    <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_OPERATOR', 'ROLE_RTA')">
-                        <a th:href="@{|/arm/realtime|}" class="waves-effect waves-primary"><i
-                                class="ti-desktop"></i><span th:text=" #{crm.arm} "></span></a>
+                    <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_OPERATOR', 'ROLE_RTA')">
+                        <th:block th:if="${@cameraServiceImpl.cameraTabList().size() > 0}">
+                            <a href="javascript:void(0);" class="waves-effect waves-primary">
+                                <i class="ti-desktop"></i><span th:text=" #{crm.arm} "></span><span class="menu-arrow"></span>
+                            </a>
+                            <ul class="list-unstyled">
+                                <li>
+                                    <a th:href="@{|/arm/realtime|}" th:if="${@cameraServiceImpl.cameraListWithoutTab().size() > 0}"
+                                       th:text=" #{arm.withoutTab} "></a></li>
+                                <li th:each="tab : ${@cameraServiceImpl.cameraTabList()}">
+                                    <a th:href="@{|/arm/realtime/${tab.id}|}"
+                                       th:text=" ${tab.name} "></a></li>
+                            </ul>
+                        </th:block>
+                        <th:block th:if="${@cameraServiceImpl.cameraTabList().size() == 0}">
+                            <a th:href="@{|/arm/realtime|}" class="waves-effect waves-primary">
+                                <i class="ti-desktop"></i><span th:text=" #{crm.arm} "></span>
+                            </a>
+                        </th:block>
                     </li>
-                    <li sec:authorize="!hasRole('ROLE_ACCOUNTANT') && !hasRole('ROLE_BAQORDA')">
+                    <li sec:authorize="!hasRole('ROLE_ACCOUNTANT')">
                         <a th:href="@{|/events/list|}" class="waves-effect waves-primary"><i
                                 class="ti-files"></i><span th:text=" #{events.events} "></span></a>
                     </li>
                     <th:block sec:authorize="!hasRole('ROLE_RTA')">
-                        <li sec:authorize="!hasRole('ROLE_ACCOUNTANT') && !hasRole('ROLE_BAQORDA')">
+                        <li sec:authorize="!hasRole('ROLE_ACCOUNTANT')">
                             <a th:href="@{|/journal/list|}" class="waves-effect waves-primary"><i
                                     class="ti-receipt"></i><span th:text=" #{carstate.journal} "></span></a>
                         </li>
@@ -86,7 +102,7 @@
                                                                                    th:text=" ${submenu['label']} "></a></li>
                             </ul>
                         </li>
-                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_AUDIT', 'ROLE_READ') && !hasRole('ROLE_ACCOUNTANT')">
+                        <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_AUDIT', 'ROLE_READ') && !hasRole('ROLE_ACCOUNTANT')">
                             <a th:href="@{|/parking/cars|}" class="waves-effect waves-primary"><i
                                     class="ti-files"></i><span th:text=" #{parking.cars} "></span></a>
                         </li>
@@ -95,7 +111,7 @@
                             <a th:href="@{|/blacklist/list|}" class="waves-effect waves-primary"><i
                                     class="ti-list-ol"></i><span th:text=" #{blacklist.title} "></span></a>
                         </li>
-                        <li sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_READ') && !hasRole('ROLE_ACCOUNTANT')">
+                        <li sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_BAQORDA') && !hasRole('ROLE_ACCOUNTANT')">
                             <a th:href="@{|/balance/operation|}" class="waves-effect waves-primary"><i
                                     class="ti-list-ol"></i><span th:text=" #{balance.balance} "></span></a>
                         </li>

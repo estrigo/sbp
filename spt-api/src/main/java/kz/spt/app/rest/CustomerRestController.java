@@ -9,6 +9,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "/rest/customers")
 public class CustomerRestController {
@@ -22,5 +27,27 @@ public class CustomerRestController {
     @PostMapping
     public Page<Customer> list(@RequestBody PagingRequest pagingRequest) {
         return customerService.getCustomer(pagingRequest);
+    }
+
+    @GetMapping("/customerExist/{phoneNum}")
+    public Integer customerExistMessage(@PathVariable String phoneNum) throws Exception {
+        Integer result = 0;
+        String replacement = "7";
+        phoneNum = phoneNum.replace("+7",replacement);
+        phoneNum = phoneNum.replace("+","");
+        if (phoneNum.substring(0,1).equals("8")){
+            phoneNum = replacement + phoneNum.substring(1);
+        }else if(phoneNum.substring(0,1).equals("+")){
+            phoneNum = phoneNum.replace("+","");
+        }
+
+        List<Customer> customers =  customerService.getCustomerIfAnyExist(phoneNum);
+        if (customers.size()>0) {
+            result = 1;
+        }
+        else {
+            result = 0;
+        }
+        return result;
     }
 }

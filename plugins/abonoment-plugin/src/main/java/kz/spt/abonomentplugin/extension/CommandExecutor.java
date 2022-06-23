@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.abonomentplugin.AbonomentPlugin;
-import kz.spt.abonomentplugin.model.Abonoment;
+import kz.spt.abonomentplugin.model.Abonement;
 import kz.spt.abonomentplugin.model.AbonomentTypes;
 import kz.spt.abonomentplugin.service.AbonomentPluginService;
 import kz.spt.lib.extension.PluginRegister;
@@ -54,7 +54,7 @@ public class CommandExecutor implements PluginRegister {
                     node.put("result", false);
                     node.put("error", "Даты Абономента пересекаются с другим на этот номер авто");
                 } else {
-                    Abonoment abonoment = getAbonomentPluginService().createAbonoment(platenumber, parkingId, typeId, dateStart, checked);
+                    Abonement abonement = getAbonomentPluginService().createAbonoment(platenumber, parkingId, typeId, dateStart, checked);
                     node.put("result", true);
                 }
             } else if("deleteAbonoment".equals(command)){
@@ -79,12 +79,21 @@ public class CommandExecutor implements PluginRegister {
                 getAbonomentPluginService().deleteAbonomentByParkingID(parkingId);
 //                getWhitelistService().deleteAllByParkingId(parkingId);
                 node.put("reply: ", "deleted whitelist lists");
+            } else if ("removeNotPaid".equals(command)) {
+                getAbonomentPluginService().deleteNotPaidExpired();
+            } else if ("renewAbonement".equals(command)) {
+                getAbonomentPluginService().creteNewForOld();
+            } else if ("checkExpiration".equals(command)) {
+                Long parkingId = jsonCommand.get("parkingId").longValue();
+                String plateNumber = jsonCommand.get("plateNumber").textValue();
+                String result = getAbonomentPluginService().checkExpiration(plateNumber, parkingId);
+                node.put("expirationResult", result);
             }
             else {
-                throw new RuntimeException("Abonent plugin: unkown command");
+                throw new RuntimeException("Abonement plugin: unknown command");
             }
         } else {
-            throw new RuntimeException("Abonent plugin: command not provided");
+            throw new RuntimeException("Abonement plugin: command not provided");
         }
         return node;
     }

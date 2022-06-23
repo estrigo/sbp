@@ -42,7 +42,7 @@ public class BalanceRestController {
         return balanceService.getTransactionList(pagingRequest, dto);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/transaction/change")
     public Boolean changeTransaction(@RequestParam Long id,
                                      @RequestParam BigDecimal amount){

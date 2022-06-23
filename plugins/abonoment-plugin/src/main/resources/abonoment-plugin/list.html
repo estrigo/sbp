@@ -24,7 +24,7 @@
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane fade show active" id="list">
-                            <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER','ROLE_BAQORDA')">
+                            <th:block sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER','ROLE_BAQORDA')">
                                 <div class="form-group row">
                                     <div class="col-12">
                                         <button type="button" data-toggle="modal" data-target="#add-abonoment-modal"
@@ -33,6 +33,28 @@
                                     </div>
                                 </div>
                             </th:block>
+                            <div class="row">
+                                <div class="col-3">
+                                    <label th:text="#{car.platenumber}"></label>
+                                    <input type="text" class="form-control filter" id="carNumber" th:placeholder="#{car.platenumber}">
+                                </div>
+                                <div class="col-3">
+                                    <label class="control-label" th:text="#{abonoment.typeName}" ></label>
+                                    <select id="searchAbonementTypes" class="form-control filter">
+                                        <option value=""></option>
+                                        <option th:value="DAYS" th:text="#{abonoment.days}"></option>
+                                        <option th:value="CUSTOM" th:text="#{abonoment.Type.CUSTOM}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <label th:text="#{abonement.createdDate}"></label>
+                                    <input type="datetime-local" class="form-control filter" id="dateFrom">
+                                </div>
+                                <div class="col-3">
+                                    <label th:text="#{abonement.createdDate}"></label>
+                                    <input type="datetime-local" class="form-control filter" id="dateTo">
+                                </div>
+                            </div>
                             <table id="abonomentTable" class="table table-bordered" style="width: 100%">
                                 <thead>
                                 <tr>
@@ -45,12 +67,13 @@
                                     <th><a th:text="#{abonoment.paid}"></a></th>
                                     <th><a th:text="#{abonoment.parking}"></a></th>
                                     <th><a th:text="#{abonoment.types}"></a></th>
+                                    <th><a th:text="#{abonement.createdDate}"></a></th>
                                 </tr>
                                 </thead>
                             </table>
                         </div>
                         <div class="tab-pane fade" id="types">
-                            <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER','ROLE_BAQORDA')">
+                            <th:block sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER','ROLE_BAQORDA')">
                                 <div class="form-group row">
                                     <div class="col-12">
                                         <button type="button" data-toggle="modal" data-target="#add-abonoment-modal"
@@ -307,9 +330,19 @@
             "dataType": "json",
             "contentType": "application/json",
             "data": function (d) {
+                d.customFilters = {
+                    "carNumber": $('#carNumber').val(),
+                    "searchAbonementTypes": $('#searchAbonementTypes').val(),
+                    "dateToString": $("#dateTo").val(),
+                    "dateFromString": $('#dateFrom').val()
+                };
                 return JSON.stringify(d);
             }
         },
+        columnDefs: [{
+            "defaultContent": "",
+            "targets": "_all"
+        }],
         "columns": [
             {"data": "action", "orderable": false, "render": function (data, type, abonoment)
                 {
@@ -325,24 +358,27 @@
             {"data": "price"},
             {"data": "paid", "orderable": false, "render": function (data, type, abonoment)
                 {
-                    console.log(abonoment);
                     if(abonoment && abonoment.paid){
                         return '<span>' + paidStatus + '</span>';
                     }  else
                         return '<span>' + notPaidStatus + '</span>';
                 }
             },
-            {"data": "parking"},
-            {"data": "type", "width" : "230px"}
+            {"data": "parking", "orderable": false},
+            {"data": "type", "width" : "230px", "orderable": false},
+            {"data": "created"}
         ],
         "order": [ //[[ in thymeleaf is inline script
             [2, "desc"]
         ],
-        "buttons": ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: address
         }
     });
+
+    $('.filter').on('change', function () {
+        abonomentTable.ajax.reload();
+    })
 
     var interval = null;
     $(document).on('ready',function(){
@@ -390,13 +426,19 @@
         if(typesTable.buttons().container().length > 0){
             typesTable.buttons().container().appendTo('#typesTable_wrapper .col-md-6:eq(0)');
         }
+        hideFilter();
+    }
+
+    function hideFilter() {
+        if (!$("#abonomentTable_filter").hasClass("d-none")) {
+            $("#abonomentTable_filter").addClass("d-none");
+        }
     }
 
     function saveAbonomentType(){
         var form = new FormData();
         var periodInDays = 0;
         var type = "UNLIMITED";
-        console.log($('#addAbonomentType').find('#period').val());
         if ($('#addAbonomentType').find('#days').val()===""){
             periodInDays = $('#addAbonomentType').find('#period').val() * 31;
         }
@@ -493,7 +535,6 @@
             "data": form
         };
         $.ajax(settings).done(function (response) {
-            console.log(response);
             if(response.result){
                 $('#addAbonomentType').modal('hide');
                 typesTable.ajax.reload(); //reload datatable
@@ -537,7 +578,6 @@
                 "data": form
             };
             $.ajax(settings).done(function (response) {
-                console.log(response);
                 if(response.result){
                     $('#addAbonoment').modal('hide');
                     abonomentTable.ajax.reload(); //reload datatable

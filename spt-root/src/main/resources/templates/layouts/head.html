@@ -13,7 +13,7 @@
         </li>
     </ul>
     <ul class="list-inline menu-left mb-0">
-        <li sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN')" class="hide-phone">
+        <li sec:authorize="hasRole('ROLE_ADMIN')" class="hide-phone">
             <a th:href="@{|/parking/list|}" style="color: white; border-color: white;" class="btn">
                 <i class="ti-settings"></i>
                 <span th:text="#{parking.settings}"></span>

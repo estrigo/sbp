@@ -76,8 +76,8 @@ public class WhitelistController {
     public String showAllWhitelist(Model model, @AuthenticationPrincipal UserDetails currentUser) throws JsonProcessingException {
         parkingService = rootServicesGetterService.getParkingService();
         model.addAttribute("parkings", parkingService.listAllParking());
-        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
-        model.addAttribute("canDelete", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
+        model.addAttribute("canDelete", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_MANAGER").contains(m.getAuthority())));
         model.addAttribute("hasAccessLcd", parkingService.isLcd());
         model.addAttribute("whitelistGroups", whitelistGroupsService.listAllWhitelistGroups());
         return "whitelist/list";

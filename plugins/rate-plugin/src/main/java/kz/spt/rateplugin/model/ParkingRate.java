@@ -101,6 +101,9 @@ public class ParkingRate {
     @Column(name = "day_payment_value")
     private Integer dayPaymentValue;
 
+    @Column(name = "more_hours_calc_in_days", columnDefinition="tinyint(1) default 1")
+    private Boolean moreHoursCalcInDays = false;
+
     @Column(name = "prepaid_value")
     private Integer prepaidValue; //Сумма предоплаты
 

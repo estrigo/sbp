@@ -2,13 +2,11 @@ package kz.spt.app.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.model.dto.Period;
 import kz.spt.app.service.WhitelistRootService;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
-import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.model.dto.RateQueryDto;
 import kz.spt.lib.model.dto.parkomat.ParkomatBillingInfoSuccessDto;
 import kz.spt.lib.model.dto.parkomat.ParkomatCommandDTO;
@@ -25,7 +23,6 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -65,7 +62,7 @@ public class PaymentServiceImpl implements PaymentService {
             commandDto.account = commandDto.account.toUpperCase();
             commandDto.account = commandDto.account.replaceAll("\\s","");
             if ("check".equals(commandDto.command)) {
-                if (commandDto.prepaid != null && commandDto.prepaid) {
+                if (commandDto.service_id != null && commandDto.service_id==2) {
                     Parking parking = parkingService.findByType(Parking.ParkingType.PREPAID);
                     if (parking != null) {
                         return fillPrepaid(commandDto, parking);
@@ -77,6 +74,7 @@ public class PaymentServiceImpl implements PaymentService {
                         dto.txn_id = commandDto.txn_id;
                         return dto;
                     }
+//                } else if (commandDto.service_id!=null && commandDto.service_id==3) {
                 } else {
                     CarState carState = carStateService.getLastNotLeft(commandDto.account);
                     JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
@@ -143,7 +141,7 @@ public class PaymentServiceImpl implements PaymentService {
                 }
                 CarState carState = carStateService.getLastNotLeft(commandDto.account);
                 if (carState == null) {
-                    if (commandDto.prepaid != null && commandDto.prepaid) {
+                    if (commandDto.service_id != null && commandDto.service_id==2) {
                         Object payment = savePayment(commandDto, null, Parking.ParkingType.PREPAID, false);
                         if (BillingInfoErrorDto.class.equals(payment.getClass())) {
                             return payment;
@@ -153,6 +151,7 @@ public class PaymentServiceImpl implements PaymentService {
                         Long paymentId = result.get("paymentId").longValue();
 
                         return successPayment(commandDto, paymentId);
+//                    } else if (commandDto.service_id!=null && commandDto.service_id==3) {
                     } else {
                         JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
                         if(abonomentResultNode != null && abonomentResultNode.has("price")){
@@ -181,6 +180,7 @@ public class PaymentServiceImpl implements PaymentService {
                         dto.txn_id = commandDto.txn_id;
                         return dto;
                     }
+//                } else if (commandDto.service_id!=null && commandDto.service_id==3) {
                 } else {
                     JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
                     if(abonomentResultNode != null && abonomentResultNode.has("price")){
@@ -490,12 +490,13 @@ public class PaymentServiceImpl implements PaymentService {
                     billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
                 }
             }
+            carState.setCarOutType(CarState.CarOutType.DEBT_OUT);
             carStateService.createOUTState(carNumber, new Date(), camera, carState, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
 
             String descriptionRu = "Выпускаем авто: Авто с гос. номером " + carNumber + " с долгом -" + rateResult;
             String descriptionEn = "Releasing: Car with license plate " + carNumber + " with debt -" + rateResult;
             eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), carNumber, descriptionRu, descriptionEn);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.DEBT_OUT);
         }
     }
 
@@ -514,13 +515,13 @@ public class PaymentServiceImpl implements PaymentService {
 
             Cars cars = carService.findByPlatenumber(carState.getCarNumber());
             if (cars.getModel() != null && !cars.getModel().equals("")) {
-            node.put("carModel", cars.getModel());
-            if (carModelService.getByModel(cars.getModel()) != null) {
-                CarModel carModel = carModelService.getByModel(cars.getModel());
-                node.put("carType", carModel.getType());
-            } else {
-                log.info("This model doesn't exist in db - " + cars.getModel());
-            }
+                node.put("carModel", cars.getModel());
+                if (carModelService.getByModel(cars.getModel()) != null) {
+                    CarModel carModel = carModelService.getByModel(cars.getModel());
+                    node.put("carType", carModel.getType());
+                } else {
+                    log.info("This model doesn't exist in db - " + cars.getModel());
+                }
             } else {
                 log.info("Car record doesn't exist in database");
             }
@@ -662,6 +663,16 @@ public class PaymentServiceImpl implements PaymentService {
             }
             if (rateValue.has("rateId")) {
                 node.put("rateId", rateValue.get("rateId").longValue());
+//            if (commandDto.service_id != null && commandDto.service_id!=3) {
+//                JsonNode rateValue = getRateByParking(parkingId);
+//                if (rateValue.has("rateName")) {
+//                    node.put("rateName", rateValue.get("rateName").textValue());
+//                }
+//                if (rateValue.has("rateId")) {
+//                    node.put("rateId", rateValue.get("rateId").longValue());
+//                }
+//            } else {
+//                log.info("No Parking Rate !");
             }
         } else {
             if (parkingType.equals(Parking.ParkingType.PREPAID)) {
@@ -728,7 +739,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private JsonNode getNotPaidAbonoment(CommandDto commandDto) throws Exception {
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonementPlugin);
         if (abonomentPluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("command", "hasUnpaidNotExpiredAbonoment");
@@ -759,7 +770,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private void setAbonomentPaid(Long id) throws Exception {
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonomentPlugin);
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonementPlugin);
         if (abonomentPluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("command", "setAbonomentPaid");
@@ -773,6 +784,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
         dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue();
+        dto.left_free_time_minutes = 0;
 
         Date inDate = carState.getInTimestamp();
         Date outDate = new Date();
@@ -816,6 +828,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
         dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue();
+        dto.left_free_time_minutes = 0;
 
         Date inDate = carState.getInTimestamp();
         Date outDate = new Date();

@@ -203,12 +203,12 @@
         let gateId = $('#gateId').val();
 
         let platenumberH = [[#{car.platenumber}]];
-        let denyH = [[#{events.deny}]];
-        let allowH = [[#{events.allow}]];
-        let allH = [[#{events.allEvents}]];
-        let whitelitedH = [[#{events.whitelisted}]];
+        let dateH = [[#{events.date}]];
+        let descriptionH = [[#{parking.description}]];
+        let statusH = [[#{events.status}]];
+        let gateH = [[#{events.gate}]];
 
-        var arr = [{platenumber: platenumberH, deny: denyH, allow: allowH, all: allH, isWhitelist: whitelitedH}];
+        var arr = [{plateNumber: platenumberH, created: dateH, description: descriptionH, status: statusH, gate: gateH}];
         $.get("/rest/events/excel?dateFromString=" + dateFromString + "&dateToString=" + dateToString + "&plateNumber=" + plateNumber + "&gateId=" + gateId, function (data) {
             for (let i = 0; i < data.length; i++) {
                 arr.push(data[i]);

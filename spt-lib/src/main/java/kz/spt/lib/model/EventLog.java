@@ -18,17 +18,20 @@ import java.util.TimeZone;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "event_log")
+@Table(name = "event_log", indexes = {
+        @Index(name = "event_type_idx", columnList = "event_type"),
+        @Index(name = "created_idx", columnList = "created")
+})
 public class EventLog {
 
     public enum EventType {
         MANUAL_GATE_OPEN,
         MANUAL_GATE_CLOSE,
-        DEBT,NOT_ENOUGH_BALANCE,
-        PASS,NOT_PASS,
+        DEBT, DEBT_OUT, NOT_ENOUGH_BALANCE,
+        PAID_PASS, ABONEMENT_PASS, BOOKING_PASS,  FREE_PASS, REGISTER_PASS, PASS, NOT_PASS,
         ERROR,NEW_CAR_DETECTED,
-        ZERO_TOUCH,FIFTEEN_FREE,PREPAID,WHITELIST,
-        PAID
+        ZERO_TOUCH,FIFTEEN_FREE,PREPAID,WHITELIST,WHITELIST_OUT,
+        PAID, ABONEMENT
     }
 
     public enum StatusType{
@@ -37,7 +40,8 @@ public class EventLog {
         Error,
         Success,
         Debt,
-        NotFound
+        NotFound,
+        Warning
     }
 
     @Id

@@ -14,7 +14,7 @@
                     <div class="card-header" th:text="#{whitelist.title}"></div>
                     <div class="card-body">
                         <!-------------------->
-                        <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                        <th:block sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')">
                         <span th:if="${fileUploadResult != null}" th:text="${fileUploadResult}"></span>
                         <div style="margin-bottom: 2%;">
                             <form method="POST" data-th-action="@{list}" enctype="multipart/form-data"
@@ -54,7 +54,7 @@
                             </li>
                         </ul>
                         <div class="tab-content">
-                            <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER','ROLE_BAQORDA')">
+                            <th:block sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER','ROLE_BAQORDA')">
                                 <div class="form-group row">
                                     <div class="col-12">
                                         <a th:href="@{|/whitelist/add|}"
@@ -98,7 +98,7 @@
                                     </tr>
                                     </thead>
                                 </table>
-                                <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                                <th:block sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')">
                                     <div class="form-group row">
                                         <div class="col-12">
                                             <a th:href="@{|/whitelist/add|}"
@@ -128,7 +128,7 @@
                                     </tr>
                                     </thead>
                                 </table>
-                                <th:block sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                                <th:block sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')">
                                     <div class="form-group row">
                                         <div class="col-12">
                                             <a th:href="@{|/whitelist/groups/add|}"

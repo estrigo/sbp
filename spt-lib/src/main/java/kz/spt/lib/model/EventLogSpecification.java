@@ -3,6 +3,7 @@ package kz.spt.lib.model;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Date;
+import java.util.List;
 
 public class EventLogSpecification {
 
@@ -24,5 +25,9 @@ public class EventLogSpecification {
 
     public static Specification<EventLog> equalType(EventLog.EventType eventType) {
         return (root, query, builder) -> builder.equal(root.get(EventLog_.eventType), eventType);
+    }
+
+    public static Specification<EventLog> inEventType(EventLog.EventType... eventType) {
+        return (root, query, builder) -> builder.and(root.get(EventLog_.eventType).in(eventType));
     }
 }

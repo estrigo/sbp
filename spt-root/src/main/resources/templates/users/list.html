@@ -26,7 +26,7 @@
                             </tr>
                             </thead>
                         </table>
-                        <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                        <p sec:authorize="hasAnyRole('ROLE_ADMIN')">
                         <div class="form-group row">
                             <div class="col-12">
                                 <a th:href="@{|/register|}" class="btn btn-success waves-effect waves-light"
@@ -34,10 +34,10 @@
                             </div>
                         </div>
 
-                        <div sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')" id = "delete">
+                        <div sec:authorize="hasAnyRole('ROLE_ADMIN')" id = "delete">
 
                         </div>
-                        <div sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')" id = "edit">
+                        <div sec:authorize="hasAnyRole('ROLE_ADMIN')" id = "edit">
 
                         </div>
                         </p>

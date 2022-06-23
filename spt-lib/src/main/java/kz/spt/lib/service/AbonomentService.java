@@ -9,6 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface AbonomentService {
 
@@ -25,4 +26,6 @@ public interface AbonomentService {
     JsonNode getAbonomentsDetails(String plateNumber, Long parkingId, Date date, SimpleDateFormat format) throws Exception;
 
     List<Period> calculatePaymentPeriods(JsonNode abonementJson, Date inDate, Date outDate) throws JsonProcessingException, ParseException;
+
+    void checkAbonementExpireDate(String plateNumber, Long cameraId, Long parkingId, Map<String, Object> properties) throws Exception;
 }

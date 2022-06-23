@@ -48,4 +48,8 @@ public interface WhitelistService {
     void deleteAllByParkingId(Long parkingId);
 
     ArrayNode getValidWhiteListsInPeriod(Long parkingId, String platenumber, Date inDate, Date outDate) throws JsonProcessingException;
+
+    List<String> findCarsByPlatenumber(String platenumber);
+
+    List<String> findPlatenumbersByPlatenumber(String platenumber);
 }

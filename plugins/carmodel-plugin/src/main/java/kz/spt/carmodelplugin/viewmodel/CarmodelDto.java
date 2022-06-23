@@ -18,6 +18,8 @@ public class CarmodelDto {
     private String carModel;
     private String photo;
     private String bigPhoto;
+    private int page;
+    private int elements;
 
     public CarmodelDto() {
 

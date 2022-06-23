@@ -6,6 +6,7 @@ import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.whitelistplugin.service.WhitelistService;
 import kz.spt.whitelistplugin.viewmodel.WhiteListDto;
 import lombok.extern.java.Log;
+import org.springframework.security.web.firewall.RequestRejectedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -35,5 +36,19 @@ public class WhiteListRestController {
     public List<WhiteListDto> listByGroup(@RequestParam String groupName) throws JsonProcessingException {
         log.info("GroupName param: " + groupName);
         return whitelistService.listByGroupName(groupName);
+    }
+
+    @GetMapping(value = "/platenums/{text}")
+    public List<String> platenums(@PathVariable("text") String plateNumber) throws Exception, RequestRejectedException {
+        String plateNum = plateNumber.toUpperCase();
+        if (plateNum.length()>2) {
+            return whitelistService.findPlatenumbersByPlatenumber(plateNum);
+        }
+        else return null;
+    }
+
+    @GetMapping(value = "/сustomerByplatenumber/{text}")
+    public List<String> customerByplatenumber(@PathVariable("text") String plateNumber) throws Exception, RequestRejectedException {
+        return whitelistService.findCarsByPlatenumber(plateNumber.toUpperCase());
     }
 }

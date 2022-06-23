@@ -57,7 +57,7 @@
             </div>
         </div>
     </div>
-    <div id="hasEditAccess" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_SUPERADMIN')"></div>
+    <div id="hasEditAccess" sec:authorize="hasRole('ROLE_ADMIN')"></div>
     <div class="modal fade" id="editAmount" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

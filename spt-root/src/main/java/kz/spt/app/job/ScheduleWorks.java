@@ -1,6 +1,5 @@
 package kz.spt.app.job;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.extension.PluginRegister;
@@ -18,7 +17,7 @@ import java.util.Iterator;
 
 @Log
 @Component
-public class CleanDebtAndPaidParkings {
+public class ScheduleWorks {
 
     @Autowired
     private CarStateService carStateService;
@@ -30,9 +29,8 @@ public class CleanDebtAndPaidParkings {
     Boolean parkingRemoveAllDebts;
 
     @Scheduled(cron = "0 0 3 * * ?")
-    public void scheduleDebtClean() {
-
-        if(parkingRemoveAllDebts){
+    public void nightSchedule() {
+        if(parkingRemoveAllDebts){ // Если включено удаление долга и платных парковок
             log.info("Remove debt enabled");
             Iterable<CarState> notLeftList = carStateService.getAllNotLeft();
             Iterator<CarState> iterator = notLeftList.iterator();
@@ -41,7 +39,7 @@ public class CleanDebtAndPaidParkings {
                 if(carState.getPaid()){
                     log.info("Removing debt for car = " + carState.getCarNumber());
                     try {
-                        carStateService.removeDebt(carState.getCarNumber());
+                        carStateService.removeDebt(carState.getCarNumber(), true);
                     } catch (Exception e){
                         e.printStackTrace();
                     }
@@ -58,6 +56,26 @@ public class CleanDebtAndPaidParkings {
             }
         } else {
             log.info("Remove debt disabled");
+        }
+
+        // Автопродление и удаление не оплатившие абонементы
+        PluginRegister abonementPluginRegister = pluginService.getPluginRegister(StaticValues.abonementPlugin);
+        if(abonementPluginRegister != null){
+            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectNode jsonNode = objectMapper.createObjectNode();
+            try {
+                jsonNode.put("command", "removeNotPaid");
+                abonementPluginRegister.execute(jsonNode);
+
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            try {
+                jsonNode.put("command", "renewAbonement");
+                abonementPluginRegister.execute(jsonNode);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 }

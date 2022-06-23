@@ -32,21 +32,20 @@ public class CarmodelController {
 
     @GetMapping("/list")
     public String getCarmodelList(Model model, @AuthenticationPrincipal UserDetails currentUser) {
-        log.info("getCarmodelList request started!");
         CarmodelDto CarmodelDto = null;
         if (!model.containsAttribute("CarmodelDto")) {
             SimpleDateFormat format = new SimpleDateFormat(dateformat);
             Calendar calendar = Calendar.getInstance();
             Date dateTo = calendar.getTime();
             calendar.add(Calendar.MINUTE, 1);
-            calendar.add(Calendar.MONTH, -1);
+            calendar.add(Calendar.DAY_OF_MONTH, -1);
             Date dateFrom = calendar.getTime();
             model.addAttribute("CarmodelDto", CarmodelDto.builder()
                     .dateFromString(format.format(dateFrom))
                     .dateToString(format.format(dateTo))
                     .build());
         }
-        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
         return "carmodel/list";
     }
 
@@ -56,7 +55,7 @@ public class CarmodelController {
         if(carmodelDto != null) {
             model.addAttribute("carmodelDto", carmodelDto);
         }
-        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_SUPERADMIN","ROLE_ADMIN").contains(m.getAuthority())));
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN").contains(m.getAuthority())));
         return "carmodel/list";
     }
 

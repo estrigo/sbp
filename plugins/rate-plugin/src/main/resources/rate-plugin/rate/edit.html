@@ -70,6 +70,12 @@
                                         <input type="number" class="form-control" th:field="*{dayPaymentValue}" th:value="*{dayPaymentValue}" id="dayPaymentValue">
                                     </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label" th:text="#{rate.moreThanTwentyFourHoursCalculateInDays}"></label><br/>
+                                        <input type="checkbox" id="moreHoursCalcInDays" th:field="*{moreHoursCalcInDays}">
+                                    </div>
+                                </div>
                             </div>
                             <div id="prepaid" class="row">
                                 <div class="col-md-6">
@@ -336,6 +342,7 @@
         } else {
             $('#dimensions').hide();
         }
+        console.log(val);
         if(val === 'PREPAID'){
             $('#prepaid').show();
             $('#freeMinutes').hide();
@@ -349,10 +356,6 @@
             $('#prepaid').hide();
             $('#freeMinutes').hide();
             $('#dayPayment').hide();
-        } else {
-            $('#prepaid').hide();
-            $('#freeMinutes').show();
-            $('#dayPayment').show();
         }
     }
 

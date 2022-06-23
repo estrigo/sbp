@@ -11,6 +11,7 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.Parking;
+import kz.spt.lib.service.CarsService;
 import kz.spt.whitelistplugin.bootstrap.datatable.WhiteListComparators;
 import kz.spt.whitelistplugin.model.AbstractWhitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
@@ -105,10 +106,10 @@ public class WhitelistServiceImpl implements WhitelistService {
             whitelist.setParking(rootServicesGetterService.getParkingService().findById(whitelist.getParkingId()));
         }
         if(whitelist.getGroup() == null && AbstractWhitelist.Type.UNLIMITED.equals(whitelist.getType())){
-            rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
+            rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber(), false);
         } else if(whitelist.getGroup() != null){
             if (AbstractWhitelist.Type.UNLIMITED.equals(whitelist.getGroup().getType())){
-                rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
+                rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber(), false);
             }
         }
         whitelistRepository.save(whitelist);
@@ -411,7 +412,7 @@ public class WhitelistServiceImpl implements WhitelistService {
                 }
             }
         }
-        if (arrayNode.isEmpty() && platenumber.length() > 2) {
+        if (arrayNode.isEmpty() && platenumber.length() > 4) {
             SimpleDateFormat format = new SimpleDateFormat(datePrettyFormat);
             if (platenumber.length() == 9) {
                 platenumber = platenumber.substring(0, platenumber.length() - 3);
@@ -483,9 +484,8 @@ public class WhitelistServiceImpl implements WhitelistService {
             }
         }
         whitelist.setParking(parking);
-        log.info("group.getType(): " + group.getType());
         if(group.getType() != Whitelist.Type.PERIOD) {
-            rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber());
+            rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber(), false);
         }
         whitelistRepository.save(whitelist);
     }
@@ -753,6 +753,22 @@ public class WhitelistServiceImpl implements WhitelistService {
             whitelistGroupsRepository.deleteById(whitelistGroups.get(i).getId());
         }
 
+    }
+
+    public List<String> findCarsByPlatenumber(String platenumber){
+        CarsService carsService = rootServicesGetterService.getCarsService();
+        List<Cars> cars = carsService.findByPlatenumberContaining(platenumber);
+        List<String> platenumbers = new ArrayList<>();
+        for (int i = 0;i<cars.size();i++){
+            platenumbers.add(cars.get(i).getPlatenumber());
+        }
+        return platenumbers;
+    }
+
+    public List<String> findPlatenumbersByPlatenumber(String platenumber){
+        CarsService carsService = rootServicesGetterService.getCarsService();
+        List<String> platenumbers = carsService.searchByPlateNumberContaining(platenumber);
+        return platenumbers;
     }
 
 }

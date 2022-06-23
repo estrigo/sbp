@@ -6,10 +6,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.bookingplugin.BookingPlugin;
 import kz.spt.bookingplugin.service.BookingService;
 import kz.spt.lib.extension.PluginRegister;
-import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
-import java.text.SimpleDateFormat;
+
 @Log
 @Extension
 public class CommandExecutor implements PluginRegister {
@@ -23,10 +22,12 @@ public class CommandExecutor implements PluginRegister {
         ObjectNode node = objectMapper.createObjectNode();
         node.put("bookingResult", false);
 
-        if(command!=null && command.has("command")){
-            if("checkBooking".equals(command.get("command").textValue())){
-                if(command.has("platenumber") && command.get("platenumber").isTextual()){
-                    Boolean result = getBookingService().checkBookingValid(command.get("platenumber").textValue());
+        if (command != null && command.has("command")) {
+            if ("checkBooking".equals(command.get("command").textValue())) {
+                if (command.has("platenumber") && command.get("platenumber").isTextual()) {
+                    String position = command.has("position") ? command.get("position").textValue() : "1";
+                    String region = command.has("region") ? command.get("region").textValue() : "";
+                    Boolean result = getBookingService().checkBookingValid(command.get("platenumber").textValue(), region, position);
                     node.put("bookingResult", result);
                 }
             }
@@ -35,8 +36,8 @@ public class CommandExecutor implements PluginRegister {
         return node;
     }
 
-    private BookingService getBookingService(){
-        if(bookingService == null) {
+    private BookingService getBookingService() {
+        if (bookingService == null) {
             bookingService = (BookingService) BookingPlugin.INSTANCE.getApplicationContext().getBean("bookingServiceImpl");
         }
         return bookingService;

@@ -26,8 +26,22 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
-@Table(name = "car_state")
+@Table(name = "car_state", indexes = {
+        @Index(name = "car_number_idx", columnList = "car_number"),
+        @Index(name = "out_timestamp_idx", columnList = "out_timestamp")
+})
 public class CarState {
+
+    public enum CarOutType {
+        REGISTER_PASS, // Регистрация выезда
+        BOOKING_PASS, //Выезд через букинг
+        DEBT_OUT, //Выезд с долгом
+        FIFTEEN_FREE, // Выезд по бесплатным минутам
+        ABONEMENT_PASS, // Выезд по абонементу
+        WHITELIST_OUT, // Выезд по белому списку
+        PAID_PASS, // платный выезд
+        FREE_PASS // бесплатный выезд
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -102,6 +116,10 @@ public class CarState {
     private String abonomentJson;
 
     private Boolean cashlessPayment = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "car_out_type")
+    private CarOutType carOutType;
 
     @CreationTimestamp
     private Date created;
