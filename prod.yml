@@ -1,0 +1,169 @@
+spring:
+  mvc:
+    static-path-pattern: /**
+  resources:
+    add-mappings: true
+    cache:
+      period: 3600
+  sbp:
+    runtime-mode: deployment
+    plugins-root: plugins
+    enabled: true
+    auto-start-plugin: true
+    controller:
+      base-path: "/sbp/admin"
+    plugin-properties:
+      spring:
+        datasource:
+          url: jdbc:mysql://db/new_parking?allowPublicKeyRetrieval=true&useSSL=false
+          username: root
+          password: root
+        jpa:
+          hibernate:
+            ddl-auto: update
+          database-platform: org.hibernate.dialect.MySQL55Dialect
+          properties:
+            hibernate:
+              dialect: org.hibernate.dialect.MySQL55Dialect
+              jdbc:
+                time_zone: UTC
+  datasource:
+    url: jdbc:mysql://db/new_parking?allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL55Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL55Dialect
+        jdbc:
+          time_zone: UTC
+#    open-in-view: false TODO: enable in production to reduce database connect on every web page call
+  thymeleaf:
+    mode: HTML
+    cache: false
+  flyway:
+    enabled: false
+  main:
+    allow-bean-definition-overriding: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: parqour.smartparking@gmail.com
+    password: aqaxhlmflyfvujnr
+    properties:
+      mail:
+        smtp:
+          auth: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          starttls:
+            enable: true
+  task:
+    scheduling:
+      pool:
+        size: 10
+  jmx:
+    enabled: true
+server:
+  tomcat:
+    protocol-header: x-forwarded-proto
+  servlet:
+    session:
+      timeout: 57600 # 16 hours lasts session
+org:
+  hibernate:
+    envers:
+      audit_table_suffix: _audit
+      default_schema: new_parking
+images:
+  file:
+    path: "/files/pictures"
+barrier:
+  open:
+    disabled: false
+  modbus:
+    keep:
+      connected: false
+car:
+  movement:
+    simulate: false
+status:
+  check:
+    fixedDelay: 250
+whitelist:
+  group:
+    show:
+      advanced: false
+booking:
+  check.out: false
+  halapark:
+    check: false # включить проверку booking для разных операторов.
+    tokenUrl: http://halapark.calltekky.com/api/auth/getToken
+    postUrl: http://halapark.calltekky.com/api/auth/getBookingByParquorcameras
+zero:
+  touch:
+    rahmet:
+      check: false
+      tokenUrl: https://gateway.chocodev.kz/auth/token
+      clientId: 35000006
+      clientPassword: f5ae4d63b60d9845f95a69bc4240806810338b940a2d0ee8211270a303be66e1
+      filialId: 4752
+      postUrl: gateway.chocodev.kz/payments/v1/smartparking/pay
+parking:
+  has:
+    access:
+      lcd: false
+      unknown:
+        cases: false # Выпускать все авто где вьезд не найден
+  remove:
+    all:
+      debts: false
+  only:
+    register:
+      cars: false
+  ignore:
+    left:
+      seconds: 20 # ignore from any camera if car left from other camera, default 20 seconds
+    entered:
+      seconds: 20 # ignore from any camera if car entered from other camera, default 20 seconds
+webkassa:
+  host: https://kkm.webkassa.kz
+rekassa:
+  host: https://api.rekassa.kz/api
+telegram:
+  bot:
+    external:
+      enabled: false
+parkings:
+  uid: DEMO
+thirdPartyPayment:
+  url: https://mega.parqour.com/mega/client/notify
+notification:
+  url: http://app.magnum.kz/test-services/parking-api/v2/parking/tickets
+  send: false
+  parkingUid: DEMO
+kaspi:
+  qr-link: https://kaspi.kz/pay/%s?service_id=%s&%s=
+carmen:
+  live.enabled: false
+  image.enabled: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true

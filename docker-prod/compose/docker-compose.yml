@@ -15,8 +15,9 @@ services:
       MYSQL_PASSWORD: parking
     networks:
       - parking-net
+
   spt-app:
-    image: doc.smartparking.kz/spt-app:latest
+    image: {api-image}
     restart: always
     environment:
       - "TZ=Asia/Almaty"
@@ -59,6 +60,5 @@ volumes:
   db_data:
 networks:
   parking-net:
-    external:
-      name: true
+    external: true
 version: '2.1'
