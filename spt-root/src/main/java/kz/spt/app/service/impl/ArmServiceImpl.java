@@ -83,6 +83,7 @@ public class ArmServiceImpl implements ArmService {
             Map<String, Object> properties = new HashMap<>();
             properties.put("eventTime", format.format(new Date()));
             properties.put("cameraIp", camera.getIp());
+            properties.put("cameraId", cameraId);
             properties.put("gateName", camera.getGate().getName());
             properties.put("gateDescription", camera.getGate().getDescription());
             properties.put("gateType", camera.getGate().getGateType().toString());
@@ -114,6 +115,7 @@ public class ArmServiceImpl implements ArmService {
             Map<String, Object> properties = new HashMap<>();
             properties.put("eventTime", format.format(new Date()));
             properties.put("cameraIp", camera.getIp());
+            properties.put("cameraId", cameraId);
             properties.put("gateName", camera.getGate().getName());
             properties.put("gateDescription", camera.getGate().getDescription());
             properties.put("gateType", camera.getGate().getGateType().toString());
@@ -186,6 +188,7 @@ public class ArmServiceImpl implements ArmService {
                         eventDto.lp_picture = null;
                         eventDto.manualEnter = true;
                         eventDto.manualOpen = true;
+                        eventDto.cameraId = cameraId;
 
                         carEventService.saveCarEvent(eventDto);
                     }

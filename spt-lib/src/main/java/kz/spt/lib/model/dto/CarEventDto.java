@@ -12,7 +12,6 @@ public class CarEventDto {
     public String ip_address;
 
     public String event_time;
-
     public Date event_date_time;
 
     @NotNull
@@ -27,14 +26,12 @@ public class CarEventDto {
 
     @NotNull
     public String lp_rect;
-
     public Boolean manualEnter = false; //Ручной запуск авто через набор номера
-
     public Boolean manualOpen = false; //Ручное открытие шлагбаума
 
     public String region;
-
     public String vecihleType;
-
     public String car_model;
+
+    public Long cameraId = null;
 }
