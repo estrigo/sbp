@@ -135,6 +135,45 @@
     </div>
 </div>
 
+<div class="modal fade" id="openGate" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="reasonCameraId" />
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-label" th:text="#{arm.openReason}"></label>
+                            <select id="openReason" class="form-control" onchange="selectOpenReason()">
+                                <option value="">Выберите причину</option>
+                                <option value="emergencyServices">Экстренные службы (служба пожаротушения, полиция, скорая медицинская помощь, аварийная служба газа)</option>
+                                <option value="invalidPerson">Человек с ограниченными возможностями</option>
+                                <option value="other">Другое</option>
+                            </select>
+                            <strong id = "openReasonAlert" style="width: 40%"></strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="otherReasonDiv" style="display: none">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-label" th:text="#{arm.otherReasonText}"></label>
+                            <textarea id="otherReason" rows="4"  class="form-control"></textarea>
+                            <strong id = "otherReasonAlert" style="width: 40%"></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success waves-effect waves-light" th:text="#{arm.open}" onclick="sendOpenArm()"></button>
+                <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="configure-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -435,21 +474,7 @@
     }
 
     function openGate(cameraId) {
-        var form = new FormData();
-        form.append("cameraId", cameraId);
-        form.append("snapshot", cameras[cameraId] && cameras[cameraId].snapshot ? cameras[cameraId].snapshot : null);
-
-        var settings = {
-            "url": "/rest/arm/open/barrier",
-            "method": "POST",
-            "timeout": 0,
-            "processData": false,
-            "contentType": false,
-            "data": form
-        };
-        $.ajax(settings).done(function (response) {
-            console.log(response);
-        });
+        showOpenGateModal(cameraId);
     }
 
     function closeGate(cameraId) {
@@ -686,6 +711,70 @@
         $.ajax(settings).done(function (response) {
             window.location.reload();
         });
+    }
+
+    function showOpenGateModal(cameraId) {
+        $("#reasonCameraId").val(cameraId);
+        $("#openReason").val(undefined);
+        $("#otherReason").val(undefined);
+        $("#openGate").modal('show');
+    }
+
+    function selectOpenReason(){
+        let selectOpenReason = $('#openReason').val();
+        if(selectOpenReason === 'other'){
+            $('#otherReasonDiv').show();
+        } else {
+            $('#otherReasonDiv').hide();
+        }
+    }
+
+    function sendOpenArm(){
+        let reasonCameraId = $('#reasonCameraId').val();
+        let openReason = $('#openReason').val();
+        $('#openReasonAlert').text('');
+        $('#otherReasonAlert').text('');
+
+        if(openReason){
+            let reason = undefined;
+            if(openReason == "emergencyServices"){
+                reason = 'Экстренные службы (служба пожаротушения, полиция, скорая медицинская помощь, аварийная служба газа)';
+            } else if(openReason == "invalidPerson") {
+                reason = 'Человек с ограниченными возможностями';
+            } else {
+                let otherReason = $('#otherReason').val();
+                if(otherReason && otherReason.length >= 3){
+                    reason = otherReason;
+                } else {
+                    $('#otherReasonAlert').text('Необходимо написать причину!');
+                    $('#otherReasonAlert').css("background-color", "#ef5350");
+                    $('#otherReasonAlert').css("color", "white");
+                    return;
+                }
+            }
+
+            var form = new FormData();
+            form.append("cameraId", reasonCameraId);
+            form.append("reason", reason);
+            form.append("snapshot", cameras[reasonCameraId] && cameras[reasonCameraId].snapshot ? cameras[reasonCameraId].snapshot : null);
+
+            var settings = {
+                "url": "/rest/arm/open/barrier",
+                "method": "POST",
+                "timeout": 0,
+                "processData": false,
+                "contentType": false,
+                "data": form
+            };
+            $.ajax(settings).done(function (response) {
+                $('#openGate').modal('hide');
+                console.log(response);
+            });
+        } else {
+            $('#openReasonAlert').text('Необходимо выбрать причину!');
+            $('#openReasonAlert').css("background-color", "#ef5350");
+            $('#openReasonAlert').css("color", "white");
+        }
     }
 </script>
 </html>
