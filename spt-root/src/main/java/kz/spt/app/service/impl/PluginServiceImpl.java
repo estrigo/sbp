@@ -8,7 +8,6 @@ import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.plugin.CustomPlugin;
-import kz.spt.lib.service.ParkingService;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import org.pf4j.PluginManager;
@@ -25,10 +24,10 @@ import java.util.Map;
 @Service
 public class PluginServiceImpl implements PluginService {
 
-    private PluginManager pluginManager;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private PluginManager pluginManager;
 
-    public PluginServiceImpl(PluginManager pluginManager){
+    public PluginServiceImpl(PluginManager pluginManager) {
         this.pluginManager = pluginManager;
     }
 
@@ -56,18 +55,17 @@ public class PluginServiceImpl implements PluginService {
                 CustomPlugin plugin = (CustomPlugin) pluginWrapper.getPlugin();
                 if (plugin.getLinks() != null) {
                     for (Map<String, Object> link : plugin.getLinks()) {
-                        if(currentUser.getUser().getRoles().get(0).getName().equals("ROLE_ACCOUNTANT")){
-                            if (plugin.toString().substring(7,20).equals("billingplugin")) {
+                        String pluginName = plugin.toString().substring(7, 10);
+
+                        if (currentUser.getUser().getRoles().get(0).getName().equals("ROLE_ACCOUNTANT")) {
+                            if (pluginName.equals("bil")) {
                                 menus.add(link);
                             }
-                        }
-                        if (currentUser.getUser().getRoles().get(0).getName().equals("ROLE_BAQORDA")){
-                            String pluginName = plugin.toString().substring(7,10);
-                            if (pluginName.equals("whi")||pluginName.equals("bil")||pluginName.equals("abo")){
+                        } else if (currentUser.getUser().getRoles().get(0).getName().equals("ROLE_BAQORDA")) {
+                            if (pluginName.equals("whi") || pluginName.equals("bil") || pluginName.equals("abo")) {
                                 menus.add(link);
                             }
-                        }
-                        else {
+                        } else {
                             menus.add(link);
                         }
                     }
@@ -80,7 +78,7 @@ public class PluginServiceImpl implements PluginService {
     @Override
     public ArrayNode getWhitelist(Parking parking, String platenumber) throws Exception {
         PluginRegister whitelistPluginRegister = getPluginRegister(StaticValues.whitelistPlugin);
-        if(whitelistPluginRegister != null) {
+        if (whitelistPluginRegister != null) {
             if (parking != null && (Parking.ParkingType.WHITELIST.equals(parking.getParkingType()) || Parking.ParkingType.WHITELIST_PAYMENT.equals(parking.getParkingType()))) {
                 ObjectNode node = this.objectMapper.createObjectNode();
                 JsonNode whitelistCheckResult = null;
@@ -95,7 +93,7 @@ public class PluginServiceImpl implements PluginService {
     @Override
     public BigDecimal checkBalance(String platenumber) throws Exception {
         PluginRegister billingPluginRegister = getPluginRegister(StaticValues.billingPlugin);
-        if(billingPluginRegister != null){
+        if (billingPluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             JsonNode balanceCheckResult = null;
             node.put("command", "getCurrentBalance");
@@ -109,7 +107,7 @@ public class PluginServiceImpl implements PluginService {
     @Override
     public BigDecimal changeBalance(String platenumber, BigDecimal value) throws Exception {
         PluginRegister billingPluginRegister = getPluginRegister(StaticValues.billingPlugin);
-        if(billingPluginRegister != null){
+        if (billingPluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
             JsonNode balanceCheckResult = null;
             node.put("command", "increaseCurrentBalance");
@@ -124,11 +122,11 @@ public class PluginServiceImpl implements PluginService {
                 }
             }
 
-            if(BigDecimal.ZERO.compareTo(value) == -1) {
+            if (BigDecimal.ZERO.compareTo(value) == -1) {
                 node.put("reason", "Ручное пополнение пользователем " + username);
                 node.put("reasonEn", "Manual top up by user " + username);
             } else {
-                node.put("reason", "Ручное списание пользователем " + username );
+                node.put("reason", "Ручное списание пользователем " + username);
                 node.put("reasonEn", "Manual write-off by user  " + username);
             }
             balanceCheckResult = billingPluginRegister.execute(node);
