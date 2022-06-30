@@ -46,7 +46,7 @@ public class SnapshotSaver {
     @Value("${images.file.path}")
     String imagePath;
 
-    @Scheduled(fixedDelay = 2000)
+   //@Scheduled(fixedDelay = 2000)
     public void runner() {
         ExecutorService executorService = Executors.newCachedThreadPool();
         List<Future<CameraStatusDto>> futures = new ArrayList<>();

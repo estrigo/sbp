@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card table-responsive">
+                    <div class="card-header">Добавление новой версии ПО для паркомата</div>
+                    <div class="card-body">
+                        <div class="row">
+
+                            <form th:action="@{|/prkstatus/update/save|}" method="post"  enctype="multipart/form-data">
+                                <div class="form-group">
+                                    <label for="updateType">Тип программы</label>
+                                    <select class="form-control" id="updateType" name="SoftwareType" >
+                                        <option value="PARKOMAT">PARKOMAT</option>
+                                        <option value="SERVICE">SERVICE</option>
+
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="zipFile">Архив обновления (zip)</label>
+                                    <input type="file" class="form-control-file" id="zipFile" name="file">
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>
+                                    <button type="submit" class="btn btn-success waves-effect waves-light" th:text="#{crm.saveChanges}"></button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+
+            <div class="col-12" th:each="parkomat : ${parkomatList}" >
+                <div class="card table-responsive">
+                    <div class="card-header"><span th:text="${parkomat.parkomatIP}"></span> <button th:parkomatIP="${parkomat.parkomatIP}" onclick="loadConfig(this.getAttribute('parkomatIP'))" class="btn btn-sm btn-info pull-right"><i class="fa fa-cog"></i></button></div>
+                    <div class="card-body">
+                        <div class="row">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+<!-- Required datatable js -->
+<script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
+<script th:src="@{/plugins/datatables/dataTables.bootstrap4.min.js}"></script>
+<!-- Buttons examples -->
+<script th:src="@{/plugins/datatables/dataTables.buttons.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.bootstrap4.min.js}"></script>
+<script th:src="@{/plugins/datatables/jszip.min.js}"></script>
+<script th:src="@{/plugins/datatables/pdfmake.min.js}"></script>
+<script th:src="@{/plugins/datatables/vfs_fonts.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.html5.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.print.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.colVis.min.js}"></script>
+<!-- Responsive examples -->
+<script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
+<script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+
+<script th:inline="javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+    }
+
+
+    function loadConfig(ip) {
+        $.get("/prkstatus/status/config?parkomatIP=" + ip, function (result) {
+
+            $('#parkomat-config-modal #providerModalBody').html(result);
+            $('#parkomat-config-modal').modal('show')
+        });
+    }
+
+
+
+
+</script>
+
+</html>

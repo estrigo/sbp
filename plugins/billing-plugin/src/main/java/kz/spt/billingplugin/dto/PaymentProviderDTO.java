@@ -18,6 +18,7 @@ public class PaymentProviderDTO {
     public String clientId;
     public String enabled;
     public String cashlessPayment;
+    public boolean parkomat;
 
     public static PaymentProviderDTO convertToDto(PaymentProvider paymentProvider) {
 
@@ -28,6 +29,7 @@ public class PaymentProviderDTO {
         paymentProviderDTO.setClientId(paymentProvider.getClientId());
         paymentProviderDTO.setEnabled(paymentProvider.getEnabled() != null && paymentProvider.getEnabled() ? "Allowed" : "Not Allowed");
         paymentProviderDTO.setCashlessPayment(paymentProvider.getCashlessPayment() != null && paymentProvider.getCashlessPayment() ? "Allowed" : "Not Allowed");
+        paymentProviderDTO.setParkomat(paymentProvider.getIsParkomat() != null ? paymentProvider.getIsParkomat() : false);
         return paymentProviderDTO;
     }
 }
