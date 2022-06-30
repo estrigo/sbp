@@ -44,4 +44,6 @@ public interface EventLogService {
     String findLastNotEnoughFunds(Long gateId);
 
     String findLastWithDebts(Long gateId);
+
+    void sendSocketMessage(String topic, String message);
 }

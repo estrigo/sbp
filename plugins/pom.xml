@@ -27,6 +27,7 @@
         <module>report-plugin</module>
         <module>carmodel-plugin</module>
         <module>mega-plugin</module>
+        <module>qrpanel-plugin</module>
     </modules>
 
     <build>
