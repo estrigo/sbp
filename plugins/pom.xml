@@ -16,18 +16,17 @@
     <packaging>pom</packaging>
 
     <modules>
-       <!-- <module>test-plugin</module>
-        <module>whitelist-plugin</module>-->
+        <module>test-plugin</module>
+        <module>whitelist-plugin</module>
         <module>rate-plugin</module>
         <module>billing-plugin</module>
-        <!--<module>booking-plugin</module>
+        <module>booking-plugin</module>
         <module>zerotouch-plugin</module>
         <module>tgbot-plugin</module>
         <module>abonoment-plugin</module>
         <module>report-plugin</module>
-        <module>carmodel-plugin</module>-->
-        <module>parkomat-status-plugin</module>
-        <!--<module>mega-plugin</module>-->
+        <module>carmodel-plugin</module>
+        <module>mega-plugin</module>
     </modules>
 
     <build>
