@@ -10,14 +10,14 @@
     </parent>
 
     <groupId>kz.spt</groupId>
-    <artifactId>test-plugin</artifactId>
+    <artifactId>qrpanel-plugin</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
         <java.version>11</java.version>
-        <plugin.id>test-plugin</plugin.id>
-        <plugin.class>kz.spt.qrpanel.TestPlugin</plugin.class>
+        <plugin.id>qrpanel-plugin</plugin.id>
+        <plugin.class>kz.spt.qrpanel.QrpanelPlugin</plugin.class>
         <plugin.version>0.0.1-SNAPSHOT</plugin.version>
         <plugin.provider>spt-sbp-test</plugin.provider>
         <plugin.dependencies />

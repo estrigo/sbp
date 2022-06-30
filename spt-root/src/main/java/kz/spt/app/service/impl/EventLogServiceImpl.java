@@ -353,6 +353,11 @@ public class EventLogServiceImpl implements EventLogService {
         return null;
     }
 
+    @Override
+    public void sendSocketMessage(String topic, String message) {
+        messagingTemplate.convertAndSend("/"+topic, message);
+    }
+
     private Page<EventsDto> getPage(long count, List<EventsDto> events, PagingRequest pagingRequest) {
 
         Page<EventsDto> page = new Page<>(events);

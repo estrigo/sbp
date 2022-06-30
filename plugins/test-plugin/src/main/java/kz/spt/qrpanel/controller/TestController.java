@@ -1,4 +1,4 @@
-package kz.spt.testplugin.controller;
+package kz.spt.qrpanel.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

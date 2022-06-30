@@ -30,6 +30,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.dialect.springdata.util.Strings;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -977,6 +978,14 @@ public class CarEventServiceImpl implements CarEventService {
 
         try {
             qrPanelService.clear(camera.getGate());
+            try {
+                ObjectNode socketMessage = this.objectMapper.createObjectNode();
+                socketMessage.put("carnumber", eventDto.car_number);
+                socketMessage.put("action", "clear");
+                eventLogService.sendSocketMessage("qrpanel", socketMessage.toString());
+            }catch (Exception ex) {
+
+            }
         } catch (Exception ex) {
             log.log(Level.WARNING, "Error while clearing qrpanel for gate " + gate.gateName);
         }
@@ -1229,6 +1238,19 @@ public class CarEventServiceImpl implements CarEventService {
             }
             barrierOutProcessingHashtable.put(camera.getGate().getBarrier().getIp(), System.currentTimeMillis());
             boolean openResult = false;
+
+            try {
+                ObjectNode socketMessage = this.objectMapper.createObjectNode();
+                socketMessage.put("qr", Strings.EMPTY);
+                socketMessage.put("carnumber", eventDto.car_number);
+                socketMessage.put("debt", 0);
+                socketMessage.put("sum", rateResult);
+                socketMessage.put("action", "allow");
+                eventLogService.sendSocketMessage("qrpanel", socketMessage.toString());
+            }catch (Exception ex) {
+
+            }
+
             try {
                 openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
             } catch (Exception e) {
@@ -1267,6 +1289,14 @@ public class CarEventServiceImpl implements CarEventService {
         } else {
             try {
                 qrPanelService.display(camera.getGate(), eventDto.car_number);
+                String qrUrl = qrPanelService.generateUrl(camera.getGate(),eventDto.car_number);
+
+                ObjectNode socketMessage = this.objectMapper.createObjectNode();
+                socketMessage.put("qr", qrUrl);
+                socketMessage.put("carnumber", eventDto.car_number);
+                socketMessage.put("debt", balance);
+                socketMessage.put("action", "display");
+                eventLogService.sendSocketMessage("qrpanel", socketMessage.toString());
             } catch (Exception ex) {
                 log.log(Level.WARNING, "Error while display qrpanel for gate " + gate.gateName);
             }
