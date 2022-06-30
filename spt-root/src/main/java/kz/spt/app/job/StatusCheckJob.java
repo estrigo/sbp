@@ -91,4 +91,17 @@ public class StatusCheckJob {
         }
         return null;
     }
+
+    public static CameraStatusDto findCameraStatusDtoById(Long cameraId){
+        for(GateStatusDto gate: StatusCheckJob.globalGateDtos){
+            if(gate.frontCamera != null && cameraId.equals(gate.frontCamera.id)){
+                return gate.frontCamera;
+            } else if(gate.frontCamera2 != null && cameraId.equals(gate.frontCamera2.id)){
+                return gate.frontCamera2;
+            } else if(gate.backCamera != null && cameraId.equals(gate.backCamera.id)){
+                return gate.backCamera;
+            }
+        }
+        return null;
+    }
 }

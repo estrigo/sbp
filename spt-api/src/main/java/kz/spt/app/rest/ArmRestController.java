@@ -29,8 +29,9 @@ public class ArmRestController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
     @RequestMapping(value = "/open/barrier", method = RequestMethod.POST, consumes = "multipart/form-data")
     public Boolean openGateBarrier(@RequestParam("cameraId") Long cameraId,
+                                   @RequestParam("reason") String reason,
                                    @RequestParam("snapshot") String snapshot) throws Exception {
-        return armService.openGate(cameraId, snapshot);
+        return armService.openGate(cameraId, snapshot, reason);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")

@@ -141,6 +141,7 @@ public class CarEventServiceImpl implements CarEventService {
                 eventDto.lp_rect = null;
                 eventDto.lp_picture = null;
                 eventDto.manualEnter = true;
+                eventDto.cameraId = cameraId;
 
                 if (snapshot != null && !"".equals(snapshot) && !"undefined".equals(snapshot) && !"null".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
                     eventDto.car_picture = snapshot;
@@ -153,6 +154,7 @@ public class CarEventServiceImpl implements CarEventService {
                 properties.put("carNumber", platenumber);
                 properties.put("eventTime", format.format(new Date()));
                 properties.put("cameraIp", camera.getIp());
+                properties.put("cameraId", cameraId);
                 properties.put("gateName", camera.getGate().getName());
                 properties.put("gateDescription", camera.getGate().getDescription());
                 properties.put("gateType", camera.getGate().getGateType().toString());
@@ -342,7 +344,7 @@ public class CarEventServiceImpl implements CarEventService {
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
         eventDto.car_number = eventDto.car_number.toUpperCase();
 
-        CameraStatusDto cameraStatusDto = StatusCheckJob.findCameraStatusDtoByIp(eventDto.ip_address);
+        CameraStatusDto cameraStatusDto = eventDto.cameraId != null ? StatusCheckJob.findCameraStatusDtoById(eventDto.cameraId) : StatusCheckJob.findCameraStatusDtoByIp(eventDto.ip_address);
 
         //Если камера не зайдействована, то не фиксировать события по ней. Задача #170
         if (cameraStatusDto != null && !cameraStatusDto.enabled)
@@ -353,6 +355,7 @@ public class CarEventServiceImpl implements CarEventService {
         properties.put("eventTime", format.format(eventDto.event_date_time));
         properties.put("lp_rect", eventDto.lp_rect);
         properties.put("cameraIp", eventDto.ip_address);
+        properties.put("cameraId", eventDto.cameraId);
         if (eventDto.region != null) {
             properties.put("region", eventDto.region);
         }
@@ -414,43 +417,40 @@ public class CarEventServiceImpl implements CarEventService {
 
             if (eventDto.manualOpen || isAllow(eventDto, cameraStatusDto, properties, gate)) {
                 log.info("Gate type: " + gate.gateType);
-                CarState carStateForCheckGateType = carStateService.getLastNotLeft(eventDto.car_number);
-
-//                createNewCarEvent(cameraStatusDto, gate, eventDto, properties);
 
                 Camera camera = null;
-                List<Camera> cameraList = cameraService.findCameraByIp(cameraStatusDto.ip);
-
-                if (Gate.GateType.OUT.equals(gate.gateType)) {
-                    if (carStateForCheckGateType!=null){
-                        List<Camera> cameraIn = cameraService.findCameraByIp(carStateForCheckGateType.getInChannelIp());
-                        Parking parkingEntried = cameraIn.get(0).getGate().getParking();
-
-                        for (Camera cm : cameraList) {
-                            if (cm.getGate().getParking().equals(parkingEntried)) {
-                                camera = cm;
-                            }
-                        }
-                    } else {
-                        for (Camera cm : cameraList) {
-                            if (cm.getGate().getGateType().equals(Gate.GateType.OUT)) {
-                                camera = cm;
-                            }
-                        }
-                    }
+                if(eventDto.cameraId != null){
+                    camera = cameraService.getCameraById(eventDto.cameraId);
                 } else {
-                    for (Camera cm : cameraList) {
-                        if (cm.getGate().getGateType()!= null && cm.getGate().getGateType().equals(gate.gateType)) {
-                            camera = cm;
+                    List<Camera> cameraList = cameraService.findCameraByIp(cameraStatusDto.ip);
+                    if (Gate.GateType.OUT.equals(gate.gateType)) {
+                        if(cameraList.size() > 1){
+                            CarState carStateForCheckGateType = carStateService.getLastNotLeft(eventDto.car_number);
+                            if (carStateForCheckGateType!=null){ // Check Last not left parking
+                                for (Camera cm : cameraList) {
+                                    if (cm.getGate().getParking().equals(carStateForCheckGateType.getParking())) {
+                                        camera = cm;
+                                    }
+                                }
+                            } else { // if not left parking absent then check last left parking
+                                carStateForCheckGateType = carStateService.getLastCarState(eventDto.car_number);
+                                if (carStateForCheckGateType!=null){
+                                    for (Camera cm : cameraList) {
+                                        if (cm.getGate().getParking().equals(carStateForCheckGateType.getParking())) {
+                                            camera = cm;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
+                    if(camera == null){
+                        camera = cameraList.get(0);
+                    }
                 }
-                if(camera == null){
-                    camera = cameraList.get(0);
-                }
-                cameraStatusDto.id=camera.getId();
-                createNewCarEvent(cameraStatusDto, gate, eventDto, properties);
 
+                cameraStatusDto.id = camera.getId();
+                createNewCarEvent(cameraStatusDto, gate, eventDto, properties);
 
                 if (Gate.GateType.REVERSE.equals(gate.gateType)) {
                     handleCarReverseInEvent(eventDto, camera, gate, properties, format);
@@ -476,7 +476,7 @@ public class CarEventServiceImpl implements CarEventService {
         if (blacklistService.findByPlate(carEvent.car_number).isPresent()) {
             properties.put("type", EventLog.StatusType.Deny);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, cameraStatusDto.id, carEvent.car_number, "В проезде отказано: Авто с гос. номером " + carEvent.car_number + " в черном списке", "Not allowed to enter: Car with number " + carEvent.car_number + " in blacklist");
-            eventLogService.createEventLog(Gate.class.getSimpleName(), cameraStatusDto.id, properties, "В проезде отказано: Авто с гос. номером " + carEvent.car_number + " в черном списке", "Not allowed to enter: Car with number " + carEvent.car_number + " in blacklist", EventLog.EventType.NOT_PASS);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), cameraStatusDto.gateId, properties, "В проезде отказано: Авто с гос. номером " + carEvent.car_number + " в черном списке", "Not allowed to enter: Car with number " + carEvent.car_number + " in blacklist", EventLog.EventType.NOT_PASS);
             return false;
         }
         return gate.lastClosedTime == null || System.currentTimeMillis() - gate.lastClosedTime > 5000; ////если последний раз закрыли больше 5 секунды
@@ -537,7 +537,7 @@ public class CarEventServiceImpl implements CarEventService {
                 String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
                 String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
             }
         }
     }
@@ -549,7 +549,7 @@ public class CarEventServiceImpl implements CarEventService {
         JsonNode abonements = null;
         abonements = abonomentService.getAbonomentsDetails(eventDto.car_number, camera.getGate().getParking().getId(), new Date(), format);
 
-        // проверить если машины выезжала, по умолчанию 20 секунд назад
+        // проверить выезжала ли с другого выезда, по умолчанию не больше 20 секунд
         Calendar now = Calendar.getInstance();
         now.add(Calendar.SECOND, (-1) * parkingIgnoreLeftSeconds);
         Boolean hasLeft = carStateService.getIfHasLastFromOtherCamera(eventDto.car_number, eventDto.ip_address, now.getTime());
@@ -595,7 +595,7 @@ public class CarEventServiceImpl implements CarEventService {
                 String descriptionRu = "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность " + debt;
                 String descriptionEn = "Not allowed to enter: Car " + eventDto.car_number + " is in debt " + debt;
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Debt, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.DEBT);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.DEBT);
                 hasAccess = false;
             } else if (Parking.ParkingType.PAYMENT.equals(camera.getGate().getParking().getParkingType())) {
                 if (carState == null) {
@@ -603,7 +603,7 @@ public class CarEventServiceImpl implements CarEventService {
                 } else {
                     properties.put("type", EventLog.StatusType.Debt);
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Debt, camera.getId(), eventDto.car_number, "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность", "Not allowed to enter: Car " + eventDto.car_number + " is in debt");
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность", "Not allowed to enter: Car " + eventDto.car_number + " is in debt", EventLog.EventType.NOT_PASS);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность", "Not allowed to enter: Car " + eventDto.car_number + " is in debt", EventLog.EventType.NOT_PASS);
                     hasAccess = false;
                 }
             } else if (Parking.ParkingType.PREPAID.equals(camera.getGate().getParking().getParkingType())) {
@@ -626,12 +626,12 @@ public class CarEventServiceImpl implements CarEventService {
                         String descriptionRu = "Пропускаем авто: Сумма за предоплату присутствует. Сумма к оплате: " + prepaid + ". Остаток баланса: " + balance.subtract(prepaid) + ". Проезд разрешен.";
                         String descriptionEn = "Allowed: Sum for prepayment exist. Total sum: " + prepaid + ". Balance left: " + balance.subtract(prepaid) + ". Allowed.";
                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.PREPAID);
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.PREPAID);
                         hasAccess = true;
                     } else {
                         properties.put("type", EventLog.StatusType.Deny);
                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance);
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance, EventLog.EventType.NOT_ENOUGH_BALANCE);
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance, EventLog.EventType.NOT_ENOUGH_BALANCE);
                         hasAccess = false;
                     }
                 }
@@ -664,7 +664,7 @@ public class CarEventServiceImpl implements CarEventService {
                         } else {
                             properties.put("type", EventLog.StatusType.Debt);
                             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Debt, camera.getId(), eventDto.car_number, "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность", "Not allowed to enter: Car " + eventDto.car_number + " is in debt");
-                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность", "Not allowed to enter: Car " + eventDto.car_number + " is in debt", EventLog.EventType.DEBT);
+                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность", "Not allowed to enter: Car " + eventDto.car_number + " is in debt", EventLog.EventType.DEBT);
                             hasAccess = false;
                         }
                     }
@@ -690,7 +690,7 @@ public class CarEventServiceImpl implements CarEventService {
                 String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
                 String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
             }
             if (openResult) {
                 gate.gateStatus = GateStatusDto.GateStatus.Open;
@@ -707,13 +707,13 @@ public class CarEventServiceImpl implements CarEventService {
                 } else if (enteredFromThisSecondsBefore) {
                     properties.put("type", EventLog.StatusType.Allow);
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Запускаем авто: Авто с гос. номером " + eventDto.car_number, "Allow entrance: Car with license plate " + eventDto.car_number);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Запускаем авто: Авто с гос. номером " + eventDto.car_number, "Allow entrance: Car with license plate " + eventDto.car_number, EventLog.EventType.PASS);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Запускаем авто: Авто с гос. номером " + eventDto.car_number, "Allow entrance: Car with license plate " + eventDto.car_number, EventLog.EventType.PASS);
                 }
             } else {
                 String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
                 String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
             }
             barrierInProcessingHashtable.remove(camera.getGate().getBarrier().getIp());
         }
@@ -751,18 +751,18 @@ public class CarEventServiceImpl implements CarEventService {
             }
             carStateService.createINState(eventDto.car_number, eventDto.event_date_time, camera, false, whitelistCheckResults != null ? whitelistCheckResults.toString() : null, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, message_ru, message_en, EventLog.EventType.WHITELIST);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, message_ru, message_en, EventLog.EventType.WHITELIST);
         } else if (Parking.ParkingType.PREPAID.equals(camera.getGate().getParking().getParkingType())) {
             properties.put("type", EventLog.StatusType.Allow);
             carStateService.createINState(eventDto.car_number, eventDto.event_date_time, camera, false, null, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " по предоплате" + eventWithDimensionRu, "Permitted: Car with number " + eventDto.car_number + " on prepaid basis" + eventWithDimensionEn);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " по предоплате" + eventWithDimensionRu, "Permitted: Car with number " + eventDto.car_number + " on prepaid basis" + eventWithDimensionEn, EventLog.EventType.PREPAID);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " по предоплате" + eventWithDimensionRu, "Permitted: Car with number " + eventDto.car_number + " on prepaid basis" + eventWithDimensionEn, EventLog.EventType.PREPAID);
         } else {
             if (whitelistCheckResults == null) {
                 properties.put("type", EventLog.StatusType.Allow);
                 carStateService.createINState(eventDto.car_number, eventDto.event_date_time, camera, true, null, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), (eventDto.region != null ? Utils.convertRegion(eventDto.region) + " " : "") + eventDto.car_number + (eventDto.vecihleType != null ? "[" + eventDto.vecihleType + "]" : ""), "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе" + eventWithDimensionRu, "Permitted: Car with number " + eventDto.car_number + " on paid basis" + eventWithDimensionEn);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе" + eventWithDimensionRu, "Permitted: Car with number " + eventDto.car_number + " on paid basis" + eventWithDimensionEn, EventLog.EventType.PAID);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе" + eventWithDimensionRu, "Permitted: Car with number " + eventDto.car_number + " on paid basis" + eventWithDimensionEn, EventLog.EventType.PAID);
             } else {
                 ArrayNode whitelistCheckResultArray = (ArrayNode) whitelistCheckResults;
                 boolean hasAccess = false;
@@ -780,12 +780,12 @@ public class CarEventServiceImpl implements CarEventService {
                     properties.put("type", EventLog.StatusType.Allow);
                     carStateService.createINState(eventDto.car_number, eventDto.event_date_time, camera, false, whitelistCheckResults != null ? whitelistCheckResults.toString() : null, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа" + eventWithDimensionRu, "Permitted: Car with number " + eventDto.car_number + " from white list" + eventWithDimensionEn);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа" + eventWithDimensionRu, "Permitted: Car with number " + eventDto.car_number + " from white list" + eventWithDimensionEn, EventLog.EventType.WHITELIST);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа" + eventWithDimensionRu, "Permitted: Car with number " + eventDto.car_number + " from white list" + eventWithDimensionEn, EventLog.EventType.WHITELIST);
                 } else {
                     properties.put("type", EventLog.StatusType.Allow);
                     carStateService.createINState(eventDto.car_number, eventDto.event_date_time, camera, true, whitelistCheckResults != null ? whitelistCheckResults.toString() : null, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе. Все места для группы " + nodeDetails.get("groupName").textValue() + " заняты следующим списком " + nodeDetails.get("placeOccupiedCars").toString() + eventWithDimensionRu, "Permitted: Car with license number " + eventDto.car_number + " on paid basis. " + (nodeDetails.has("placeName") ? nodeDetails.get("placeName") + " spot " : "Все места ") + "for the group " + nodeDetails.get("groupName").textValue() + " taken by the next list " + nodeDetails.get("placeOccupiedCars").toString() + eventWithDimensionEn);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе. " + (nodeDetails.has("placeName") ? nodeDetails.get("placeName") + " место " : "Все места ") + "для группы " + nodeDetails.get("groupName").textValue() + " заняты следующим списком " + nodeDetails.get("placeOccupiedCars").toString() + eventWithDimensionRu, "Permitted: Car with license number " + eventDto.car_number + " on paid basis. " + (nodeDetails.has("placeName") ? nodeDetails.get("placeName") + " spot " : "Все места ") + "for the group " + nodeDetails.get("groupName").textValue() + " taken by the next list " + nodeDetails.get("placeOccupiedCars").toString() + eventWithDimensionEn, EventLog.EventType.PAID);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " на платной основе. " + (nodeDetails.has("placeName") ? nodeDetails.get("placeName") + " место " : "Все места ") + "для группы " + nodeDetails.get("groupName").textValue() + " заняты следующим списком " + nodeDetails.get("placeOccupiedCars").toString() + eventWithDimensionRu, "Permitted: Car with license number " + eventDto.car_number + " on paid basis. " + (nodeDetails.has("placeName") ? nodeDetails.get("placeName") + " spot " : "Все места ") + "for the group " + nodeDetails.get("groupName").textValue() + " taken by the next list " + nodeDetails.get("placeOccupiedCars").toString() + eventWithDimensionEn, EventLog.EventType.PAID);
                 }
             }
         }
@@ -809,7 +809,7 @@ public class CarEventServiceImpl implements CarEventService {
             } else if (checkBooking(eventDto.car_number, eventDto.region, "1")) {
                 properties.put("type", EventLog.StatusType.Allow);
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.");
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.", EventLog.EventType.BOOKING_PASS);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.", EventLog.EventType.BOOKING_PASS);
                 return true;
             } else if(sendEventMessage) {
                 properties.put("type", EventLog.StatusType.Deny);
@@ -817,19 +817,19 @@ public class CarEventServiceImpl implements CarEventService {
                 String description = "В проезде отказано: Все места в для группы " + node.get("groupName").textValue() + " заняты следующим списком " + normalList + ". Авто " + eventDto.car_number;
                 String description_en = "Not allowed: All parking lost for the groups " + node.get("groupName").textValue() + " were taken by the next list " + normalList + ". Car " + eventDto.car_number;
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, description, description_en);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, description, description_en, EventLog.EventType.NOT_PASS);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, description_en, EventLog.EventType.NOT_PASS);
                 return false;
             }
         } else if (checkBooking(eventDto.car_number, eventDto.region, "1")) {
             log.info(eventDto.car_number + ": booking check booking return true");
             properties.put("type", EventLog.StatusType.Allow);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.");
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.", EventLog.EventType.BOOKING_PASS);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.", EventLog.EventType.BOOKING_PASS);
             return true;
         } else if(sendEventMessage) {
             properties.put("type", EventLog.StatusType.Deny);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Нет доступа для въезда " + eventDto.car_number, "Not allowed to enter:  No entry access " + eventDto.car_number);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Нет доступа для въезда " + eventDto.car_number, "Not allowed to enter:  No entry access " + eventDto.car_number, EventLog.EventType.NOT_PASS);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Нет доступа для въезда " + eventDto.car_number, "Not allowed to enter:  No entry access " + eventDto.car_number, EventLog.EventType.NOT_PASS);
             return false;
         }
         return false;
@@ -869,16 +869,16 @@ public class CarEventServiceImpl implements CarEventService {
             if (hasAccess) {
                 properties.put("type", EventLog.StatusType.Allow);
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа", "Permitted: Car with number " + eventDto.car_number + " from white list");
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа", "Permitted: Car with number " + eventDto.car_number + " from white list", EventLog.EventType.WHITELIST);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " в рамках белого листа", "Permitted: Car with number " + eventDto.car_number + " from white list", EventLog.EventType.WHITELIST);
             } else if(sendEventMessage) {
                 properties.put("type", EventLog.StatusType.Deny);
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Все места в для группы " + customDetails.get("groupName").textValue() + " заняты следующим списком " + customDetails.get("placeOccupiedCars").toString() + ". Авто " + eventDto.car_number, "Not allowed: All spots for the group " + customDetails.get("groupName").textValue() + " taken by the next list " + customDetails.get("placeOccupiedCars").toString() + ". Car " + eventDto.car_number);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Все места в для группы " + customDetails.get("groupName").textValue() + " заняты следующим списком " + customDetails.get("placeOccupiedCars").toString() + ". Авто " + eventDto.car_number, "Not allowed: All spots for the group " + customDetails.get("groupName").textValue() + " taken by the next list " + customDetails.get("placeOccupiedCars").toString() + ". Car " + eventDto.car_number, EventLog.EventType.NOT_PASS);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Все места в для группы " + customDetails.get("groupName").textValue() + " заняты следующим списком " + customDetails.get("placeOccupiedCars").toString() + ". Авто " + eventDto.car_number, "Not allowed: All spots for the group " + customDetails.get("groupName").textValue() + " taken by the next list " + customDetails.get("placeOccupiedCars").toString() + ". Car " + eventDto.car_number, EventLog.EventType.NOT_PASS);
             }
         } else if(sendEventMessage) {
             properties.put("type", EventLog.StatusType.Deny);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number, "Not allowed: Car not found in white list " + eventDto.car_number);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number, "Not allowed: Car not found in white list " + eventDto.car_number, EventLog.EventType.NOT_PASS);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Авто не найдено в белом листе " + eventDto.car_number, "Not allowed: Car not found in white list " + eventDto.car_number, EventLog.EventType.NOT_PASS);
         }
         return hasAccess;
     }
@@ -1002,24 +1002,25 @@ public class CarEventServiceImpl implements CarEventService {
                 leftFromThisSecondsBefore = carStateService.getIfHasLastFromThisCamera(eventDto.car_number, eventDto.ip_address, now.getTime()); // Если выезжал 5 минут назад но не заезжал
                 if (leftFromThisSecondsBefore) {
                     hasAccess = true;
+
                 } else {
                     if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
                         if (bookingCheckOut) {
                             hasAccess = checkBooking(eventDto.car_number, eventDto.region, "2");
                             if (hasAccess) {
                                 properties.put("type", EventLog.StatusType.Allow);
-                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
-                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed", EventLog.EventType.BOOKING_PASS);
+                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
+                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed", EventLog.EventType.BOOKING_PASS);
                                 carOutBy = StaticValues.CarOutBy.WHITELIST;
                             } else {
                                 properties.put("type", EventLog.StatusType.Deny);
-                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Выезд не разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". Exit is not allowed");
-                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Выезд не разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". Exit is not allowed", EventLog.EventType.NOT_PASS);
+                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Выезд не разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". Exit is not allowed");
+                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Выезд не разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". Exit is not allowed", EventLog.EventType.NOT_PASS);
                             }
                         } else {
                             properties.put("type", EventLog.StatusType.Allow);
-                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
-                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed", EventLog.EventType.WHITELIST_OUT);
+                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed");
+                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For white list exit is allowed", EventLog.EventType.WHITELIST_OUT);
                             carOutBy = StaticValues.CarOutBy.WHITELIST;
                             hasAccess = true;
                         }
@@ -1034,14 +1035,14 @@ public class CarEventServiceImpl implements CarEventService {
                         hasAccess = true;
                     } else if (parkingHasAccessUnknownCases) {
                         properties.put("type", EventLog.StatusType.Allow);
-                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для этого паркинга выезд разрешен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For this parking exit is allowed");
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для этого паркинга выезд разрешен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For this parking exit is allowed", EventLog.EventType.PASS);
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для этого паркинга выезд разрешен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For this parking exit is allowed");
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для этого паркинга выезд разрешен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For this parking exit is allowed", EventLog.EventType.PASS);
                         hasAccess = true;
                     } else {
                         ArrayNode whitelistCheckResultArray = (ArrayNode) getWhiteLists(camera.getGate().getParking().getId(), eventDto.car_number, new Date(), format, properties);
                         if (whitelistCheckResultArray != null && whitelistCheckResultArray.size() > 0) {
                             properties.put("type", EventLog.StatusType.Allow);
-                            String description = "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для белого листа выезд разрешен.";
+                            String description = "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого листа выезд разрешен.";
                             String descriptionEn = "No record found about entering. Car with license number " + eventDto.car_number + ". For white list exit is allowed";
                             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, description, descriptionEn);
                             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, EventLog.EventType.WHITELIST_OUT);
@@ -1049,8 +1050,8 @@ public class CarEventServiceImpl implements CarEventService {
                             hasAccess = true;
                         } else {
                             properties.put("type", EventLog.StatusType.Deny);
-                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.NotFound, camera.getId(), eventDto.car_number, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited");
-                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найден запись о въезде. Авто с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited", EventLog.EventType.NOT_PASS);
+                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.NotFound, camera.getId(), eventDto.car_number, "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited");
+                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.", "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited", EventLog.EventType.NOT_PASS);
                             hasAccess = false;
                         }
                     }
@@ -1087,7 +1088,7 @@ public class CarEventServiceImpl implements CarEventService {
                             } else {
                                 properties.put("type", EventLog.StatusType.Deny);
                                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Нет доступа для выезда " + eventDto.car_number, "Not allowed to exit:  No entry access " + eventDto.car_number);
-                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Нет доступа для выезда " + eventDto.car_number, "Not allowed to exit:  No entry access " + eventDto.car_number, EventLog.EventType.NOT_PASS);
+                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Нет доступа для выезда " + eventDto.car_number, "Not allowed to exit:  No entry access " + eventDto.car_number, EventLog.EventType.NOT_PASS);
                                 hasAccess = false;
                             }
                         } else {
@@ -1119,7 +1120,7 @@ public class CarEventServiceImpl implements CarEventService {
                                         String description = "В проезде отказано: Не достаточно средств для списания оплаты за паркинг вне рамки белого списка. Сумма к оплате: " + rateResult + ". Баланс: " + balance;
                                         String descriptionEn = "Not allowed to exit: Not enough balance to pay for parking outside the scope of the white list. Total sum to pay: " + rateResult + ". Balance: " + balance;
                                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, description, descriptionEn);
-                                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, description, descriptionEn, EventLog.EventType.NOT_ENOUGH_BALANCE);
+                                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, EventLog.EventType.NOT_ENOUGH_BALANCE);
                                         hasAccess = false;
                                     }
                                     log.info("whitelists hasAccess = " + hasAccess);
@@ -1135,7 +1136,7 @@ public class CarEventServiceImpl implements CarEventService {
                                             String description = "В проезде отказано: Не достаточно средств для списания оплаты за паркинг вне рамки абонемента. Сумма к оплате: " + rateResult + ". Баланс: " + balance;
                                             String descriptionEn = "Not allowed to exit: Not enough balance to pay for parking outside the scope of the subscription. Total sum to pay: " + rateResult + ". Balance: " + balance;
                                             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, description, descriptionEn);
-                                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, description, descriptionEn, EventLog.EventType.NOT_ENOUGH_BALANCE);
+                                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, EventLog.EventType.NOT_ENOUGH_BALANCE);
                                             hasAccess = false;
                                         }
                                         log.info("abonements hasAccess = " + hasAccess);
@@ -1202,7 +1203,7 @@ public class CarEventServiceImpl implements CarEventService {
                                             if (!hasAccess) {
                                                 properties.put("type", EventLog.StatusType.Deny);
                                                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.car_number, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
-                                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance, EventLog.EventType.NOT_ENOUGH_BALANCE);
+                                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance, EventLog.EventType.NOT_ENOUGH_BALANCE);
                                             }
                                         }
                                     }
@@ -1234,7 +1235,7 @@ public class CarEventServiceImpl implements CarEventService {
                 String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
                 String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
                 log.info("Error opening barrier: " + e.getMessage());
                 e.printStackTrace();
             }
@@ -1249,13 +1250,13 @@ public class CarEventServiceImpl implements CarEventService {
                 } else if (leftFromThisSecondsBefore) {
                     properties.put("type", EventLog.StatusType.Allow);
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number, EventLog.EventType.PASS);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number, EventLog.EventType.PASS);
                 }
             } else {
                 String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
                 String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
             }
             barrierOutProcessingHashtable.remove(camera.getGate().getBarrier().getIp());
 //          send notification to third party
@@ -1308,11 +1309,11 @@ public class CarEventServiceImpl implements CarEventService {
             carState.setCarOutType(CarState.CarOutType.FREE_PASS);
             carStateService.createOUTState(eventDto.car_number, eventDto.event_date_time, camera, carState, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number, EventLog.EventType.FREE_PASS);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number, EventLog.EventType.FREE_PASS);
         } else if (StaticValues.CarOutBy.WHITELIST.equals(carOutBy)) {
             properties.put("type", EventLog.StatusType.Allow);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Присутствовал в белом списке. Авто с гос. номером " + eventDto.car_number, "Car is allowed: Exist in whitelist. Car with license plate " + eventDto.car_number);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Присутствовал в белом списке. Авто с гос. номером " + eventDto.car_number, "Car is allowed: Exist in whitelist. Car with license plate " + eventDto.car_number, EventLog.EventType.WHITELIST_OUT);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Пропускаем авто: Присутствовал в белом списке. Авто с гос. номером " + eventDto.car_number, "Car is allowed: Exist in whitelist. Car with license plate " + eventDto.car_number, EventLog.EventType.WHITELIST_OUT);
             carState.setWhitelistJson(whitelists != null ? whitelists.toString() : null);
             carState.setCarOutType(CarState.CarOutType.WHITELIST_OUT);
 
@@ -1377,7 +1378,7 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, message_ru, message_en, EventLog.EventType.REGISTER_PASS);
             } else {
                 properties.put("type", EventLog.StatusType.Allow);
-                String message_ru = "Не найден запись о въезде: Авто с номером " + eventDto.car_number + " выехал с паркинга";
+                String message_ru = "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + " выехал с паркинга";
                 String message_en = "No record found about entering: Car with plate number " + eventDto.car_number + " left the parking";
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, message_ru, message_en, EventLog.EventType.PASS);
@@ -1385,7 +1386,7 @@ public class CarEventServiceImpl implements CarEventService {
         } else if (StaticValues.CarOutBy.BOOKING.equals(carOutBy)) {
             properties.put("type", EventLog.StatusType.Allow);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.");
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.", EventLog.EventType.BOOKING_PASS);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.", EventLog.EventType.BOOKING_PASS);
             carState.setCarOutType(CarState.CarOutType.BOOKING_PASS);
             carStateService.createOUTState(eventDto.car_number, eventDto.event_date_time, camera, carState, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
         } else {
@@ -1396,7 +1397,7 @@ public class CarEventServiceImpl implements CarEventService {
                 String message_ru = "Пропускаем авто: Безусловная оплата прошла удачно. Сумма к оплате: " + rateResult + ". Проезд разрешен.";
                 String message_en = "Allowed: Zero touch payment received. Total sum: " + rateResult + ". Allowed.";
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, message_ru, message_en);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, message_ru, message_en, EventLog.EventType.ZERO_TOUCH);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, message_ru, message_en, EventLog.EventType.ZERO_TOUCH);
                 rateResult = rateResult.subtract(zerotouchValue);
             } else {
                 BigDecimal subtractResult = balance.subtract(rateResult);
@@ -1430,7 +1431,7 @@ public class CarEventServiceImpl implements CarEventService {
                     }
                 }
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, eventType);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, eventType);
             }
 
             PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
