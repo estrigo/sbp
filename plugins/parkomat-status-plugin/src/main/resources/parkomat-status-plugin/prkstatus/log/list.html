@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-6">
+                <form class="form-inline">
+                <select name="parkomat" class="form-control mb-2 mr-sm-2" >
+                    <option value="0">-----</option>
+                    <option th:each="parkomat : ${parkomatList}" th:value="${parkomat.parkomatIP}" th:text="${parkomat.parkomatIP}"
+                            th:selected="${parkomatIP==parkomat.parkomatIP}"
+                    ></option>
+                </select>
+                    <button type="submit" class="btn btn-primary mb-2">Показать логи</button>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card table-responsive">
+
+                    <div class="card-header" th:text="${parkomatIP}" ></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <textarea th:text="${log}" class="form-control" rows="50"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Required datatable js -->
+<script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
+<script th:src="@{/plugins/datatables/dataTables.bootstrap4.min.js}"></script>
+<!-- Buttons examples -->
+<script th:src="@{/plugins/datatables/dataTables.buttons.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.bootstrap4.min.js}"></script>
+<script th:src="@{/plugins/datatables/jszip.min.js}"></script>
+<script th:src="@{/plugins/datatables/pdfmake.min.js}"></script>
+<script th:src="@{/plugins/datatables/vfs_fonts.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.html5.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.print.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.colVis.min.js}"></script>
+<!-- Responsive examples -->
+<script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
+<script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+
+<script th:inline="javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+    }
+
+    let currentDate = [[${currentDate}]];
+    let oneMonthEarly = [[${oneMonthEarly}]];
+
+    $('#dateFromString').val(oneMonthEarly);
+    $('#dateToString').val(currentDate);
+
+    function buildAjaxUrl(){
+        return "/rest/balances/transactions?dateFromString=" + $('#dateFromString').val()
+            + "&dateToString=" + $('#dateToString').val()
+            + "&plateNumber=" + $('#platenumber').val()
+            + "&amount=" + $('#amount').val();
+    }
+
+
+
+    var interval = null;
+    $(document).on('ready',function(){
+        interval = setInterval(showButtons,1000);
+    });
+
+
+
+
+</script>
+
+</html>

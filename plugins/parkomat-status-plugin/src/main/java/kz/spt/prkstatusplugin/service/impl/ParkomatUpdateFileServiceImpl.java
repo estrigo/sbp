@@ -23,6 +23,7 @@ public class ParkomatUpdateFileServiceImpl implements ParkomatUpdateFileService 
         try {
             String filePath = imagePath + "/updates/" + parkomatUpdate.getId() + "/update.zip";
             Path path = Paths.get(filePath);
+            Files.createDirectories(path.getParent());
             Files.write(path, file);
             return true;
         } catch (Exception ex) {
@@ -30,4 +31,11 @@ public class ParkomatUpdateFileServiceImpl implements ParkomatUpdateFileService 
         }
         return false;
     }
+
+    @Override
+    public File getFile(ParkomatUpdate parkomatUpdate) {
+        return new File( imagePath + "/updates/" + parkomatUpdate.getId() + "/update.zip");
+    }
+
+
 }

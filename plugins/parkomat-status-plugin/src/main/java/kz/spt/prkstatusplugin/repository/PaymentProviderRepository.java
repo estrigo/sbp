@@ -20,6 +20,9 @@ public interface PaymentProviderRepository extends JpaRepository<PaymentProvider
     @Query("from PaymentProvider p where p.name = ?1")
     PaymentProvider findByName(String name);
 
+    @Query("from PaymentProvider p where p.parkomatIP = ?1")
+    PaymentProvider findByIP(String ip);
+
     @Query("from PaymentProvider p where p.isParkomat = true")
     List<PaymentProvider> getParkomatProviders();
 }

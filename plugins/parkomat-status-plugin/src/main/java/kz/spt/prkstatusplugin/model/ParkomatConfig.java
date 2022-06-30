@@ -9,6 +9,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -26,9 +28,9 @@ public class ParkomatConfig {
     private String config;
 
     @CreationTimestamp
-    private Date created;
+    private LocalDateTime created;
 
     @UpdateTimestamp
-    private Date updated;
+    private LocalDateTime updated;
 
 }

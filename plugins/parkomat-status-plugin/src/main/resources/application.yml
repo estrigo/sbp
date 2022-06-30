@@ -18,6 +18,10 @@ spring:
         dialect: org.hibernate.dialect.MySQL55Dialect
   flyway:
     enabled: false
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
 images:
   file:
-    path: "~/Documents"
+    path: 'C:\\dev\\files'

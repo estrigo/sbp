@@ -1,5 +1,6 @@
 package kz.spt.prkstatusplugin.controller;
 
+import kz.spt.lib.service.CarStateService;
 import kz.spt.prkstatusplugin.enums.SoftwareType;
 import kz.spt.prkstatusplugin.model.ParkomatUpdate;
 import kz.spt.prkstatusplugin.service.ParkomatService;
@@ -22,7 +23,6 @@ import static kz.spt.prkstatusplugin.enums.SoftwareType.SERVICE;
 @RequestMapping(value = "/prkstatus/update")
 public class ParkomatUpdateController {
 
-
     private ParkomatService parkomatService;
     private ParkomatUpdateFileService parkomatUpdateFileService;
 
@@ -33,7 +33,7 @@ public class ParkomatUpdateController {
 
     @GetMapping("/list")
     public String showTestList(Model model) {
-        Page<ParkomatUpdate> parkomatUpdatePage =  parkomatService.getUpdates();
+        Page<ParkomatUpdate> parkomatUpdatePage =  parkomatService.getUpdates(null, 10);
 
         model.addAttribute("updateList", parkomatUpdatePage.toList());
 

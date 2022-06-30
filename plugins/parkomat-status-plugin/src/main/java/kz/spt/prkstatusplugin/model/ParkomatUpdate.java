@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -24,7 +26,7 @@ public class ParkomatUpdate {
     private Long id;
 
     @CreationTimestamp
-    Date created;
+    LocalDateTime created;
 
     @Enumerated(EnumType.STRING)
     SoftwareType type;
