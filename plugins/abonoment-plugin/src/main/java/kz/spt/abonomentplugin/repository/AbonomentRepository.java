@@ -38,4 +38,7 @@ public interface AbonomentRepository extends JpaRepository<Abonement, Long>, Jpa
 
     @Query("from Abonement w where w.car.platenumber = :platenumber and w.parking.id = :parkingId and w.end between :currentDate and :checkDate and w.paid = true")
     List<Abonement> findExpiresInFewDays(@Param("platenumber") String platenumber, @Param("parkingId") Long parkingId, @Param("currentDate") Date currentDate, @Param("checkDate") Date checkDate);
+
+    @Query("select a from Abonement a where a.car.platenumber = :platenumber")
+    List<Abonement> findAllByPlatenumber(@Param("platenumber") String platenumber);
 }

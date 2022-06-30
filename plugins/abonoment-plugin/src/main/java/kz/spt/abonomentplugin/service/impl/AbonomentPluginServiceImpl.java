@@ -17,13 +17,11 @@ import kz.spt.abonomentplugin.repository.AbonomentTypesRepository;
 import kz.spt.abonomentplugin.service.AbonomentPluginService;
 import kz.spt.abonomentplugin.service.RootServicesGetterService;
 import kz.spt.lib.bootstrap.datatable.*;
-import kz.spt.lib.model.CarState;
-import kz.spt.lib.model.CarStateSpecification;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.Parking;
-import kz.spt.lib.model.dto.CarStateFilterDto;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -553,5 +551,11 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             specification = specification != null ? specification.and(AbonementSpecification.equalAbonementType(filterDto.getSearchAbonementTypes())) : AbonementSpecification.equalAbonementType(filterDto.getSearchAbonementTypes());
         }
         return specification;
+    }
+
+    @Override
+    public List<AbonomentDTO> getAbonementsByPlateNumber(String plateNumber){
+        List<Abonement> abonomentDTOS = abonomentRepository.findAllByPlatenumber(plateNumber);
+        return abonomentDTOS.stream().map(a->AbonomentDTO.convertToDto(a)).collect(Collectors.toList());
     }
 }
