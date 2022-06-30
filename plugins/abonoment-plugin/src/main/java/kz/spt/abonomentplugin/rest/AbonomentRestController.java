@@ -40,7 +40,6 @@ public class AbonomentRestController {
     }
     @GetMapping("/list/by/platenumber/{plateNumber}")
     public List<AbonomentDTO> getAbonementsByPlateNumber(@PathVariable @NotNull String plateNumber){
-        System.out.println("Keldi: " + plateNumber);
         return abonomentPluginService.getAbonementsByPlateNumber(plateNumber);
     }
 }
