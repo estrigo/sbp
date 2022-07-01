@@ -32,6 +32,4 @@ public interface BarrierService {
     Boolean openBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
 
     Boolean closeBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
-
-    void addGlobalModbusMaster(Barrier barrier) throws ModbusIOException, UnknownHostException;
 }
