@@ -227,6 +227,20 @@ public class PaymentServiceImpl implements PaymentService {
         return dto;
     }
 
+    private BillingInfoSuccessDto fillDebtDetails(ParkomatCommandDTO commandDto, BigDecimal currentBalance) {
+        BillingInfoSuccessDto dto = new BillingInfoSuccessDto();
+        dto.current_balance = BigDecimal.ZERO;
+        dto.sum = currentBalance.abs().setScale(2);
+        dto.tariff = "Оплата долга";
+        dto.in_date = "";
+        dto.result = 0;
+        dto.left_free_time_minutes = 0;
+        dto.hours = 0;
+        dto.txn_id = commandDto.getTxn_id();
+
+        return dto;
+    }
+
     private Object payAbonoment(CommandDto commandDto, CarState carState, JsonNode abonomentResultNode) throws Exception {
         Object payment = savePayment(commandDto, carState, null, true);
         if (BillingInfoErrorDto.class.equals(payment.getClass())) {
@@ -267,6 +281,12 @@ public class PaymentServiceImpl implements PaymentService {
             if ("check".equals(commandDto.getCommand())) {
                 CarState carState = carStateService.getLastNotLeft(commandDto.getAccount());
                 if (carState == null) {
+
+                    JsonNode currentBalanceResult = getCurrentBalance(commandDto.getAccount());
+                    if (currentBalanceResult.has("currentBalance") && BigDecimal.ZERO.compareTo(currentBalanceResult.get("currentBalance").decimalValue()) == 1) {
+                        return fillDebtDetails(commandDto, currentBalanceResult.get("currentBalance").decimalValue());
+                    }
+
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
                     dto.sum = BigDecimal.ZERO;
                     dto.txn_id = commandDto.getTxn_id();
@@ -330,14 +350,18 @@ public class PaymentServiceImpl implements PaymentService {
                     return dto;
                 }
                 CarState carState = carStateService.getLastNotLeft(commandDto.getAccount());
-                if (carState == null) {
+                CarState lastDebtCarState = carStateService.getLastCarState(commandDto.getAccount());
+                if (carState==null && lastDebtCarState!=null)
+                    carState = lastDebtCarState;
+
+                if (carState == null ) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
                     dto.message = "Некорректный номер авто свяжитесь с оператором.";
                     dto.result = 1;
                     dto.sum = commandDto.getSum();
                     dto.txn_id = commandDto.getTxn_id();
                     return dto;
-                } else {
+                } else{
                     PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                     if (billingPluginRegister != null) {
                         ObjectNode node = this.objectMapper.createObjectNode();

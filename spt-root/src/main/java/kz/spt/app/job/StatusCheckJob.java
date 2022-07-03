@@ -1,6 +1,9 @@
 package kz.spt.app.job;
 
 import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
+import com.intelligt.modbus.jlibmodbus.master.ModbusMaster;
 import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
@@ -11,6 +14,7 @@ import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Gate;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +29,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Component
 public class StatusCheckJob {
 
+    @Value("${barrier.open.disabled}")
+    Boolean disableOpen;
+
     @Autowired
     private GateService gateService;
 
@@ -37,7 +44,7 @@ public class StatusCheckJob {
     public static Queue<GateStatusDto> globalGateDtos = new ConcurrentLinkedQueue<>();
 
     @Scheduled(fixedDelayString = "${status.check.fixedDelay}", initialDelay = 5000)
-    public void scheduleFixedDelayTask() throws UnknownHostException, ModbusIOException {
+    public void scheduleFixedDelayTask() throws InterruptedException {
         if(globalGateDtos.isEmpty()){
             refreshGlobalGateIds();
         }
@@ -54,12 +61,12 @@ public class StatusCheckJob {
         }
     }
 
-    private void refreshGlobalGateIds() throws UnknownHostException, ModbusIOException {
+    private void refreshGlobalGateIds() throws InterruptedException {
         globalGateDtos = new ConcurrentLinkedQueue<>();
         List<Gate> allGates = (List<Gate>) gateService.listAllGatesWithDependents();
         for (Gate gate : allGates){
             if(!isGatesProcessing.containsKey(gate.getId())){
-                globalGateDtos.add(GateStatusDto.fromGate(gate, allGates, barrierService));
+                globalGateDtos.add(GateStatusDto.fromGate(gate, allGates, disableOpen));
                 isGatesProcessing.put(gate.getId(), false);
             }
         }
@@ -68,6 +75,10 @@ public class StatusCheckJob {
     public static void emptyGlobalGateDtos(){
         isGatesProcessing = new ConcurrentHashMap<>();
         globalGateDtos = new ConcurrentLinkedQueue<>();
+        GateStatusDto.modbusMasterThreadMap.forEach((key, m) -> {
+            m.stopModbus();
+        });
+        GateStatusDto.modbusMasterThreadMap = new ConcurrentHashMap<>();
     }
 
     public static GateStatusDto findGateStatusDtoById(Long gateId){

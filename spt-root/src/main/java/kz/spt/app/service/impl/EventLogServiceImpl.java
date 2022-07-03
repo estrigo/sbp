@@ -1,15 +1,11 @@
 package kz.spt.app.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
-import com.intelligt.modbus.jlibmodbus.master.ModbusMaster;
-import kz.spt.app.model.dto.EventLogExcelDto;
-import kz.spt.app.service.BarrierService;
+import kz.spt.lib.model.dto.EventLogExcelDto;
 import kz.spt.app.service.GateService;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
@@ -44,14 +40,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import org.thymeleaf.util.StringUtils;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Log
@@ -75,8 +68,6 @@ public class EventLogServiceImpl implements EventLogService {
     private PluginManager pluginManager;
 
     private GateService gateService;
-
-    ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag("ru".equals(LocaleContextHolder.getLocale().toString()) ? "ru-RU" : "en"));
 
     @Value("${telegram.bot.external.enabled}")
     Boolean telegramBotExternalEnabled;
@@ -282,71 +273,33 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
-    public String getEventExcel(EventFilterDto eventFilterDto) throws Exception {
+    public List<EventLogExcelDto> getEventExcel(EventFilterDto eventFilterDto) throws Exception {
         Specification<EventLog> specification = getEventLogFilterSpecification(eventFilterDto);
+        List<EventLog> events = this.listByFiltersForExcel(specification);
 
-        List<EventLog> events = (List<EventLog>) this.listByFilters(specification, new PagingRequest());
-        Map<String, EventLogExcelDto> eventLogExcelDtoMap = new HashMap<>();
-
-        Long parkingId = null;
-
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.simpleDateTimeFormat);
+        List<EventLogExcelDto> eventLogExcelDtos = new ArrayList<>(events.size());
         for (EventLog eventLog : events) {
-            EventLogExcelDto eventLogExcelDto =
-                    new EventLogExcelDto();
-            if (eventLogExcelDtoMap.containsKey(eventLog.getPlateNumber())) {
-                eventLogExcelDto = eventLogExcelDtoMap.get(eventLog.getPlateNumber());
-            }
+            EventLogExcelDto eventLogExcelDto = new EventLogExcelDto();
             eventLogExcelDto.plateNumber = eventLog.getPlateNumber();
-
-            EventLog.StatusType type = EventLog.StatusType.valueOf((String) eventLog.getProperties().get("type"));
-            if (EventLog.StatusType.Allow.equals(type)) {
-                eventLogExcelDto.allow = eventLogExcelDto.allow + 1;
-            } else if (EventLog.StatusType.Deny.equals(type)) {
-                eventLogExcelDto.deny = eventLogExcelDto.deny + 1;
-            }
-            eventLogExcelDtoMap.put(eventLog.getPlateNumber(), eventLogExcelDto);
-
-            if (parkingId == null) {
-                Long gateId = Long.valueOf((Integer) eventLog.getProperties().get("gateId"));
-                Gate gate = gateService.getById(gateId);
-                parkingId = gate.getParking().getId();
-            }
+            eventLogExcelDto.created = format.format(eventLog.getCreated());
+            eventLogExcelDto.description = eventLog.getDescription();
+            eventLogExcelDto.status = eventLog.getProperties().containsKey("type") && eventLog.getProperties().get("type") != null ? StringExtensions.locale("events.".concat(eventLog.getProperties().get("type").toString().toLowerCase())) : "";
+            eventLogExcelDto.gate = eventLog.getProperties().containsKey("gateName") ? eventLog.getProperties().get("gateName").toString() : "";
+            eventLogExcelDtos.add(eventLogExcelDto);
         }
 
-        PluginRegister whitelistPluginRegister = getPluginRegister(StaticValues.whitelistPlugin);
-        SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+        return eventLogExcelDtos;
+    }
 
-        ArrayNode arrayNode = objectMapper.createArrayNode();
-
-        for (Map.Entry<String, EventLogExcelDto> entry : eventLogExcelDtoMap.entrySet()) {
-            String platenumber = entry.getKey();
-
-            ObjectNode objectNode = objectMapper.createObjectNode();
-            EventLogExcelDto eventLogExcelDto = entry.getValue();
-
-            objectNode.put("platenumber", platenumber);
-            objectNode.put("deny", eventLogExcelDto.deny);
-            objectNode.put("allow", eventLogExcelDto.allow);
-            objectNode.put("all", eventLogExcelDto.deny + eventLogExcelDto.allow);
-            objectNode.put("isWhitelist", bundle.getString("crm.no"));
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            ObjectNode command = objectMapper.createObjectNode();
-            command.put("parkingId", parkingId);
-            command.put("car_number", platenumber);
-            command.put("event_time", format.format(new Date()));
-
-            JsonNode result = whitelistPluginRegister.execute(command);
-
-            if (result != null) {
-                JsonNode whitelistCheckResult = result.get("whitelistCheckResult");
-                if (whitelistCheckResult != null) {
-                    objectNode.put("isWhitelist", bundle.getString("crm.yes"));
-                }
-            }
-            arrayNode.add(objectNode);
+    public List<EventLog> listByFiltersForExcel(Specification<EventLog> eventLogSpecification) {
+        Sort sort  = Sort.by("id").descending();
+        if (eventLogSpecification != null) {
+            return eventLogRepository.findAll(eventLogSpecification, sort);
+        } else {
+            Pageable rows = PageRequest.of(0, 1000, sort);
+            return eventLogRepository.findAll(rows).toList();
         }
-        return arrayNode.toString();
     }
 
     @Override
@@ -356,27 +309,7 @@ public class EventLogServiceImpl implements EventLogService {
 
     @Override
     public String getApplicationPropertyValue(String propertyName) throws ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException {
-/*
-        ModbusMaster m = BarrierServiceImpl.modbusMasterMap.get("10.66.100.57");
-        if(!m.isConnected()){
-            m.connect();
-        }
-        int slaveId = 1;
-        if("camera".equals(propertyName)){
-            Thread.sleep(1000);
-            m.writeSingleCoil(slaveId, 18, true);
-            Thread.sleep(1000);
-            m.writeSingleCoil(slaveId, 18, false);
-        } else if("loop".equals(propertyName)){
-            m.writeSingleCoil(slaveId, 18, true);
-            Thread.sleep(1000);
-            m.writeSingleCoil(slaveId, 19, true);
-            Thread.sleep(1000);
-            m.writeSingleCoil(slaveId, 18, false);
-            Thread.sleep(1000);
-            m.writeSingleCoil(slaveId, 19, false);
-        }
-*/
+
         return env.getProperty(propertyName);
     }
 
@@ -418,6 +351,11 @@ public class EventLogServiceImpl implements EventLogService {
             }
         }
         return null;
+    }
+
+    @Override
+    public void sendSocketMessage(String topic, String message) {
+        messagingTemplate.convertAndSend("/"+topic, message);
     }
 
     private Page<EventsDto> getPage(long count, List<EventsDto> events, PagingRequest pagingRequest) {

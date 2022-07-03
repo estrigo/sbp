@@ -29,54 +29,67 @@
         </div>
     </div>
     <div>
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="checkbox3" class="control-label">Разрешен</label>
-                <div class="checkbox-primary">
-                    <input id="checkbox3" type="checkbox" th:field="*{enabled}" th:value="*{enabled}">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-check form-check-inline mr-5">
+                    <input class="form-check-input" type="checkbox" th:field="*{enabled}" th:value="*{enabled}" id="allowed">
+                    <label class="form-check-label" for="allowed" th:text="#{billing.allowed}"></label>
+                </div>
+                <div class="form-check form-check-inline mr-5">
+                    <input class="form-check-input" type="checkbox" th:field="*{cashlessPayment}" th:value="*{cashlessPayment}" id="cashlessPayment">
+                    <label class="form-check-label" for="cashlessPayment" th:text="#{billing.paymentType}"></label>
+                </div>
+                <div class="form-check form-check-inline mr-5">
+                    <input class="form-check-input" type="checkbox" th:field="*{isParkomat}" th:value="*{isParkomat}" id="isParkomat">
+                    <label class="form-check-label" for="isParkomat">Паркомат?</label>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="checkbox3" class="control-label">Безналичная оплата</label>
-                <div class="checkbox-primary">
-                    <input id="checkbox4" type="checkbox" th:field="*{cashlessPayment}" th:value="*{cashlessPayment}">
+
+            <div class="col-12">
+                <h5>Настройка паркомата</h5>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="webKassaID" class="control-label">Тип онлайн-кассы</label>
+                    <div class="checkbox-primary">
+                        <select class="form-control" th:field="*{ofdProviderType}">
+                            <option th:value="WebKassa">WebKassa</option>
+                            <option th:value="ReKassa">ReKassa</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-12">
-            <div class="form-group">
-                <label for="webKassaID" class="control-label">Тип онлайн-кассы</label>
-                <div class="checkbox-primary">
-                    <select class="form-control" th:field="*{ofdProviderType}">
-                        <option th:value="WebKassa">WebKassa</option>
-                        <option th:value="ReKassa">ReKassa</option>
-                    </select>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="webKassaID" class="control-label">ID кассы (WebKassa) / Номер кассы ReKassa</label>
+                    <div class="checkbox-primary">
+                        <input id="webKassaID" type="text" class="form-control" th:field="*{webKassaID}" th:value="*{webKassaID}">
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-12">
-            <div class="form-group">
-                <label for="webKassaID" class="control-label">ID кассы (WebKassa) / Номер кассы ReKassa</label>
-                <div class="checkbox-primary">
-                    <input id="webKassaID" type="text" class="form-control" th:field="*{webKassaID}" th:value="*{webKassaID}">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="webKassaLogin" class="control-label">Логин (WebKassa) / API-key ReKassa</label>
+                    <div class="checkbox-primary">
+                        <input id="webKassaLogin" type="text" class="form-control" th:field="*{webKassaLogin}" th:value="*{webKassaLogin}">
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-12">
-            <div class="form-group">
-                <label for="webKassaLogin" class="control-label">Логин (WebKassa) / API-key ReKassa</label>
-                <div class="checkbox-primary">
-                    <input id="webKassaLogin" type="text" class="form-control" th:field="*{webKassaLogin}" th:value="*{webKassaLogin}">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="webKassaPassword" class="control-label">Пароль (WebKassa) / Пароль (ReKassa)</label>
+                    <div class="checkbox-primary">
+                        <input id="webKassaPassword" type="text" class="form-control" th:field="*{webKassaPassword}" th:value="*{webKassaPassword}">
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-12">
-            <div class="form-group">
-                <label for="webKassaPassword" class="control-label">Пароль (WebKassa) / Пароль (ReKassa)</label>
-                <div class="checkbox-primary">
-                    <input id="webKassaPassword" type="text" class="form-control" th:field="*{webKassaPassword}" th:value="*{webKassaPassword}">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="webKassaPassword" class="control-label">IP-адрес паркомата</label>
+                    <div class="checkbox-primary">
+                        <input id="parkomatIP" type="text" class="form-control" th:field="*{parkomatIP}" th:value="*{parkomatIP}">
+                    </div>
                 </div>
             </div>
         </div>

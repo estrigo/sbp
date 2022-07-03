@@ -6,7 +6,7 @@
 <link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
 
 <div class="content">
-    <div class="container">
+    <div class="container-fluid">
         <div class="row">
             <div class="col-12">
                 <div class="card table-responsive">
@@ -44,7 +44,8 @@
                             </thead>
                         </table>
                     </div>
-
+                </div>
+                <div class="card table-responsive mt-2">
                     <div class="card-header" th:text="#{balance.balance}"></div>
                     <div class="card-body">
                         <table id="balanceTable" class="table table-bordered">

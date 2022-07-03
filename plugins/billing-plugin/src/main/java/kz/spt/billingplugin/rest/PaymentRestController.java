@@ -29,6 +29,6 @@ public class PaymentRestController {
 
     @PostMapping("/excel")
     public List<PaymentLogDTO> excel(@RequestBody FilterPaymentDTO filter) throws ParseException {
-        return paymentService.getPaymentDtoList(filter);
+        return paymentService.getPaymentDtoExcelList(filter);
     }
 }

@@ -8,6 +8,7 @@ import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.model.dto.EventFilterDto;
+import kz.spt.lib.model.dto.EventLogExcelDto;
 import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.CarEventService;
 import kz.spt.lib.service.EventLogService;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 
 
 @RestController
@@ -59,8 +61,8 @@ public class EventRestController {
     }
 
     @GetMapping(value = "/excel")
-    public String eventExcel(@RequestParam String dateFromString, @RequestParam String dateToString,
-                             @RequestParam String plateNumber, @RequestParam Long gateId) throws Exception {
+    public List<EventLogExcelDto> eventExcel(@RequestParam String dateFromString, @RequestParam String dateToString,
+                                             @RequestParam String plateNumber, @RequestParam Long gateId) throws Exception {
         EventFilterDto eventFilterDto = new EventFilterDto();
         eventFilterDto.setDateFromString(dateFromString);
         eventFilterDto.setDateToString(dateToString);

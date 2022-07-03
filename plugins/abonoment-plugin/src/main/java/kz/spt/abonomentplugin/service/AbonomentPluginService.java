@@ -45,4 +45,6 @@ public interface AbonomentPluginService {
     void creteNewForOld();
 
     String checkExpiration(String plateNumber, Long parkingId);
+
+    List<AbonomentDTO> getAbonementsByPlateNumber(String plateNumber);
 }

@@ -16,7 +16,7 @@ public interface ArmService {
 
     Boolean openGate(Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
 
-    Boolean openGate(Long cameraId, String snapshot) throws Exception;
+    Boolean openGate(Long cameraId, String snapshot, String reason) throws Exception;
 
     Boolean closeGate(Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
 

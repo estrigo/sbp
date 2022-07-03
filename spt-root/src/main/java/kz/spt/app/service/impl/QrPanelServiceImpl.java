@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.util.logging.Level;
 
 @Log
 @Service
@@ -54,7 +55,11 @@ public class QrPanelServiceImpl implements QrPanelService {
             address.append(gate.getQrPanelIp());
             address.append("/img=");
             log.info("QRPanel clearing");
+            try {
             restTemplate.getForEntity(address.toString(), String.class);
+            } catch (Exception ex) {
+                log.log(Level.SEVERE,"Error while QRPanel clearing for gate");
+            }
         }
     }
 

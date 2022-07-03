@@ -6,13 +6,20 @@
 <link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
 
 <div class="content">
-    <div class="container">
+    <div class="container-fluid">
         <div class="row">
             <div class="col-12">
                 <div class="card table-responsive">
                     <div class="card-header" th:text="#{parking.parkings}"></div>
                     <div class="card-body">
-
+                        <p sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')">
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <a th:href="@{|/parking/add|}" class="btn btn-success waves-effect waves-light" th:text="#{crm.add}"></a>
+                            </div>
+                        </div>
+                        </p>
+<hr>
                       <table id="datatable-buttons" class="table table-bordered">
                         <thead>
                         <tr>
@@ -23,8 +30,7 @@
                           <th><a th:text="#{parking.parkingSpaceNumber}"></a></th>
                           <th><a th:text="#{parking.gateSize}"></a></th>
                           <th></th>
-                          <th></th>
-                          <th></th>
+
                         </tr>
                         </thead>
                         <tbody>
@@ -36,25 +42,35 @@
                           <td th:text="${parking.parkingSpaceNumber}"></td>
                           <td th:text="${parking.gateList.size()}"></td>
                           <td>
-                            <a th:href="@{|/parking/details/${parking.id}|}" th:text="#{parking.settings}"></a>
+                              <div class="btn-group">
+                                  <button type="button" class="btn btn-primary"><i class="fa fa-cog" aria-hidden="true"></i></button>
+                                  <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-expanded="false">
+                                      <span class="sr-only">Toggle Dropdown</span>
+                                  </button>
+                                  <div class="dropdown-menu">
+                                      <a  class="dropdown-item" sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_SUPERADMIN', 'ROLE_ADMIN')" th:href="@{|/parking/edit/${parking.id}|}">
+                                          <i class='fa fa-pencil' aria-hidden='true'></i> <span  th:text="#{crm.edit}"></span>
+                                      </a>
+                                      <a  class="dropdown-item" th:href="@{|/parking/details/${parking.id}|}">
+                                          <i class='fa fa-wrench' aria-hidden='true'></i> <span  th:text="#{parking.settings}"></span>
+                                      </a>
+
+                                      <div class="dropdown-divider"></div>
+                                      <a class="dropdown-item " sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')" th:href="@{|/parking/delete/${parking.id}|}">
+                                          <i class='fa fa-trash' aria-hidden='true'></i> <span th:text="#{crm.delete}"></span></a>
+                                  </div>
+                              </div>
+
+
+
                           </td>
-                          <p sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN')">
-                          <td><a th:href="@{|/parking/edit/${parking.id}|}" th:text="#{crm.edit}"></a></td>
-                          </p>
-                          <p sec:authorize="hasRole( 'ROLE_ADMIN')">
-                            <td><a th:href="@{|/parking/delete/${parking.id}|}" th:text="#{crm.delete}"></a></td>
-                          </p>
+
+
                         </tr>
                         </tbody>
                       </table>
                     </div>
-                    <p sec:authorize="hasRole('ROLE_ADMIN')">
-                    <div class="form-group row">
-                      <div class="col-12">
-                        <a th:href="@{|/parking/add|}" class="btn btn-success waves-effect waves-light" th:text="#{crm.add}"></a>
-                      </div>
-                    </div>
-                    </p>
+
                   </div>
                 </div>
               </div>

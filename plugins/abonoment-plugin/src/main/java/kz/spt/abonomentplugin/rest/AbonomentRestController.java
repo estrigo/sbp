@@ -7,12 +7,9 @@ import kz.spt.abonomentplugin.model.dto.AbonementFilterDto;
 import kz.spt.abonomentplugin.service.AbonomentPluginService;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
-import kz.spt.lib.model.dto.CarStateFilterDto;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.util.List;
 
@@ -40,5 +37,9 @@ public class AbonomentRestController {
     public Page<AbonomentDTO> list(@RequestBody PagingRequest pagingRequest) throws ParseException {
         AbonementFilterDto filter = pagingRequest.convertTo(AbonementFilterDto.builder().build());
         return abonomentPluginService.abonomentDtoList(pagingRequest, filter);
+    }
+    @GetMapping("/list/by/platenumber/{plateNumber}")
+    public List<AbonomentDTO> getAbonementsByPlateNumber(@PathVariable @NotNull String plateNumber){
+        return abonomentPluginService.getAbonementsByPlateNumber(plateNumber);
     }
 }

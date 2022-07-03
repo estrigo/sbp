@@ -1,0 +1,8 @@
+<form th:action="@{|/prkstatus/status/save|}" th:object="${parkomatConfig}" method="post">
+    <input type="hidden" th:field="*{ip}" th:value="*{ip}">
+    <textarea class="form-control" id="name" th:field="*{config}" th:value="*{config}" rows="20"/>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>
+        <button type="submit" class="btn btn-success waves-effect waves-light" th:text="#{crm.saveChanges}"></button>
+    </div>
+</form>

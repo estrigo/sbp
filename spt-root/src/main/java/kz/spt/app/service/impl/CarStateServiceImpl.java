@@ -428,10 +428,12 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     private List<CarState> listByFiltersForExcel(Specification<CarState> carStateSpecification) {
+        Sort sort = Sort.by("id").descending();
         if (carStateSpecification != null) {
-            return carStateRepository.findAll(carStateSpecification);
+            return carStateRepository.findAll(carStateSpecification, sort);
         } else {
-            return carStateRepository.findAll();
+            Pageable rows = PageRequest.of(0, 1000, sort);
+            return carStateRepository.findAll(rows).toList();
         }
     }
 
