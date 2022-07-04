@@ -73,7 +73,7 @@ public class GateStatusDto {
             if (Barrier.SensorsType.AUTOMATIC.equals(barrier.getSensorsType()) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) && barrier.getIp() != null && barrier.getPassword() != null && barrier.getOpenOid() != null && barrier.getCloseOid() != null) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) && barrier.getIp() != null && barrier.getModbusOpenRegister()!=null)) {
                 gateStatusDto.barrier = BarrierStatusDto.fromBarrier(barrier);
             }
-            if(Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType()) && gateStatusDto.barrier != null && barrier.getIp()!= null && barrier.getIp().contains(".")){
+            if(!disableOpen && Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType()) && gateStatusDto.barrier != null && barrier.getIp()!= null && barrier.getIp().contains(".")){
                 if(!modbusMasterThreadMap.containsKey(barrier.getIp())){
                     ModbusProtocolThread thread = new ModbusProtocolThread(gateStatusDto.barrier, disableOpen);
                     thread.start();
