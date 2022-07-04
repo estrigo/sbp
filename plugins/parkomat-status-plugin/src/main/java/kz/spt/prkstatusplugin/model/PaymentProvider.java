@@ -14,7 +14,6 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Audited
 @Table(name = "payment_provider")
 public class PaymentProvider extends PaymentProviderAbstract {
     @Id
