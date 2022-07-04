@@ -1,20 +1,18 @@
 package kz.spt.app.model.dto;
 
-import kz.spt.app.thread.ModbusProtocolThread;
+import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
+import kz.spt.app.service.BarrierService;
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.Gate;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Log
 public class GateStatusDto {
-
-    public static Map<String, ModbusProtocolThread> modbusMasterThreadMap = new ConcurrentHashMap<>();
 
     public enum GateStatus {Open,Closed};
     public enum SensorStatus {
@@ -60,7 +58,7 @@ public class GateStatusDto {
         sensor2 = loopStatus;
     }
 
-    public static GateStatusDto fromGate(Gate gate, List<Gate> allGates, Boolean disableOpen) throws InterruptedException {
+    public static GateStatusDto fromGate(Gate gate, List<Gate> allGates, BarrierService barrierService) throws UnknownHostException, ModbusIOException {
         GateStatusDto gateStatusDto = new GateStatusDto();
         gateStatusDto.gateId = gate.getId();
         gateStatusDto.gateName = gate.getName();
@@ -70,19 +68,14 @@ public class GateStatusDto {
 
         Barrier barrier = gate.getBarrier();
         if (barrier != null) {
-            if (Barrier.SensorsType.AUTOMATIC.equals(barrier.getSensorsType()) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) && barrier.getIp() != null && barrier.getPassword() != null && barrier.getOpenOid() != null && barrier.getCloseOid() != null) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) && barrier.getIp() != null && barrier.getModbusOpenRegister()!=null)) {
+            if (Barrier.SensorsType.AUTOMATIC.equals(barrier.getSensorsType()) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) && barrier.getIp() != null && barrier.getPassword() != null && barrier.getOpenOid() != null && barrier.getCloseOid() != null)) {
                 gateStatusDto.barrier = BarrierStatusDto.fromBarrier(barrier);
             }
-            if(Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType()) && gateStatusDto.barrier != null && barrier.getIp()!= null && barrier.getIp().contains(".")){
-                if(!modbusMasterThreadMap.containsKey(barrier.getIp())){
-                    ModbusProtocolThread thread = new ModbusProtocolThread(gateStatusDto.barrier, disableOpen);
-                    thread.start();
-                    modbusMasterThreadMap.put(barrier.getIp(), thread);
-                    log.info("Adding barrier.getIp() " + barrier.getIp()  + " to modbusMasterThreadMap");
-
-                    thread.addModbusRegisters(gateStatusDto.barrier);
-                } else {
-                    modbusMasterThreadMap.get(barrier.getIp()).addModbusRegisters(gateStatusDto.barrier);
+            if(Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType()) && barrier.getIp()!= null && barrier.getIp().contains(".")){
+                try {
+                    barrierService.addGlobalModbusMaster(barrier);
+                } catch (Exception e){
+                    log.info(" Modbus connection error: " + e.getMessage());
                 }
             }
 
