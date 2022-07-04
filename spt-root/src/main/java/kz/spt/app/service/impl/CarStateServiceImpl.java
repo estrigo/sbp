@@ -57,7 +57,7 @@ public class CarStateServiceImpl implements CarStateService {
 
     @Override
     public CarState findById(Long carStateId) {
-        return carStateRepository.findById(carStateId).orElse(null);
+        return carStateRepository.findById(carStateId).get();
     }
 
     public void deleteParkingFromCarStates(Parking parking) {
@@ -82,7 +82,7 @@ public class CarStateServiceImpl implements CarStateService {
 
     @Override
     public void createOUTState(String carNumber, Date outTimestamp, Camera camera, CarState carState, String outPhotoUrl) {
-        if (carState != null) {
+        if(carState != null){
             carState = carStateRepository.getOne(carState.getId());
             carState.setOutTimestamp(outTimestamp);
             carState.setOutChannelIp(camera.getIp());
@@ -155,7 +155,7 @@ public class CarStateServiceImpl implements CarStateService {
             m.setCarNumber(carState.getCarNumber());
             carStateRepository.save(m);
 
-            if (carsService.findByPlatenumber(carState.getCarNumber()) == null) {
+            if(carsService.findByPlatenumber(carState.getCarNumber()) == null){
                 carsService.createCar(carState.getCarNumber());
             }
         });
@@ -166,7 +166,7 @@ public class CarStateServiceImpl implements CarStateService {
     public Iterable<CarState> listByFilters(CarStateFilterDto filterDto) {
         Specification<CarState> specification = getCarStateSpecification(filterDto);
         Sort sort = Sort.by("id").descending();
-        if (specification != null) {
+        if(specification != null){
             return carStateRepository.findAll(specification, sort);
         }
         return carStateRepository.findAll(sort);
@@ -209,26 +209,26 @@ public class CarStateServiceImpl implements CarStateService {
         Direction dir = order.getDir();
 
         Sort sort = null;
-        if ("carNumber".equals(columnName)) {
-            if (Direction.desc.equals(dir)) {
+        if("carNumber".equals(columnName)){
+            if(Direction.desc.equals(dir)){
                 sort = Sort.by("carNumber").descending();
             } else {
                 sort = Sort.by("carNumber").ascending();
             }
-        } else if ("inTimestampString".equals(columnName)) {
-            if (Direction.desc.equals(dir)) {
+        } else if("inTimestampString".equals(columnName)){
+            if(Direction.desc.equals(dir)){
                 sort = Sort.by("inTimestamp").descending();
             } else {
                 sort = Sort.by("inTimestamp").ascending();
             }
-        } else if ("inTimestampString".equals(columnName)) {
-            if (Direction.desc.equals(dir)) {
+        } else if("inTimestampString".equals(columnName)){
+            if(Direction.desc.equals(dir)){
                 sort = Sort.by("outTimestamp").descending();
             } else {
                 sort = Sort.by("outTimestamp").ascending();
             }
-        } else if ("paid".equals(columnName)) {
-            if (Direction.desc.equals(dir)) {
+        } else if("paid".equals(columnName)){
+            if(Direction.desc.equals(dir)){
                 sort = Sort.by("paid").descending();
             } else {
                 sort = Sort.by("paid").ascending();
@@ -248,7 +248,7 @@ public class CarStateServiceImpl implements CarStateService {
                                     CarStateFilterDto carStateFilterDto) throws ParseException {
 
         Specification<CarState> specification = getCarStateSpecification(carStateFilterDto);
-        org.springframework.data.domain.Page<CarState> filteredCarStates = listByFilters(specification, pagingRequest);
+        org.springframework.data.domain.Page<CarState> filteredCarStates =  listByFilters(specification, pagingRequest);
         return getPage(filteredCarStates, pagingRequest);
     }
 
@@ -266,7 +266,7 @@ public class CarStateServiceImpl implements CarStateService {
     public CarState getIfLastLeft(String carNumber, String cameraIp) {
         Pageable first = PageRequest.of(0, 1);
         List<CarState> carStates = carStateRepository.getCarStateLastLeft(cameraIp, first);
-        if (carStates.size() > 0 && carNumber.equals(carStates.get(0).getCarNumber())) {
+        if(carStates.size() > 0 && carNumber.equals(carStates.get(0).getCarNumber())){
             return carStates.get(0);
         }
         return null;
@@ -276,11 +276,11 @@ public class CarStateServiceImpl implements CarStateService {
     public Boolean getIfHasLastFromOtherCamera(String carNumber, String cameraIp, Date secondsBefore) {
         Pageable first = PageRequest.of(0, 1);
         List<CarState> carStates = carStateRepository.getCarStateLastEnterFromOther(cameraIp, carNumber, secondsBefore, first);
-        if (carStates.size() > 0) {
+        if(carStates.size() > 0){
             return true;
         }
         carStates = carStateRepository.getCarStateLastLeftFromOther(cameraIp, carNumber, secondsBefore, first);
-        if (carStates.size() > 0) {
+        if(carStates.size() > 0){
             return true;
         }
         return false;
@@ -299,26 +299,25 @@ public class CarStateServiceImpl implements CarStateService {
         Boolean result = false;
 
         PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
-        if (billingPluginRegister != null) {
+        if(billingPluginRegister != null){
             ObjectNode billinNode = this.objectMapper.createObjectNode();
             billinNode.put("command", "getCurrentBalance");
             billinNode.put("plateNumber", carNumber);
             JsonNode billingResult = billingPluginRegister.execute(billinNode);
             BigDecimal balance = billingResult.get("currentBalance").decimalValue().setScale(2);
-            if (balance.compareTo(BigDecimal.ZERO) == -1) {
+            if(balance.compareTo(BigDecimal.ZERO) == -1){
                 ObjectNode billingSubtractNode = this.objectMapper.createObjectNode();
                 billingSubtractNode.put("command", "increaseCurrentBalance");
                 billingSubtractNode.put("plateNumber", carNumber);
                 billingSubtractNode.put("amount", balance.multiply(BigDecimal.valueOf(-1L)));
                 billingSubtractNode.put("reason", "Списание долга");
                 billingSubtractNode.put("reasonEn", "Debt cancellation");
-                billingSubtractNode.put("provider", "Manual change");
                 billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
                 result = true;
             }
         }
 
-        if (changeCurrentParkingToFree) {
+        if(changeCurrentParkingToFree){
             CarState carState = getLastNotLeft(carNumber);
             if (carState != null) {
                 cancelPaid(carState);
@@ -335,14 +334,14 @@ public class CarStateServiceImpl implements CarStateService {
         cal.setTime(new Date());
         cal.add(Calendar.HOUR, -24);
         Date date24back = cal.getTime();
-        return carStateRepository.getCurrentNotPayed(carNumber + "%", date24back);
+        return carStateRepository.getCurrentNotPayed(carNumber+"%", date24back);
     }
 
     @Override
     public CarState getLastCarState(String carNumber) {
         Pageable first = PageRequest.of(0, 1);
         List<CarState> carStates = carStateRepository.getLastCarState(carNumber, first);
-        if (carStates.size() > 0) {
+        if(carStates.size() > 0){
             return carStates.get(0);
         }
         return null;
@@ -359,15 +358,15 @@ public class CarStateServiceImpl implements CarStateService {
         long count = carStates.getTotalElements();
 
         List<CarStateDto> carStateDtoList = new ArrayList<>(carStates.getSize());
-        for (CarState carState : carStates) {
+        for(CarState carState:carStates){
             CarStateDto carStateDto = CarStateDto.fromCarState(carState);
             Cars car = carsService.findByPlatenumber(carStateDto.carNumber);
-            if (car != null) {
-                if (car.getRegion() != null) {
+            if(car != null){
+                if(car.getRegion() != null){
                     carStateDto.carNumber = Utils.convertRegion(car.getRegion()) + " " + carStateDto.carNumber;
                 }
-                if (car.getType() != null) {
-                    carStateDto.carNumber = carStateDto.carNumber + "[" + car.getType() + "]";
+                if(car.getType() != null){
+                    carStateDto.carNumber = carStateDto.carNumber + "["+ car.getType() +"]";
                 }
             }
 
@@ -379,22 +378,22 @@ public class CarStateServiceImpl implements CarStateService {
                 long time_difference = (carStateDto.outTimestamp == null ? (new Date()).getTime() : carStateDto.outTimestamp.getTime()) - carStateDto.inTimestamp.getTime();
                 long days_difference = TimeUnit.MILLISECONDS.toDays(time_difference) % 365;
                 if (days_difference > 0) {
-                    durationBuilder.append(days_difference + (language.equals("ru") ? "д " : "d "));
+                    durationBuilder.append(days_difference + (language.equals("ru")?"д ":"d "));
                 }
 
                 long hours_difference = TimeUnit.MILLISECONDS.toHours(time_difference) % 24;
                 if (hours_difference > 0 || durationBuilder.length() > 0) {
-                    durationBuilder.append(hours_difference + (language.equals("ru") ? "ч " : "h "));
+                    durationBuilder.append(hours_difference + (language.equals("ru")?"ч ":"h "));
                 }
 
                 long minutes_difference = TimeUnit.MILLISECONDS.toMinutes(time_difference) % 60;
                 if (minutes_difference > 0 || durationBuilder.length() > 0) {
-                    durationBuilder.append(minutes_difference + (language.equals("ru") ? "м " : "m "));
+                    durationBuilder.append(minutes_difference + (language.equals("ru")?"м ":"m "));
                 }
 
                 long seconds_difference = TimeUnit.MILLISECONDS.toSeconds(time_difference) % 60;
                 if (seconds_difference > 0 || durationBuilder.length() > 0) {
-                    durationBuilder.append(seconds_difference + (language.equals("ru") ? "с " : "s "));
+                    durationBuilder.append(seconds_difference + (language.equals("ru")?"с ":"s "));
                 }
 
                 if (carStateDto.outTimestamp == null &&
@@ -421,7 +420,7 @@ public class CarStateServiceImpl implements CarStateService {
         List<CarState> filteredCarStates = listByFiltersForExcel(specification);
 
         List<CarStateExcelDto> carStateDtoList = new ArrayList<>(filteredCarStates.size());
-        for (CarState carState : filteredCarStates) {
+        for(CarState carState: filteredCarStates){
             carStateDtoList.add(CarStateExcelDto.fromCarState(carState));
         }
 
@@ -453,13 +452,11 @@ public class CarStateServiceImpl implements CarStateService {
             billingNode.put("command", "decreaseCurrentBalance");
             billingNode.put("reason", "");
             billingNode.put("reasonEn", "");
-            billingNode.put("amount", rateResult != null ? rateResult : new BigDecimal(0));
+            billingNode.put("amount", rateResult!=null ? rateResult : new BigDecimal(0));
             billingNode.put("plateNumber", carState.getCarNumber());
             billingNode.put("carStateId", carState.getId());
-            billingNode.put("provider", "manualOutWithDebt");
             JsonNode decreaseBalanceResult = billingPluginRegister.execute(billingNode);
-            BigDecimal currentBalance = decreaseBalanceResult.get("currentBalance").decimalValue();
-            ;
+            BigDecimal currentBalance = decreaseBalanceResult.get("currentBalance").decimalValue();;
             properties.put("type", EventLog.StatusType.Success);
             properties.put("currentBalance", currentBalance);
         }

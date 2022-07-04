@@ -19,16 +19,13 @@ import java.util.Date;
 @Table(name = "transaction")
 public class Transaction {
 
-    public Transaction(String plateNumber, BigDecimal amount, Long carStateId, String description, String descriptionRu,
-                       String provider, BigDecimal remainder){
+    public Transaction(String plateNumber, BigDecimal amount, Long carStateId, String description, String descriptionRu){
         this.plateNumber = plateNumber;
         this.amount = amount;
         this.carStateId = carStateId;
         this.description = description;
         this.descriptionRu = descriptionRu;
         this.date = new Date();
-        this.provider = provider;
-        this.remainder = remainder;
     }
 
     @Id
@@ -53,10 +50,4 @@ public class Transaction {
 
     @Column(name = "date")
     private Date date;
-
-    @Column(name = "provider")
-    private String provider;
-
-    @Column(name = "remainder")
-    private BigDecimal remainder;
 }

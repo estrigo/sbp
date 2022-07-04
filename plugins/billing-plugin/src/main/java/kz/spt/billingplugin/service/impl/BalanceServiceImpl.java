@@ -13,7 +13,6 @@ import kz.spt.billingplugin.service.RootServicesGetterService;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.service.CarStateService;
-import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +27,6 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-@Log
 @Service
 public class BalanceServiceImpl implements BalanceService {
 
@@ -37,7 +35,7 @@ public class BalanceServiceImpl implements BalanceService {
     private RootServicesGetterService rootServicesGetterService;
 
     public BalanceServiceImpl(BalanceRepository balanceRepository, TransactionRepository transactionRepository,
-                              RootServicesGetterService rootServicesGetterService) {
+                              RootServicesGetterService rootServicesGetterService){
         this.balanceRepository = balanceRepository;
         this.transactionRepository = transactionRepository;
         this.rootServicesGetterService = rootServicesGetterService;
@@ -47,33 +45,28 @@ public class BalanceServiceImpl implements BalanceService {
     private static final Comparator<Transaction> TRANSACTION_EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     @Override
-    public BigDecimal addBalance(String plateNumber, BigDecimal value, Long carStateId, String description, String descriptionRu,
-                                 String provider) {
+    public BigDecimal addBalance(String plateNumber, BigDecimal value, Long carStateId, String description, String descriptionRu) {
         Balance balance;
         Optional<Balance> optionalBalance = balanceRepository.findById(plateNumber);
-        if (optionalBalance.isPresent()) {
+        if(optionalBalance.isPresent()){
             balance = optionalBalance.get();
             balance.setBalance(balance.getBalance().add(value));
         } else {
             balance = new Balance();
             balance.setPlateNumber(plateNumber);
             balance.setBalance(value);
-        }
-        ;
+        };
         Balance savedBalance = balanceRepository.save(balance);
 
-        Transaction transaction = new Transaction(plateNumber, value, carStateId, description, descriptionRu,
-                provider, getBalance(plateNumber));
+        Transaction transaction = new Transaction(plateNumber, value, carStateId, description, descriptionRu);
         transactionRepository.save(transaction);
 
         return savedBalance.getBalance();
     }
 
     @Override
-    public BigDecimal subtractBalance(String plateNumber, BigDecimal value, Long carStateId, String description,
-                                      String descriptionRu, String provider) {
-        return addBalance(plateNumber, BigDecimal.ZERO.compareTo(value) > 0 ? value : value.multiply(new BigDecimal(-1)), carStateId, description, descriptionRu,
-                provider);
+    public BigDecimal subtractBalance(String plateNumber, BigDecimal value, Long carStateId, String description, String descriptionRu) {
+       return addBalance(plateNumber, BigDecimal.ZERO.compareTo(value) > 0 ? value : value.multiply(new BigDecimal(-1)), carStateId, description, descriptionRu);
     }
 
     @Override
@@ -81,7 +74,7 @@ public class BalanceServiceImpl implements BalanceService {
         plateNumber = plateNumber.toUpperCase();
         Optional<Balance> optionalBalance = balanceRepository.findById(plateNumber);
 
-        if (optionalBalance.isPresent()) {
+        if(optionalBalance.isPresent()){
             return optionalBalance.get().getBalance();
         }
         return new BigDecimal(0);
@@ -101,7 +94,7 @@ public class BalanceServiceImpl implements BalanceService {
     @Override
     public void deleteAllDebts() {
         List<Balance> debtBalances = balanceRepository.debtBalances();
-        for (Balance balance : debtBalances) {
+        for(Balance balance : debtBalances){
             balance.setBalance(BigDecimal.ZERO);
             balanceRepository.save(balance);
         }
@@ -139,7 +132,7 @@ public class BalanceServiceImpl implements BalanceService {
         }
         String value = pagingRequest.getSearch().getValue();
 
-        return balances -> (balances.getPlateNumber() != null && balances.getPlateNumber().toLowerCase().contains(value.toLowerCase())
+        return balances -> (balances.getPlateNumber() !=  null && balances.getPlateNumber().toLowerCase().contains(value.toLowerCase())
                 || (balances.getBalance() != null && balances.getBalance().toString().toLowerCase().contains(value.toLowerCase())));
     }
 
@@ -163,8 +156,8 @@ public class BalanceServiceImpl implements BalanceService {
 
         return EMPTY_COMPARATOR;
     }
-
-    private List<Transaction> getAllTransactions() {
+    
+    private List<Transaction> getAllTransactions(){
         return transactionRepository.findAll();
     }
 
@@ -179,20 +172,20 @@ public class BalanceServiceImpl implements BalanceService {
         Direction dir = order.getDir();
 
         Sort sort = null;
-        if ("plateNumber".equals(columnName)) {
-            if (Direction.desc.equals(dir)) {
+        if("plateNumber".equals(columnName)){
+            if(Direction.desc.equals(dir)){
                 sort = Sort.by("plateNumber").descending();
             } else {
                 sort = Sort.by("plateNumber").ascending();
             }
-        } else if ("amount".equals(columnName)) {
-            if (Direction.desc.equals(dir)) {
+        } else if("amount".equals(columnName)){
+            if(Direction.desc.equals(dir)){
                 sort = Sort.by("amount").descending();
             } else {
                 sort = Sort.by("amount").ascending();
             }
-        } else if ("date".equals(columnName)) {
-            if (Direction.desc.equals(dir)) {
+        } else if("date".equals(columnName)){
+            if(Direction.desc.equals(dir)){
                 sort = Sort.by("date").descending();
             } else {
                 sort = Sort.by("date").ascending();
@@ -227,39 +220,25 @@ public class BalanceServiceImpl implements BalanceService {
         Transaction transaction = transactionRepository.findById(id).get();
         BigDecimal oldAmount = transaction.getAmount();
 
-        if (oldAmount.compareTo(BigDecimal.ZERO) <= 0 && amount.compareTo(BigDecimal.ZERO) > 0) {
+        if(oldAmount.compareTo(BigDecimal.ZERO) <= 0 && amount.compareTo(BigDecimal.ZERO) > 0){
             return false;
         }
-        if (oldAmount.compareTo(BigDecimal.ZERO) >= 0 && amount.compareTo(BigDecimal.ZERO) < 0) {
+        if(oldAmount.compareTo(BigDecimal.ZERO) >= 0 && amount.compareTo(BigDecimal.ZERO) < 0){
             return false;
         }
 
         Balance balance = balanceRepository.getBalanceByPlateNumber(transaction.getPlateNumber());
-        BigDecimal balanceDiff = BigDecimal.valueOf(0);
-        if (oldAmount.compareTo(BigDecimal.ZERO) < 0) {
+        if(oldAmount.compareTo(BigDecimal.ZERO) < 0){
             balance.setBalance(balance.getBalance().add(oldAmount.multiply(BigDecimal.valueOf(-1))).add(amount));
             transaction.setAmount(amount);
-//            balanceDiff = oldAmount.multiply(BigDecimal.valueOf(-1)).add(amount);
-            balanceDiff = oldAmount.subtract(amount);
         }
-        if (oldAmount.compareTo(BigDecimal.ZERO) > 0) {
+        if(oldAmount.compareTo(BigDecimal.ZERO) > 0){
             balance.setBalance(balance.getBalance().subtract(oldAmount).add(amount));
             transaction.setAmount(amount);
-            balanceDiff = oldAmount.subtract(amount);
-        }
-        if (!balanceDiff.equals(0)) {
-            List<Transaction> transactionList = transactionRepository.findAllByPlateNumberAndDateAfter(
-                    transaction.getPlateNumber(), transaction.getDate());
-            final BigDecimal finalBalanceDiff = balanceDiff;
-            transactionList
-                    .forEach(trn -> {
-                        trn.setRemainder(trn.getRemainder().subtract(finalBalanceDiff));
-                    });
-            transactionRepository.saveAll(transactionList);
         }
         balanceRepository.save(balance);
-        transaction.setRemainder(transaction.getRemainder().subtract(balanceDiff));
         transactionRepository.save(transaction);
+
         return true;
     }
 
@@ -269,12 +248,11 @@ public class BalanceServiceImpl implements BalanceService {
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
         List<TransactionDto> filteredDto = new ArrayList<>(transactionsList.getSize());
-        for (Transaction transaction : transactionsList.toList()) {
+        for(Transaction transaction : transactionsList.toList()){
             TransactionDto transactionDto = TransactionDto.fromTransaction(transaction);
-            if (transaction.getCarStateId() != null) {
+            if(transaction.getCarStateId() != null){
                 CarState carState = carStateService.findById(transaction.getCarStateId());
-                if (carState != null)
-                    transactionDto.period = (carState.getParking() != null ? carState.getParking().getName() + " " : "") + sdf.format(carState.getInTimestamp()) + (carState.getOutTimestamp() != null ? " - " + sdf.format(carState.getOutTimestamp()) : "");
+                transactionDto.period = (carState.getParking() != null ? carState.getParking().getName() + " " : "") + sdf.format(carState.getInTimestamp()) + (carState.getOutTimestamp() != null ? " - " + sdf.format(carState.getOutTimestamp()) : "");
             }
             transactionDto.date = sdf.format(transaction.getDate());
             filteredDto.add(transactionDto);

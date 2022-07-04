@@ -40,8 +40,6 @@
                                 <th th:text="#{balance.amount}"></th>
                                 <th th:text="#{balance.period}"></th>
                                 <th th:text="#{balance.description}"></th>
-                                <th th:text="#{balance.provider}"></th>
-                                <th th:text="#{balance.remainder}"></th>
                             </tr>
                             </thead>
                         </table>
@@ -103,9 +101,9 @@
     }
 
     let currentDate = [[${currentDate}]];
-    let oneDayEarly = [[${oneDayEarly}]];
+    let oneMonthEarly = [[${oneMonthEarly}]];
 
-    $('#dateFromString').val(oneDayEarly);
+    $('#dateFromString').val(oneMonthEarly);
     $('#dateToString').val(currentDate);
 
     function buildAjaxUrl(){
@@ -148,9 +146,7 @@
             {"data": "plateNumber"},
             {"data": "amount"},
             {"data": "period", "orderable": false},
-            {"data": "description", "orderable": false},
-            {"data": "provider", "orderable": false},
-            {"data": "remainder", "orderable": false}
+            {"data": "description", "orderable": false}
         ],
         "order": [ //[[ in thymeleaf is inline script
             [1, "desc"]

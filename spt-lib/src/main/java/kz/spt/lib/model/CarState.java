@@ -7,7 +7,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
@@ -27,7 +30,6 @@ import java.util.Date;
         @Index(name = "car_number_idx", columnList = "car_number"),
         @Index(name = "out_timestamp_idx", columnList = "out_timestamp")
 })
-@ToString
 public class CarState {
 
     public enum CarOutType {
@@ -64,10 +66,10 @@ public class CarState {
     @Column(name = "type")
     private Parking.ParkingType type;
 
-    @Column(name = "rate_amount", precision = 8, scale = 2)
+    @Column ( name="rate_amount", precision = 8, scale = 2 )
     private BigDecimal rateAmount;
 
-    @Column(name = "amount", precision = 8, scale = 2)
+    @Column ( name="amount", precision = 8, scale = 2 )
     private BigDecimal amount;
 
     private Boolean paid = false; // Заезжает на платной основе?
@@ -126,8 +128,8 @@ public class CarState {
     private Date updated;
 
     private Boolean isEnoughBalanceToLeave(PluginService pluginService, Boolean cashlessPayment) throws Exception {
-        if (this.getPaid()) {
-            if (pluginService != null) {
+        if(this.getPaid()){
+            if(pluginService != null){
                 PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
                 if (ratePluginRegister != null) {
                     SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
@@ -167,7 +169,7 @@ public class CarState {
         }
     }
 
-    private Boolean isCarLeft() {
+    private Boolean isCarLeft(){
         return this.outTimestamp != null;
     }
 }

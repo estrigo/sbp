@@ -910,7 +910,6 @@ public class CarEventServiceImpl implements CarEventService {
         node.put("parkingName", parkingName);
         node.put("reason", "Оплата паркинга " + parkingName);
         node.put("reasonEn", "Payment for parking " + parkingName);
-        node.put("provider", "Parking fee");
         if(carStateId != null){
             node.put("carStateId", carStateId);
         }
