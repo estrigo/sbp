@@ -27,10 +27,25 @@
         padding: 5%;
         border: solid 10px #000;
     }
+    .btn-outline-primary {
+        font-size: 20px;
+        padding: 5px;
+        border: solid 2px navy;
+    }
 </style>
 <div class="content">
+
     <div class="container">
-        <div class="row">
+        <div class="row select-gate" >
+            <div class="col-4"></div>
+            <div class="col-4">
+
+                <button class="btn btn-outline-primary" th:each="gate : ${gateList}" th:text="${gate.name}" th:gate="${gate.id}" onclick="saveGateId(this.getAttribute('gate'))"></button>
+
+            </div>
+            <div class="col-4"></div>
+        </div>
+        <div class="row qr-panel">
             <div class="col-12">
                 <h1 id="carnumber">PARQOUR</h1>
             </div>
@@ -49,6 +64,19 @@
 <script th:src="@{/assets/js/fancybox.umd.js}"></script>
 
 <script th:inline="javascript">
+
+    var gateId = sessionStorage.getItem('gateId');
+    if (gateId == null) {
+        $(".qr-panel").hide();
+    } else {
+        $(".select-gate").hide();
+    }
+
+    function saveGateId(id) {
+        sessionStorage.setItem("gateId", id);
+        $(".qr-panel").show();
+        $(".select-gate").hide();
+    }
 
     var qrcode = new QRCode("qrcode",{
         text: "https://parqour.com",
@@ -91,6 +119,10 @@
     }
 
     function updateUI(messageBody) {
+
+        if (gateId != messageBody.gate)
+            return;
+
         if (messageBody.action == "display") {
             $("#carnumber").text(messageBody.carnumber)
             qrcode.clear();
