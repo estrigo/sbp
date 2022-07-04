@@ -19,7 +19,6 @@ import kz.spt.lib.utils.Utils;
 import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpEntity;
@@ -1297,6 +1296,7 @@ public class CarEventServiceImpl implements CarEventService {
                 socketMessage.put("carnumber", eventDto.car_number);
                 socketMessage.put("debt", balance);
                 socketMessage.put("action", "display");
+                socketMessage.put("gate", camera.getGate().getId());
                 eventLogService.sendSocketMessage("qrpanel", socketMessage.toString());
             } catch (Exception ex) {
                 log.log(Level.WARNING, "Error while display qrpanel for gate " + gate.gateName);
