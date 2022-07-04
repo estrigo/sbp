@@ -125,9 +125,11 @@ public class PluginServiceImpl implements PluginService {
             if (BigDecimal.ZERO.compareTo(value) == -1) {
                 node.put("reason", "Ручное пополнение пользователем " + username);
                 node.put("reasonEn", "Manual top up by user " + username);
+                node.put("provider", "Manual change");
             } else {
                 node.put("reason", "Ручное списание пользователем " + username);
                 node.put("reasonEn", "Manual write-off by user  " + username);
+                node.put("provider", "Manual change");
             }
             balanceCheckResult = billingPluginRegister.execute(node);
             return balanceCheckResult.get("currentBalance").decimalValue().setScale(2);
