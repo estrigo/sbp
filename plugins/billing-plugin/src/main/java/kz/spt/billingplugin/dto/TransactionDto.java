@@ -13,6 +13,8 @@ public class TransactionDto {
     public BigDecimal amount;
     public String period;
     public String description;
+    public String provider;
+    public BigDecimal remainder;
 
     public static TransactionDto fromTransaction(Transaction transaction){
         TransactionDto transactionDto = new TransactionDto();
@@ -20,6 +22,8 @@ public class TransactionDto {
         transactionDto.amount = transaction.getAmount();
         transactionDto.description = transaction.getDescriptionRu();
         transactionDto.plateNumber = transaction.getPlateNumber();
+        transactionDto.provider = transaction.getProvider();
+        transactionDto.remainder = transaction.getRemainder();
         return transactionDto;
     }
 }

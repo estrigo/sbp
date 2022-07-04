@@ -28,8 +28,9 @@ public class BalanceController {
         model.addAttribute("whitelist", balanceService.listAllBalances());
         Calendar calendar = Calendar.getInstance();
         model.addAttribute("currentDate", format.format(calendar.getTime()));
-        calendar.add(Calendar.MONTH, -1);
-        model.addAttribute("oneMonthEarly", format.format(calendar.getTime()));
+        calendar.add(Calendar.MINUTE, 1);
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        model.addAttribute("oneDayEarly", format.format(calendar.getTime()));
         return "billing/balance/list";
     }
 }
