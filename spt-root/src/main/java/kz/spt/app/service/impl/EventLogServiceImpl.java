@@ -293,11 +293,11 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     public List<EventLog> listByFiltersForExcel(Specification<EventLog> eventLogSpecification) {
-        Sort sort  = Sort.by("id").descending();
+        Sort sort = Sort.by("id").descending();
+        Pageable rows = PageRequest.of(0, 1000000, sort);
         if (eventLogSpecification != null) {
-            return eventLogRepository.findAll(eventLogSpecification, sort);
+            return eventLogRepository.findAll(eventLogSpecification, rows).toList();
         } else {
-            Pageable rows = PageRequest.of(0, 1000, sort);
             return eventLogRepository.findAll(rows).toList();
         }
     }

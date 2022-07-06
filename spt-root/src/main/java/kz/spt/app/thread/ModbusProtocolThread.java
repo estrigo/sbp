@@ -32,11 +32,9 @@ public class ModbusProtocolThread extends Thread  {
     private int maxReadValue;
     private Boolean running = true;
 
-    public ModbusProtocolThread(BarrierStatusDto barrierStatusDto, Boolean disableOpen) {
+    public ModbusProtocolThread(BarrierStatusDto barrierStatusDto) {
         this.barrierStatusDto  = barrierStatusDto;
-        if(!disableOpen){
-            getConnectedInstance(barrierStatusDto.ip);
-        }
+        getConnectedInstance(barrierStatusDto.ip);
     }
 
     public void addModbusRegisters(BarrierStatusDto barrierStatusDto){

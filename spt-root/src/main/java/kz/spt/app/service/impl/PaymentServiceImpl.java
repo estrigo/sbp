@@ -43,8 +43,11 @@ public class PaymentServiceImpl implements PaymentService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
+    private final PaymentCheckLogService paymentCheckLogService;
+
     public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService, ParkingService parkingService, EventLogService eventLogService,
-                              CarModelService carModelService, AbonomentService abonomentService, WhitelistRootService whitelistRootService, QrPanelService qrPanelService) {
+                              CarModelService carModelService, AbonomentService abonomentService, WhitelistRootService whitelistRootService, QrPanelService qrPanelService,
+                              PaymentCheckLogService paymentCheckLogService) {
         this.pluginService = pluginService;
         this.carStateService = carStateService;
         this.carService = carService;
@@ -54,6 +57,7 @@ public class PaymentServiceImpl implements PaymentService {
         this.abonomentService = abonomentService;
         this.whitelistRootService = whitelistRootService;
         this.qrPanelService = qrPanelService;
+        this.paymentCheckLogService = paymentCheckLogService;
     }
 
     @Override
@@ -61,17 +65,21 @@ public class PaymentServiceImpl implements PaymentService {
         if (commandDto.account != null) {
             commandDto.account = commandDto.account.toUpperCase();
             commandDto.account = commandDto.account.replaceAll("\\s","");
+
             if ("check".equals(commandDto.command)) {
                 if (commandDto.service_id != null && commandDto.service_id==2) {
                     Parking parking = parkingService.findByType(Parking.ParkingType.PREPAID);
                     if (parking != null) {
-                        return fillPrepaid(commandDto, parking);
+                        BillingInfoSuccessDto successDto = fillPrepaid(commandDto, parking);
+                        savePaymentCheckLog(commandDto.account, null, successDto.sum, null, PaymentCheckLog.PaymentCheckType.PREPAID, successDto.current_balance);
+                        return successDto;
                     } else {
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
                         dto.message = "Паркинг по предоплате не найден";
                         dto.result = 1;
                         dto.sum = commandDto.sum;
                         dto.txn_id = commandDto.txn_id;
+                        savePaymentCheckLog(commandDto.account, null, dto.sum, null, PaymentCheckLog.PaymentCheckType.PREPAID, dto.current_balance);
                         return dto;
                     }
 //                } else if (commandDto.service_id!=null && commandDto.service_id==3) {
@@ -83,7 +91,7 @@ public class PaymentServiceImpl implements PaymentService {
                     }
                     if (carState == null) {
                         JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
-                        if (currentBalanceResult.has("currentBalance") && BigDecimal.ZERO.compareTo(currentBalanceResult.get("currentBalance").decimalValue()) == 1) {
+                        if (currentBalanceResult.has("currentBalance") && BigDecimal.ZERO.compareTo(currentBalanceResult.get("currentBalance").decimalValue()) > 0) {
                             return fillDebtDetails(commandDto, currentBalanceResult.get("currentBalance").decimalValue());
                         }
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
@@ -91,6 +99,9 @@ public class PaymentServiceImpl implements PaymentService {
                         dto.txn_id = commandDto.txn_id;
                         dto.message = "Некорректный номер авто свяжитесь с оператором.";
                         dto.result = 1;
+
+                        savePaymentCheckLog(commandDto.account, dto.message, dto.sum, null, PaymentCheckLog.PaymentCheckType.NOT_FOUND, dto.current_balance);
+
                         return dto;
                     } else {
                         BillingInfoSuccessDto dto = new BillingInfoSuccessDto();
@@ -119,6 +130,7 @@ public class PaymentServiceImpl implements PaymentService {
                                 return fillPayment(carState, format, commandDto, carState.getPaymentJson());
                             }
                         }
+                        savePaymentCheckLog(commandDto.account, null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance);
                         return dto;
                     }
                 }
@@ -224,6 +236,8 @@ public class PaymentServiceImpl implements PaymentService {
         dto.hours = 0;
         dto.txn_id = commandDto.txn_id;
 
+        savePaymentCheckLog(commandDto.account, null, dto.sum, null, PaymentCheckLog.PaymentCheckType.DEBT, dto.current_balance);
+
         return dto;
     }
 
@@ -237,6 +251,8 @@ public class PaymentServiceImpl implements PaymentService {
         dto.left_free_time_minutes = 0;
         dto.hours = 0;
         dto.txn_id = commandDto.getTxn_id();
+
+        savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, null, PaymentCheckLog.PaymentCheckType.DEBT, dto.current_balance);
 
         return dto;
     }
@@ -284,7 +300,7 @@ public class PaymentServiceImpl implements PaymentService {
                 if (carState == null) {
 
                     JsonNode currentBalanceResult = getCurrentBalance(commandDto.getAccount());
-                    if (currentBalanceResult.has("currentBalance") && BigDecimal.ZERO.compareTo(currentBalanceResult.get("currentBalance").decimalValue()) == 1) {
+                    if (currentBalanceResult.has("currentBalance") && BigDecimal.ZERO.compareTo(currentBalanceResult.get("currentBalance").decimalValue()) > 0) {
                         return fillDebtDetails(commandDto, currentBalanceResult.get("currentBalance").decimalValue());
                     }
 
@@ -293,6 +309,7 @@ public class PaymentServiceImpl implements PaymentService {
                     dto.txn_id = commandDto.getTxn_id();
                     dto.message = "Некорректный номер авто свяжитесь с оператором.";
                     dto.result = 1;
+                    savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, null, PaymentCheckLog.PaymentCheckType.NOT_FOUND, dto.current_balance);
                     return dto;
                 } else {
                     BillingInfoSuccessDto dto = new BillingInfoSuccessDto();
@@ -329,12 +346,15 @@ public class PaymentServiceImpl implements PaymentService {
                         if (qrPanelService!=null) {
                             parkomatBillingInfoSuccessDto.setKaspiQr(qrPanelService.generateUrl(null,carState.getCarNumber()));
                         }
+                        savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance);
                         return parkomatBillingInfoSuccessDto;
                     }
+
+                    savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance);
                     return dto;
                 }
             } else if ("pay".equals(commandDto.getCommand())) {
-                if (commandDto.getTxn_id() == null || "".equals(commandDto.getTxn_id().isEmpty())) {
+                if (commandDto.getTxn_id() == null || commandDto.getTxn_id().isEmpty()) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
                     dto.message = "Пустое значение для поля txn_id";
                     dto.result = 4;
@@ -425,7 +445,7 @@ public class PaymentServiceImpl implements PaymentService {
                     }
                 }
             } else if ("getCheck".equals(commandDto.getCommand())) {
-                log.info("Webkassa check request " + commandDto.toString());
+                log.info("Webkassa check request " + commandDto);
                 PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                 ObjectNode node = this.objectMapper.createObjectNode();
                 node.put("command", "getCheck");
@@ -481,6 +501,7 @@ public class PaymentServiceImpl implements PaymentService {
                 ratePluginNode.put("parkingId", camera.getGate().getParking().getId());
                 ratePluginNode.put("inDate", format.format(carState.getInTimestamp()));
                 ratePluginNode.put("outDate", format.format(new Date()));
+                ratePluginNode.put("plateNumber", carNumber);
                 ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
                 ratePluginNode.put("isCheck", false);
                 ratePluginNode.put("paymentsJson", carState.getPaymentJson());
@@ -535,6 +556,7 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("parkingId", carState.getParking().getId());
             node.put("inDate", format.format(carState.getInTimestamp()));
             node.put("outDate", format.format(new Date()));
+            node.put("plateNumber", carState.getCarNumber());
             node.put("isCheck", true);
             node.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
             node.put("paymentsJson", paymentsJson);
@@ -572,7 +594,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (currentBalanceResult.has("currentBalance")) {
             dto.current_balance = currentBalanceResult.get("currentBalance").decimalValue().setScale(2);
         }
-
+        savePaymentCheckLog(commandDto.account, null, dto != null ? dto.sum : null, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto != null ? dto.current_balance : null);
         return dto;
     }
 
@@ -792,6 +814,9 @@ public class PaymentServiceImpl implements PaymentService {
         if (currentBalanceResult.has("currentBalance")) {
             billingInfoSuccessDto.current_balance = currentBalanceResult.get("currentBalance").decimalValue().setScale(2);
         }
+
+        savePaymentCheckLog(commandDto.account, null, billingInfoSuccessDto.sum, null, PaymentCheckLog.PaymentCheckType.ABONEMENT, billingInfoSuccessDto.current_balance);
+
         return billingInfoSuccessDto;
     }
 
@@ -847,6 +872,7 @@ public class PaymentServiceImpl implements PaymentService {
                 dto.sum = totalRate;
             }
         }
+        savePaymentCheckLog(commandDto.account, null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD,  dto.current_balance);
         return dto;
     }
 
@@ -892,6 +918,12 @@ public class PaymentServiceImpl implements PaymentService {
                 dto.sum = totalRate;
             }
         }
+        savePaymentCheckLog(commandDto.account, null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance);
         return dto;
     }
+
+    private void savePaymentCheckLog(String plateNumber, String message, BigDecimal summ, Long carStateId, PaymentCheckLog.PaymentCheckType paymentCheckType, BigDecimal currentBalance){
+        PaymentCheckLog log = new PaymentCheckLog(plateNumber, message, summ, carStateId, paymentCheckType, currentBalance);
+        paymentCheckLogService.save(log);
+    };
 }

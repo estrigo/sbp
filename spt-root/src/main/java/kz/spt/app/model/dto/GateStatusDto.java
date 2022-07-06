@@ -75,7 +75,7 @@ public class GateStatusDto {
             }
             if(!disableOpen && Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType()) && gateStatusDto.barrier != null && barrier.getIp()!= null && barrier.getIp().contains(".")){
                 if(!modbusMasterThreadMap.containsKey(barrier.getIp())){
-                    ModbusProtocolThread thread = new ModbusProtocolThread(gateStatusDto.barrier, disableOpen);
+                    ModbusProtocolThread thread = new ModbusProtocolThread(gateStatusDto.barrier);
                     thread.start();
                     modbusMasterThreadMap.put(barrier.getIp(), thread);
                     log.info("Adding barrier.getIp() " + barrier.getIp()  + " to modbusMasterThreadMap");

@@ -14,12 +14,4 @@ public class BillingInfoSuccessDto {
     public String tariff;              // 100 тг/ч - Текстовое представление текущего тарифа.
     public String in_date;             // 2019-05-06 08:30:12 - Дата время последнего ВЪЕЗДА на паркинг.
     public int hours;
-    /*Список записей о ВЪЕЗДЕ (когда клиент платит за 2 и более стоянок):
-    "payment_details":
-            [
-    {
-        "billing_log_id": "65",
-            "amount": 56200, //- сумма за стоянку
-            "type": "default"
-    } ]*/
 }

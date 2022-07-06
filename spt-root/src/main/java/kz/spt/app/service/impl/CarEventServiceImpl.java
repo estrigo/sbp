@@ -1497,6 +1497,7 @@ public class CarEventServiceImpl implements CarEventService {
             ratePluginNode.put("parkingId", camera.getGate().getParking().getId());
             ratePluginNode.put("inDate", format.format(inDate));
             ratePluginNode.put("outDate", format.format(outDate));
+            ratePluginNode.put("plateNumber", carState.getCarNumber());
             ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
             ratePluginNode.put("isCheck", isCheck); // Включать бесплатные минуты в начале или нет
             ratePluginNode.put("paymentsJson", carState.getPaymentJson());
