@@ -25,6 +25,7 @@ spring:
       - "zerotouch-plugin"
       - "tgbot-plugin"
       - "mega-plugin"
+      - "parkomat-status-plugin"
     main:
       banner-mode: off
   datasource:

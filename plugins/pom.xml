@@ -28,6 +28,7 @@
         <module>carmodel-plugin</module>
         <module>mega-plugin</module>
         <module>qrpanel-plugin</module>
+        <module>parkomat-status-plugin</module>
     </modules>
 
     <build>
