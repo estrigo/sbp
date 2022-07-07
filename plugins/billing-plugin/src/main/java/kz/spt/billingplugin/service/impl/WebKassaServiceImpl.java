@@ -16,10 +16,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Collections;
 
 @Service
@@ -49,9 +51,11 @@ public class WebKassaServiceImpl implements WebKassaService {
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
+            restTemplate.getMessageConverters()
+                    .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
             ObjectMapper mapper = new ObjectMapper();
             String requestBody = mapper.writeValueAsString(webcheck);
             log.info("[WebKassa] Requesting check data " + webcheck.toString());
