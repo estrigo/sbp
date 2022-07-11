@@ -982,6 +982,7 @@ public class CarEventServiceImpl implements CarEventService {
                 ObjectNode socketMessage = this.objectMapper.createObjectNode();
                 socketMessage.put("carnumber", eventDto.car_number);
                 socketMessage.put("action", "clear");
+                socketMessage.put("gate", camera.getGate().getId());
                 eventLogService.sendSocketMessage("qrpanel", socketMessage.toString());
             }catch (Exception ex) {
 
@@ -1246,6 +1247,7 @@ public class CarEventServiceImpl implements CarEventService {
                 socketMessage.put("debt", 0);
                 socketMessage.put("sum", rateResult);
                 socketMessage.put("action", "allow");
+                socketMessage.put("gate", camera.getGate().getId());
                 eventLogService.sendSocketMessage("qrpanel", socketMessage.toString());
             }catch (Exception ex) {
 

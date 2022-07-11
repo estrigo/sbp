@@ -36,6 +36,7 @@ public class ParkingController {
     @Value("${carmen.live.enabled}")
     Boolean carmenLiveEnabled;
 
+
     public ParkingController(ParkingService parkingService, CameraService cameraService, GateService gateService,
                              BarrierService barrierService, ControllerService controllerService,
                              CarStateRepository carStateRepository, CarStateService carStateService){
