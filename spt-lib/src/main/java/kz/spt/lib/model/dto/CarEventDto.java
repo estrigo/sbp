@@ -1,5 +1,7 @@
 package kz.spt.lib.model.dto;
 
+import kz.spt.lib.utils.Utils;
+
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -34,4 +36,8 @@ public class CarEventDto {
     public String car_model;
 
     public Long cameraId = null;
+
+    public String getCarNumberWithRegion() {
+        return (this.region != null ? Utils.convertRegion(this.region) + " " : "") + this.car_number;
+    }
 }

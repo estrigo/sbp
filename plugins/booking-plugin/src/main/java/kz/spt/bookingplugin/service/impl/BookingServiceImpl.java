@@ -159,18 +159,25 @@ public class BookingServiceImpl implements BookingService {
         log.info("Region: " + region);
         switch (region) {
             case "ae-az":
+            case "abu-dhabi":
                 return "1";
             case "ae-aj":
+            case "ajman":
                 return "2";
             case "ae-du":
+            case "dubai":
                 return "3";
             case "ae-fu":
+            case "fujairah":
                 return "4";
             case "ae-rk":
+            case "ras-al-khaimah":
                 return "5";
             case "ae-sh":
+            case "sharjah":
                 return "6";
             case "ae-uq":
+            case "alquwain":
                 return "7";
             default:
                 return "";
