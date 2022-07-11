@@ -173,7 +173,7 @@
             <div class="col-md-6">
                 <div class="form-group">
                     <label for="loopModbusRegister" class="control-label" th:text="#{barrier.modbusRegister}"></label>
-                    <input type="number" step="1" min="0" max="64" class="form-control" id="loopModbusRegister" th:field="*{loopModbusRegister}" th:value="*{loopModbusRegister}">
+                    <input type="number" step="1" min="0" max="9999999" class="form-control" id="loopModbusRegister" th:field="*{loopModbusRegister}" th:value="*{loopModbusRegister}">
                 </div>
             </div>
         </div>
@@ -243,7 +243,7 @@
             <div class="col-md-6">
                 <div class="form-group">
                     <label for="photoElementModbusRegister" class="control-label" th:text="#{barrier.modbusRegister}"></label>
-                    <input type="number" step="1" min="0" max="64" class="form-control" id="photoElementModbusRegister" th:field="*{photoElementModbusRegister}" th:value="*{photoElementModbusRegister}">
+                    <input type="number" step="1" min="0" max="99999" class="form-control" id="photoElementModbusRegister" th:field="*{photoElementModbusRegister}" th:value="*{photoElementModbusRegister}">
                 </div>
             </div>
         </div>
