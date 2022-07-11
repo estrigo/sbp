@@ -69,10 +69,10 @@ public class PaymentServiceImpl implements PaymentService {
 
     private List<Payment> listByFiltersForExcel(Specification<Payment> paymentSpecification) {
         Sort sort = Sort.by("id").descending();
+        Pageable rows = PageRequest.of(0, 1000000, sort);
         if (paymentSpecification != null) {
-            return paymentRepository.findAll(paymentSpecification, sort);
+            return paymentRepository.findAll(paymentSpecification, rows).toList();
         } else {
-            Pageable rows = PageRequest.of(0, 1000, sort);
             return paymentRepository.findAll(rows).toList();
         }
     }

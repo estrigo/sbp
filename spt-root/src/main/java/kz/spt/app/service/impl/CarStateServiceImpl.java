@@ -430,10 +430,10 @@ public class CarStateServiceImpl implements CarStateService {
 
     private List<CarState> listByFiltersForExcel(Specification<CarState> carStateSpecification) {
         Sort sort = Sort.by("id").descending();
+        Pageable rows = PageRequest.of(0, 1000000, sort);
         if (carStateSpecification != null) {
-            return carStateRepository.findAll(carStateSpecification, sort);
+            return carStateRepository.findAll(carStateSpecification, rows).toList();
         } else {
-            Pageable rows = PageRequest.of(0, 1000, sort);
             return carStateRepository.findAll(rows).toList();
         }
     }
@@ -447,7 +447,7 @@ public class CarStateServiceImpl implements CarStateService {
         properties.put("eventTime", outTimestamp);
 
         BigDecimal rateResult = calculateRate(carState.getInTimestamp(), outTimestamp,
-                carState, format, properties);
+                carState, format);
         if (billingPluginRegister != null) {
             ObjectNode billingNode = this.objectMapper.createObjectNode();
             billingNode.put("command", "decreaseCurrentBalance");
@@ -487,14 +487,14 @@ public class CarStateServiceImpl implements CarStateService {
         barrierService.deleteBarrier(barrier);
     }
 
-    private BigDecimal calculateRate(Date inDate, Date outDate, CarState carState, SimpleDateFormat format,
-                                     Map<String, Object> properties) throws Exception {
+    private BigDecimal calculateRate(Date inDate, Date outDate, CarState carState, SimpleDateFormat format) throws Exception {
         PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
         if (ratePluginRegister != null) {
             ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
             ratePluginNode.put("parkingId", carState.getParking().getId());
             ratePluginNode.put("inDate", format.format(inDate));
             ratePluginNode.put("outDate", format.format(outDate));
+            ratePluginNode.put("plateNumber", carState.getCarNumber());
             ratePluginNode.put("cashlessPayment", carState.getCashlessPayment() != null ? carState.getCashlessPayment() : true);
             ratePluginNode.put("isCheck", false);
             ratePluginNode.put("paymentsJson", carState.getPaymentJson());

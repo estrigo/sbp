@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import kz.spt.lib.model.Parking;
+import kz.spt.lib.model.PaymentCheckLog;
 import kz.spt.lib.service.ParkingService;
+import kz.spt.lib.service.PaymentCheckLogService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.rateplugin.RatePlugin;
 import kz.spt.rateplugin.repository.ParkingRepository;
@@ -27,6 +29,7 @@ public class RateServiceImpl implements RateService {
     private RateRepository rateRepository;
     private ParkingRepository parkingRepository;
     private ParkingService parkingService;
+    private PaymentCheckLogService paymentCheckLogService;
     private static ObjectMapper mapper = new ObjectMapper();
 
     public RateServiceImpl(RateRepository rateRepository, ParkingRepository parkingRepository) {
@@ -45,7 +48,7 @@ public class RateServiceImpl implements RateService {
     }
 
     @Override
-    public BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment, Boolean isCheck, String paymentsJson, String carType) throws JsonProcessingException {
+    public BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment, Boolean isCheck, String paymentsJson, String carType, String plateNumber) throws JsonProcessingException {
 
         ParkingRate parkingRate = getByParkingId(parkingId);
 
@@ -80,6 +83,11 @@ public class RateServiceImpl implements RateService {
             Date lastPaymentDate = getLastPaymentDate(paymentsJson); // Если была оплата проверяем прошли минуты до которые даются для выезда
             if(lastPaymentDate != null){
                 log.info("lastPaymentDate: " +  lastPaymentDate);
+                PaymentCheckLog paymentCheckLog = getPaymentCheckLogService().findLastSuccessCheck(plateNumber);
+                if(paymentCheckLog != null && lastPaymentDate.after(paymentCheckLog.getCreated()) && lastPaymentDate.getTime() - paymentCheckLog.getCreated().getTime() <= 10*60*1000){  // Если время между проверкой суммы для оплаты и время оплаты не больше 10ти минут, то берем дату проверки как дату оплаты
+                    lastPaymentDate = paymentCheckLog.getCreated();
+                }
+
                 int seconds = (int) ((new Date()).getTime() - lastPaymentDate.getTime()) / 1000;
                 int minutesPassedAfterLastPay = seconds / 60;
                 int secondsPassedAfterLastPay = seconds % 60;
@@ -377,5 +385,12 @@ public class RateServiceImpl implements RateService {
             parkingService = (ParkingService) RatePlugin.INSTANCE.getMainApplicationContext().getBean("parkingServiceImpl");
         }
         return parkingService;
+    }
+
+    private PaymentCheckLogService getPaymentCheckLogService() {
+        if (this.paymentCheckLogService == null) {
+            paymentCheckLogService = (PaymentCheckLogService) RatePlugin.INSTANCE.getMainApplicationContext().getBean("paymentCheckLogServiceImpl");
+        }
+        return paymentCheckLogService;
     }
 }

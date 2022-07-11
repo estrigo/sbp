@@ -139,6 +139,7 @@ public class CarState {
                     ratePluginNode.put("outDate", format.format(this.getOutTimestamp() != null ? this.outTimestamp : new Date()));
                     ratePluginNode.put("cashlessPayment", cashlessPayment);
                     ratePluginNode.put("isCheck", false);
+                    ratePluginNode.put("plateNumber", this.getCarNumber());
                     ratePluginNode.put("paymentsJson", this.getPaymentJson());
 
                     JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
