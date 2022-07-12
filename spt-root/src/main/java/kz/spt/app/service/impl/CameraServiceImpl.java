@@ -73,9 +73,11 @@ public class CameraServiceImpl implements CameraService {
     }
 
     @Override
-    public void saveCamera(Camera camera) {
+    public void saveCamera(Camera camera, Boolean updateGlobalGatedtos) {
         cameraRepository.save(camera);
-        StatusCheckJob.emptyGlobalGateDtos();
+        if(updateGlobalGatedtos){
+            StatusCheckJob.emptyGlobalGateDtos();
+        }
     }
 
     @Override

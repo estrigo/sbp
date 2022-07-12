@@ -1,9 +1,9 @@
 package kz.spt.app.job;
 
-import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
 import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
+import kz.spt.app.model.dto.SensorStatusDto;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.GateService;
 import kz.spt.app.thread.GateStatusCheckThread;
@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -25,19 +24,27 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Component
 public class StatusCheckJob {
 
-    @Autowired
     private GateService gateService;
 
-    @Autowired
     private BarrierService barrierService;
+
+    @Autowired
+    public StatusCheckJob(GateService gateService, BarrierService barrierService){
+        this.gateService = gateService;
+        this.barrierService = barrierService;
+    }
 
     public static Boolean emergencyModeOn = false;
 
     public static Map<Long, Boolean> isGatesProcessing = new ConcurrentHashMap<>();
     public static Queue<GateStatusDto> globalGateDtos = new ConcurrentLinkedQueue<>();
 
+    public static Map<String, BarrierStatusDto> barrierStatusDtoMap = new ConcurrentHashMap<>();
+    public static Map<String, SensorStatusDto> loopStatusDtoMap = new ConcurrentHashMap<>();
+    public static Map<String, SensorStatusDto> pheStatusDtoMap = new ConcurrentHashMap<>();
+
     @Scheduled(fixedDelayString = "${status.check.fixedDelay}", initialDelay = 5000)
-    public void scheduleFixedDelayTask() throws UnknownHostException, ModbusIOException {
+    public void scheduleFixedDelayTask() {
         if(globalGateDtos.isEmpty()){
             refreshGlobalGateIds();
         }
@@ -54,20 +61,23 @@ public class StatusCheckJob {
         }
     }
 
-    private void refreshGlobalGateIds() throws UnknownHostException, ModbusIOException {
+    private void refreshGlobalGateIds() {
         globalGateDtos = new ConcurrentLinkedQueue<>();
         List<Gate> allGates = (List<Gate>) gateService.listAllGatesWithDependents();
         for (Gate gate : allGates){
             if(!isGatesProcessing.containsKey(gate.getId())){
-                globalGateDtos.add(GateStatusDto.fromGate(gate, allGates, barrierService));
+                globalGateDtos.add(GateStatusDto.fromGate(gate, allGates));
                 isGatesProcessing.put(gate.getId(), false);
             }
         }
     }
 
-    public static void emptyGlobalGateDtos(){
+    public static void emptyGlobalGateDtos() {
         isGatesProcessing = new ConcurrentHashMap<>();
         globalGateDtos = new ConcurrentLinkedQueue<>();
+        barrierStatusDtoMap = new ConcurrentHashMap<>();
+        loopStatusDtoMap = new ConcurrentHashMap<>();
+        pheStatusDtoMap = new ConcurrentHashMap<>();
     }
 
     public static GateStatusDto findGateStatusDtoById(Long gateId){

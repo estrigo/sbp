@@ -23,7 +23,7 @@ public interface CameraService {
 
     Camera getCameraById(Long id);
 
-    void saveCamera(Camera camera);
+    void saveCamera(Camera camera, Boolean updateGlobalGatedtos);
 
     void saveCameraTab(CameraTab cameraTab);
 

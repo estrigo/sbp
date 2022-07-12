@@ -118,7 +118,7 @@ public class ParkingController {
         if (!bindingResult.hasErrors()) {
             Gate gate = gateService.getById(gateId);
             camera.setGate(gate);
-            cameraService.saveCamera(camera);
+            cameraService.saveCamera(camera, true);
         }
         return "redirect:/parking/details/" + camera.getGate().getParking().getId();
     }

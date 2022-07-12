@@ -27,9 +27,9 @@ public class ModbusProtocolThread extends Thread  {
 
     private final BarrierStatusDto barrierStatusDto;
     private ModbusMaster modbusMaster = null;
-    private Map<Integer, Boolean> readValues = new HashMap<>();
+    private Map<Integer, Boolean> inputValues = new HashMap<>();
+    private boolean[] outputValues = new boolean[8];
     private Map<Integer, Boolean> writeValues = new HashMap<>();
-    private int maxReadValue;
     private Boolean running = true;
 
     public ModbusProtocolThread(BarrierStatusDto barrierStatusDto) {
@@ -37,27 +37,14 @@ public class ModbusProtocolThread extends Thread  {
         getConnectedInstance(barrierStatusDto.ip);
     }
 
-    public void addModbusRegisters(BarrierStatusDto barrierStatusDto){
-        if(barrierStatusDto.modbusCloseRegister != null){
-            writeValues.put(barrierStatusDto.modbusCloseRegister-1, false);
-            readValues.put(barrierStatusDto.modbusCloseRegister-1, false);
-        }
-        if(barrierStatusDto.modbusOpenRegister != null){
-            writeValues.put(barrierStatusDto.modbusOpenRegister-1, false);
-            readValues.put(barrierStatusDto.modbusOpenRegister-1, false);
-        }
-        if(barrierStatusDto.loopModbusRegister != null){
-            readValues.put(barrierStatusDto.loopModbusRegister-1, false);
-        }
-        if(barrierStatusDto.photoElementModbusRegister != null){
-            readValues.put(barrierStatusDto.photoElementModbusRegister-1, false);
-        }
-        findMaxReadValue();
+    public Boolean getOutputValue(Integer register){
+        return outputValues[register];
     }
 
-    public Boolean getReadValue(Integer register){
-        return readValues.get(register);
+    public Boolean getInputValue(Integer register){
+        return inputValues.get(register);
     }
+
 
     public void setWriteValue(Integer register, Boolean value){
         writeValues.put(register, value);
@@ -81,20 +68,23 @@ public class ModbusProtocolThread extends Thread  {
 
                 try {
                     modbusMaster.writeMultipleRegisters(slaveId, offset, new_values);
-//                   int[] values = modbusMaster.readHoldingRegisters(slaveId, offset, 1);
-
-                    calculateChangedRegisters(new_values[0], this.maxReadValue);
-                    Thread.sleep(250);
+                    calculateChangedRegisters(new_values[0]);
+                    Thread.sleep(100);
                 } catch (ModbusProtocolException | ModbusNumberException | ModbusIOException | InterruptedException e) {
-                    e.printStackTrace();
+                    log.info(barrierStatusDto.ip + " write Registers : " + new_values[0] + " error. message: " + e.getMessage());
+                }
+
+                try {
+                    outputValues = modbusMaster.readDiscreteInputs(slaveId, offset, 8);
+                    Thread.sleep(100);
+                } catch (ModbusProtocolException | ModbusNumberException | ModbusIOException | InterruptedException e) {
+                    log.info(barrierStatusDto.ip + " read Registers error. message: " + e.getMessage());
                 }
             } else{
-                log.info(barrierStatusDto.ip + " modbus is not connected");
                 try {
                     modbusMaster.connect();
                 } catch (Exception e) {
                     log.info(barrierStatusDto.ip + " modbus connect error: " + e.getMessage());
-                    e.printStackTrace();
                 }
             }
         }
@@ -105,7 +95,7 @@ public class ModbusProtocolThread extends Thread  {
         try {
             tcpParameters.setHost(InetAddress.getByName(ip));
         } catch (UnknownHostException e) {
-            log.info("UnknownHostException : " + e.getMessage());
+            log.info("Barrier ip " + ip +" UnknownHostException : " + e.getMessage());
         }
         tcpParameters.setKeepAlive(true);
         tcpParameters.setPort(Modbus.TCP_PORT);
@@ -115,39 +105,22 @@ public class ModbusProtocolThread extends Thread  {
         Modbus.setAutoIncrementTransactionId(true);
     }
 
-    private void calculateChangedRegisters(int total, int maxReadValue){
-        int value = maxReadValue;
+    private void calculateChangedRegisters(int total){
+        int value = 16;
         if(total > 0){
             while (total > 0 && value >= 0){
                 if(total >= (int) Math.pow(2, value)){
                     total -= (int) Math.pow(2, value);
-                    readValues.put(value, true);
-                } else if(readValues.containsKey(value)) {
-                    readValues.put(value, false);
+                    inputValues.put(value, true);
+                } else if(inputValues.containsKey(value)) {
+                    inputValues.put(value, false);
                 }
                 value--;
             }
         } else {
-            readValues.forEach((key, m) -> {
-                readValues.put(key, false);
+            inputValues.forEach((key, m) -> {
+                inputValues.put(key, false);
             });
-        }
-    }
-
-    private void findMaxReadValue(){
-        readValues.forEach((key, m) -> {
-            if(key > maxReadValue){
-                maxReadValue = key;
-            }
-        });
-    }
-
-    public void stopModbus(){
-        try {
-            running = false;
-            modbusMaster.disconnect();
-        } catch (ModbusIOException e) {
-            e.printStackTrace();
         }
     }
 }

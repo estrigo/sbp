@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 @Log
@@ -404,7 +403,7 @@ public class ArmServiceImpl implements ArmService {
                     JsonNode camera = cameraIterator.next();
                     Camera c = cameraService.getCameraById(Long.parseLong(camera.get("id").textValue()));
                     c.setCameraTab(null);
-                    cameraService.saveCamera(c);
+                    cameraService.saveCamera(c, false);
                 }
             } else {
                 String tabIdString = tab.get("id").textValue();
@@ -430,7 +429,7 @@ public class ArmServiceImpl implements ArmService {
                         }
                         Camera c = cameraService.getCameraById(Long.parseLong(camera.get("id").textValue()));
                         c.setCameraTab(cameraTab);
-                        cameraService.saveCamera(c);
+                        cameraService.saveCamera(c, false);
                         cameraTabMap.put(Long.parseLong(tabIdString), cameraTab);
                     }
                 } else {

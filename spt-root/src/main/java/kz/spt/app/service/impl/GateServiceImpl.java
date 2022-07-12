@@ -39,6 +39,7 @@ public class GateServiceImpl implements GateService {
     @Override
     public void deleteGate(Gate gate) {
         gateRepository.delete(gate);
+        StatusCheckJob.emptyGlobalGateDtos();
     }
 
     @Override

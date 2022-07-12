@@ -1,5 +1,6 @@
 package kz.spt.app.model.dto;
 
+import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.thread.ModbusProtocolThread;
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Camera;
@@ -14,13 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Log
 public class GateStatusDto {
 
-    public static Map<String, ModbusProtocolThread> modbusMasterThreadMap = new ConcurrentHashMap<>();
+    private static Map<String, ModbusProtocolThread> modbusMasterThreadMap = new ConcurrentHashMap<>();
 
     public enum GateStatus {Open,Closed};
     public enum SensorStatus {
         Quit, //событий нет, пока тишина
         Triggerred, //машина начинает проезжать
-        WAIT, //ждем пока машина не подойдет
+        WAIT, //ждем пока машина не подьедет
         ON,//машина проезжает
         PASSED//машина проеахала
     };
@@ -60,7 +61,7 @@ public class GateStatusDto {
         sensor2 = loopStatus;
     }
 
-    public static GateStatusDto fromGate(Gate gate, List<Gate> allGates, Boolean disableOpen) throws InterruptedException {
+    public static GateStatusDto fromGate(Gate gate, List<Gate> allGates) {
         GateStatusDto gateStatusDto = new GateStatusDto();
         gateStatusDto.gateId = gate.getId();
         gateStatusDto.gateName = gate.getName();
@@ -69,21 +70,10 @@ public class GateStatusDto {
         gateStatusDto.notControlBarrier = gate.getNotControlBarrier();
 
         Barrier barrier = gate.getBarrier();
-        if (barrier != null) {
+        if (barrier != null && barrier.getIp() != null) {
             if (Barrier.SensorsType.AUTOMATIC.equals(barrier.getSensorsType()) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) && barrier.getIp() != null && barrier.getPassword() != null && barrier.getOpenOid() != null && barrier.getCloseOid() != null) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) && barrier.getIp() != null && barrier.getModbusOpenRegister()!=null)) {
                 gateStatusDto.barrier = BarrierStatusDto.fromBarrier(barrier);
-            }
-            if(!disableOpen && Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType()) && gateStatusDto.barrier != null && barrier.getIp()!= null && barrier.getIp().contains(".")){
-                if(!modbusMasterThreadMap.containsKey(barrier.getIp())){
-                    ModbusProtocolThread thread = new ModbusProtocolThread(gateStatusDto.barrier);
-                    thread.start();
-                    modbusMasterThreadMap.put(barrier.getIp(), thread);
-                    log.info("Adding barrier.getIp() " + barrier.getIp()  + " to modbusMasterThreadMap");
-
-                    thread.addModbusRegisters(gateStatusDto.barrier);
-                } else {
-                    modbusMasterThreadMap.get(barrier.getIp()).addModbusRegisters(gateStatusDto.barrier);
-                }
+                StatusCheckJob.barrierStatusDtoMap.put(barrier.getIp(), gateStatusDto.barrier);
             }
 
             if(Barrier.BarrierType.SNMP.equals(barrier.getBarrierType()) && !StringUtils.isEmpty(barrier.getLoopIp()) && !StringUtils.isEmpty(barrier.getLoopPassword()) && barrier.getLoopOid() != null){
@@ -108,6 +98,7 @@ public class GateStatusDto {
                 gateStatusDto.loop.modbusDeviceVersion = barrier.getModbusDeviceVersion();
                 gateStatusDto.loop.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
                 gateStatusDto.loop.type = barrier.getBarrierType();
+                StatusCheckJob.loopStatusDtoMap.put(barrier.getIp(), gateStatusDto.loop);
             } else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType()) && barrier.getLoopJetsonPin() != null) {
                 gateStatusDto.loop = new SensorStatusDto();
                 gateStatusDto.loop.barrierId = barrier.getId();
@@ -139,6 +130,7 @@ public class GateStatusDto {
                 gateStatusDto.photoElement.modbusDeviceVersion = barrier.getModbusDeviceVersion();
                 gateStatusDto.photoElement.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
                 gateStatusDto.photoElement.type = barrier.getBarrierType();
+                StatusCheckJob.pheStatusDtoMap.put(barrier.getIp(), gateStatusDto.photoElement);
             } else if(Barrier.BarrierType.JETSON.equals(barrier.getBarrierType()) && barrier.getPhotoElementJetsonPin() != null) {
                 gateStatusDto.photoElement = new SensorStatusDto();
                 gateStatusDto.photoElement.barrierId = barrier.getId();
@@ -214,5 +206,33 @@ public class GateStatusDto {
         }
 
         return gateStatusDto;
+    }
+
+    public static Boolean getModbusMasterOutputValue(String barrierIp, int register){
+        if(!modbusMasterThreadMap.containsKey(barrierIp)){
+            createNewThread(barrierIp);
+        }
+        return modbusMasterThreadMap.get(barrierIp).getOutputValue(register);
+    }
+
+    public static Boolean getModbusMasterInputValue(String barrierIp, int register){
+        if(!modbusMasterThreadMap.containsKey(barrierIp)){
+            createNewThread(barrierIp);
+        }
+        return modbusMasterThreadMap.get(barrierIp).getInputValue(register);
+    }
+
+    public static void setModbusMasterWriteValue(String barrierIp, int register, boolean value){
+        if(!modbusMasterThreadMap.containsKey(barrierIp)){
+            createNewThread(barrierIp);
+        }
+        modbusMasterThreadMap.get(barrierIp).setWriteValue(register, value);
+    }
+
+    private static void createNewThread(String barrierIp){
+        ModbusProtocolThread thread = new ModbusProtocolThread(StatusCheckJob.barrierStatusDtoMap.get(barrierIp));
+        thread.start();
+        modbusMasterThreadMap.put(barrierIp, thread);
+        log.info("Adding barrier: " + barrierIp  + " to modbusMasterThreadMap");
     }
 }

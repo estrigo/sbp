@@ -89,34 +89,8 @@ public class BarrierServiceImpl implements BarrierService {
             } else if (Barrier.BarrierType.MODBUS.equals(sensor.type)) {
                 int result = -1;
 
-                ModbusMaster m;
-                m = modbusMasterMap.get(sensor.barrierIp);
-
-                int slaveId = 1;
-
-                if (!m.isConnected()) {
-                    m.connect();
-                }
-
-                if (sensor.modbusDeviceVersion != null && "210-301".equals(sensor.modbusDeviceVersion)) {
-                    int offset = 51;
-                    int sensor_value = sensor.modbusRegister - 1;
-                    int quantity = 1;
-
-                    int[] values = m.readHoldingRegisters(slaveId, offset, quantity);
-                    for (int value : values) {
-                        result = Integer.toBinaryString(value).charAt(sensor_value) == '1' ? 1 : 0;
-                    }
-                } else {
-                    int offset = sensor.modbusRegister - 1;
-                    boolean[] changedValue = m.readCoils(slaveId, offset, 1);
-                    if (changedValue != null && changedValue.length > 0) {
-                        result = changedValue[0] ? 1 : 0;
-                    }
-                }
-                if (sensor.modbusDeviceVersion != null && "icpdas".equals(sensor.modbusDeviceVersion)) {
-                    m.disconnect();
-                }
+                Boolean value = GateStatusDto.getModbusMasterOutputValue(sensor.ip, sensor.modbusRegister-1);
+                result = value ? 1 : 0;
                 return result;
             } else if (Barrier.BarrierType.JETSON.equals(sensor.type)) {
                 var response = new RestTemplateBuilder().build().getForObject("http://" + sensor.ip + ":9001" + "/sensor_status?pin=" + sensor.oid, JetsonResponse.class);
@@ -320,176 +294,22 @@ public class BarrierServiceImpl implements BarrierService {
         return result;
     }
 
-    private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException, UnknownHostException {
-        Boolean result = true;
+    private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws RuntimeException {
+        Boolean result = false;
 
-        ModbusMaster m;
-        if (!modbusMasterMap.containsKey(barrier.ip) || modbusMasterMap.get(barrier.ip) == null) {
-            modbusMasterMap.put(barrier.ip, getConnectedInstance(barrier.ip));
+        int register = Command.Open.equals(command) ? barrier.modbusOpenRegister - 1 : barrier.modbusCloseRegister - 1;
+        GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, true);
+
+        long startMillis = System.currentTimeMillis();
+        while ((result == null || !result) && (System.currentTimeMillis() - startMillis < 5000)){
+            result = GateStatusDto.getModbusMasterInputValue(barrier.ip, register);
         }
-        m = modbusMasterMap.get(barrier.ip);
 
-        int slaveId = 1;
-        // since 1.2.8
-        if (!m.isConnected()) {
-            log.info("barrier.ip: " + barrier.ip + " !m.isConnected()");
-            try {
-                m.connect();
-            } catch (Exception e) {
-                log.info("retry connect error: " + e.getMessage());
-                modbusRetryConnect(m);
-            }
-        }
-        //Boolean isOpenValueChanged = false;
-
-        int offset = Command.Open.equals(command) ? barrier.modbusOpenRegister - 1 : barrier.modbusCloseRegister - 1;
-        if (barrier.modbusDeviceVersion != null && "210-301".equals(barrier.modbusDeviceVersion)) {
-            offset = 470;
-            int new_value = Command.Open.equals(command) ? (int) Math.pow(2, barrier.modbusOpenRegister - 1) : (int) Math.pow(2, barrier.modbusCloseRegister - 1);
-            int quantity = 1;
-
-            int[] new_values = new int[1];
-            new_values[0] = new_value;
-            m.writeMultipleRegisters(slaveId, offset, new_values);
-            // at next string we receive ten registers from a slave with id of 1 at offset of 0.
-            //int[] registerValues = m.readHoldingRegisters(slaveId, offset, quantity);
-            /*for (int value : registerValues) {
-                if (value == new_value) {
-                    isOpenValueChanged = true;
-                }
-            }
-            log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
-            if (!isOpenValueChanged) {
-                for (int i = 0; i < 3; i++) {
-                    m.writeMultipleRegisters(slaveId, offset, new_values);
-                    registerValues = m.readHoldingRegisters(slaveId, offset, quantity);
-                    for (int value : registerValues) {
-                        if (value == new_value) {
-                            isOpenValueChanged = true;
-                        }
-                    }
-                    if (isOpenValueChanged) {
-                        break;
-                    }
-                }
-                if (!isOpenValueChanged) {
-                    result = false;
-                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение true чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
-                }
-            } else*/ if(!barrier.dontSendZero) {
-                Thread.sleep(500);
-/*                registerValues = m.readHoldingRegisters(slaveId, offset, quantity);
-                Boolean valueKeepHolding = false;
-                for (int value : registerValues) {
-                    if (value == new_value) {
-                        valueKeepHolding = true;
-                    }
-                }
-                if (valueKeepHolding) {
-*/                    new_values[0] = 0; // turn off all holdings
-                    m.writeMultipleRegisters(slaveId, offset, new_values);
-/*                    registerValues = m.readHoldingRegisters(slaveId, offset, quantity);
-                    Boolean isReturnValueChanged = false;
-                    for (int value : registerValues) {
-                        isReturnValueChanged = value == 0;
-                    }
-                    if (!isReturnValueChanged) {
-                        for (int i = 0; i < 3; i++) {
-                            m.writeMultipleRegisters(slaveId, offset, new_values);
-                            registerValues = m.readHoldingRegisters(slaveId, offset, quantity);
-                            for (int value : registerValues) {
-                                isReturnValueChanged = value == 0;
-                            }
-                            if (isReturnValueChanged) {
-                                break;
-                            }
-                        }
-                    }*/
-//                }
-            }
+        log.info("modbus isOpenValueChanged: " + result);
+        if(result){
+            GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, false);
         } else {
-            boolean isOpenValueChanged = modbusRetryWrite(m, slaveId, offset, true);
-            log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
-            if(!isOpenValueChanged){
-                return isOpenValueChanged;
-            }
-/*            boolean[] changedValue;
-            try {
-                changedValue = m.readCoils(slaveId, offset, 1);
-            } catch (Exception e) {
-                changedValue = modbusRetryRead(m, slaveId, offset, 1);
-            }
-            if (changedValue != null && changedValue.length > 0 && changedValue[0]) {
-                isOpenValueChanged = true;
-            }
-            log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
-            if (!isOpenValueChanged) {
-                for (int i = 0; i < 3; i++) {
-                    try {
-                        m.writeSingleCoil(slaveId, offset, true);
-                    } catch (Exception e) {
-                        log.info("retry error: " + e.getMessage());
-                        modbusRetryWrite(m, slaveId, offset, true);
-                    }
-                    try {
-                        changedValue = m.readCoils(slaveId, offset, 1);
-                    } catch (Exception e) {
-                        changedValue = modbusRetryRead(m, slaveId, offset, 1);
-                    }
-                    if (changedValue != null && changedValue.length > 0 && changedValue[0]) {
-                        isOpenValueChanged = true;
-                        break;
-                    }
-                }
-                if (!isOpenValueChanged) {
-                    result = false;
-                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение true чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
-                }
-            } else*/ if(!barrier.dontSendZero) {
-                Thread.sleep(500);
-/*                boolean[] currentValue = null;
-                try {
-                    currentValue = m.readCoils(slaveId, offset, 1);
-                } catch (Exception e) {
-                    currentValue = modbusRetryRead(m, slaveId, offset, 1);
-                }
-                if (currentValue != null && currentValue.length > 0 && currentValue[0]) {
-*/              boolean isOpenReturnValueChanged = modbusRetryWrite(m, slaveId, offset, false);
-                log.info("modbus isOpenReturnValueChanged: " + isOpenReturnValueChanged);
-                if(!isOpenReturnValueChanged){
-                    return isOpenReturnValueChanged;
-                }
-/*                    try {
-                        currentValue = m.readCoils(slaveId, offset, 1);
-                    } catch (Exception e) {
-                        currentValue = modbusRetryRead(m, slaveId, offset, 1);
-                    }
-                    Boolean isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
-                    log.info("modbus isReturnValueChanged: " + isReturnValueChanged);
-                    if (!isReturnValueChanged) {
-                        for (int i = 0; i < 3; i++) {
-                            try {
-                                m.writeSingleCoil(slaveId, offset, false);
-                            } catch (Exception e) {
-                                log.info("retry error: " + e.getMessage());
-                                modbusRetryWrite(m, slaveId, offset, false);
-                            }
-                            try {
-                                currentValue = m.readCoils(slaveId, offset, 1);
-                            } catch (Exception e) {
-                                currentValue = modbusRetryRead(m, slaveId, offset, 1);
-                            }
-                            isReturnValueChanged = currentValue != null && currentValue.length > 0 && !currentValue[0];
-                            if (isReturnValueChanged) {
-                                break;
-                            }
-                        }
-                    }
-                }
-*/            }
-        }
-        if (barrier.modbusDeviceVersion != null && "icpdas".equals(barrier.modbusDeviceVersion)) {
-            m.disconnect();
+            GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, false);
         }
         return result;
     }
