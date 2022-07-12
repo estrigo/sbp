@@ -46,17 +46,17 @@ public class SnapshotSaver {
     @Value("${images.file.path}")
     String imagePath;
 
-   //@Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelay = 2000)
     public void runner() {
         ExecutorService executorService = Executors.newCachedThreadPool();
         List<Future<CameraStatusDto>> futures = new ArrayList<>();
         for (GateStatusDto gateStatusDto : StatusCheckJob.globalGateDtos) {
             CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
-            if(cameraStatusDto != null &&
+            if (cameraStatusDto != null &&
                     StringUtils.isNotNullOrEmpty(cameraStatusDto.login) &&
                     StringUtils.isNotNullOrEmpty(cameraStatusDto.password) &&
-                    StringUtils.isNotNullOrEmpty(cameraStatusDto.snapshotUrl)){
-                if(cameraStatusDto.snapshotEnabled!=null && !cameraStatusDto.snapshotEnabled) return;
+                    StringUtils.isNotNullOrEmpty(cameraStatusDto.snapshotUrl)) {
+                if (cameraStatusDto.snapshotEnabled != null && !cameraStatusDto.snapshotEnabled) return;
 
                 futures.add(executorService.submit(new Callable() {
                     @Override
@@ -67,11 +67,11 @@ public class SnapshotSaver {
                 }));
             }
             CameraStatusDto cameraStatusDto2 = gateStatusDto.frontCamera2;
-            if(cameraStatusDto2 != null &&
+            if (cameraStatusDto2 != null &&
                     StringUtils.isNotNullOrEmpty(cameraStatusDto2.login) &&
                     StringUtils.isNotNullOrEmpty(cameraStatusDto2.password) &&
-                    StringUtils.isNotNullOrEmpty(cameraStatusDto2.snapshotUrl)){
-                if(cameraStatusDto2.snapshotEnabled!=null && !cameraStatusDto2.snapshotEnabled) return;
+                    StringUtils.isNotNullOrEmpty(cameraStatusDto2.snapshotUrl)) {
+                if (cameraStatusDto2.snapshotEnabled != null && !cameraStatusDto2.snapshotEnabled) return;
 
                 futures.add(executorService.submit(new Callable() {
                     @Override
@@ -82,11 +82,11 @@ public class SnapshotSaver {
                 }));
             }
             CameraStatusDto backCameraStatusDto = gateStatusDto.backCamera;
-            if(backCameraStatusDto != null &&
+            if (backCameraStatusDto != null &&
                     StringUtils.isNotNullOrEmpty(backCameraStatusDto.login) &&
                     StringUtils.isNotNullOrEmpty(backCameraStatusDto.password) &&
-                    StringUtils.isNotNullOrEmpty(backCameraStatusDto.snapshotUrl)){
-                if(backCameraStatusDto.snapshotEnabled!=null && !backCameraStatusDto.snapshotEnabled) return;
+                    StringUtils.isNotNullOrEmpty(backCameraStatusDto.snapshotUrl)) {
+                if (backCameraStatusDto.snapshotEnabled != null && !backCameraStatusDto.snapshotEnabled) return;
 
                 futures.add(executorService.submit(new Callable() {
                     @Override
@@ -129,7 +129,7 @@ public class SnapshotSaver {
         address.append(cameraStatusDto.snapshotUrl);
         HttpEntity entity = new HttpEntity(headers);
         byte[] imageBytes = restTemplate.getForObject(address.toString(), byte[].class, entity);
-        Files.write(Paths.get(imagePath+"/"+ip.replace(".", "-") + ".jpeg"), imageBytes);
+        Files.write(Paths.get(imagePath + "/" + ip.replace(".", "-") + ".jpeg"), imageBytes);
         requestFactory.destroy();
     }
 
