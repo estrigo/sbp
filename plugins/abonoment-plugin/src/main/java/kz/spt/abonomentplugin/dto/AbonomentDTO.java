@@ -1,5 +1,6 @@
 package kz.spt.abonomentplugin.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import kz.spt.abonomentplugin.model.Abonement;
 import kz.spt.lib.utils.StaticValues;
 import lombok.Data;
@@ -23,6 +24,8 @@ public class AbonomentDTO {
     public String parking;
     public String type;
     public String created;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String customNumbers;
 
     public static AbonomentDTO convertToDto(Abonement abonement){
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
@@ -49,5 +52,25 @@ public class AbonomentDTO {
             dtoList.add(convertToDto(abonement));
         }
         return dtoList;
+    }
+
+    public static AbonomentDTO convertToDtoWithCustomNumbers(Abonement abonement){
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormat);
+
+        AbonomentDTO dto = new AbonomentDTO();
+        dto.id = abonement.getId();
+        dto.platenumber = abonement.getCar().getPlatenumber();
+        dto.begin = format.format(abonement.getBegin());
+        dto.end = format.format(abonement.getEnd());
+        dto.months = abonement.getMonths();
+        dto.parking = abonement.getParking().getName();
+        dto.price = abonement.getPrice();
+        dto.paid = abonement.getPaid();
+        dto.type = abonement.getType();
+        dto.customNumbers = abonement.getCustomNumbers();
+        if(abonement.getCreated() != null){
+            dto.created = format.format(abonement.getCreated());
+        }
+        return dto;
     }
 }

@@ -556,6 +556,6 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     @Override
     public List<AbonomentDTO> getAbonementsByPlateNumber(String plateNumber){
         List<Abonement> abonomentDTOS = abonomentRepository.findAllByPlatenumber(plateNumber);
-        return abonomentDTOS.stream().map(a->AbonomentDTO.convertToDto(a)).collect(Collectors.toList());
+        return abonomentDTOS.stream().map(a->AbonomentDTO.convertToDtoWithCustomNumbers(a)).collect(Collectors.toList());
     }
 }
