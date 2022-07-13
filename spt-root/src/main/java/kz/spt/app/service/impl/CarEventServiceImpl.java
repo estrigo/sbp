@@ -86,6 +86,9 @@ public class CarEventServiceImpl implements CarEventService {
     @Value("${notification.url}")
     String notificationUrl;
 
+    @Value("${notification.token}")
+    String magnumNotificationToken;
+
     @Value("${thirdPartyPayment.url}")
     String thirdPartyPaymentUrl;
 
@@ -1285,6 +1288,7 @@ public class CarEventServiceImpl implements CarEventService {
             barrierOutProcessingHashtable.remove(camera.getGate().getBarrier().getIp());
 //          send notification to third party
             log.info("notification: " + notification);
+            log.info("magnumNotificationToken: " + magnumNotificationToken);
             if (notification) {
                 sendNotification(carState, eventDto.event_date_time, rateResult);
             }
@@ -1321,9 +1325,7 @@ public class CarEventServiceImpl implements CarEventService {
         params.put("dt_finish", dt_finish);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + "ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmxiV0Zw" +
-                "YkNJNkltMWhibUZuWlhKQWJXRm5iblZ0TG10NkluMC5LSE4wWkdsdUtUMGdZekpqTnpNM05qZzJZall4Tm1NMk9XWXdOMkl4WXpkbU1" +
-                "6WTJNR0UyTlRnNU1UTXlORGhpWVRKaVpqazJORFprClkyVmpNamN6TVdVek9HTmpOR1JsTndv");
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + magnumNotificationToken);
         HttpEntity request = new HttpEntity<>(params, headers);
 
         try {
