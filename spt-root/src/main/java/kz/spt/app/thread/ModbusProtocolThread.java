@@ -11,6 +11,7 @@ import com.intelligt.modbus.jlibmodbus.slave.ModbusSlaveTCP;
 import com.intelligt.modbus.jlibmodbus.tcp.TcpParameters;
 import com.intelligt.modbus.jlibmodbus.utils.ModbusSlaveTcpObserver;
 import com.intelligt.modbus.jlibmodbus.utils.TcpClientInfo;
+import kz.spt.app.job.CarSimulateJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.service.impl.BarrierServiceImpl;
 import lombok.extern.java.Log;
@@ -76,6 +77,7 @@ public class ModbusProtocolThread extends Thread  {
 
                 try {
                     outputValues = modbusMaster.readDiscreteInputs(slaveId, offset, 8);
+                             //getTestValues(barrierStatusDto); Only for testing
                     Thread.sleep(100);
                 } catch (ModbusProtocolException | ModbusNumberException | ModbusIOException | InterruptedException e) {
                     log.info(barrierStatusDto.ip + " read Registers error. message: " + e.getMessage());
@@ -122,5 +124,24 @@ public class ModbusProtocolThread extends Thread  {
                 inputValues.put(key, false);
             });
         }
+    }
+
+    private boolean[] getTestValues(BarrierStatusDto barrierStatusDto){
+
+        boolean loopValue = CarSimulateJob.magneticLoopMap.containsKey(barrierStatusDto.id)  ? CarSimulateJob.magneticLoopMap.get(barrierStatusDto.id) : false;
+        boolean pheValue = CarSimulateJob.photoElementLoopMap.containsKey(barrierStatusDto.id) ? CarSimulateJob.photoElementLoopMap.get(barrierStatusDto.id) : false;
+
+        boolean[] values = new boolean[8];
+        for (int i = 0; i<values.length; i++){
+            if(barrierStatusDto.loopModbusRegister-1 == i){
+                values[i] = loopValue;
+            } else if(barrierStatusDto.photoElementModbusRegister-1 == i){
+                values[i] = pheValue;
+            } else {
+                values[i] = false;
+            }
+        }
+
+        return values;
     }
 }

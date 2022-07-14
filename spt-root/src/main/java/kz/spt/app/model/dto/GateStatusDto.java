@@ -73,7 +73,9 @@ public class GateStatusDto {
         if (barrier != null && barrier.getIp() != null) {
             if (Barrier.SensorsType.AUTOMATIC.equals(barrier.getSensorsType()) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) && barrier.getIp() != null && barrier.getPassword() != null && barrier.getOpenOid() != null && barrier.getCloseOid() != null) || (Barrier.SensorsType.MANUAL.equals(barrier.getSensorsType()) && barrier.getIp() != null && barrier.getModbusOpenRegister()!=null)) {
                 gateStatusDto.barrier = BarrierStatusDto.fromBarrier(barrier);
-                StatusCheckJob.barrierStatusDtoMap.put(barrier.getIp(), gateStatusDto.barrier);
+                if(!StatusCheckJob.barrierStatusDtoMap.containsKey(barrier.getIp())){
+                    StatusCheckJob.barrierStatusDtoMap.put(barrier.getIp(), gateStatusDto.barrier);
+                }
             }
 
             if(Barrier.BarrierType.SNMP.equals(barrier.getBarrierType()) && !StringUtils.isEmpty(barrier.getLoopIp()) && !StringUtils.isEmpty(barrier.getLoopPassword()) && barrier.getLoopOid() != null){
@@ -93,7 +95,7 @@ public class GateStatusDto {
                 gateStatusDto.loop.barrierId = barrier.getId();
                 gateStatusDto.loop.barrierIp = barrier.getIp();
                 gateStatusDto.loop.sensorName = "loop";
-                gateStatusDto.loop.ip = barrier.getLoopIp();
+                gateStatusDto.loop.ip = barrier.getIp();
                 gateStatusDto.loop.modbusRegister = barrier.getLoopModbusRegister();
                 gateStatusDto.loop.modbusDeviceVersion = barrier.getModbusDeviceVersion();
                 gateStatusDto.loop.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;
@@ -126,6 +128,7 @@ public class GateStatusDto {
                 gateStatusDto.photoElement.barrierId = barrier.getId();
                 gateStatusDto.photoElement.barrierIp = barrier.getIp();
                 gateStatusDto.photoElement.sensorName = "photoElement";
+                gateStatusDto.photoElement.ip = barrier.getIp();
                 gateStatusDto.photoElement.modbusRegister = barrier.getPhotoElementModbusRegister();
                 gateStatusDto.photoElement.modbusDeviceVersion = barrier.getModbusDeviceVersion();
                 gateStatusDto.photoElement.gateNotControlBarrier = gate.getNotControlBarrier() != null ? gate.getNotControlBarrier() : false;

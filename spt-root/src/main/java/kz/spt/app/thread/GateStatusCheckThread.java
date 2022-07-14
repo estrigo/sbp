@@ -53,7 +53,7 @@ public class GateStatusCheckThread extends Thread {
                 if(GateStatusDto.SensorStatus.Quit.equals(gateStatusDto.sensor1) && GateStatusDto.SensorStatus.Quit.equals(gateStatusDto.sensor2)
                         && GateStatusDto.DirectionStatus.QUIT.equals(gateStatusDto.directionStatus) && GateStatusDto.SensorStatus.Quit.equals(gateStatusDto.photoElementStatus)
                         && Gate.GateType.REVERSE.equals(gateStatusDto.gateType)){
-                    if(getSensorStatus(loop) == SENSOR_ON){
+                    if(getSensorStatus(loop) == SENSOR_ON && Gate.GateType.REVERSE.equals(gateStatusDto.gateType)){
                         boolean result = openGateForCarOut(gateStatusDto.backCamera, gateStatusDto, gateStatusDto.isSimpleWhitelist);
                         if(result){
                             gateStatusDto.lastTriggeredTime = System.currentTimeMillis();
