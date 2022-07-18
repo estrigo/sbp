@@ -433,7 +433,11 @@ public class PaymentServiceImpl implements PaymentService {
                         carState.setAmount(carState.getAmount() != null ? carState.getAmount().add(commandDto.getSum()) : commandDto.getSum()); // if he paid early we should add this amount
                         carState.setPaymentId(paymentId);
                         carState.setPaymentJson(result.get("paymentArray").toString());
-                        carState.setCashlessPayment(result.get("cashlessPayment").booleanValue());
+
+                        if (commandDto.getIkkmOnline())
+                            carState.setCashlessPayment(true);
+                        else
+                            carState.setCashlessPayment(result.get("cashlessPayment").booleanValue());
                         carStateService.save(carState);
 
                         BillingPaymentSuccessDto dto = new BillingPaymentSuccessDto();

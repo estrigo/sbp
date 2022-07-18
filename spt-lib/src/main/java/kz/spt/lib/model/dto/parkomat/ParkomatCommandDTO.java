@@ -34,6 +34,7 @@ public class ParkomatCommandDTO {
     //Amount of change payed by cash
     BigDecimal change;
 
+    Boolean ikkmOnline = false;
 
     /**
      * Platenumber in upper case
