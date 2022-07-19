@@ -7,9 +7,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
+import java.util.List;
+
 @Repository
 public interface PaymentCheckLogRepository extends JpaRepository<PaymentCheckLog, Long> {
 
-    @Query("from PaymentCheckLog pcl WHERE pcl.carStateId is not null and pcl.paymentCheckType = 'STANDARD' and pcl.plateNumber = ?1 order by pcl.id desc")
-    Page<PaymentCheckLog> findLastSuccessCheck(String plateNumber, Pageable page);
+    @Query("from PaymentCheckLog pcl WHERE pcl.carStateId is not null and pcl.paymentCheckType = 'STANDARD' and pcl.plateNumber = ?1 and pcl.created >= ?2 order by pcl.id")
+    List<PaymentCheckLog> findLastSuccessCheck(String plateNumber, Date date);
 }

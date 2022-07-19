@@ -8,6 +8,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
 @Service
 public class PaymentCheckLogServiceImpl implements PaymentCheckLogService {
 
@@ -24,10 +28,13 @@ public class PaymentCheckLogServiceImpl implements PaymentCheckLogService {
 
     @Override
     public PaymentCheckLog findLastSuccessCheck(String plateNumber) {
-        Pageable first = PageRequest.of(0, 1);
-        Page<PaymentCheckLog> page = paymentCheckLogRepository.findLastSuccessCheck(plateNumber, first);
-        if(page != null && page.toList().size() > 0){
-            return page.toList().get(0);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.MINUTE, -10);
+        List<PaymentCheckLog> list = paymentCheckLogRepository.findLastSuccessCheck(plateNumber, calendar.getTime());
+        if(list != null && list.size() > 0){
+            return list.get(0);
         }
         return null;
     }
