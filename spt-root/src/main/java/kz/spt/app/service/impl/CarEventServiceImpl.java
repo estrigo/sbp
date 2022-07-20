@@ -46,8 +46,8 @@ import static kz.spt.lib.service.EventLogService.ArmEventType;
 public class CarEventServiceImpl implements CarEventService {
 
     private static Hashtable<String, Long> cameraTimeoutHashtable = new Hashtable<>();
-    private static Hashtable<String, Long> barrierInProcessingHashtable = new Hashtable<>();
-    private static Hashtable<String, Long> barrierOutProcessingHashtable = new Hashtable<>();
+    private static Hashtable<Long, Long> barrierInProcessingHashtable = new Hashtable<>();
+    private static Hashtable<Long, Long> barrierOutProcessingHashtable = new Hashtable<>();
     private final CarsService carsService;
     private final CameraService cameraService;
     private final GateService gateService;
@@ -681,10 +681,10 @@ public class CarEventServiceImpl implements CarEventService {
         log.info("hasAccess: " + hasAccess);
 
         if (hasAccess) {
-            if (barrierInProcessingHashtable.containsKey(camera.getGate().getBarrier().getIp())) {
+            if (barrierInProcessingHashtable.containsKey(camera.getGate().getBarrier().getId())) {
                 return;
             }
-            barrierInProcessingHashtable.put(camera.getGate().getBarrier().getIp(), System.currentTimeMillis());
+            barrierInProcessingHashtable.put(camera.getGate().getBarrier().getId(), System.currentTimeMillis());
             boolean openResult = false;
             try {
                 openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
@@ -718,7 +718,7 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn);
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
             }
-            barrierInProcessingHashtable.remove(camera.getGate().getBarrier().getIp());
+            barrierInProcessingHashtable.remove(camera.getGate().getBarrier().getId());
         }
     }
 
@@ -1237,10 +1237,10 @@ public class CarEventServiceImpl implements CarEventService {
             }
         }
         if (hasAccess) {
-            if (barrierOutProcessingHashtable.containsKey(camera.getGate().getBarrier().getIp())) {
+            if (barrierOutProcessingHashtable.containsKey(camera.getGate().getBarrier().getId())) {
                 return;
             }
-            barrierOutProcessingHashtable.put(camera.getGate().getBarrier().getIp(), System.currentTimeMillis());
+            barrierOutProcessingHashtable.put(camera.getGate().getBarrier().getId(), System.currentTimeMillis());
             boolean openResult = false;
 
             try {
@@ -1284,7 +1284,7 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn);
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
             }
-            barrierOutProcessingHashtable.remove(camera.getGate().getBarrier().getIp());
+            barrierOutProcessingHashtable.remove(camera.getGate().getBarrier().getId());
 //          send notification to third party
             log.info("notification: " + notification);
             if (notification) {
