@@ -3,10 +3,12 @@ package kz.spt.bookingplugin.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.bookingplugin.exceptions.BookingValidException;
 import kz.spt.bookingplugin.model.BookingLog;
 import kz.spt.bookingplugin.repository.BookingRepository;
 import kz.spt.bookingplugin.service.BookingService;
 import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -24,7 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 
-@Log
+@Slf4j
 @Service
 public class BookingServiceImpl implements BookingService {
 
@@ -44,59 +46,60 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Boolean checkBookingValid(String plateNumber, String region, String position) throws IOException, URISyntaxException {
+    public Boolean checkBookingValid(String plateNumber, String region, String position) throws BookingValidException {
         boolean valid = false;
-        if (bookingHalaparkCheck) {
-            String desiredFormat = convertToHalaparkRequestFormat(plateNumber, region);
-            log.info("halapark checking platenumer: " + plateNumber + " by desired format: " + desiredFormat);
+        try {
+            if (bookingHalaparkCheck) {
+                String desiredFormat = convertToHalaparkRequestFormat(plateNumber, region);
+                log.info("halapark checking platenumer: " + plateNumber + " by desired format: " + desiredFormat);
 
-            CloseableHttpClient halaparkHttpClient = HttpClients.custom().setConnectionTimeToLive(5, TimeUnit.SECONDS).build();
+                CloseableHttpClient halaparkHttpClient = HttpClients.custom().setConnectionTimeToLive(5, TimeUnit.SECONDS).build();
 
-            getToken();
+                getToken();
 
-            log.info("halapark token retrieve finished: " + plateNumber);
+                log.info("halapark token retrieve finished: " + plateNumber);
 
-            ObjectNode halaparkPostNode = objectMapper.createObjectNode();
-            halaparkPostNode.put("medium", "Plate Number"); //medium : Plate Number (As default for Parquor)
-            halaparkPostNode.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));
-            halaparkPostNode.put("lane_id", "1");
-            halaparkPostNode.put("site_id", "2010"); // Reference id for building its unique and for concord its 2010
-            halaparkPostNode.put("identifier", desiredFormat); //  Plate Number (Emirate Code - Plate Code - Plate No)
-            halaparkPostNode.put("position", position); // position  = 1 (Entry ), position  = 2 (Exit )
+                ObjectNode halaparkPostNode = objectMapper.createObjectNode();
+                halaparkPostNode.put("medium", "Plate Number"); //medium : Plate Number (As default for Parquor)
+                halaparkPostNode.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));
+                halaparkPostNode.put("lane_id", "1");
+                halaparkPostNode.put("site_id", "2010"); // Reference id for building its unique and for concord its 2010
+                halaparkPostNode.put("identifier", desiredFormat); //  Plate Number (Emirate Code - Plate Code - Plate No)
+                halaparkPostNode.put("position", position); // position  = 1 (Entry ), position  = 2 (Exit )
 
-            //{"identifier":"1-22-15788","site_id":"2010","lane_id":"1","medium":"Plate Number","timestamp":"1641798345"}
+                //{"identifier":"1-22-15788","site_id":"2010","lane_id":"1","medium":"Plate Number","timestamp":"1641798345"}
 
-            StringEntity halaparkPostData = new StringEntity(halaparkPostNode.toString(), ContentType.APPLICATION_JSON);
+                StringEntity halaparkPostData = new StringEntity(halaparkPostNode.toString(), ContentType.APPLICATION_JSON);
 
-            HttpPost halaparkPost = new HttpPost(new URI(halaparkPostUrl));
-            halaparkPost.setHeader("Authtoken", "Bearer " + halaparkToken);
-            halaparkPost.addHeader("Content-Type", "application/json;charset=UTF-8");
-            halaparkPost.setEntity(halaparkPostData);
+                HttpPost halaparkPost = new HttpPost(new URI(halaparkPostUrl));
+                halaparkPost.setHeader("Authtoken", "Bearer " + halaparkToken);
+                halaparkPost.addHeader("Content-Type", "application/json;charset=UTF-8");
+                halaparkPost.setEntity(halaparkPostData);
 
-            HttpResponse contentHalaparkPostResponse = halaparkHttpClient.execute(halaparkPost);
+                HttpResponse contentHalaparkPostResponse = halaparkHttpClient.execute(halaparkPost);
 
-            HttpEntity entity = contentHalaparkPostResponse.getEntity();
-            String halaparkPostResponseBodyString = EntityUtils.toString(entity);
+                HttpEntity entity = contentHalaparkPostResponse.getEntity();
+                String halaparkPostResponseBodyString = EntityUtils.toString(entity);
 
-            log.info("halapark main request retrieve finished: " + plateNumber);
-            log.info(plateNumber + " : " + halaparkPostResponseBodyString);
+                log.info("halapark main request retrieve finished: " + plateNumber);
+                log.info(plateNumber + " : " + halaparkPostResponseBodyString);
 
-            EntityUtils.consume(contentHalaparkPostResponse.getEntity());
+                EntityUtils.consume(contentHalaparkPostResponse.getEntity());
 
-            BookingLog bookingLog = BookingLog.builder().build();
-            bookingLog.setRequest(halaparkPostNode.toString());
-            bookingLog.setResonse(halaparkPostResponseBodyString);
-            bookingLog.setPlatenumber(plateNumber);
-            bookingLog.setHasBooking(false);
+                BookingLog bookingLog = BookingLog.builder().build();
+                bookingLog.setRequest(halaparkPostNode.toString());
+                bookingLog.setResonse(halaparkPostResponseBodyString);
+                bookingLog.setPlatenumber(plateNumber);
+                bookingLog.setHasBooking(false);
 
-            JsonNode halaparkResponseNode = objectMapper.readTree(halaparkPostResponseBodyString);
-            //{"response":{"status":false,"message":"Token has been expired"}}
-            //{"response":{"status":true,"message":"Valid Booking","result":[{"identifier":"3-S-12345"},{"identifier":"3-S-12345"}]}}
-            if (halaparkResponseNode.has("response") && halaparkResponseNode.get("response") != null) {
-                JsonNode responseData = halaparkResponseNode.get("response");
-                if (responseData.has("status") && responseData.get("status").booleanValue()) {
-                    bookingLog.setHasBooking(true);
-                    valid = true;
+                JsonNode halaparkResponseNode = objectMapper.readTree(halaparkPostResponseBodyString);
+                //{"response":{"status":false,"message":"Token has been expired"}}
+                //{"response":{"status":true,"message":"Valid Booking","result":[{"identifier":"3-S-12345"},{"identifier":"3-S-12345"}]}}
+                if (halaparkResponseNode.has("response") && halaparkResponseNode.get("response") != null) {
+                    JsonNode responseData = halaparkResponseNode.get("response");
+                    if (responseData.has("status") && responseData.get("status").booleanValue()) {
+                        bookingLog.setHasBooking(true);
+                        valid = true;
 
                     /*String parqourCheckFormat = parqourCheckFormat(plateNumber);
                     if (responseData.has("result")) {
@@ -112,12 +115,15 @@ public class BookingServiceImpl implements BookingService {
                             }
                         }
                     }*/
+                    }
                 }
+                halaparkHttpClient.close();
+                bookingRepository.save(bookingLog);
             }
-            halaparkHttpClient.close();
-            bookingRepository.save(bookingLog);
+            return valid;
+        } catch (Exception e) {
+            throw new BookingValidException(e.getMessage());
         }
-        return valid;
     }
 
     private void getToken() throws IOException {
