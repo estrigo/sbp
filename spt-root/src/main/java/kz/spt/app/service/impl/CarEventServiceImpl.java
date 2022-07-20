@@ -1287,7 +1287,6 @@ public class CarEventServiceImpl implements CarEventService {
             barrierOutProcessingHashtable.remove(camera.getGate().getBarrier().getIp());
 //          send notification to third party
             log.info("notification: " + notification);
-            log.info("magnumNotificationToken: " + magnumNotificationToken);
             if (notification) {
                 sendNotification(carState, eventDto.event_date_time, rateResult);
             }
