@@ -7,16 +7,17 @@ import kz.spt.bookingplugin.BookingPlugin;
 import kz.spt.bookingplugin.service.BookingService;
 import kz.spt.lib.extension.PluginRegister;
 import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.pf4j.Extension;
 
-@Log
+@Slf4j
 @Extension
 public class CommandExecutor implements PluginRegister {
 
     private BookingService bookingService;
 
     @Override
-    public JsonNode execute(JsonNode command) throws Exception {
+    public JsonNode execute(JsonNode command) {
 
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode node = objectMapper.createObjectNode();
@@ -27,7 +28,12 @@ public class CommandExecutor implements PluginRegister {
                 if (command.has("platenumber") && command.get("platenumber").isTextual()) {
                     String position = command.has("position") ? command.get("position").textValue() : "1";
                     String region = command.has("region") ? command.get("region").textValue() : "";
-                    Boolean result = getBookingService().checkBookingValid(command.get("platenumber").textValue(), region, position);
+                    Boolean result = false;
+                    try {
+                        result = getBookingService().checkBookingValid(command.get("platenumber").textValue(), region, position);
+                    } catch (Exception e) {
+                        log.error("<< checkBookingValid threw error : {} ", e.getMessage());
+                    }
                     node.put("bookingResult", result);
                 }
             }
