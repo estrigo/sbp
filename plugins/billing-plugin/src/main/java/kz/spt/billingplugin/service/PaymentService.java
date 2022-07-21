@@ -6,8 +6,7 @@ import kz.spt.billingplugin.model.Payment;
 import kz.spt.billingplugin.model.PaymentProvider;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
-import kz.spt.lib.model.EventLog;
-import kz.spt.lib.model.dto.EventFilterDto;
+import kz.spt.lib.model.PaymentCheckLog;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -30,4 +29,6 @@ public interface PaymentService {
     List<Payment> findByTransactionAndProvider(String transaction, PaymentProvider paymentProvider);
 
     List<Payment> findByTransaction(String transaction);
+
+    String toLog(PaymentCheckLog log);
 }

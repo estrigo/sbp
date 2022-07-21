@@ -20,7 +20,7 @@ import java.util.Date;
 @Audited
 public class PaymentCheckLog {
 
-    public PaymentCheckLog(String plateNumber, String message, BigDecimal summ, Long carStateId, PaymentCheckType paymentCheckType, BigDecimal currentBalance){
+    public PaymentCheckLog(String plateNumber, String message, BigDecimal summ, Long carStateId, PaymentCheckType paymentCheckType, BigDecimal currentBalance) {
         this.plateNumber = plateNumber;
         this.message = message;
         this.summ = summ;
@@ -29,7 +29,22 @@ public class PaymentCheckLog {
         this.currentBalance = currentBalance;
     }
 
-    public enum PaymentCheckType{
+    public PaymentCheckLog(String plateNumber, String message, BigDecimal summ, Long carStateId,
+                           PaymentCheckType paymentCheckType, BigDecimal currentBalance,
+                           String transaction, String providerName, Long providerId) {
+        this.plateNumber = plateNumber;
+        this.message = message;
+        this.summ = summ;
+        this.carStateId = carStateId;
+        this.paymentCheckType = paymentCheckType;
+        this.currentBalance = currentBalance;
+        this.transaction = transaction;
+        this.providerName = providerName;
+        this.providerId = providerId;
+    }
+
+
+    public enum PaymentCheckType {
         PREPAID,
         ABONEMENT,
         DEBT,
@@ -59,4 +74,13 @@ public class PaymentCheckLog {
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_check_type")
     private PaymentCheckType paymentCheckType;
+
+    @Column(name = "tnx_id")
+    private String transaction;
+
+    @Column(name = "provider_name")
+    private String providerName;
+
+    @Column(name = "provider_id")
+    private Long providerId;
 }

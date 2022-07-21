@@ -3,10 +3,7 @@ package kz.spt.billingplugin.service.impl;
 import kz.spt.billingplugin.BillingPlugin;
 import kz.spt.billingplugin.repository.PaymentProviderRepository;
 import kz.spt.billingplugin.service.RootServicesGetterService;
-import kz.spt.lib.service.CarStateService;
-import kz.spt.lib.service.CarsService;
-import kz.spt.lib.service.CustomerService;
-import kz.spt.lib.service.ParkingService;
+import kz.spt.lib.service.*;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,6 +13,9 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     private CustomerService customerService;
     private CarStateService carStateService;
     private PaymentProviderRepository paymentProviderRepository;
+
+    private PaymentCheckLogService paymentCheckLogService;
+
 
     @Override
     public ParkingService getParkingService() {
@@ -48,5 +48,14 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
                     .getBean("paymentProviderRepository");
         }
         return paymentProviderRepository;
+    }
+
+    @Override
+    public PaymentCheckLogService getPaymentCheckLogService() {
+        if (this.paymentCheckLogService == null) {
+            paymentCheckLogService = (PaymentCheckLogService)
+                    BillingPlugin.INSTANCE.getMainApplicationContext().getBean("paymentCheckLogServiceImpl");
+        }
+        return paymentCheckLogService;
     }
 }

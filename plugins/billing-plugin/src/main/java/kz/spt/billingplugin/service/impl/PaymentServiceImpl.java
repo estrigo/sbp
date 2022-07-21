@@ -8,6 +8,7 @@ import kz.spt.billingplugin.model.PaymentSpecification;
 import kz.spt.billingplugin.repository.PaymentRepository;
 import kz.spt.billingplugin.service.PaymentService;
 import kz.spt.lib.bootstrap.datatable.*;
+import kz.spt.lib.model.PaymentCheckLog;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -15,7 +16,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -204,5 +207,23 @@ public class PaymentServiceImpl implements PaymentService {
         page.setDraw(pagingRequest.getDraw());
 
         return page;
+    }
+
+    public String toLog(PaymentCheckLog log) {
+        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+        return "created: " + checkField(format.format(log.getCreated())) +
+                ", plateNumber: " +  checkField(log.getPlateNumber() ) +
+                ", message: " +  checkField(log.getMessage()) +
+                ", summ: " +  checkField(log.getSumm()) +
+                ", currentBalance: " +  checkField(log.getCurrentBalance()) +
+                ", carStateId: " +  checkField(log.getCarStateId()) +
+                ", paymentCheckType: " +  checkField(log.getPaymentCheckType()) +
+                ", transaction: " +  checkField(log.getTransaction()) +
+                ", providerName: " +  checkField(log.getProviderName());
+    }
+
+
+    private <T> Object checkField(T s) {
+        return ObjectUtils.isEmpty(s) ? "" : s;
     }
 }

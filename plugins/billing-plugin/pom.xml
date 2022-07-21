@@ -38,6 +38,12 @@
             <artifactId>spt-lib</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>kz.spt</groupId>
+            <artifactId>spt-root</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

@@ -38,4 +38,9 @@ public class PaymentCheckLogServiceImpl implements PaymentCheckLogService {
         }
         return null;
     }
+
+    @Override
+    public List<PaymentCheckLog> finPaymentCheckLogByProviderId(Long providerId) {
+        return paymentCheckLogRepository.findPaymentCheckLogByProviderId(providerId);
+    }
 }

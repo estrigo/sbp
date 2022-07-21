@@ -5,6 +5,7 @@ import kz.spt.billingplugin.repository.PaymentProviderRepository;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.CustomerService;
 import kz.spt.lib.service.ParkingService;
+import kz.spt.lib.service.PaymentCheckLogService;
 
 public interface RootServicesGetterService {
 
@@ -12,4 +13,5 @@ public interface RootServicesGetterService {
     CustomerService getCustomerService();
     CarStateService getCarStateService();
     PaymentProviderRepository getPaymentProviderRepository();
+    PaymentCheckLogService getPaymentCheckLogService();
 }

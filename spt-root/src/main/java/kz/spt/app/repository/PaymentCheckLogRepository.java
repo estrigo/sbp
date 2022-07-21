@@ -15,4 +15,6 @@ public interface PaymentCheckLogRepository extends JpaRepository<PaymentCheckLog
 
     @Query("from PaymentCheckLog pcl WHERE pcl.carStateId is not null and pcl.paymentCheckType = 'STANDARD' and pcl.plateNumber = ?1 and pcl.created >= ?2 order by pcl.id")
     List<PaymentCheckLog> findLastSuccessCheck(String plateNumber, Date date);
+
+    List<PaymentCheckLog> findPaymentCheckLogByProviderId(Long providerId);
 }

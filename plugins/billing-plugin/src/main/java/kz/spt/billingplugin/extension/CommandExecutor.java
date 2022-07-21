@@ -231,6 +231,10 @@ public class CommandExecutor implements PluginRegister {
                 node.set("payments", payments);
             } else if ("deleteAllDebts".equals(commandName)) {
                 getBalanceService().deleteAllDebts();
+            } else if ("getPaymentProvider".equals(commandName)) {
+                PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue());
+                node.put("providerName", provider.getName());
+                node.put("providerId", provider.getId());
             } else {
                 throw new RuntimeException("Unknown command for billing operation");
             }
