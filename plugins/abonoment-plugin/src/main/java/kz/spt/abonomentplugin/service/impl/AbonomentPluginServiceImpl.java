@@ -411,9 +411,12 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
 
         List<Abonement> expiredAbonements = abonomentRepository.findExpiresInFewDays(plateNumber, parkingId, expiredCheckDate, currentDate);
         if(expiredAbonements.size() > 0){
+            List<Abonement> currentValidAbonements = abonomentRepository.findValidByPlatenumber(plateNumber, currentDate);
+            if(currentValidAbonements.size() > 0){
+                return "unknown";
+            }
             return "expired";
         }
-
         return "unknown";
     }
 
