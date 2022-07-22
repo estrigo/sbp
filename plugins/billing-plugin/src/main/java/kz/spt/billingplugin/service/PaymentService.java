@@ -31,4 +31,6 @@ public interface PaymentService {
     List<Payment> findByTransaction(String transaction);
 
     String toLog(PaymentCheckLog log);
+
+    void cancelPaymentByTransactionId(String transaction, String reason) throws Exception;
 }

@@ -73,7 +73,9 @@ public class Payment {
 
     private boolean ikkm;
 
+    @Column(columnDefinition = "bit default 0", nullable = false)
+    private boolean canceled;
 
-
+    private String cancelReason;
     
 }

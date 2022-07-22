@@ -25,7 +25,11 @@ import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Log
@@ -65,10 +69,10 @@ public class PaymentServiceImpl implements PaymentService {
     public Object billingInteractions(CommandDto commandDto) throws Exception {
         if (commandDto.account != null) {
             commandDto.account = commandDto.account.toUpperCase();
-            commandDto.account = commandDto.account.replaceAll("\\s","");
+            commandDto.account = commandDto.account.replaceAll("\\s", "");
 
             if ("check".equals(commandDto.command)) {
-                if (commandDto.service_id != null && commandDto.service_id==2) {
+                if (commandDto.service_id != null && commandDto.service_id == 2) {
                     Parking parking = parkingService.findByType(Parking.ParkingType.PREPAID);
                     if (parking != null) {
                         BillingInfoSuccessDto successDto = fillPrepaid(commandDto, parking);
@@ -90,7 +94,7 @@ public class PaymentServiceImpl implements PaymentService {
                 } else {
                     CarState carState = carStateService.getLastNotLeft(commandDto.account);
                     JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
-                    if(abonomentResultNode != null && abonomentResultNode.has("price")){
+                    if (abonomentResultNode != null && abonomentResultNode.has("price")) {
                         return fillAbonomentDetails(abonomentResultNode, commandDto);
                     }
                     if (carState == null) {
@@ -118,12 +122,12 @@ public class PaymentServiceImpl implements PaymentService {
                         carState.setCashlessPayment(true);
 
                         JsonNode whiteLists = whitelistRootService.getValidWhiteListsInPeriod(carState.getParking().getId(), commandDto.account, carState.getInTimestamp(), new Date(), format);
-                        if(whiteLists != null && whiteLists.isArray() && whiteLists.size() > 0){
+                        if (whiteLists != null && whiteLists.isArray() && whiteLists.size() > 0) {
                             return checkWhiteListExtraPayment(commandDto, carState, format, whiteLists, dto);
                         }
 
                         JsonNode abonements = abonomentService.getAbonomentsDetails(commandDto.account, carState, format);
-                        if(abonements != null && abonements.isArray() && abonements.size() > 0){
+                        if (abonements != null && abonements.isArray() && abonements.size() > 0) {
                             return checkAbonomentExtraPayment(commandDto, carState, format, abonements, dto);
                         }
 
@@ -162,7 +166,7 @@ public class PaymentServiceImpl implements PaymentService {
                 }
                 CarState carState = carStateService.getLastNotLeft(commandDto.account);
                 if (carState == null) {
-                    if (commandDto.service_id != null && commandDto.service_id==2) {
+                    if (commandDto.service_id != null && commandDto.service_id == 2) {
                         Object payment = savePayment(commandDto, null, Parking.ParkingType.PREPAID, false);
                         if (BillingInfoErrorDto.class.equals(payment.getClass())) {
                             return payment;
@@ -175,11 +179,11 @@ public class PaymentServiceImpl implements PaymentService {
 //                    } else if (commandDto.service_id!=null && commandDto.service_id==3) {
                     } else {
                         JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
-                        if(abonomentResultNode != null && abonomentResultNode.has("price")){
+                        if (abonomentResultNode != null && abonomentResultNode.has("price")) {
                             return payAbonoment(commandDto, carState, abonomentResultNode);
                         }
                         CarState lastDebtCarState = carStateService.getLastCarState(commandDto.account); // Оплата долга
-                        if(lastDebtCarState != null){
+                        if (lastDebtCarState != null) {
                             Object payment = savePayment(commandDto, lastDebtCarState, null, false);
                             if (BillingInfoErrorDto.class.equals(payment.getClass())) {
                                 return payment;
@@ -204,7 +208,7 @@ public class PaymentServiceImpl implements PaymentService {
 //                } else if (commandDto.service_id!=null && commandDto.service_id==3) {
                 } else {
                     JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
-                    if(abonomentResultNode != null && abonomentResultNode.has("price")){
+                    if (abonomentResultNode != null && abonomentResultNode.has("price")) {
                         return payAbonoment(commandDto, carState, abonomentResultNode);
                     }
                     Object payment = savePayment(commandDto, carState, null, false);
@@ -281,7 +285,7 @@ public class PaymentServiceImpl implements PaymentService {
         JsonNode result = (JsonNode) payment;
         Long paymentId = result.get("paymentId").longValue();
 
-        if(current_balance.compareTo(abonomentResultNode.get("price").decimalValue()) >= 0){
+        if (current_balance.compareTo(abonomentResultNode.get("price").decimalValue()) >= 0) {
             PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
             if (billingPluginRegister != null) {
                 ObjectNode billingSubtractNode = this.objectMapper.createObjectNode();
@@ -385,8 +389,8 @@ public class PaymentServiceImpl implements PaymentService {
                         long leftFreeMinutes = paymentOfflineResult.left_free_time_minutes - minutes;
 
                         parkomatBillingInfoSuccessDto.setLeft_free_time_minutes((leftFreeMinutes > 0) ? (int) leftFreeMinutes : 0);
-                        if (qrPanelService!=null) {
-                            parkomatBillingInfoSuccessDto.setKaspiQr(qrPanelService.generateUrl(null,carState.getCarNumber()));
+                        if (qrPanelService != null) {
+                            parkomatBillingInfoSuccessDto.setKaspiQr(qrPanelService.generateUrl(null, carState.getCarNumber()));
                         }
                         savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance, commandDto.getTxn_id(), null);
                         return parkomatBillingInfoSuccessDto;
@@ -414,7 +418,7 @@ public class PaymentServiceImpl implements PaymentService {
                 }
                 CarState carState = carStateService.getLastNotLeft(commandDto.getAccount());
                 CarState lastDebtCarState = carStateService.getLastCarState(commandDto.getAccount());
-                if (carState==null && lastDebtCarState!=null)
+                if (carState == null && lastDebtCarState != null)
                     carState = lastDebtCarState;
 
                 if (carState == null ) {
@@ -424,7 +428,7 @@ public class PaymentServiceImpl implements PaymentService {
                     dto.sum = commandDto.getSum();
                     dto.txn_id = commandDto.getTxn_id();
                     return dto;
-                } else{
+                } else {
                     PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                     if (billingPluginRegister != null) {
                         ObjectNode node = this.objectMapper.createObjectNode();
@@ -593,6 +597,69 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
+    @Override
+    public JsonNode findAllByCreatedBetweenAndProviderName(
+            LocalDateTime dateFrom,
+            LocalDateTime dateTo,
+            Boolean onlyTransactionId,
+            String providerName) throws Exception {
+
+        ObjectNode node = this.objectMapper.createObjectNode();
+
+        node.put("command", "listOfPaymentsBetween2Date");
+        node.put("dateFrom", String.valueOf(dateFrom));
+        node.put("dateTo", String.valueOf(dateTo));
+        node.put("onlyTransactionId", onlyTransactionId);
+        node.put("providerName", providerName);
+
+        PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+
+        if (billingPluginRegister != null) {
+            return billingPluginRegister.execute(node);
+        } else {
+            throw new RuntimeException("listOfPaymentsBetween2Date billingPluginRegister FAILED");
+        }
+    }
+
+
+    @Override
+    public JsonNode findFirstByTransactionAndProviderNameAndCreated(
+            String transactionId,
+            String providerName,
+            LocalDateTime transactionTime) throws Exception {
+        ObjectNode node = this.objectMapper.createObjectNode();
+
+        node.put("command", "findFirstByTransactionAndProviderNameAndCreated");
+        node.put("transactionId", transactionId);
+        node.put("providerName", providerName);
+        node.put("transactionTime", String.valueOf(transactionTime));
+
+        PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+
+        if (billingPluginRegister != null) {
+            return billingPluginRegister.execute(node);
+        } else {
+            throw new RuntimeException("findFirstByTransactionAndProviderNameAndCreated billingPluginRegister FAILED");
+        }
+    }
+
+    @Override
+    public void cancelTransactionByTrxId(String transactionId, String reason) throws Exception {
+        ObjectNode node = this.objectMapper.createObjectNode();
+
+        node.put("command", "cancelPayment");
+        node.put("transactionId", transactionId);
+        node.put("reason", reason);
+
+        PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+
+        if (billingPluginRegister != null) {
+            billingPluginRegister.execute(node);
+        } else {
+            throw new RuntimeException("cancelPayment billingPluginRegister FAILED");
+        }
+    }
+
     private BillingInfoSuccessDto fillPayment(CarState carState, SimpleDateFormat format, CommandDto commandDto, String paymentsJson) throws Exception {
         BillingInfoSuccessDto dto = null;
 
@@ -735,7 +802,7 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("inDate", format.format(carState.getInTimestamp()));
 
             parkingId = carState.getParking().getId();
-        } else if(isAbonomentPayment){
+        } else if (isAbonomentPayment) {
             node.put("inDate", format.format(new Date()));
             parkingId = getNotPaidAbonoment(commandDto).get("parkingId").longValue();
         } else {
@@ -743,7 +810,7 @@ public class PaymentServiceImpl implements PaymentService {
 
             if (parkingType != null) {
                 Parking parking = parkingService.findByType(Parking.ParkingType.PREPAID);
-                if(parking != null){
+                if (parking != null) {
                     parkingId = parking.getId();
                 }
             }
@@ -795,9 +862,6 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentResult;
     }
 
-
-
-
     private Object saveDebtPayment(CommandDto commandDto) throws Exception {
         ObjectNode node = this.objectMapper.createObjectNode();
         node.put("command", "savePayment");
@@ -833,7 +897,7 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("plateNumber", commandDto.account);
 
             JsonNode result = abonomentPluginRegister.execute(node);
-            if(result.has("unPaidNotExpiredAbonoment")){
+            if (result.has("unPaidNotExpiredAbonoment")) {
                 return result.get("unPaidNotExpiredAbonoment");
             }
         }
@@ -882,11 +946,11 @@ public class PaymentServiceImpl implements PaymentService {
 
         List<Period> periods = abonomentService.calculatePaymentPeriods(abonementJson, inDate, outDate);
 
-        if(periods.size() == 0){
+        if (periods.size() == 0) {
             return dto;
         } else {
             BigDecimal totalRate = BigDecimal.ZERO;
-            for(Period p:periods){
+            for (Period p : periods) {
                 PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
                 if (ratePluginRegister != null) {
                     ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
@@ -906,7 +970,7 @@ public class PaymentServiceImpl implements PaymentService {
                 }
             }
 
-            if(totalRate.equals(BigDecimal.ZERO)){
+            if (totalRate.equals(BigDecimal.ZERO)) {
                 return dto;
             } else {
                 dto.sum = totalRate;
@@ -927,11 +991,11 @@ public class PaymentServiceImpl implements PaymentService {
 
         List<Period> periods = whitelistRootService.calculatePaymentPeriods(whiteListJson, inDate, outDate);
 
-        if(periods.size() == 0){
+        if (periods.size() == 0) {
             return dto;
         } else {
             BigDecimal totalRate = BigDecimal.ZERO;
-            for(Period p:periods){
+            for (Period p : periods) {
                 PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
                 if (ratePluginRegister != null) {
                     ObjectNode ratePluginNode = this.objectMapper.createObjectNode();
@@ -952,7 +1016,7 @@ public class PaymentServiceImpl implements PaymentService {
                 }
             }
 
-            if(totalRate.equals(BigDecimal.ZERO)){
+            if (totalRate.equals(BigDecimal.ZERO)) {
                 return dto;
             } else {
                 dto.sum = totalRate;

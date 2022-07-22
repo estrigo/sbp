@@ -9,12 +9,14 @@ import kz.spt.billingplugin.model.Payment;
 import kz.spt.billingplugin.model.PaymentProvider;
 import kz.spt.billingplugin.model.PaymentProviderAbstract;
 import kz.spt.billingplugin.model.dto.OfdCheckData;
+import kz.spt.billingplugin.model.dto.PaymentApiDto;
 import kz.spt.billingplugin.model.dto.PaymentDto;
-import kz.spt.billingplugin.model.dto.rekassa.Date;
-import kz.spt.billingplugin.model.dto.rekassa.DateTime;
+import kz.spt.billingplugin.model.dto.PaymentStatusApiDto;
 import kz.spt.billingplugin.model.dto.rekassa.RekassaCheckRequest;
-import kz.spt.billingplugin.model.dto.rekassa.Time;
-import kz.spt.billingplugin.model.dto.webkassa.*;
+import kz.spt.billingplugin.model.dto.webkassa.AuthRequestDTO;
+import kz.spt.billingplugin.model.dto.webkassa.Check;
+import kz.spt.billingplugin.model.dto.webkassa.Position;
+import kz.spt.billingplugin.model.dto.webkassa.ZReport;
 import kz.spt.billingplugin.repository.PaymentProviderRepository;
 import kz.spt.billingplugin.repository.PaymentRepository;
 import kz.spt.billingplugin.service.*;
@@ -24,15 +26,17 @@ import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Customer;
 import kz.spt.lib.model.Parking;
-import kz.spt.lib.model.dto.payment.CommandDto;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Log
 @Extension
@@ -46,6 +50,10 @@ public class CommandExecutor implements PluginRegister {
     private WebKassaService reKassaService;
     private PaymentRepository paymentRepository;
     private PaymentProviderRepository paymentProviderRepository;
+
+    private static final String TRANSACTION_ID = "transactionId";
+
+    private final SimpleDateFormat simpleDateFormatWithoutZone = new SimpleDateFormat(StaticValues.dateFormatT);
 
     @Override
     public JsonNode execute(JsonNode command) throws Exception {
@@ -109,10 +117,10 @@ public class CommandExecutor implements PluginRegister {
                     node.set("paymentArray", paymentArray);
                 }
 
-            } else if("saveOnlyPayment".equals(commandName)) {
+            } else if ("saveOnlyPayment".equals(commandName)) {
                 PaymentProvider paymentProvider = getRootServicesGetterService().getPaymentProviderRepository().
                         findByClientId("ThirdParty");
-                if (paymentProvider==null) {
+                if (paymentProvider == null) {
                     paymentProvider = new PaymentProvider();
                     paymentProvider.setName("ThirdParty");
                     paymentProvider.setClientId("ThirdParty");
@@ -235,6 +243,58 @@ public class CommandExecutor implements PluginRegister {
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue());
                 node.put("providerName", provider.getName());
                 node.put("providerId", provider.getId());
+            } else if ("listOfPaymentsBetween2Date".equalsIgnoreCase(commandName)) {
+
+                List<PaymentApiDto> payments = getPaymentRepository()
+                        .findAllByCreatedBetweenAndProviderName(
+                                simpleDateFormatWithoutZone.parse(command.get("dateFrom").textValue()),
+                                simpleDateFormatWithoutZone.parse(command.get("dateTo").textValue()),
+                                command.get("providerName").textValue()
+                        ).stream().map(payment -> {
+                            if (command.get("onlyTransactionId").booleanValue()) {
+                                return PaymentApiDto.builder()
+                                        .providerTrnId(payment.getTransaction())
+                                        .transactionId(payment.getTransaction())
+                                        .build();
+                            } else {
+                                return PaymentApiDto.builder()
+                                        .amount(payment.getPrice().toBigInteger())
+                                        .providerTrnId(payment.getTransaction())
+                                        .transactionId(payment.getTransaction())
+                                        .transactionTime(payment.getCreated())
+                                        .build();
+                            }
+                        })
+                        .collect(Collectors.toList());
+                node.set("payments", objectMapper.valueToTree(payments));
+            } else if ("findFirstByTransactionAndProviderNameAndCreated".equalsIgnoreCase(commandName)) {
+
+                Optional<Payment> paymentOptional = getPaymentRepository()
+                        .findFirstByTransactionAndProviderNameAndCreated(
+                                command.get(TRANSACTION_ID).textValue(),
+                                command.get("providerName").textValue(),
+                                simpleDateFormatWithoutZone.parse(command.get("transactionTime").textValue()));
+
+                PaymentStatusApiDto paymentStatusApiDto;
+
+                if (paymentOptional.isPresent()) {
+                    paymentStatusApiDto = PaymentStatusApiDto.builder()
+                            .status((byte) 0)
+                            .providerTrnId(paymentOptional.get().getTransaction())
+                            .transactionState((byte) (paymentOptional.get().isCanceled() ? 2 : 1))
+                            .transactionStateErrorMsg("Ok")
+                            .transactionStateErrorStatus((byte) 0)
+                            .build();
+                } else {
+                    throw new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "Entity not found by : " +
+                            TRANSACTION_ID + " " + command.get(TRANSACTION_ID).textValue());
+                }
+                node.set("payment", objectMapper.valueToTree(paymentStatusApiDto));
+            } else if ("cancelPayment".equalsIgnoreCase(commandName)) {
+                getPaymentService().cancelPaymentByTransactionId(
+                        command.get(TRANSACTION_ID).textValue(),
+                        command.get("reason").textValue());
             } else {
                 throw new RuntimeException("Unknown command for billing operation");
             }
@@ -253,7 +313,7 @@ public class CommandExecutor implements PluginRegister {
     }
 
     private PaymentProviderRepository getPaymentProviderRepository() {
-        if(paymentProviderRepository == null) {
+        if (paymentProviderRepository == null) {
             paymentProviderRepository = (PaymentProviderRepository) BillingPlugin.INSTANCE.getApplicationContext()
                     .getBean("paymentProviderRepository");
         }
@@ -334,7 +394,7 @@ public class CommandExecutor implements PluginRegister {
             log.info("[WebKassa] Result " + ofdCheckData.getCheckNumber());
         } else if (provider.getOfdProviderType().equals(PaymentProvider.OFD_PROVIDER_TYPE.ReKassa)) {
             RekassaCheckRequest checkRequest = new RekassaCheckRequest();
-            checkRequest.fillPayment(sum, change,paymentType==1);
+            checkRequest.fillPayment(sum, change, paymentType == 1);
             log.info("[ReKassa] Request for check number for txn " + txn_id);
             ofdCheckData = getReKassaService().registerCheck(checkRequest, provider);
             log.info("[ReKassa] Result " + ofdCheckData.getCheckNumber());

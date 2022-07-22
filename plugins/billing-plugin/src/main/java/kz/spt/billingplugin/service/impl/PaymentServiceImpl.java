@@ -6,16 +6,21 @@ import kz.spt.billingplugin.model.Payment;
 import kz.spt.billingplugin.model.PaymentProvider;
 import kz.spt.billingplugin.model.PaymentSpecification;
 import kz.spt.billingplugin.repository.PaymentRepository;
+import kz.spt.billingplugin.service.BalanceService;
 import kz.spt.billingplugin.service.PaymentService;
 import kz.spt.lib.bootstrap.datatable.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import kz.spt.lib.model.PaymentCheckLog;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.util.ObjectUtils;
 
 import java.text.SimpleDateFormat;
@@ -23,11 +28,13 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Service("paymentService")
+@RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
-    @Autowired
-    PaymentRepository paymentRepository;
+    private final PaymentRepository paymentRepository;
+    private final BalanceService balanceService;
 
     @Override
     public Iterable<Payment> listAllPayments() {
@@ -90,6 +97,33 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentRepository.findByTransaction(transaction);
     }
 
+    @Override
+    @Transactional
+    public void cancelPaymentByTransactionId(String transaction, String reason) throws ResponseStatusException {
+        List<Payment> payments = paymentRepository.findByTransaction(transaction);
+        if (payments.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Entity not found by transactionId : " + transaction);
+        }
+
+        // Тут оставим костыль, т.к. по неведомой причине findByTransaction возвращает List<платежей>
+        Payment firstPayment = payments.get(0);
+
+        // Проверим была ли уже отозвана транзакция, если да то не имеет смысла откатывать повторно
+        if (firstPayment.isCanceled()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Request already canceled by transactionId : " + transaction);
+        }
+        paymentRepository.cancelPayment(transaction, reason);
+        balanceService.subtractBalance(
+                firstPayment.getCarNumber(),
+                firstPayment.getPrice(),
+                firstPayment.getCarStateId(),
+                firstPayment.getDescription(),
+                firstPayment.getDescription(),
+                firstPayment.getProvider().getName());
+    }
+
     private List<Payment> listByFilters(FilterPaymentDTO filterDto) {
         Specification<Payment> specification = getPaymentSpecification(filterDto);
 
@@ -98,7 +132,7 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentRepository.findAll(specification, sort);
     }
 
-    private  org.springframework.data.domain.Page<Payment> listLimitedByFilters(FilterPaymentDTO filterDto, PagingRequest pagingRequest) {
+    private org.springframework.data.domain.Page<Payment> listLimitedByFilters(FilterPaymentDTO filterDto, PagingRequest pagingRequest) {
         Specification<Payment> specification = getPaymentSpecification(filterDto);
 
         Order order = pagingRequest.getOrder().get(0);
@@ -109,62 +143,62 @@ public class PaymentServiceImpl implements PaymentService {
         Direction dir = order.getDir();
 
         Sort sort = null;
-        if("id".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        if ("id".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("id").descending();
             } else {
                 sort = Sort.by("id").ascending();
             }
-        } else if("parking".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        } else if ("parking".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("parking").descending();
             } else {
                 sort = Sort.by("parking").ascending();
             }
-        } else if("carNumber".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        } else if ("carNumber".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("carNumber").descending();
             } else {
                 sort = Sort.by("carNumber").ascending();
             }
-        } else if("inDate".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        } else if ("inDate".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("inDate").descending();
             } else {
                 sort = Sort.by("inDate").ascending();
             }
-        } else if("outDate".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        } else if ("outDate".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("outDate").descending();
             } else {
                 sort = Sort.by("outDate").ascending();
             }
-        } else if("created".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        } else if ("created".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("created").descending();
             } else {
                 sort = Sort.by("created").ascending();
             }
-        } else if("price".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        } else if ("price".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("price").descending();
             } else {
                 sort = Sort.by("price").ascending();
             }
-        } else if("rateDetails".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        } else if ("rateDetails".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("rateDetails").descending();
             } else {
                 sort = Sort.by("rateDetails").ascending();
             }
-        } else if("provider".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        } else if ("provider".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("provider").descending();
             } else {
                 sort = Sort.by("provider").ascending();
             }
-        } else if("transaction".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        } else if ("transaction".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("transaction").descending();
             } else {
                 sort = Sort.by("transaction").ascending();
@@ -176,7 +210,7 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentRepository.findAll(specification, rows);
     }
 
-    private Specification<Payment> getPaymentSpecification(FilterPaymentDTO filterDto){
+    private Specification<Payment> getPaymentSpecification(FilterPaymentDTO filterDto) {
         Specification<Payment> specification = null;
 
         if (!StringUtils.isEmpty(filterDto.getCarNumber())) {
