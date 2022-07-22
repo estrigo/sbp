@@ -35,6 +35,31 @@ public class ParkingRate {
         FREE // Бесплатный тарифный план. Как и стандарт, только оплата равна 0.
     }
 
+
+    public enum CurrencyType {
+        KZT,
+        KGS,
+        UZS,
+        RUB,
+        USD,
+        AUD,
+        EUR,
+        AZN,
+        GBP,
+        HUF,
+        GEL,
+        DKK,
+        ILS,
+        CHF,
+        NZD,
+        NOK,
+        AED,
+        HRK,
+        CZK,
+        SEK,
+        KWD
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -122,4 +147,8 @@ public class ParkingRate {
     private String createdUser;
 
     private String updatedUser;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "currency_type")
+    private CurrencyType currencyType = CurrencyType.KZT;
 }

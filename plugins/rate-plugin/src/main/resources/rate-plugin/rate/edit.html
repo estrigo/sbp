@@ -94,11 +94,23 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
+                                        <label class="control-label" th:text="#{rate.currency}"></label>
+                                        <select id="currencyType" th:field="*{currencyType}" th:value="*{currencyType}"
+                                                class="form-control">
+                                            <option th:each="item : ${currencyTypes}" th:value="${item}"
+                                                    th:text="${item}"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
                                         <label for="onlinePaymentValue" class="control-label" th:text="#{rate.onlinePaymentValue}"></label>
                                         <input type="number" class="form-control" th:field="*{onlinePaymentValue}" th:value="*{onlinePaymentValue}" id="onlinePaymentValue" placeholder="15">
                                     </div>
                                 </div>
                             </div>
+
+
 
                             <div id="progressive" class="row" style="display: none;">
                                 <input id="progressiveJson" type="hidden" th:field="*{progressiveJson}" th:value="*{progressiveJson}">

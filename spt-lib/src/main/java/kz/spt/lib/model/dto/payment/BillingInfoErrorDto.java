@@ -11,4 +11,6 @@ public class BillingInfoErrorDto {
     public BigDecimal sum;                    // 200 - Сумма к оплате.
     public String message;             // "Некорректный номер авто свяжитесь с оператором."
     public BigDecimal current_balance =  BigDecimal.ZERO;
+
+    public String currency;
 }

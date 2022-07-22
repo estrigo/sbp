@@ -72,6 +72,8 @@ public class PaymentServiceImpl implements PaymentService {
                     Parking parking = parkingService.findByType(Parking.ParkingType.PREPAID);
                     if (parking != null) {
                         BillingInfoSuccessDto successDto = fillPrepaid(commandDto, parking);
+                        successDto.currency = getCurrency(parking.getParkingType());
+
                         savePaymentCheckLog(commandDto.account, null, successDto.sum, null, PaymentCheckLog.PaymentCheckType.PREPAID, successDto.current_balance, commandDto.getTxn_id(), commandDto.getClientId());
                         return successDto;
                     } else {
@@ -80,6 +82,7 @@ public class PaymentServiceImpl implements PaymentService {
                         dto.result = 1;
                         dto.sum = commandDto.sum;
                         dto.txn_id = commandDto.txn_id;
+                        dto.currency = getCurrency();
                         savePaymentCheckLog(commandDto.account, null, dto.sum, null, PaymentCheckLog.PaymentCheckType.PREPAID, dto.current_balance, commandDto.getTxn_id(), commandDto.getClientId());
                         return dto;
                     }
@@ -100,7 +103,7 @@ public class PaymentServiceImpl implements PaymentService {
                         dto.txn_id = commandDto.txn_id;
                         dto.message = "Некорректный номер авто свяжитесь с оператором.";
                         dto.result = 1;
-
+                        dto.currency = getCurrency();
                         savePaymentCheckLog(commandDto.account, dto.message, dto.sum, null, PaymentCheckLog.PaymentCheckType.NOT_FOUND, dto.current_balance, commandDto.getTxn_id(), commandDto.getClientId());
 
                         return dto;
@@ -125,13 +128,14 @@ public class PaymentServiceImpl implements PaymentService {
                         }
 
                         if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())) {
-                            return fillPayment(carState, format, commandDto, carState.getPaymentJson());
+                            dto = fillPayment(carState, format, commandDto, carState.getPaymentJson());
                         } else if (Parking.ParkingType.WHITELIST_PAYMENT.equals(carState.getParking().getParkingType())) {
                             if (carState.getPaid()) {
-                                return fillPayment(carState, format, commandDto, carState.getPaymentJson());
+                                dto = fillPayment(carState, format, commandDto, carState.getPaymentJson());
                             }
                         }
                         savePaymentCheckLog(commandDto.account, null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance, commandDto.getTxn_id(), commandDto.getClientId());
+                        dto.currency = getCurrency(carState.getType());
                         return dto;
                     }
                 }
@@ -290,6 +294,39 @@ public class PaymentServiceImpl implements PaymentService {
 
         return successPayment(commandDto, paymentId);
     }
+    private String getCurrency() throws Exception {
+        return getCurrency(null);
+    }
+
+    private String getCurrency(Parking.ParkingType parkingType) throws Exception {
+        String currency = "";
+        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+        Long parkingId;
+
+        if (!ObjectUtils.isEmpty(parkingType)) {
+            Parking parking = parkingService.findByType(parkingType);
+            parkingId = parking.getId();
+            currency = "";
+            if (ratePluginRegister != null) {
+                ObjectNode node = this.objectMapper.createObjectNode();
+                node.put("command", "getCurrency");
+                node.put("parkingId", parkingId);
+                JsonNode result = ratePluginRegister.execute(node);
+                currency = result.get("currency").textValue();
+            }
+
+        } else {
+            if (ratePluginRegister != null) {
+                ObjectNode node = this.objectMapper.createObjectNode();
+                node.put("command", "getCurrency");
+                JsonNode result = ratePluginRegister.execute(node);
+                currency = result.get("currency").textValue();
+            }
+
+        }
+        return currency;
+    }
+
 
     @Override
     public Object billingInteractions(ParkomatCommandDTO commandDto) throws Exception {

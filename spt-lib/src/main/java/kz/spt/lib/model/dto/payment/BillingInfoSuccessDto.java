@@ -1,7 +1,5 @@
 package kz.spt.lib.model.dto.payment;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import java.math.BigDecimal;
 
 public class BillingInfoSuccessDto {
@@ -13,5 +11,8 @@ public class BillingInfoSuccessDto {
     public int left_free_time_minutes; // Кол-во оставшихся 15 минут на выезд.
     public String tariff;              // 100 тг/ч - Текстовое представление текущего тарифа.
     public String in_date;             // 2019-05-06 08:30:12 - Дата время последнего ВЪЕЗДА на паркинг.
+
     public int hours;
+
+    public String currency;
 }

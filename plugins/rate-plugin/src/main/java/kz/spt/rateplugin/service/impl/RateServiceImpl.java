@@ -17,6 +17,7 @@ import kz.spt.rateplugin.repository.RateRepository;
 import kz.spt.rateplugin.service.RateService;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -360,6 +361,13 @@ public class RateServiceImpl implements RateService {
     @Override
     public Parking getParkingById(Long parkingId) {
         return getParkingService().findById(parkingId);
+    }
+
+    @Override
+    public String getParkingRateCurrency() {
+        List<ParkingRate> parkingRates = rateRepository.findAll();
+        ParkingRate parkingRate = parkingRates.stream().filter(r -> !ObjectUtils.isEmpty(r.getCurrencyType())).findFirst().orElse(null);
+        return ObjectUtils.isEmpty(parkingRate) ? "" : parkingRate.getCurrencyType().name();
     }
 
     private JsonNode getSatisfiedJsonNode(int inCalendarHour, ArrayNode intervalJson) {

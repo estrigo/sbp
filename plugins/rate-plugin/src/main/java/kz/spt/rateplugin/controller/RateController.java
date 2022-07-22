@@ -42,6 +42,7 @@ public class RateController {
             parkingRate.setParking(parking);
         }
         model.addAttribute("parkingRate", parkingRate);
+        model.addAttribute("currencyTypes", ParkingRate.CurrencyType.values());
         return "/rate/edit";
     }
 
