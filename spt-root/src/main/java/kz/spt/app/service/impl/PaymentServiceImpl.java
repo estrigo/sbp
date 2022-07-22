@@ -129,9 +129,13 @@ public class PaymentServiceImpl implements PaymentService {
 
                         if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())) {
                             dto = fillPayment(carState, format, commandDto, carState.getPaymentJson());
+                            dto.currency = getCurrency(carState.getType());
+                            return dto;
                         } else if (Parking.ParkingType.WHITELIST_PAYMENT.equals(carState.getParking().getParkingType())) {
                             if (carState.getPaid()) {
                                 dto = fillPayment(carState, format, commandDto, carState.getPaymentJson());
+                                dto.currency = getCurrency(carState.getType());
+                                return dto;
                             }
                         }
                         savePaymentCheckLog(commandDto.account, null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance, commandDto.getTxn_id(), commandDto.getClientId());
