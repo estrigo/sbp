@@ -281,14 +281,25 @@
     }
 
     function excelForWhitelist(){
+        let idH = "Id";
+        let plateNumberH = [[#{car.platenumber}]];
+        let fullNameH = [[#{car.fullName}]];
+        let addressH = [[#{car.address}]];
+        let parkingNumberH = [[#{car.parkingNumber}]];
+        let parkingNameH = [[#{whitelist.parking}]];
+        let groupNameH = [[#{whitelist.groupName}]];
+        let createdUserH = [[#{whitelist.createdUser}]];
+        let createdDateH = [[#{whitelist.createdDate}]];
+        let conditionDetailH = [[#{whitelist.condition}]];
+        let commentH = [[#{car.comment}]];
+
         $.get("/rest/whitelist/list/excel", function (data) {
             try {
-                let arr = [];
-                for (let i = 0; i < data.length; i++) {
-                    arr.push(data[i]);
-                }
 
-                let ws = XLSX.utils.json_to_sheet(arr);
+                data.unshift({id:idH, plateNumber: plateNumberH, fullName : fullNameH, address : addressH, parkingNumber : parkingNumberH,
+                     parkingName : parkingNameH, groupName : groupNameH, createdUser : createdUserH, createdDate : createdDateH, conditionDetail : conditionDetailH, comment : commentH});
+
+                let ws = XLSX.utils.json_to_sheet(data, {skipHeader:true});
 
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'Whitelist');
