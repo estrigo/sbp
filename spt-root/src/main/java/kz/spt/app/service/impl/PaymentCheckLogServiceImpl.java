@@ -40,7 +40,7 @@ public class PaymentCheckLogServiceImpl implements PaymentCheckLogService {
     }
 
     @Override
-    public List<PaymentCheckLog> finPaymentCheckLogByProviderId(Long providerId) {
-        return paymentCheckLogRepository.findPaymentCheckLogByProviderId(providerId);
+    public List<PaymentCheckLog> finPaymentCheckLogByProviderId(Long providerId, Pageable pageable) {
+        return paymentCheckLogRepository.findPaymentCheckLogByProviderId(providerId, pageable);
     }
 }

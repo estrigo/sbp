@@ -8,6 +8,8 @@ import kz.spt.billingplugin.service.RootServicesGetterService;
 import kz.spt.lib.model.PaymentCheckLog;
 import kz.spt.lib.model.dto.SelectOption;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
@@ -49,8 +51,9 @@ public class PaymentController {
                             .filter(o -> o.value != null && Long.valueOf(o.value).equals(value))
                             .findFirst().orElse(null);
             Long paymentProviderId = value.equals(0L) ? null : value;
+
             List<PaymentCheckLog> paymentCheckLogs = getRootServicesGetterService().getPaymentCheckLogService()
-                    .finPaymentCheckLogByProviderId(paymentProviderId);
+                    .finPaymentCheckLogByProviderId(paymentProviderId, PageRequest.of(0, 100, Sort.by("id").descending()));
             List<String> logs = paymentCheckLogs.stream().map(paymentService::toLog).collect(Collectors.toList());
             model.addAttribute("logs", logs);
             model.addAttribute("label", option == null || option.value == null ? "" : option.label);
