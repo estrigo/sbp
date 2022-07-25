@@ -311,13 +311,13 @@ public class AbonomentServiceImpl implements AbonomentService {
             if(result.has("expirationResult")){
                 if("expired".equals(result.get("expirationResult").textValue())){
                     String descriptionRu = "Срок абонемента просрочен. Авто с гос. номером " + plateNumber;
-                    String descriptionEn = "Subscription expired. Car with number " + plateNumber;
+                    String descriptionEn = "Paid permit is expired. Car with number " + plateNumber;
                     eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Warning, cameraId, plateNumber, descriptionRu, descriptionEn);
                     eventLogService.createEventLog(Gate.class.getSimpleName(), cameraId, properties, descriptionRu, descriptionEn, EventLog.EventType.ABONEMENT);
                 }
                 if("closeToExire".equals(result.get("expirationResult").textValue())){
                     String descriptionRu = "Осталось менее 24 часа срока истечения абонемента. Авто с гос. номером " + plateNumber;
-                    String descriptionEn = "Less than 24 hours left to subscription expire. Car with number " + plateNumber;
+                    String descriptionEn = "Less than 24 hours left to paid permit expire. Car with number " + plateNumber;
                     eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Warning, cameraId, plateNumber, descriptionRu, descriptionEn);
                     eventLogService.createEventLog(Gate.class.getSimpleName(), cameraId, properties, descriptionRu, descriptionEn, EventLog.EventType.ABONEMENT);
                 }

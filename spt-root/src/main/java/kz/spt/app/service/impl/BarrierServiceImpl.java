@@ -291,24 +291,6 @@ public class BarrierServiceImpl implements BarrierService {
         return response.getSuccess();
     }
 
-    private boolean[] modbusRetryRead(ModbusMaster m, int slaveId, int offset, int value) {
-        Boolean read = false;
-        int retryCount = 0;
-        boolean[] results = null;
-        while (!read && retryCount < 3) {
-            try {
-                retryCount++;
-                log.info("modbus read retry count: " + retryCount);
-                m.connect();
-                results = m.readCoils(slaveId, offset, value);
-                read = true;
-            } catch (Exception e) {
-                log.info("modbus read retry error: " + e.getMessage());
-            }
-        }
-        return results;
-    }
-
     private enum Command {
         Open, Close
     }
