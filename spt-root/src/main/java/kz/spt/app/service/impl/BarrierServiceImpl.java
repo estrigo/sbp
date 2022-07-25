@@ -192,36 +192,6 @@ public class BarrierServiceImpl implements BarrierService {
         return true;
     }
 
-    @Override
-    public void addGlobalModbusMaster(Barrier barrier) throws ModbusIOException, UnknownHostException {
-        if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier()) && !modbusMasterMap.containsKey(barrier.getIp())) {
-            log.info("connecting global " + barrier.getIp());
-            modbusMasterMap.put(barrier.getIp(), getConnectedInstance(barrier.getIp()));
-        }
-    }
-
-    private ModbusMaster getConnectedInstance(String ip) throws ModbusIOException, UnknownHostException {
-        TcpParameters tcpParameters = new TcpParameters();
-        tcpParameters.setHost(InetAddress.getByName(ip));
-        tcpParameters.setKeepAlive(true);
-        tcpParameters.setPort(Modbus.TCP_PORT);
-
-        ModbusMaster m = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
-        m.setResponseTimeout(5000); // 5 seconds timeout
-
-        log.info("Connecting barrier.getIp(): " + ip);
-
-        if (!m.isConnected()) {
-            try {
-                m.connect();
-            } catch (Exception e) {
-                log.info("retry connect ip: " + ip + " error: " + e.getMessage());
-                modbusRetryConnect(m);
-            }
-        }
-        return m;
-    }
-
     private Boolean snmpChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException, ParseException {
         Boolean result = true;
 
@@ -337,39 +307,6 @@ public class BarrierServiceImpl implements BarrierService {
             }
         }
         return results;
-    }
-
-    private Boolean modbusRetryWrite(ModbusMaster m, int slaveId, int offset, boolean value) {
-        Boolean wrote = false;
-        int retryCount = 0;
-        while (!wrote && retryCount <= 3) {
-            try {
-                retryCount++;
-                log.info("modbus write retry count: " + retryCount);
-                m.connect();
-                m.writeSingleCoil(slaveId, offset, value);
-                wrote = true;
-            } catch (Exception e) {
-                log.info("modbus retry error: " + e.getMessage());
-            }
-        }
-        return wrote;
-    }
-
-    private Boolean modbusRetryConnect(ModbusMaster m) {
-        Boolean connected = false;
-        int retryCount = 0;
-        while (!connected && retryCount < 3) {
-            try {
-                retryCount++;
-                log.info("modbus connect retry count: " + retryCount);
-                m.connect();
-                connected = true;
-            } catch (Exception e) {
-                log.info("modbus connect error: " + e.getMessage());
-            }
-        }
-        return connected;
     }
 
     private enum Command {

@@ -19,9 +19,7 @@ import org.snmp4j.log.LogLevel;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observer;
+import java.util.*;
 
 @Log
 public class ModbusProtocolThread extends Thread  {
@@ -69,7 +67,8 @@ public class ModbusProtocolThread extends Thread  {
                         new_boolean_values[key] = m;
                         if("10.66.83.11".equals(barrierStatusDto.ip)){
                             if(m){
-                                closeTimeouts.put(barrierStatusDto.modbusCloseRegister, System.currentTimeMillis());
+                                log.info("setting close value = " + System.currentTimeMillis() + " to key: " + barrierStatusDto.modbusCloseRegister);
+                                closeTimeouts.put(barrierStatusDto.modbusCloseRegister-1, System.currentTimeMillis());
                             }
                         }
                     } else {
@@ -81,13 +80,14 @@ public class ModbusProtocolThread extends Thread  {
 
                 if(closeTimeouts != null){
                     if("10.66.83.11".equals(barrierStatusDto.ip)){
+                        List<Integer> timeoutsToRemove = new ArrayList<>();
                         closeTimeouts.forEach((key, m) -> {
                             if(System.currentTimeMillis() - m > 5000){
                                 try {
                                     modbusMaster.writeSingleCoil(slaveId, key, true);
                                     Thread.sleep(200);
                                     modbusMaster.writeSingleCoil(slaveId, key, false);
-                                    closeTimeouts.remove(key);
+                                    timeoutsToRemove.add(key);
                                 } catch (ModbusProtocolException | ModbusNumberException | ModbusIOException e) {
                                     e.printStackTrace();
                                 } catch (InterruptedException e) {
@@ -95,6 +95,9 @@ public class ModbusProtocolThread extends Thread  {
                                 }
                             }
                         });
+                        for(Integer val: timeoutsToRemove){
+                            closeTimeouts.remove(val);
+                        }
                     }
                 }
 
@@ -163,9 +166,9 @@ public class ModbusProtocolThread extends Thread  {
     }
 
     private void calculateChangedRegisters(boolean[] changedValues){
-        inputValues.forEach((key, m) -> {
-            inputValues.put(key, changedValues[key]);
-        });
+        for(int i=0; i < changedValues.length; i++){
+            inputValues.put(i, changedValues[i]);
+        }
     }
 
     private boolean[] getTestValues(BarrierStatusDto barrierStatusDto){
