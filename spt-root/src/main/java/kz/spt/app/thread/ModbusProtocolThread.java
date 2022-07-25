@@ -31,6 +31,8 @@ public class ModbusProtocolThread extends Thread  {
     private Map<Integer, Boolean> inputValues = new HashMap<>();
     private boolean[] outputValues = new boolean[8];
     private Map<Integer, Boolean> writeValues = new HashMap<>();
+
+    private Map<Integer, Long> closeTimeouts = new HashMap<>();
     private Boolean running = true;
 
     public ModbusProtocolThread(BarrierStatusDto barrierStatusDto) {
@@ -60,16 +62,50 @@ public class ModbusProtocolThread extends Thread  {
                     offset = 470;
                 }
                 final int[] new_values = {0};
+                final boolean[] new_boolean_values = new boolean[8];
 
                 writeValues.forEach((key, m) -> {
-                    if(m){
-                        new_values[0] += (int) Math.pow(2, key);
+                    if("icpdas".equals(barrierStatusDto.modbusDeviceVersion)){
+                        new_boolean_values[key] = m;
+                        if("10.66.83.11".equals(barrierStatusDto.ip)){
+                            if(m){
+                                closeTimeouts.put(barrierStatusDto.modbusCloseRegister, System.currentTimeMillis());
+                            }
+                        }
+                    } else {
+                        if(m) {
+                            new_values[0] += (int) Math.pow(2, key);
+                        }
                     }
                 });
 
+                if(closeTimeouts != null){
+                    if("10.66.83.11".equals(barrierStatusDto.ip)){
+                        closeTimeouts.forEach((key, m) -> {
+                            if(System.currentTimeMillis() - m > 5000){
+                                try {
+                                    modbusMaster.writeSingleCoil(slaveId, key, true);
+                                    Thread.sleep(200);
+                                    modbusMaster.writeSingleCoil(slaveId, key, false);
+                                    closeTimeouts.remove(key);
+                                } catch (ModbusProtocolException | ModbusNumberException | ModbusIOException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        });
+                    }
+                }
+
                 try {
-                    modbusMaster.writeMultipleRegisters(slaveId, offset, new_values);
-                    calculateChangedRegisters(new_values[0]);
+                    if("icpdas".equals(barrierStatusDto.modbusDeviceVersion)){
+                        modbusMaster.writeMultipleCoils(slaveId, offset, new_boolean_values);
+                        calculateChangedRegisters(new_boolean_values);
+                    } else {
+                        modbusMaster.writeMultipleRegisters(slaveId, offset, new_values);
+                        calculateChangedRegisters(new_values[0]);
+                    }
                     Thread.sleep(100);
                 } catch (ModbusProtocolException | ModbusNumberException | ModbusIOException | InterruptedException e) {
                     log.info(barrierStatusDto.ip + " write Registers : " + new_values[0] + " error. message: " + e.getMessage());
@@ -124,6 +160,12 @@ public class ModbusProtocolThread extends Thread  {
                 inputValues.put(key, false);
             });
         }
+    }
+
+    private void calculateChangedRegisters(boolean[] changedValues){
+        inputValues.forEach((key, m) -> {
+            inputValues.put(key, changedValues[key]);
+        });
     }
 
     private boolean[] getTestValues(BarrierStatusDto barrierStatusDto){
