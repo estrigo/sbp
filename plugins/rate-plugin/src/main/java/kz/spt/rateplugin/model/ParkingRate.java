@@ -150,5 +150,5 @@ public class ParkingRate {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "currency_type")
-    private CurrencyType currencyType = CurrencyType.KZT;
+    private CurrencyType currencyType;
 }

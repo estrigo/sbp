@@ -65,7 +65,11 @@ public class CommandExecutor implements PluginRegister {
                 if (command.has("parkingId")) {
                     Long parkingId = command.get("parkingId").longValue();
                     ParkingRate parkingRate = getRateService().getByParkingId(parkingId);
-                    node.put("currency", parkingRate.getCurrencyType().name());
+                    try {
+                        node.put("currency", parkingRate.getCurrencyType().name());
+                    } catch (Exception e) {
+                        node.put("currency", getRateService().getParkingRateCurrency());
+                    }
                 } else {
                     node.put("currency", getRateService().getParkingRateCurrency());
                 }
