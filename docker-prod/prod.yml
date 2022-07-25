@@ -15,9 +15,12 @@ spring:
     plugin-properties:
       spring:
         datasource:
-          url: jdbc:mysql://db/new_parking?allowPublicKeyRetrieval=true&useSSL=false
+          url: jdbc:mysql://db/new_parking?socketTimeout=30000&allowPublicKeyRetrieval=true&useSSL=false
           username: root
           password: root
+          hikari:
+            maximumPoolSize: 20
+            maxLifeTime: 600000
         jpa:
           hibernate:
             ddl-auto: update
@@ -28,9 +31,12 @@ spring:
               jdbc:
                 time_zone: UTC
   datasource:
-    url: jdbc:mysql://db/new_parking?allowPublicKeyRetrieval=true&useSSL=false
+    url: jdbc:mysql://db/new_parking?socketTimeout=30000&allowPublicKeyRetrieval=true&useSSL=false
     username: root
     password: root
+    hikari:
+      maximumPoolSize: 20
+      maxLifeTime: 600000
   jpa:
     hibernate:
       ddl-auto: update
