@@ -95,12 +95,16 @@ public class PaymentServiceImpl implements PaymentService {
                     CarState carState = carStateService.getLastNotLeft(commandDto.account);
                     JsonNode abonomentResultNode = getNotPaidAbonoment(commandDto);
                     if (abonomentResultNode != null && abonomentResultNode.has("price")) {
-                        return fillAbonomentDetails(abonomentResultNode, commandDto);
+                        BillingInfoSuccessDto dto = fillAbonomentDetails(abonomentResultNode, commandDto);
+                        dto.currency = getCurrency();
+                        return dto;
                     }
                     if (carState == null) {
                         JsonNode currentBalanceResult = getCurrentBalance(commandDto.account);
                         if (currentBalanceResult.has("currentBalance") && BigDecimal.ZERO.compareTo(currentBalanceResult.get("currentBalance").decimalValue()) > 0) {
-                            return fillDebtDetails(commandDto, currentBalanceResult.get("currentBalance").decimalValue());
+                            BillingInfoSuccessDto dto = fillDebtDetails(commandDto, currentBalanceResult.get("currentBalance").decimalValue());
+                            dto.currency = getCurrency();
+                            return dto;
                         }
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
                         dto.sum = BigDecimal.ZERO;
@@ -123,12 +127,16 @@ public class PaymentServiceImpl implements PaymentService {
 
                         JsonNode whiteLists = whitelistRootService.getValidWhiteListsInPeriod(carState.getParking().getId(), commandDto.account, carState.getInTimestamp(), new Date(), format);
                         if (whiteLists != null && whiteLists.isArray() && whiteLists.size() > 0) {
-                            return checkWhiteListExtraPayment(commandDto, carState, format, whiteLists, dto);
+                            checkWhiteListExtraPayment(commandDto, carState, format, whiteLists, dto);
+                            dto.currency = getCurrency(carState.getType());
+                            return dto;
                         }
 
                         JsonNode abonements = abonomentService.getAbonomentsDetails(commandDto.account, carState, format);
                         if (abonements != null && abonements.isArray() && abonements.size() > 0) {
-                            return checkAbonomentExtraPayment(commandDto, carState, format, abonements, dto);
+                            checkAbonomentExtraPayment(commandDto, carState, format, abonements, dto);
+                            dto.currency = getCurrency(carState.getType());
+                            return dto;
                         }
 
                         if (Parking.ParkingType.PAYMENT.equals(carState.getParking().getParkingType())) {
