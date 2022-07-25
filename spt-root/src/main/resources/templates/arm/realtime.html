@@ -147,10 +147,10 @@
                         <div class="form-group">
                             <label class="form-label" th:text="#{arm.openReason}"></label>
                             <select id="openReason" class="form-control" onchange="selectOpenReason()">
-                                <option value="">Выберите причину</option>
-                                <option value="emergencyServices">Экстренные службы (служба пожаротушения, полиция, скорая медицинская помощь, аварийная служба газа)</option>
-                                <option value="invalidPerson">Человек с ограниченными возможностями</option>
-                                <option value="other">Другое</option>
+                                <option value="" th:text="#{arm.chooseReason}"></option>
+                                <option value="emergencyServices" th:text="#{arm.emergencyReason}"></option>
+                                <option value="invalidPerson" th:text="#{arm.handicappedReason}"></option>
+                                <option value="other" th:text="#{arm.otherReason}"></option>
                             </select>
                             <strong id = "openReasonAlert" style="width: 40%"></strong>
                         </div>

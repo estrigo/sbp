@@ -69,6 +69,7 @@
     var edit = 'Редактировать';
     var del = 'Удалить';
     var locale = [[${#locale}]];
+    var roleNames = locale == "en" ? "name_en" : "name_ru";
     if (locale == "en") {
         address = "";
         edit = "Edit";
@@ -92,7 +93,7 @@
             {"data": "firstName"},
             {"data": "lastName"},
             {"data" : "roles" ,
-              "render" : "[, ].name_ru"
+              "render" : "[, ]." + roleNames
             },
             {"data": "id",
             "render" : function(id){
