@@ -11,12 +11,12 @@
           <div class="row">
             <div class="col-4">
               <label th:text="#{events.dateFrom}"></label>
-              <input type="datetime-local" class="form-control filter" id="dateFrom" th:field="*{dateFromString}"
+              <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control filter" id="dateFrom" th:field="*{dateFromString}"
                      th:value="*{dateFromString}" th:placeholder="#{events.dateFrom}">
             </div>
             <div class="col-4">
               <label th:text="#{events.dateTo}"></label>
-              <input type="datetime-local" class="form-control filter" id="dateTo" th:field="*{dateToString}"
+              <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control filter" id="dateTo" th:field="*{dateToString}"
                      th:value="*{dateToString}" placeholder="#{events.dateTo}">
             </div>
           </div>

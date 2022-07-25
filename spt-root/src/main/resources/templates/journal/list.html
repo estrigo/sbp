@@ -13,11 +13,11 @@
                 <form th:action="@{|/journal/list|}" th:object="${carStateFilterDto}" method="post" id="filter">
                     <div class="row">
                         <div class="col-3">
-                            <input type="datetime-local" class="form-control" id="dateFromString"
+                            <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control" id="dateFromString"
                                    th:field="*{dateFromString}">
                         </div>
                         <div class="col-3">
-                            <input type="datetime-local" class="form-control" id="dateToString"
+                            <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control" id="dateToString"
                                    th:field="*{dateToString}">
                         </div>
                         <div class="col-3">
@@ -143,12 +143,12 @@
 
                             <div class="form-group">
                                 <label class="control-label" th:text="#{carState.inTimestamp}"></label>
-                                <input type="datetime-local" class="form-control" name="dateIn" id="dateIn">
+                                <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control" name="dateIn" id="dateIn">
                             </div>
 
                             <div class="form-group">
                                 <label class="control-label" th:text="#{carState.outTimestamp}"></label>
-                                <input type="datetime-local" class="form-control" id="dateOut">
+                                <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control" id="dateOut">
                             </div>
 
                             <div class="form-group">

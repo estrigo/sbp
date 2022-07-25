@@ -292,13 +292,13 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="inDate" class="control-label" th:text="#{carState.inTimestamp}"></label>
-                                    <input type="datetime-local" class="form-control" id="inDate">
+                                    <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control" id="inDate">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="outDate" class="control-label" th:text="#{carState.outTimestamp}"></label>
-                                    <input type="datetime-local" class="form-control" id="outDate">
+                                    <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control" id="outDate">
                                 </div>
                             </div>
                             <div class="col-md-4">

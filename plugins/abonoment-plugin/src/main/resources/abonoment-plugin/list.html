@@ -48,11 +48,11 @@
                                 </div>
                                 <div class="col-3">
                                     <label th:text="#{abonement.createdDate}"></label>
-                                    <input type="datetime-local" class="form-control filter" id="dateFrom">
+                                    <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control filter" id="dateFrom">
                                 </div>
                                 <div class="col-3">
                                     <label th:text="#{abonement.createdDate}"></label>
-                                    <input type="datetime-local" class="form-control filter" id="dateTo">
+                                    <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control filter" id="dateTo">
                                 </div>
                             </div>
                             <table id="abonomentTable" class="table table-bordered" style="width: 100%">
@@ -230,7 +230,7 @@
                     <div class="row" id = "beginRow" style="display: none">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <input type="datetime-local" class="form-control" id="dateStart">
+                                <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control" id="dateStart">
                             </div>
                         </div>
                     </div>

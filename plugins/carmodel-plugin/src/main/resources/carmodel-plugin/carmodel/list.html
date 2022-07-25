@@ -14,7 +14,7 @@
                 <form th:action="@{|/carmodel/list|}" th:object="${CarmodelDto}" method="post" id="filter">
                     <div class="row">
                         <div class="col-3">
-                            <input type="datetime-local" class="form-control" id="dateFromString"
+                            <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control" id="dateFromString"
                                    th:field="*{dateFromString}">
                         </div>
                         <div class="col-3">
