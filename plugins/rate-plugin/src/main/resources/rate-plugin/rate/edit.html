@@ -106,6 +106,7 @@
                                     <label class="control-label" th:text="#{rate.currency}"></label>
                                     <select id="currencyType" th:field="*{currencyType}" th:value="*{currencyType}"
                                             class="form-control">
+                                        <option value=""></option>
                                         <option th:each="item : ${currencyTypes}" th:value="${item}"
                                                 th:text="${item}"></option>
                                     </select>
