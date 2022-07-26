@@ -275,6 +275,8 @@ public class CommandExecutor implements PluginRegister {
                                 command.get("providerName").textValue(),
                                 simpleDateFormatWithoutZone.parse(command.get("transactionTime").textValue()));
 
+                log.info("is present " + paymentOptional.isPresent());
+
                 PaymentStatusApiDto paymentStatusApiDto;
 
                 if (paymentOptional.isPresent()) {
@@ -290,6 +292,8 @@ public class CommandExecutor implements PluginRegister {
                             HttpStatus.NOT_FOUND, "Entity not found by : " +
                             TRANSACTION_ID + " " + command.get(TRANSACTION_ID).textValue());
                 }
+
+                log.info("paymentStatusApiDto " + paymentStatusApiDto);
                 node.set("payment", objectMapper.valueToTree(paymentStatusApiDto));
             } else if ("cancelPayment".equalsIgnoreCase(commandName)) {
                 getPaymentService().cancelPaymentByTransactionId(
