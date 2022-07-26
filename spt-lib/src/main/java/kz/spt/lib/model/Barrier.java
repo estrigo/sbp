@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
@@ -125,8 +126,17 @@ public class Barrier {
     @Column(name = "close_status_default")
     private Integer closeStatusDefault;
 
-    @Column(name = "status_check", nullable = false, columnDefinition = "boolean default false")
+    @ColumnDefault("false")
+    @Column(name = "status_check")
     private boolean statusCheck;
+
+    @ColumnDefault("false")
+    @Column(name = "impulse_signal")
+    private boolean impulseSignal;
+
+    @ColumnDefault("1000")
+    @Column(name = "signal_delay")
+    private Integer impulseDelay;
 
     @CreationTimestamp
     private Date created;

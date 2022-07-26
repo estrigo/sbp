@@ -57,6 +57,22 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-4">
+            <div class="form-group">
+                <label for="impulseSignal" class="control-label" th:text="#{barrier.impulseSignal}"></label>
+                <input type="checkbox" id="impulseSignal" th:field="*{impulseSignal}" th:value="*{impulseSignal}" onchange="changeImpulseSignal(this)"/>
+            </div>
+        </div>
+        <div class="col-8" id="impulseSignalBlock">
+            <div class="form-group row">
+                <label for="impulseDelay" class="col-2 control-label" th:text="#{camera.timeout}"></label>
+                <div class="col-10">
+                    <input type="number" class="form-control" id="impulseDelay" th:field="*{impulseDelay}" th:value="*{impulseDelay}">
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row" id="snmpVersionDiv">
         <div class="col-md-6">
             <div class="form-group">

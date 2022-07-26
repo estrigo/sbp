@@ -211,12 +211,14 @@
                 changeSensorsBlock();
                 changeBarrierType();
                 changeStatusCheck();
+                changeImpulseSignal();
             });
         } else if(gateId) {
             $.get("/parking/" + gateId + "/new/barrier/", function (data) {
                 $('#barrier-close-modal').find('#barrierModalBody').html(data);
                 changeBarrierType();
                 changeStatusCheck();
+                changeImpulseSignal();
             });
         }
     }
@@ -289,6 +291,15 @@
             $('#barrier-close-modal').find('#statusSensorBlock').show();
         } else {
             $('#barrier-close-modal').find('#statusSensorBlock').hide();
+        }
+    }
+
+    function changeImpulseSignal() {
+        const status = $("#impulseSignal").prop("checked");
+        if (status) {
+            $('#barrier-close-modal').find('#impulseSignalBlock').show();
+        } else {
+            $('#barrier-close-modal').find('#impulseSignalBlock').hide();
         }
     }
 </script>

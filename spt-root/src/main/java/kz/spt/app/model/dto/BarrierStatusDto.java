@@ -20,8 +20,10 @@ public class BarrierStatusDto {
     public Integer loopModbusRegister;
     public Integer photoElementModbusRegister;
     public boolean statusCheck;
+    public boolean impulseSignal;
+    public Integer impulseDelay;
 
-    public static BarrierStatusDto fromBarrier(Barrier barrier){
+    public static BarrierStatusDto fromBarrier(Barrier barrier) {
         BarrierStatusDto barrierStatusDto = new BarrierStatusDto();
         barrierStatusDto.id = barrier.getId();
         barrierStatusDto.gateId = barrier.getGate().getId();
@@ -39,6 +41,8 @@ public class BarrierStatusDto {
         barrierStatusDto.loopModbusRegister = barrier.getLoopModbusRegister();
         barrierStatusDto.photoElementModbusRegister = barrier.getPhotoElementModbusRegister();
         barrierStatusDto.statusCheck = barrier.isStatusCheck();
+        barrierStatusDto.impulseSignal = barrier.isImpulseSignal();
+        barrierStatusDto.impulseDelay = barrier.getImpulseDelay();
         return barrierStatusDto;
     }
 }

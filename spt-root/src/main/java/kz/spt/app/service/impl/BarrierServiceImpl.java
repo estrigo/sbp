@@ -12,7 +12,6 @@ import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.SensorStatusDto;
-import kz.spt.app.model.strategy.AbstractStrategy;
 import kz.spt.app.repository.BarrierRepository;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.snmp.SNMPManager;
@@ -168,7 +167,11 @@ public class BarrierServiceImpl implements BarrierService {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + ((String) properties.get("carNumber") != null ? " для номер авто " + (String) properties.get("carNumber") : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""));
                 result = false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
-                result = snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                if (barrier.isImpulseSignal()) {
+                    result = snmpChangeValueImpulse(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                } else {
+                    result = snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                }
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
                 result = modbusChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
@@ -190,7 +193,11 @@ public class BarrierServiceImpl implements BarrierService {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы закрыть" + ((String) properties.get("carNumber") != null ? " для номер авто " + (String) properties.get("carNumber") : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to close" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""));
                 return false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
-                return snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Close);
+                if (barrier.isImpulseSignal()) {
+                    return snmpChangeValueImpulse(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Close);
+                } else {
+                    return snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Close);
+                }
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
                 return modbusChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Close);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
@@ -208,7 +215,12 @@ public class BarrierServiceImpl implements BarrierService {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + (carNumber != null ? " for car number " + carNumber : ""));
                 result = false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.type)) {
-                result = snmpChangeValue(gate, carNumber, barrier, Command.Open);
+                if (barrier.impulseSignal) {
+                    log.info("Barrier open throw impulse signal");
+                    result = snmpChangeValueImpulse(gate, carNumber, barrier, Command.Open);
+                } else {
+                    result = snmpChangeValue(gate, carNumber, barrier, Command.Open);
+                }
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.type)) {
                 result = modbusChangeValue(gate, carNumber, barrier, Command.Open);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.type)) {
@@ -225,7 +237,11 @@ public class BarrierServiceImpl implements BarrierService {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы закрыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to close" + (carNumber != null ? " for car number " + carNumber : ""));
                 return false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.type)) {
-                return snmpChangeValue(gate, carNumber, barrier, Command.Close);
+                if (barrier.impulseSignal) {
+                    return snmpChangeValueImpulse(gate, carNumber, barrier, Command.Close);
+                } else {
+                    return snmpChangeValue(gate, carNumber, barrier, Command.Close);
+                }
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.type)) {
                 return modbusChangeValue(gate, carNumber, barrier, Command.Close);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.type)) {
@@ -292,6 +308,63 @@ public class BarrierServiceImpl implements BarrierService {
                 }
             }
         } else if (Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType)) {
+            Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+            if (!isReturnValueChanged) {
+                for (int i = 0; i < 3; i++) {
+                    isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                    if (isReturnValueChanged) {
+                        break;
+                    }
+                }
+            }
+        }
+        barrierClient.close();
+
+        return result;
+    }
+
+    private Boolean snmpChangeValueImpulse(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException, ParseException {
+        Boolean result = true;
+
+        SNMPManager barrierClient = new SNMPManager("udp:" + barrier.ip + "/161", barrier.password, barrier.snmpVersion);
+        barrierClient.start();
+
+        String oid = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
+        String currentValue = barrierClient.getCurrentValue(oid);
+
+        if (currentValue == null) {
+            throw new RuntimeException("Snmp controller connection error");
+        } else if (BARRIER_OFF.equals(currentValue)) {
+            Boolean isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
+            log.info("snmp isOpenValueChanged: " + isOpenValueChanged);
+            if (!isOpenValueChanged) {
+                for (int i = 0; i < 3; i++) {
+                    isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
+                    if (isOpenValueChanged) {
+                        break;
+                    }
+                }
+                if (!isOpenValueChanged) {
+                    result = false;
+                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 1 чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
+                }
+            }
+            if (isOpenValueChanged) {
+                Thread.sleep(barrier.impulseDelay);
+                String currentValue2 = barrierClient.getCurrentValue(oid);
+                if (BARRIER_ON.equals(currentValue2)) {
+                    Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                    if (!isReturnValueChanged) {
+                        for (int i = 0; i < 3; i++) {
+                            isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                            if (isReturnValueChanged) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
             Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
             if (!isReturnValueChanged) {
                 for (int i = 0; i < 3; i++) {
