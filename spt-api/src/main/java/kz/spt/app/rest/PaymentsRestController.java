@@ -35,6 +35,7 @@ public class PaymentsRestController {
             @RequestParam String transactionId,
             @RequestParam String providerName,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime transactionTime) throws Exception {
+        log.info(">> findFirstByTransactionAndProviderNameAndCreated : {} : {} : {} ", transactionId, providerName, transactionTime);
         return paymentService.findFirstByTransactionAndProviderNameAndCreated(
                 transactionId,
                 providerName,
