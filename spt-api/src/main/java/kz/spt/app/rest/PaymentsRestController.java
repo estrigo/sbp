@@ -34,7 +34,7 @@ public class PaymentsRestController {
     public JsonNode getPaymentResult(
             @RequestParam String transactionId,
             @RequestParam String providerName,
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime transactionTime) throws Exception {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime transactionTime) throws Exception {
         return paymentService.findFirstByTransactionAndProviderNameAndCreated(
                 transactionId,
                 providerName,
