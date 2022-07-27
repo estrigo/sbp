@@ -53,7 +53,7 @@ public class CommandExecutor implements PluginRegister {
 
     private static final String TRANSACTION_ID = "transactionId";
 
-    private final SimpleDateFormat simpleDateFormatWithoutZone = new SimpleDateFormat(StaticValues.dateFormatT);
+    private final SimpleDateFormat simpleDateFormatWithoutZone = new SimpleDateFormat(StaticValues.dateOnly);
 
     @Override
     public JsonNode execute(JsonNode command) throws Exception {
@@ -247,10 +247,15 @@ public class CommandExecutor implements PluginRegister {
 
                 List<PaymentApiDto> payments = getPaymentRepository()
                         .findAllByCreatedBetweenAndProviderName(
-                                simpleDateFormatWithoutZone.parse(command.get("dateFrom").textValue()),
-                                simpleDateFormatWithoutZone.parse(command.get("dateTo").textValue()),
-                                command.get("providerName").textValue()
-                        ).stream().map(payment -> {
+                                command.get("providerName").textValue(),
+                                simpleDateFormatWithoutZone.format(
+                                        simpleDateFormatWithoutZone.parse(
+                                                command.get("dateFrom").textValue())),
+                                simpleDateFormatWithoutZone.format(
+                                        simpleDateFormatWithoutZone.parse(
+                                                command.get("dateTo").textValue())))
+                        .stream()
+                        .map(payment -> {
                             if (command.get("onlyTransactionId").booleanValue()) {
                                 return PaymentApiDto.builder()
                                         .providerTrnId(payment.getTransaction())
@@ -268,33 +273,28 @@ public class CommandExecutor implements PluginRegister {
                         .collect(Collectors.toList());
                 node.set("payments", objectMapper.valueToTree(payments));
             } else if ("findFirstByTransactionAndProviderNameAndCreated".equalsIgnoreCase(commandName)) {
-
                 Optional<Payment> paymentOptional = getPaymentRepository()
                         .findFirstByTransactionAndProviderNameAndCreated(
                                 command.get(TRANSACTION_ID).textValue(),
                                 command.get("providerName").textValue(),
-                                simpleDateFormatWithoutZone.parse(command.get("transactionTime").textValue()));
-
-                log.info("is present " + paymentOptional.isPresent());
-
-                PaymentStatusApiDto paymentStatusApiDto;
+                                simpleDateFormatWithoutZone.format(
+                                        simpleDateFormatWithoutZone.parse(
+                                                command.get("transactionTime").textValue())));
 
                 if (paymentOptional.isPresent()) {
-                    paymentStatusApiDto = PaymentStatusApiDto.builder()
+                    PaymentStatusApiDto paymentStatusApiDto = PaymentStatusApiDto.builder()
                             .status((byte) 0)
                             .providerTrnId(paymentOptional.get().getTransaction())
                             .transactionState((byte) (paymentOptional.get().isCanceled() ? 2 : 1))
                             .transactionStateErrorMsg("Ok")
                             .transactionStateErrorStatus((byte) 0)
                             .build();
+                    node.set("payment", objectMapper.valueToTree(paymentStatusApiDto));
                 } else {
                     throw new ResponseStatusException(
                             HttpStatus.NOT_FOUND, "Entity not found by : " +
                             TRANSACTION_ID + " " + command.get(TRANSACTION_ID).textValue());
                 }
-
-                log.info("paymentStatusApiDto " + paymentStatusApiDto);
-                node.set("payment", objectMapper.valueToTree(paymentStatusApiDto));
             } else if ("cancelPayment".equalsIgnoreCase(commandName)) {
                 getPaymentService().cancelPaymentByTransactionId(
                         command.get(TRANSACTION_ID).textValue(),
