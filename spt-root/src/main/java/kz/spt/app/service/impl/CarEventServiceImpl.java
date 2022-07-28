@@ -350,6 +350,40 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     @Override
+    public void handleManualEnter(Long cameraId, String plateNumber) {
+        CarState lastLeft = carStateService.getLastNotLeft(plateNumber);
+        if (lastLeft == null) {
+            Camera camera = cameraService.getCameraById(cameraId);
+            SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("carNumber", plateNumber);
+            properties.put("eventTime", format.format(new Date()));
+            properties.put("cameraIp", camera.getIp());
+            properties.put("cameraId", cameraId);
+            properties.put("gateName", camera.getGate().getName());
+            properties.put("gateDescription", camera.getGate().getDescription());
+            properties.put("gateType", camera.getGate().getGateType().toString());
+            properties.put("type", EventLog.StatusType.Allow);
+            properties.put("event", EventLog.EventType.MANUAL_GATE_OPEN);
+
+            String username = "";
+            if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+                CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                if (currentUser != null) {
+                    username = currentUser.getUsername();
+                }
+            }
+
+            String message_ru = "Ручное запуск без открытие шлагбаума: Пользователь " + username + " открыл для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
+            String message_en = "Manual enter without open gate: User " + username + " opened for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
+
+            carStateService.createINState(plateNumber, new Date(), camera, false, null, null);
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), plateNumber, message_ru, message_en);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, message_ru, message_en, EventLog.EventType.MANUAL_GATE_OPEN);
+        }
+    }
+
+    @Override
     public void saveCarEvent(CarEventDto eventDto) throws Exception {
 
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);

@@ -20,6 +20,8 @@ public interface ArmService {
 
     Boolean closeGate(Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
 
+    void manualEnter(Long cameraId, String plateNumber);
+
     Boolean restartParkomat(String ip);
 
     Boolean setEmergencyOpen(Boolean value, UserDetails currentUser);
