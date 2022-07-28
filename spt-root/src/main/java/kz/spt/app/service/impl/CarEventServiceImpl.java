@@ -69,6 +69,7 @@ public class CarEventServiceImpl implements CarEventService {
     private final CarModelService carModelService;
     private final CarModelRepository carModelRepository;
     private final WhitelistRootService whitelistRootService;
+    private final PaymentService paymentService;
 
     @Value("${parking.has.access.unknown.cases}")
     Boolean parkingHasAccessUnknownCases;
@@ -110,7 +111,8 @@ public class CarEventServiceImpl implements CarEventService {
                                CarStateService carStateService, CarImageService carImageService,
                                BarrierService barrierService, BlacklistService blacklistService, PluginService pluginService, QrPanelService qrPanelService,
                                AbonomentService abonomentService, CarModelService carModelService, CarModelRepository carModelRepository,
-                               WhitelistRootService whitelistRootService, GateService gateService, ParkingService parkingService) {
+                               WhitelistRootService whitelistRootService, GateService gateService, ParkingService parkingService,
+                               PaymentService paymentService) {
         this.carsService = carsService;
         this.cameraService = cameraService;
         this.eventLogService = eventLogService;
@@ -126,6 +128,7 @@ public class CarEventServiceImpl implements CarEventService {
         this.whitelistRootService = whitelistRootService;
         this.gateService = gateService;
         this.parkingService = parkingService;
+        this.paymentService = paymentService;
     }
 
     @Override
@@ -1358,6 +1361,28 @@ public class CarEventServiceImpl implements CarEventService {
             } catch (Exception ex) {
                 log.log(Level.WARNING, "Error while display qrpanel for gate " + gate.gateName);
             }
+
+            if (barrierOutProcessingHashtable.containsKey(camera.getGate().getBarrier().getId())) {
+                return;
+            }
+
+            boolean barrierStatusResult;
+            try {
+                barrierStatusResult = barrierService.getBarrierStatus(camera.getGate().getBarrier(), properties);
+                log.info("barrierStatusResult: " + barrierStatusResult);
+                if(barrierStatusResult){
+                    paymentService.createDebtAndOUTState(eventDto.car_number, camera, properties);
+                }
+            } catch (Exception e) {
+                String descriptionRu = "Ошибка считования значении шлагбаума: С контроллера шлагбаума не удалось считать значение для проверки состояние для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
+                String descriptionEn = "Error while barrier state read: Could not read state from barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
+                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn);
+                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
+                log.info("Error reading barrier state: " + e.getMessage());
+            }
+
+            barrierOutProcessingHashtable.put(camera.getGate().getBarrier().getId(), System.currentTimeMillis());
+            barrierOutProcessingHashtable.remove(camera.getGate().getBarrier().getId());
         }
     }
 
