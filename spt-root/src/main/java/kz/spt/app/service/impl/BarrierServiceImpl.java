@@ -120,6 +120,8 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public Boolean openBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
+        log.info("Barrier " + barrier.getIp() + " open process started for car number: " + (String) properties.get("carNumber"));
+        Boolean result = true;
         if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier())) { //  ignore in development
             GateStatusDto gate = new GateStatusDto();
             gate.gateType = barrier.getGate().getGateType();
@@ -127,16 +129,17 @@ public class BarrierServiceImpl implements BarrierService {
 
             if (barrier.getBarrierType() == null) {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + ((String) properties.get("carNumber") != null ? " для номер авто " + (String) properties.get("carNumber") : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""));
-                return false;
+                result = false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
-                return snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                result = snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
-                return modbusChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                result = modbusChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
-                return jetsonChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                result = jetsonChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Open);
             }
         }
-        return true;
+        log.info("Barrier " + barrier.getIp() + " open process ended for car number: " + (String) properties.get("carNumber"));
+        return result;
     }
 
     @Override
@@ -161,19 +164,22 @@ public class BarrierServiceImpl implements BarrierService {
     }
 
     public Boolean openBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
+        log.info("Barrier " + barrier.ip + " open process started for car number: " + carNumber);
+        Boolean result = true;
         if (!disableOpen && (gate.notControlBarrier == null || !gate.notControlBarrier)) { //  ignore in development
             if (barrier.type == null) {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + (carNumber != null ? " for car number " + carNumber : ""));
-                return false;
+                result = false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.type)) {
-                return snmpChangeValue(gate, carNumber, barrier, Command.Open);
+                result = snmpChangeValue(gate, carNumber, barrier, Command.Open);
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.type)) {
-                return modbusChangeValue(gate, carNumber, barrier, Command.Open);
+                result = modbusChangeValue(gate, carNumber, barrier, Command.Open);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.type)) {
-                return jetsonChangeValue(barrier, Command.Open);
+                result = jetsonChangeValue(barrier, Command.Open);
             }
         }
-        return true;
+        log.info("Barrier " + barrier.ip + " open process ended for car number: " + carNumber);
+        return result;
     }
 
     public Boolean closeBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
