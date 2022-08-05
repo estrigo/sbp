@@ -137,6 +137,21 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-md-8">
+            <div class="form-group">
+                <label for="confirmCarPass" class="control-label" th:text="#{barrier.confirmCarPass}"></label>
+                <input type="checkbox" id="confirmCarPass" class="form-control" th:field="*{confirmCarPass}" th:value="*{confirmCarPass}" onchange="changeSensorsBlock()">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="confirmCarPassTimeout" class="control-label" th:text="#{barrier.confirmCarPassTimeout}"></label>
+                <input type="number" step="1" min="0" max="600" class="form-control" id="confirmCarPassTimeout" th:field="*{confirmCarPassTimeout}" th:value="*{confirmCarPassTimeout}">
+            </div>
+        </div>
+    </div>
+
     <div id="sensorBlock">
         <hr />
         <h4 th:text="#{barrier.loopSettings}"></h4>

@@ -16,7 +16,7 @@ services:
     networks:
       - parking-net
   spt-app:
-    image: doc.smartparking.kz/spt-app:latest
+    image: registry.infra.smartparking.kz/spt-app:238
     restart: always
     environment:
       - "TZ=Asia/Dubai"
