@@ -109,6 +109,10 @@
     var globalDateTo = $('#dateTo').val();
 
     function find() {
+        $("#cover").fadeIn(100);
+        var ajaxCallCount = 0;
+        var ajaxEndedCount = 0;
+
         $('#main').show();
         $('#detailed').hide();
 
@@ -124,6 +128,8 @@
         let cashFields = [];
 
         request.eventType = "fields";
+
+        ajaxCallCount++;
         $.ajax({
             url: "/rest/report/sum",
             type: "POST",
@@ -146,6 +152,13 @@
                         }
                     }
                 });
+                if(data[0].results['thirdPartyRecords']){
+                    html = html + '<th>' + data[0].results['thirdPartyRecords'] + '</th>';
+                    tdList = tdList + '<td>';
+                    tdList = tdList +  "<a href='#' id='thirdPartyRecords' onclick='openList(\"thirdPartyRecords\")'></a>";
+                    tdList = tdList + '</td>';
+                    predefinedFields.push('thirdPartyRecords');
+                }
                 if(data[0].results['bankCardSum']){
                     html = html + '<th>' + data[0].results['bankCardSum'] + '</th>';
                     cashFields.push('bankCardSum');
@@ -179,6 +192,7 @@
                 $.each(predefinedFields, function(value) {
                     request.eventType = predefinedFields[value];
                     if(predefinedFields[value] !== 'dateTime'){
+                        ajaxCallCount++;
                         $.ajax({
                             url: "/rest/report/sum",
                             type: "POST",
@@ -187,11 +201,15 @@
                             dataType: "json",
                             success: function (data) {
                                 $('#' + data[0].results.eventType).text(data[0].results.result);
+                                if(ajaxCallCount === ++ajaxEndedCount){
+                                    $("#cover").fadeOut(100);
+                                }
                             }
                         });
                     }
                 });
                 request.eventType = 'payments';
+                ajaxCallCount++;
                 $.ajax({
                     url: "/rest/report/sum",
                     type: "POST",
@@ -202,17 +220,20 @@
                         for (var key in data[0].results){
                             $('#' + key).text(data[0].results[key] === 'null' ? 0 : data[0].results[key]);
                         }
+                        if(ajaxCallCount === ++ajaxEndedCount){
+                            $("#cover").fadeOut(100);
+                        }
                     }
                 });
+                if(ajaxCallCount === ++ajaxEndedCount){
+                    $("#cover").fadeOut(100);
+                }
             }
         });
     }
 
-    $(document).on('ready',function(){
-        find();
-    });
-
     function openList(val){
+        $("#cover").fadeIn(100);
         $('#sumDetailed>tbody').html('');
         let request = {
             "dateFrom": globalDateFrom,
@@ -244,6 +265,7 @@
                     html = html + '</tr>';
                 });
                 $('#sumDetailed>tbody').html(html);
+                $("#cover").fadeOut(100);
             }
         });
     }
