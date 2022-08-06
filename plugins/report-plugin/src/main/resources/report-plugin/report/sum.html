@@ -292,7 +292,7 @@
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Billing');
-        XLSX.writeFile(wb, "billing.xls", {type: "buffer"});
+        XLSX.writeFile(wb, "billing.xlsx", {type: "buffer", bookType:"xlsx"});
     }
 
     function excelDetailed() {
@@ -313,7 +313,7 @@
 
         const wb1 = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb1, ws1, 'Detailed');
-        XLSX.writeFile(wb1, "detailed.xls", {type: "buffer"});
+        XLSX.writeFile(wb1, "detailed.xlsx", {type: "buffer", bookType:"xlsx"});
     }
 
     function back() {

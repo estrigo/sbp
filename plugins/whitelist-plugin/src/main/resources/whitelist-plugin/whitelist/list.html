@@ -303,7 +303,7 @@
 
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'Whitelist');
-                XLSX.writeFile(wb, "whitelist.xls", { type: "buffer" });
+                XLSX.writeFile(wb, "whitelist.xlsx", { type: "buffer", bookType:"xlsx" });
             } catch(e){
                 console.log(e);
             }
@@ -324,7 +324,7 @@
 
                     const wb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(wb, ws, 'Whitelist');
-                    XLSX.writeFile(wb, "whitelistGroup.xls", { type: "buffer" });
+                    XLSX.writeFile(wb, "whitelistGroup.xlsx", { type: "buffer", bookType:"xlsx" });
                 } catch(e){
                     console.log(e);
                 }
