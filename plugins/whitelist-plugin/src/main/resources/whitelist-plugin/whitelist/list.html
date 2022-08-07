@@ -64,10 +64,10 @@
                                            class="btn btn-success waves-effect waves-light"
                                            th:text="#{whitelist.addNewGroup}"></a>
                                         <button class="btn btn-success waves-effect waves-light"
-                                                onclick="excelForWhitelist()"
+                                                onclick="excelForWhitelist(this)"
                                                 th:text="#{whitelist.downloadList}"></button>
                                         <button class="btn btn-success waves-effect waves-light"
-                                                onclick="excelWhitelistGroup()"
+                                                onclick="excelWhitelistGroup(this)"
                                                 th:text="#{whitelist.downloadListByGroup}"></button>
                                         <select class="form-control" id="selectedName" name="selectedGroup" style="max-width:20%; margin-top: 10px;"
                                                 th:required="required">
@@ -280,8 +280,9 @@
         clearInterval(interval);
     }
 
-    function excelForWhitelist(){
-        $("#cover").fadeIn(100);
+    function excelForWhitelist(element){
+        $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
+        $(element).attr('disabled','disabled');
         let idH = "Id";
         let plateNumberH = [[#{car.platenumber}]];
         let fullNameH = [[#{car.fullName}]];
@@ -308,12 +309,14 @@
             } catch(e){
                 console.log(e);
             }
-            $("#cover").fadeOut(100);
+            $(element).html('Excel');
+            $(element).removeAttr('disabled');
         });
     }
 
-    function excelWhitelistGroup(){
-        $("#cover").fadeIn(100);
+    function excelWhitelistGroup(element){
+        $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
+        $(element).attr('disabled','disabled');
         let group_name = document.getElementById("selectedName");
         if (group_name.value) {
             $.get("/rest/whitelist/group/excel?groupName=" + group_name.value, function (data) {
@@ -331,11 +334,13 @@
                 } catch(e){
                     console.log(e);
                 }
-                $("#cover").fadeOut(100);
+                $(element).html('Excel');
+                $(element).removeAttr('disabled');
             });
         } else {
             alert("Выберите группу для этого!");
-            $("#cover").fadeOut(100);
+            $(element).html('Excel');
+            $(element).removeAttr('disabled');
         }
     }
 

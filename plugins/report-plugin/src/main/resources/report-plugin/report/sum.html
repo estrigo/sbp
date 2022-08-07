@@ -33,7 +33,7 @@
                                     </div>
                                     <div class="col-2">
                                         <button type="button" class="btn btn-success mr-1"
-                                                onclick="excel()"
+                                                onclick="excel(this)"
                                                 th:text="#{report.excel}"></button>
                                     </div>
                                 </div>
@@ -54,7 +54,7 @@
                                     </div>
                                     <div class="col-2">
                                         <button type="button" class="btn btn-success mr-1"
-                                                onclick="excelDetailed()"
+                                                onclick="excelDetailed(this)"
                                                 th:text="#{report.excel}"></button>
                                     </div>
                                 </div>
@@ -274,8 +274,9 @@
         $('#dateFrom').val(dateFrom.substring(0, dateFrom.length-1));
     }
 
-    function excel() {
-        $("#cover").fadeIn(100);
+    function excel(element) {
+        $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
+        $(element).attr('disabled','disabled');
         let arr = [];
         let headers = [];
         $('#sumReport th').each(function(index, item) {
@@ -294,11 +295,13 @@
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Billing');
         XLSX.writeFile(wb, "billing.xlsx", {type: "buffer", bookType:"xlsx"});
-        $("#cover").fadeOut(100);
+        $(element).html('Excel');
+        $(element).removeAttr('disabled');
     }
 
-    function excelDetailed() {
-        $("#cover").fadeIn(100);
+    function excelDetailed(element) {
+        $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
+        $(element).attr('disabled','disabled');
         let arr1 = [];
         let headers1 = [];
         $('#sumDetailed th').each(function(index, item) {
@@ -317,7 +320,8 @@
         const wb1 = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb1, ws1, 'Detailed');
         XLSX.writeFile(wb1, "detailed.xlsx", {type: "buffer", bookType:"xlsx"});
-        $("#cover").fadeOut(100);
+        $(element).html('Excel');
+        $(element).removeAttr('disabled');
     }
 
     function back() {

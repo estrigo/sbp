@@ -15,7 +15,7 @@
                         <div class="row">
                             <div class="col-12">
                                 <button type="button" class="btn btn-success mr-1"
-                                        onclick="excel()"
+                                        onclick="excel(this)"
                                         th:text="#{report.excel}"></button>
                             </div>
                         </div>
@@ -108,8 +108,9 @@
         },
     });
 
-    function excel() {
-        $("#cover").fadeIn(100);
+    function excel(element) {
+        $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
+        $(element).attr('disabled','disabled');
         let request = {};
         $.ajax({
             url: "/rest/report/manualOpen/excel",
@@ -130,7 +131,8 @@
                 } catch (e) {
                     console.log(e);
                 }
-                $("#cover").fadeOut(100);
+                $(element).html('Excel');
+                $(element).removeAttr('disabled');
             }
         })
     }
