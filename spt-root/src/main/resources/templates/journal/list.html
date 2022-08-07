@@ -416,7 +416,7 @@
     }
 
     function exportExcel(){
-        console.log("exportExcel !");
+        $("#cover").fadeIn(100);
         let dateFromString = $('#dateFromString').val();
         let dateToString = $('#dateToString').val();
         let plateNumber = $('#plateNumber').val();
@@ -436,9 +436,10 @@
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'journal');
                 XLSX.writeFile(wb, "journal.xlsx", { type: "buffer", bookType:"xlsx" });
+                $("#cover").fadeOut(100);
             });
-
         } else {
+            $("#cover").fadeOut(100);
             console.log('filter not defined')
         }
     }

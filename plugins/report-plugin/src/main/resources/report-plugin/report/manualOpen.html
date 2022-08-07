@@ -109,6 +109,7 @@
     });
 
     function excel() {
+        $("#cover").fadeIn(100);
         let request = {};
         $.ajax({
             url: "/rest/report/manualOpen/excel",
@@ -129,6 +130,7 @@
                 } catch (e) {
                     console.log(e);
                 }
+                $("#cover").fadeOut(100);
             }
         })
     }

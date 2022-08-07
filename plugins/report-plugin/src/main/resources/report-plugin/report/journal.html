@@ -202,6 +202,7 @@
     }
 
     function excel() {
+        $("#cover").fadeIn(100);
         let request = {
             "dateFrom": $('#dateFrom').val(),
             "dateTo": $('#dateTo').val(),
@@ -225,6 +226,7 @@
                 } catch (e) {
                     console.log(e);
                 }
+                $("#cover").fadeOut(100);
             }
         })
     }

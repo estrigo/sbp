@@ -275,6 +275,7 @@
     }
 
     function excel() {
+        $("#cover").fadeIn(100);
         let arr = [];
         let headers = [];
         $('#sumReport th').each(function(index, item) {
@@ -293,9 +294,11 @@
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Billing');
         XLSX.writeFile(wb, "billing.xlsx", {type: "buffer", bookType:"xlsx"});
+        $("#cover").fadeOut(100);
     }
 
     function excelDetailed() {
+        $("#cover").fadeIn(100);
         let arr1 = [];
         let headers1 = [];
         $('#sumDetailed th').each(function(index, item) {
@@ -314,6 +317,7 @@
         const wb1 = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb1, ws1, 'Detailed');
         XLSX.writeFile(wb1, "detailed.xlsx", {type: "buffer", bookType:"xlsx"});
+        $("#cover").fadeOut(100);
     }
 
     function back() {

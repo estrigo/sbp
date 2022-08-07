@@ -197,6 +197,7 @@
     });
 
     function excelForEventCar(){
+        $("#cover").fadeIn(100);
         let dateFromString = $('#dateFromString').val();
         let dateToString = $('#dateToString').val();
         let plateNumber = $('#plateNumber').val();
@@ -217,6 +218,7 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'events');
             XLSX.writeFile(wb, "events.xlsx", { type: "buffer", bookType:"xlsx"});
+            $("#cover").fadeOut(100);
         });
     }
 

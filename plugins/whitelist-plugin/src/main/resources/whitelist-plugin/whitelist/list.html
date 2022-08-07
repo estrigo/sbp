@@ -281,6 +281,7 @@
     }
 
     function excelForWhitelist(){
+        $("#cover").fadeIn(100);
         let idH = "Id";
         let plateNumberH = [[#{car.platenumber}]];
         let fullNameH = [[#{car.fullName}]];
@@ -307,10 +308,12 @@
             } catch(e){
                 console.log(e);
             }
+            $("#cover").fadeOut(100);
         });
     }
 
     function excelWhitelistGroup(){
+        $("#cover").fadeIn(100);
         let group_name = document.getElementById("selectedName");
         if (group_name.value) {
             $.get("/rest/whitelist/group/excel?groupName=" + group_name.value, function (data) {
@@ -328,12 +331,12 @@
                 } catch(e){
                     console.log(e);
                 }
+                $("#cover").fadeOut(100);
             });
         } else {
             alert("Выберите группу для этого!");
+            $("#cover").fadeOut(100);
         }
-
-
     }
 
 </script>
