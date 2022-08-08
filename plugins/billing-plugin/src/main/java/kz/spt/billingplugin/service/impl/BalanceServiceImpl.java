@@ -4,8 +4,10 @@ import kz.spt.billingplugin.bootstrap.datatable.BalanceComparators;
 import kz.spt.billingplugin.dto.TransactionDto;
 import kz.spt.billingplugin.dto.TransactionFilterDto;
 import kz.spt.billingplugin.model.Balance;
+import kz.spt.billingplugin.model.BalanceDebtLog;
 import kz.spt.billingplugin.model.Transaction;
 import kz.spt.billingplugin.model.TransactionSpecification;
+import kz.spt.billingplugin.repository.BalanceDebtLogRepository;
 import kz.spt.billingplugin.repository.BalanceRepository;
 import kz.spt.billingplugin.repository.TransactionRepository;
 import kz.spt.billingplugin.service.BalanceService;
@@ -15,6 +17,7 @@ import kz.spt.lib.model.CarState;
 import kz.spt.lib.service.CarStateService;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,14 +36,20 @@ import java.util.stream.Collectors;
 public class BalanceServiceImpl implements BalanceService {
 
     private BalanceRepository balanceRepository;
+
+    private BalanceDebtLogRepository balanceDebtLogRepository;
     private TransactionRepository transactionRepository;
     private RootServicesGetterService rootServicesGetterService;
 
+    @Value("${save.removed.debt.balance}")
+    Boolean saveRemovedDebtBalance;
+
     public BalanceServiceImpl(BalanceRepository balanceRepository, TransactionRepository transactionRepository,
-                              RootServicesGetterService rootServicesGetterService) {
+                              RootServicesGetterService rootServicesGetterService, BalanceDebtLogRepository balanceDebtLogRepository) {
         this.balanceRepository = balanceRepository;
         this.transactionRepository = transactionRepository;
         this.rootServicesGetterService = rootServicesGetterService;
+        this.balanceDebtLogRepository = balanceDebtLogRepository;
     }
 
     private static final Comparator<Balance> EMPTY_COMPARATOR = (e1, e2) -> 0;
@@ -102,6 +111,9 @@ public class BalanceServiceImpl implements BalanceService {
     public void deleteAllDebts() {
         List<Balance> debtBalances = balanceRepository.debtBalances();
         for (Balance balance : debtBalances) {
+            if(saveRemovedDebtBalance){
+                createBalanceDebtLog(balance.getPlateNumber(), balance.getBalance());
+            }
             balance.setBalance(BigDecimal.ZERO);
             balanceRepository.save(balance);
         }
@@ -286,5 +298,12 @@ public class BalanceServiceImpl implements BalanceService {
         page.setDraw(pagingRequest.getDraw());
 
         return page;
+    }
+
+    private void createBalanceDebtLog(String plateNumber, BigDecimal balance){
+        BalanceDebtLog balanceDebtLog = new BalanceDebtLog();
+        balanceDebtLog.setBalance(balance);
+        balanceDebtLog.setPlateNumber(plateNumber);
+        balanceDebtLogRepository.save(balanceDebtLog);
     }
 }

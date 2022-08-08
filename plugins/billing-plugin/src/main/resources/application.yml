@@ -14,7 +14,8 @@ spring:
       idle-timeout: 10000
       pool-name: BillingPluginHikariPool
       connection-timeout: 20000 #Максимальное количество миллисекунд для ожидания подключения из пула
-      #Значение конструктора по умолчанию: SECONDS.toMillis(30) = 30000 Значение конфигурации по умолчанию после проверки: 	30000
+      #Значение конструктора по умолчанию: SECONDS.toMillis(30) = 30000 Значение конфигурации по умолчанию после
+      #проверки: 30000
       minimum-idle: 10 #Минимальное количество неактивных соединений, поддерживаемых в пуле
       #Значение конструктора по умолчанию: -1	Значение конфигурации по умолчанию после проверки: 10
 
@@ -41,3 +42,11 @@ webkassa:
   host: https://devkkm.webkassa.kz
 rekassa:
   host: https://api-test.rekassa.kz/api
+save:
+  removed:
+    debt:
+      balance: false
+parking:
+  remove:
+    all:
+      debts: false # удалят все долги после 03.00 утра
