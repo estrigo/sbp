@@ -11,6 +11,10 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.Parking;
+import kz.spt.lib.model.dto.adminPlace.GenericWhlEvent;
+import kz.spt.lib.model.dto.adminPlace.WhiteListEvent;
+import kz.spt.lib.model.dto.adminPlace.WhiteListGroupEvent;
+import kz.spt.lib.model.dto.adminPlace.enums.WhlProcessEnum;
 import kz.spt.lib.service.CarsService;
 import kz.spt.whitelistplugin.bootstrap.datatable.WhiteListComparators;
 import kz.spt.whitelistplugin.model.AbstractWhitelist;
@@ -24,9 +28,11 @@ import kz.spt.whitelistplugin.viewmodel.WhiteListDto;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.pf4j.util.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -45,6 +51,9 @@ public class WhitelistServiceImpl implements WhitelistService {
     private WhitelistRepository whitelistRepository;
     private WhitelistGroupsRepository whitelistGroupsRepository;
     private RootServicesGetterService rootServicesGetterService;
+
+    private ApplicationEventPublisher eventPublisher;
+
     private static final Map<String, String> dayValues = new HashMap<>() {{
         put("0", "Понедельник");
         put("1", "Вторник");
@@ -57,10 +66,12 @@ public class WhitelistServiceImpl implements WhitelistService {
     private static final Comparator<WhiteListDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     public WhitelistServiceImpl(WhitelistRepository whitelistRepository, WhitelistGroupsRepository whitelistGroupsRepository,
-                                RootServicesGetterService rootServicesGetterService) {
+                                RootServicesGetterService rootServicesGetterService,
+                                ApplicationEventPublisher eventPublisher) {
         this.whitelistRepository = whitelistRepository;
         this.whitelistGroupsRepository = whitelistGroupsRepository;
         this.rootServicesGetterService = rootServicesGetterService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -113,6 +124,12 @@ public class WhitelistServiceImpl implements WhitelistService {
             }
         }
         whitelistRepository.save(whitelist);
+
+        this.eventPublisher.publishEvent(new GenericWhlEvent<>( new WhiteListEvent(this,
+                whitelist.getCar().getId(),
+                whitelist.getPlatenumber(),
+                whitelist.getGroupId(),
+                whitelist.getCar().getModel()), WhlProcessEnum.CREATE));
     }
 
     @Override
@@ -462,7 +479,18 @@ public class WhitelistServiceImpl implements WhitelistService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
+        Whitelist whitelist = whitelistRepository.getOne(id);
+        try {
+            this.eventPublisher.publishEvent(new GenericWhlEvent<>(new WhiteListEvent(this,
+                    whitelist.getCar().getId(),
+                    whitelist.getCar().getPlatenumber(),
+                    whitelist.getGroup().getId(),
+                    whitelist.getCar().getModel()), WhlProcessEnum.DELETE));
+        } catch (Exception e) {
+            log.warning(e.getMessage());
+        }
         whitelistRepository.deleteById(id);
     }
 
@@ -488,6 +516,11 @@ public class WhitelistServiceImpl implements WhitelistService {
             rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber(), false);
         }
         whitelistRepository.save(whitelist);
+        this.eventPublisher.publishEvent(new GenericWhlEvent<>( new WhiteListEvent(this,
+                whitelist.getCar().getId(),
+                car.getPlatenumber(),
+                group.getId(),
+                whitelist.getCar().getModel()), WhlProcessEnum.CREATE));
     }
 
     @Override
@@ -745,12 +778,31 @@ public class WhitelistServiceImpl implements WhitelistService {
 
     public void deleteAllByParkingId(Long parkingId) {
         List<Whitelist> whitelists = whitelistRepository.findByParkingID(parkingId);
-        for (int i=0; i<whitelists.size(); i++){
-            whitelistRepository.deleteById(whitelists.get(i).getId());
+        for (Whitelist whitelist : whitelists) {
+            try {
+                this.eventPublisher.publishEvent(new GenericWhlEvent<>(new WhiteListEvent(this,
+                        whitelist.getCar().getId(),
+                        whitelist.getCar().getPlatenumber(),
+                        whitelist.getGroup().getId(),
+                        whitelist.getCar().getModel()), WhlProcessEnum.DELETE));
+            } catch (Exception e) {
+                log.warning(e.getMessage());
+            }
+            whitelistRepository.deleteById(whitelist.getId());
         }
         List<WhitelistGroups> whitelistGroups = whitelistGroupsRepository.getWhitelistGroupByParkingId(parkingId);
-        for (int i=0; i<whitelistGroups.size(); i++){
-            whitelistGroupsRepository.deleteById(whitelistGroups.get(i).getId());
+        for (WhitelistGroups whitelistGroup : whitelistGroups) {
+            try {
+                this.eventPublisher.publishEvent(new GenericWhlEvent<>(new WhiteListGroupEvent(
+                        this,
+                        whitelistGroup.getName(),
+                        whitelistGroup.getId(),
+                        whitelistGroup.getParkingId()),
+                        WhlProcessEnum.DELETE));
+            } catch (Exception e) {
+                log.warning(e.getMessage());
+            }
+            whitelistGroupsRepository.deleteById(whitelistGroup.getId());
         }
 
     }
@@ -769,6 +821,11 @@ public class WhitelistServiceImpl implements WhitelistService {
         CarsService carsService = rootServicesGetterService.getCarsService();
         List<String> platenumbers = carsService.searchByPlateNumberContaining(platenumber);
         return platenumbers;
+    }
+
+    @Override
+    public Optional<WhitelistGroups> findWhitelistGroups(Long groupId) {
+        return whitelistGroupsRepository.findById(groupId);
     }
 
 }

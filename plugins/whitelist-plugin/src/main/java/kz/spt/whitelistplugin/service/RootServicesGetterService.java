@@ -1,8 +1,6 @@
 package kz.spt.whitelistplugin.service;
 
-import kz.spt.lib.service.CarStateService;
-import kz.spt.lib.service.CarsService;
-import kz.spt.lib.service.ParkingService;
+import kz.spt.lib.service.*;
 
 public interface RootServicesGetterService {
 
@@ -11,4 +9,6 @@ public interface RootServicesGetterService {
     CarStateService getCarStateService();
 
     ParkingService getParkingService();
+
+    AdminService getAdminService();
 }

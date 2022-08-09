@@ -151,3 +151,8 @@ management:
     distribution:
       percentiles-histogram:
         "[http.server.requests]": true
+admin-place:
+  pass: $2a$10$FMkv8WJlOGDnrsZ7Ph4/9uyWrFhxiTwRXAS50qs.R9jPdpI7J3poK
+rest-admin:
+  login: rest
+  password: d8G3v1@0Ig#lNyrVG3I7Sw1oxx!
