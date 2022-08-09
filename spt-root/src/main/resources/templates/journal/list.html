@@ -67,7 +67,7 @@
 
                 <div class="row">
                     <div class="col-3">
-                        <button type="button" class="btn btn-success waves-effect waves-light" onclick="exportExcel()" th:text="#{journal.downloadExcel}"></button>
+                        <button type="button" class="btn btn-success waves-effect waves-light" onclick="exportExcel(this)" th:text="#{journal.downloadExcel}"></button>
                     </div>
                     <div class="table-responsive" data-pattern="priority-columns">
                         <table id="carStateTable" class="table table-bordered">
@@ -415,8 +415,9 @@
         }
     }
 
-    function exportExcel(){
-        console.log("exportExcel !");
+    function exportExcel(element){
+        $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
+        $(element).attr('disabled','disabled');
         let dateFromString = $('#dateFromString').val();
         let dateToString = $('#dateToString').val();
         let plateNumber = $('#plateNumber').val();
@@ -435,10 +436,13 @@
                 let ws = XLSX.utils.json_to_sheet(data, {skipHeader:true});
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'journal');
-                XLSX.writeFile(wb, "journal.xls", { type: "buffer" });
+                XLSX.writeFile(wb, "journal.xlsx", { type: "buffer", bookType:"xlsx" });
+                $(element).html('Excel');
+                $(element).removeAttr('disabled');
             });
-
         } else {
+            $(element).html('Excel');
+            $(element).removeAttr('disabled');
             console.log('filter not defined')
         }
     }

@@ -31,3 +31,16 @@ table.dataTable {
     background-color: #CCC;
     color:#000;
 }
+
+#cover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.80;
+    background: #aaa url('../images/Ajax-loader.gif') no-repeat center;;
+    z-index: 10;
+    display: none;
+    text-align: center;
+}

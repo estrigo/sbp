@@ -15,7 +15,7 @@
                         <div class="row">
                             <div class="col-12">
                                 <button type="button" class="btn btn-success mr-1"
-                                        onclick="excel()"
+                                        onclick="excel(this)"
                                         th:text="#{report.excel}"></button>
                             </div>
                         </div>
@@ -108,7 +108,9 @@
         },
     });
 
-    function excel() {
+    function excel(element) {
+        $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
+        $(element).attr('disabled','disabled');
         let request = {};
         $.ajax({
             url: "/rest/report/manualOpen/excel",
@@ -125,10 +127,12 @@
                     let ws = XLSX.utils.json_to_sheet(arr);
                     const wb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(wb, ws, 'Manual open');
-                    XLSX.writeFile(wb, "report.xls", {type: "buffer"});
+                    XLSX.writeFile(wb, "report.xlsx", {type: "buffer", bookType:"xlsx"});
                 } catch (e) {
                     console.log(e);
                 }
+                $(element).html('Excel');
+                $(element).removeAttr('disabled');
             }
         })
     }

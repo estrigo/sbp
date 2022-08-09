@@ -5,9 +5,13 @@ import kz.spt.lib.bootstrap.datatable.Column;
 import kz.spt.lib.bootstrap.datatable.Order;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
+import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CarState;
+import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.PluginService;
+import kz.spt.lib.utils.StaticValues;
+import kz.spt.reportplugin.ReportPlugin;
 import kz.spt.reportplugin.datatable.JournalReportDtoComparators;
 import kz.spt.reportplugin.datatable.SumReportDtoComparators;
 import kz.spt.reportplugin.dto.JournalReportDto;
@@ -23,6 +27,7 @@ import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.jvnet.hk2.annotations.Service;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -44,6 +49,8 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
     @PersistenceContext
     private EntityManager entityManager;
+    private RootServicesGetterService rootServicesGetterService;
+    private PluginService pluginService;
 
     private static final Comparator<SumReportDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -59,7 +66,6 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
     }
 
     public List<SumReportDto> countSum(FilterSumReportDto filterSumReportDto){
-
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(filterSumReportDto.getDateFrom());
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -110,6 +116,11 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
             fieldsMap.put("fromBalanceRecords", bundle.getString("report.fromBalanceRecords"));
             fieldsMap.put("freeRecords", bundle.getString("report.freeRecords"));
             fieldsMap.put("autoClosedRecords", bundle.getString("report.autoClosedRecords"));
+
+            PluginRegister megaPluginRegister = getPluginService().getPluginRegister(StaticValues.megaPlugin);
+            if(megaPluginRegister != null){
+                fieldsMap.put("thirdPartyRecords", bundle.getString("report.thirdPartyRecords"));
+            }
 
             if(hasCashPayment){
                 fieldsMap.put("bankCardSum", bundle.getString("report.bankCardSum"));
@@ -193,6 +204,16 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
         } else {
             String queryString = null;
             if("records".equals(filterSumReportDto.getEventType())){
+
+                String username = "undefined";
+                if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+                    CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                    if (currentUser != null) {
+                        username = currentUser.getUsername();
+                    }
+                }
+                log.info("Sum Report called by user: " + username + " from date: " + filterSumReportDto.getDateFrom()+ " to date: " + filterSumReportDto.getDateTo());
+
                 queryString = "select count(cs.id) as count " +
                         "from car_state cs " +
                         "where cs.out_timestamp between :dateFrom and :dateTo";
@@ -223,6 +244,21 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                         "         where l.object_class = 'Gate' " +
                         "           and l.created between :dateFromException and :dateToException " +
                         "           and l.event_type = 'WHITELIST_OUT' " +
+                        ") l " +
+                        "inner join ( " +
+                        "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
+                        "    from car_state cs " +
+                        "    where cs.out_timestamp between :dateFrom and :dateTo " +
+                        "      and cs.out_gate is not null " +
+                        ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
+            } else if("thirdPartyRecords".equals(filterSumReportDto.getEventType())){
+                queryString = "select count(distinct cs.car_state_id) " +
+                        "from ( " +
+                        "         select l.created, l.plate_number " +
+                        "         from event_log l " +
+                        "         where l.object_class = 'CarState' " +
+                        "           and l.created between :dateFromException and :dateToException " +
+                        "           and l.event_type = 'PREPAID' " +
                         ") l " +
                         "inner join ( " +
                         "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
@@ -387,6 +423,9 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
             case  ("whitelistRecords"):
                 queryText = commonPart.replaceFirst("INDIVIDUAL_CONDITION","  and l.event_type = 'WHITELIST_OUT'");
                 break;
+            case  ("thirdPartyRecords"):
+                queryText = commonPart.replaceFirst("INDIVIDUAL_CONDITION","  and l.event_type = 'PREPAID'").replaceFirst("where l.object_class = 'Gate'","where l.object_class = 'CarState'");
+                break;
             case ("abonementRecords"):
                 queryText = commonPart.replaceFirst("INDIVIDUAL_CONDITION","  and l.event_type = 'ABONEMENT_PASS'");
                 break;
@@ -499,6 +538,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
         }
         sumReportDto.setListResult(sumReportList);
         listResult.add(sumReportDto);
+
         return listResult;
     }
 
@@ -553,5 +593,24 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
     private FilterSumReportDto convert(PagingRequest pagingRequest) {
         return pagingRequest.convertTo(FilterSumReportDto.builder().build());
+    }
+
+    private RootServicesGetterService getRootServicesGetterService() {
+        if (rootServicesGetterService == null) {
+            rootServicesGetterService = (RootServicesGetterService) ReportPlugin.INSTANCE.getApplicationContext().getBean("rootServicesGetterServiceImpl");
+        }
+        return rootServicesGetterService;
+    }
+
+    private PluginService getPluginService(){
+        if(pluginService==null){
+            pluginService = getRootServicesGetterService().getPluginService();
+        }
+
+        if (pluginService == null) {
+            pluginService = (PluginService) ReportPlugin.INSTANCE.getMainApplicationContext().getBean("pluginServiceImpl");
+        }
+
+        return pluginService;
     }
 }

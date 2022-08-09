@@ -64,10 +64,10 @@
                                            class="btn btn-success waves-effect waves-light"
                                            th:text="#{whitelist.addNewGroup}"></a>
                                         <button class="btn btn-success waves-effect waves-light"
-                                                onclick="excelForWhitelist()"
+                                                onclick="excelForWhitelist(this)"
                                                 th:text="#{whitelist.downloadList}"></button>
                                         <button class="btn btn-success waves-effect waves-light"
-                                                onclick="excelWhitelistGroup()"
+                                                onclick="excelWhitelistGroup(this)"
                                                 th:text="#{whitelist.downloadListByGroup}"></button>
                                         <select class="form-control" id="selectedName" name="selectedGroup" style="max-width:20%; margin-top: 10px;"
                                                 th:required="required">
@@ -280,7 +280,9 @@
         clearInterval(interval);
     }
 
-    function excelForWhitelist(){
+    function excelForWhitelist(element){
+        $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
+        $(element).attr('disabled','disabled');
         let idH = "Id";
         let plateNumberH = [[#{car.platenumber}]];
         let fullNameH = [[#{car.fullName}]];
@@ -303,14 +305,18 @@
 
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'Whitelist');
-                XLSX.writeFile(wb, "whitelist.xls", { type: "buffer" });
+                XLSX.writeFile(wb, "whitelist.xlsx", { type: "buffer", bookType:"xlsx" });
             } catch(e){
                 console.log(e);
             }
+            $(element).html('Excel');
+            $(element).removeAttr('disabled');
         });
     }
 
-    function excelWhitelistGroup(){
+    function excelWhitelistGroup(element){
+        $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
+        $(element).attr('disabled','disabled');
         let group_name = document.getElementById("selectedName");
         if (group_name.value) {
             $.get("/rest/whitelist/group/excel?groupName=" + group_name.value, function (data) {
@@ -324,16 +330,18 @@
 
                     const wb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(wb, ws, 'Whitelist');
-                    XLSX.writeFile(wb, "whitelistGroup.xls", { type: "buffer" });
+                    XLSX.writeFile(wb, "whitelistGroup.xlsx", { type: "buffer", bookType:"xlsx" });
                 } catch(e){
                     console.log(e);
                 }
+                $(element).html('Excel');
+                $(element).removeAttr('disabled');
             });
         } else {
             alert("Выберите группу для этого!");
+            $(element).html('Excel');
+            $(element).removeAttr('disabled');
         }
-
-
     }
 
 </script>

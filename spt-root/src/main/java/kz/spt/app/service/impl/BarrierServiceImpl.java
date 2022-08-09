@@ -42,10 +42,13 @@ public class BarrierServiceImpl implements BarrierService {
     private final String BARRIER_OFF = "0";
     private Boolean disableOpen;
 
-    public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, BarrierRepository barrierRepository, EventLogService eventLogService) {
+    private Boolean modbusIcpdasOldWay = false;
+
+    public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, @Value("${barrier.modbus.icpdas.old.way}") Boolean modbusIcpdasOldWay, BarrierRepository barrierRepository, EventLogService eventLogService) {
         this.disableOpen = disableOpen;
         this.barrierRepository = barrierRepository;
         this.eventLogService = eventLogService;
+        this.modbusIcpdasOldWay = modbusIcpdasOldWay;
     }
 
     @Override
@@ -87,11 +90,44 @@ public class BarrierServiceImpl implements BarrierService {
                     return -1;
                 }
             } else if (Barrier.BarrierType.MODBUS.equals(sensor.type)) {
-                int result = -1;
+                if(!modbusIcpdasOldWay){
+                    int result = -1;
 
-                Boolean value = GateStatusDto.getModbusMasterOutputValue(sensor.ip, sensor.modbusRegister-1);
-                result = value ? 1 : 0;
-                return result;
+                    Boolean value = GateStatusDto.getModbusMasterOutputValue(sensor.ip, sensor.modbusRegister-1);
+                    result = value ? 1 : 0;
+                    return result;
+                } else {
+                    int result = -1;
+                    if (!modbusMasterMap.containsKey(sensor.barrierIp) || modbusMasterMap.get(sensor.barrierIp) == null) {
+                        modbusMasterMap.put(sensor.barrierIp, getConnectedInstance(sensor.barrierIp));
+                    }
+                    ModbusMaster m = modbusMasterMap.get(sensor.barrierIp);
+                    int slaveId = 1;
+
+                    if (!m.isConnected()) {
+                        m.connect();
+                    }
+                    if (sensor.modbusDeviceVersion != null && "210-301".equals(sensor.modbusDeviceVersion)) {
+                        int offset = 51;
+                        int sensor_value = sensor.modbusRegister - 1;
+                        int quantity = 1;
+
+                        int[] values = m.readHoldingRegisters(slaveId, offset, quantity);
+                        for (int value : values) {
+                            result = Integer.toBinaryString(value).charAt(sensor_value) == '1' ? 1 : 0;
+                        }
+                    } else {
+                        int offset = sensor.modbusRegister - 1;
+                        boolean[] changedValue = m.readCoils(slaveId, offset, 1);
+                        if (changedValue != null && changedValue.length > 0) {
+                            result = changedValue[0] ? 1 : 0;
+                        }
+                    }
+                    if (sensor.modbusDeviceVersion != null && "icpdas".equals(sensor.modbusDeviceVersion)) {
+                        m.disconnect();
+                    }
+                    return result;
+                }
             } else if (Barrier.BarrierType.JETSON.equals(sensor.type)) {
                 var response = new RestTemplateBuilder().build().getForObject("http://" + sensor.ip + ":9001" + "/sensor_status?pin=" + sensor.oid, JetsonResponse.class);
                 log.info(response.toString());
@@ -120,6 +156,8 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public Boolean openBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
+        log.info("Barrier " + barrier.getIp() + " open process started for car number: " + (String) properties.get("carNumber"));
+        Boolean result = true;
         if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier())) { //  ignore in development
             GateStatusDto gate = new GateStatusDto();
             gate.gateType = barrier.getGate().getGateType();
@@ -127,16 +165,17 @@ public class BarrierServiceImpl implements BarrierService {
 
             if (barrier.getBarrierType() == null) {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + ((String) properties.get("carNumber") != null ? " для номер авто " + (String) properties.get("carNumber") : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""));
-                return false;
+                result = false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
-                return snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                result = snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
-                return modbusChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                result = modbusChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
-                return jetsonChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                result = jetsonChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Open);
             }
         }
-        return true;
+        log.info("Barrier " + barrier.getIp() + " open process ended for car number: " + (String) properties.get("carNumber"));
+        return result;
     }
 
     @Override
@@ -161,19 +200,22 @@ public class BarrierServiceImpl implements BarrierService {
     }
 
     public Boolean openBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
+        log.info("Barrier " + barrier.ip + " open process started for car number: " + carNumber);
+        Boolean result = true;
         if (!disableOpen && (gate.notControlBarrier == null || !gate.notControlBarrier)) { //  ignore in development
             if (barrier.type == null) {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + (carNumber != null ? " for car number " + carNumber : ""));
-                return false;
+                result = false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.type)) {
-                return snmpChangeValue(gate, carNumber, barrier, Command.Open);
+                result = snmpChangeValue(gate, carNumber, barrier, Command.Open);
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.type)) {
-                return modbusChangeValue(gate, carNumber, barrier, Command.Open);
+                result = modbusChangeValue(gate, carNumber, barrier, Command.Open);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.type)) {
-                return jetsonChangeValue(barrier, Command.Open);
+                result = jetsonChangeValue(barrier, Command.Open);
             }
         }
-        return true;
+        log.info("Barrier " + barrier.ip + " open process ended for car number: " + carNumber);
+        return result;
     }
 
     public Boolean closeBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
@@ -264,22 +306,76 @@ public class BarrierServiceImpl implements BarrierService {
         return result;
     }
 
-    private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws RuntimeException {
+    private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws RuntimeException, UnknownHostException, ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException {
         Boolean result = false;
 
-        int register = Command.Open.equals(command) ? barrier.modbusOpenRegister - 1 : barrier.modbusCloseRegister - 1;
-        GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, true);
+        if(!modbusIcpdasOldWay){
+            int register = Command.Open.equals(command) ? barrier.modbusOpenRegister - 1 : barrier.modbusCloseRegister - 1;
+            GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, true);
 
-        long startMillis = System.currentTimeMillis();
-        while ((result == null || !result) && (System.currentTimeMillis() - startMillis < 5000)){
-            result = GateStatusDto.getModbusMasterInputValue(barrier.ip, register);
-        }
+            long startMillis = System.currentTimeMillis();
+            while ((result == null || !result) && (System.currentTimeMillis() - startMillis < 5000)){
+                result = GateStatusDto.getModbusMasterInputValue(barrier.ip, register);
+            }
 
-        log.info("modbus isOpenValueChanged: " + result);
-        if(result){
-            GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, false);
+            log.info("modbus isOpenValueChanged: " + result);
+            if(result){
+                GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, false);
+            } else {
+                GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, false);
+            }
         } else {
-            GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, false);
+            ModbusMaster m;
+            if (!modbusMasterMap.containsKey(barrier.ip) || modbusMasterMap.get(barrier.ip) == null) {
+                modbusMasterMap.put(barrier.ip, getConnectedInstance(barrier.ip));
+            }
+            m = modbusMasterMap.get(barrier.ip);
+            int slaveId = 1;
+            // since 1.2.8
+            if (!m.isConnected()) {
+                log.info("barrier.ip: " + barrier.ip + " !m.isConnected()");
+                try {
+                    m.connect();
+                } catch (Exception e) {
+                    log.info("retry connect error: " + e.getMessage());
+                    modbusRetryConnect(m);
+                }
+            }
+
+            int offset = Command.Open.equals(command) ? barrier.modbusOpenRegister - 1 : barrier.modbusCloseRegister - 1;
+            if (barrier.modbusDeviceVersion != null && "210-301".equals(barrier.modbusDeviceVersion)) {
+                offset = 470;
+                int new_value = Command.Open.equals(command) ? (int) Math.pow(2, barrier.modbusOpenRegister - 1) : (int) Math.pow(2, barrier.modbusCloseRegister - 1);
+                int quantity = 1;
+
+                int[] new_values = new int[1];
+                new_values[0] = new_value;
+                m.writeMultipleRegisters(slaveId, offset, new_values);
+                if(!barrier.dontSendZero) {
+                    Thread.sleep(500);
+                    new_values[0] = 0; // turn off all holdings
+                    m.writeMultipleRegisters(slaveId, offset, new_values);
+                }
+            } else {
+                boolean isOpenValueChanged = modbusRetryWrite(m, slaveId, offset, true);
+                log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
+                if(!isOpenValueChanged){
+                    return isOpenValueChanged;
+                }
+                if(!barrier.dontSendZero) {
+                    Thread.sleep(500);
+                    boolean isOpenReturnValueChanged = modbusRetryWrite(m, slaveId, offset, false);
+                    log.info("modbus isOpenReturnValueChanged: " + isOpenReturnValueChanged);
+                    if(!isOpenReturnValueChanged){
+                        return isOpenReturnValueChanged;
+                    }
+                } else {
+                    return isOpenValueChanged;
+                }
+            }
+            if (barrier.modbusDeviceVersion != null && "icpdas".equals(barrier.modbusDeviceVersion)) {
+                m.disconnect();
+            }
         }
         return result;
     }
@@ -294,4 +390,60 @@ public class BarrierServiceImpl implements BarrierService {
     private enum Command {
         Open, Close
     }
+
+    private ModbusMaster getConnectedInstance(String ip) throws ModbusIOException, UnknownHostException {
+        TcpParameters tcpParameters = new TcpParameters();
+        tcpParameters.setHost(InetAddress.getByName(ip));
+        tcpParameters.setKeepAlive(true);
+        tcpParameters.setPort(Modbus.TCP_PORT);
+
+        ModbusMaster m = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
+        m.setResponseTimeout(5000); // 5 seconds timeout
+
+        log.info("Connecting barrier.getIp(): " + ip);
+
+        if (!m.isConnected()) {
+            try {
+                m.connect();
+            } catch (Exception e) {
+                log.info("retry connect ip: " + ip + " error: " + e.getMessage());
+                modbusRetryConnect(m);
+            }
+        }
+        return m;
+    }
+
+    private Boolean modbusRetryWrite(ModbusMaster m, int slaveId, int offset, boolean value) {
+        Boolean wrote = false;
+        int retryCount = 0;
+        while (!wrote && retryCount <= 3) {
+            try {
+                retryCount++;
+                log.info("modbus write retry count: " + retryCount);
+                m.connect();
+                m.writeSingleCoil(slaveId, offset, value);
+                wrote = true;
+            } catch (Exception e) {
+                log.info("modbus retry error: " + e.getMessage());
+            }
+        }
+        return wrote;
+    }
+
+    private Boolean modbusRetryConnect(ModbusMaster m) {
+        Boolean connected = false;
+        int retryCount = 0;
+        while (!connected && retryCount < 3) {
+            try {
+                retryCount++;
+                log.info("modbus connect retry count: " + retryCount);
+                m.connect();
+                connected = true;
+            } catch (Exception e) {
+                log.info("modbus connect error: " + e.getMessage());
+            }
+        }
+        return connected;
+    }
+
 }

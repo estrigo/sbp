@@ -29,7 +29,7 @@
                                 </div>
                                 <div class="col-4">
                                     <label style="width: 100%">&nbsp;</label>
-                                    <button type="button" class="btn btn-success waves-effect waves-light" onclick="excelForEventCar()" th:text="#{events.downloadEvents}"></button>
+                                    <button type="button" class="btn btn-success waves-effect waves-light" onclick="excelForEventCar(this)" th:text="#{events.downloadEvents}"></button>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -196,7 +196,9 @@
         table.ajax.url(buildAjaxUrl()).load();
     });
 
-    function excelForEventCar(){
+    function excelForEventCar(element){
+        $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
+        $(element).attr('disabled','disabled');
         let dateFromString = $('#dateFromString').val();
         let dateToString = $('#dateToString').val();
         let plateNumber = $('#plateNumber').val();
@@ -216,7 +218,9 @@
             let ws = XLSX.utils.json_to_sheet(arr, {skipHeader:true});
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'events');
-            XLSX.writeFile(wb, "events.xls", { type: "buffer" });
+            XLSX.writeFile(wb, "events.xlsx", { type: "buffer", bookType:"xlsx"});
+            $(element).html('Excel');
+            $(element).removeAttr('disabled');
         });
     }
 
