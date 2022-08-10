@@ -65,6 +65,11 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
         return countSum(filter);
     }
 
+    @Override
+    public Page<SumReportDto> list(PagingRequest pagingRequest, FilterReportDto filterReportDto) {
+        return null;
+    }
+
     public List<SumReportDto> countSum(FilterSumReportDto filterSumReportDto){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(filterSumReportDto.getDateFrom());

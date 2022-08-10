@@ -48,6 +48,11 @@ public class ManualOpenReportServiceImpl implements ReportService<EventsDto> {
     }
 
     @Override
+    public Page<EventsDto> list(PagingRequest pagingRequest, FilterReportDto filterReportDto) {
+        return null;
+    }
+
+    @Override
     public Page<EventsDto> page(PagingRequest pagingRequest) {
         var all = list(FilterJournalReportDto.builder().build());
 

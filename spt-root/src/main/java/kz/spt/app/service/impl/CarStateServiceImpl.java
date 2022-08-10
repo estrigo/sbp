@@ -233,6 +233,12 @@ public class CarStateServiceImpl implements CarStateService {
             } else {
                 sort = Sort.by("paid").ascending();
             }
+        } else if ("id".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
+                sort = Sort.by("id").descending();
+            } else {
+                sort = Sort.by("id").ascending();
+            }
         }
 
         Pageable rows = PageRequest.of(pagingRequest.getStart() / pagingRequest.getLength(), pagingRequest.getLength(), sort);
