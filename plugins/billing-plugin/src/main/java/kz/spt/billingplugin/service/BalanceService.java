@@ -1,5 +1,6 @@
 package kz.spt.billingplugin.service;
 
+import kz.spt.billingplugin.dto.BalanceDebtLogDto;
 import kz.spt.billingplugin.dto.TransactionDto;
 import kz.spt.billingplugin.dto.TransactionFilterDto;
 import kz.spt.billingplugin.model.Balance;
@@ -29,5 +30,9 @@ public interface BalanceService {
 
     Page<TransactionDto> getTransactionList(PagingRequest pagingRequest, TransactionFilterDto dto) throws ParseException;
 
+    Page<BalanceDebtLogDto> getClearedDebtList(PagingRequest pagingRequest, String date) throws ParseException;
+
     Boolean changeTransactionAmount(Long id, BigDecimal amount);
+
+    Boolean showBalanceDebtLog();
 }

@@ -1,12 +1,10 @@
 package kz.spt.billingplugin.service.impl;
 
 import kz.spt.billingplugin.bootstrap.datatable.BalanceComparators;
+import kz.spt.billingplugin.dto.BalanceDebtLogDto;
 import kz.spt.billingplugin.dto.TransactionDto;
 import kz.spt.billingplugin.dto.TransactionFilterDto;
-import kz.spt.billingplugin.model.Balance;
-import kz.spt.billingplugin.model.BalanceDebtLog;
-import kz.spt.billingplugin.model.Transaction;
-import kz.spt.billingplugin.model.TransactionSpecification;
+import kz.spt.billingplugin.model.*;
 import kz.spt.billingplugin.repository.BalanceDebtLogRepository;
 import kz.spt.billingplugin.repository.BalanceRepository;
 import kz.spt.billingplugin.repository.TransactionRepository;
@@ -125,6 +123,12 @@ public class BalanceServiceImpl implements BalanceService {
         return getTransactionPage(transactions, pagingRequest);
     }
 
+    @Override
+    public Page<BalanceDebtLogDto> getClearedDebtList(PagingRequest pagingRequest, String date) throws ParseException {
+        org.springframework.data.domain.Page<BalanceDebtLog> balanceDebtLogs = listClearedDebtByFilters(date, pagingRequest);
+        return getBalanceDebtLogPage(balanceDebtLogs, pagingRequest);
+    }
+
     private Page<Balance> getPage(List<Balance> balancesList, PagingRequest pagingRequest) {
         List<Balance> filtered = balancesList.stream()
                 .sorted(sortBalance(pagingRequest))
@@ -215,6 +219,24 @@ public class BalanceServiceImpl implements BalanceService {
         return transactionRepository.findAll(specification, rows);
     }
 
+    public org.springframework.data.domain.Page<BalanceDebtLog> listClearedDebtByFilters(String date, PagingRequest pagingRequest) throws ParseException {
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(format.parse(date));
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
+        Date begin = calendar.getTime();
+        calendar.add(Calendar.DATE, 1);
+        Date end = calendar.getTime();
+
+        Specification<BalanceDebtLog> specification = getBalanceDebtLogSpecification(begin, end);
+
+        Sort sort =  Sort.by("id").ascending();
+
+        Pageable rows = PageRequest.of(pagingRequest.getStart() / pagingRequest.getLength(), pagingRequest.getLength(), sort);
+        return balanceDebtLogRepository.findAll(specification, rows);
+    }
+
     private Specification<Transaction> getTransactionSpecification(TransactionFilterDto transactionFilterDto) throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         Specification<Transaction> specification = null;
@@ -231,6 +253,13 @@ public class BalanceServiceImpl implements BalanceService {
         if (transactionFilterDto.amount != null && !"".equals(transactionFilterDto.amount)) {
             specification = specification == null ? TransactionSpecification.equalAmount(transactionFilterDto.amount) : specification.and(TransactionSpecification.equalAmount(transactionFilterDto.amount));
         }
+        return specification;
+    }
+
+    private Specification<BalanceDebtLog> getBalanceDebtLogSpecification(Date begin, Date end) {
+        Specification<BalanceDebtLog> specification = BalanceDebtLogSpecification.lessDate(end);
+        specification = specification.and(BalanceDebtLogSpecification.greaterDate(begin));
+
         return specification;
     }
 
@@ -275,6 +304,11 @@ public class BalanceServiceImpl implements BalanceService {
         return true;
     }
 
+    @Override
+    public Boolean showBalanceDebtLog() {
+        return saveRemovedDebtBalance;
+    }
+
     private Page<TransactionDto> getTransactionPage(org.springframework.data.domain.Page<Transaction> transactionsList, PagingRequest pagingRequest) {
 
         CarStateService carStateService = rootServicesGetterService.getCarStateService();
@@ -295,6 +329,24 @@ public class BalanceServiceImpl implements BalanceService {
         Page<TransactionDto> page = new Page<>(filteredDto);
         page.setRecordsFiltered((int) transactionsList.getTotalElements());
         page.setRecordsTotal((int) transactionsList.getTotalElements());
+        page.setDraw(pagingRequest.getDraw());
+
+        return page;
+    }
+
+    private Page<BalanceDebtLogDto> getBalanceDebtLogPage(org.springframework.data.domain.Page<BalanceDebtLog> balanceDebtLogs, PagingRequest pagingRequest) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+
+        List<BalanceDebtLogDto> filteredDto = new ArrayList<>(balanceDebtLogs.getSize());
+        for (BalanceDebtLog balanceDebtLog : balanceDebtLogs.toList()) {
+            BalanceDebtLogDto balanceDebtLogDto = BalanceDebtLogDto.fromBalanceDebtLog(balanceDebtLog);
+            filteredDto.add(balanceDebtLogDto);
+        }
+
+        Page<BalanceDebtLogDto> page = new Page<>(filteredDto);
+        page.setRecordsFiltered((int) balanceDebtLogs.getTotalElements());
+        page.setRecordsTotal((int) balanceDebtLogs.getTotalElements());
         page.setDraw(pagingRequest.getDraw());
 
         return page;

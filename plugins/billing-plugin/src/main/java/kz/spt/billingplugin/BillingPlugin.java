@@ -1,10 +1,12 @@
 package kz.spt.billingplugin;
 
+import kz.spt.billingplugin.service.BalanceService;
 import kz.spt.lib.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.modelmapper.ModelMapper;
 import org.pf4j.PluginWrapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.i18n.LocaleContextHolder;
 
@@ -12,6 +14,7 @@ import java.util.*;
 
 public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
     public static BillingPlugin INSTANCE;
+
     public BillingPlugin(PluginWrapper wrapper) {
         super(wrapper);
         INSTANCE = this;
@@ -69,6 +72,15 @@ public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
         subMenu5.put("role", "MANAGER");
         subMenus.add(subMenu5);
 
+        BalanceService balanceService = super.getApplicationContext() != null ? (BalanceService) super.getApplicationContext().getBean("balanceServiceImpl") : null;
+
+        if(balanceService!= null && balanceService.showBalanceDebtLog()){
+            Map<String, Object> subMenu6 = new HashMap<>();
+            subMenu6.put("label", bundle.getString("menu.billing.cleared.debts"));
+            subMenu6.put("url", "billing/balance/cleared/debts");
+            subMenu6.put("role", "MANAGER");
+            subMenus.add(subMenu6);
+        }
 
         mainMenu.put("subMenus", subMenus);
 

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card table-responsive">
+                    <div class="card-header" th:text="#{menu.billing.cleared.debts}"></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-4">
+                                <label th:text="#{events.date}"></label>
+                                <input type="date" id="date" min="2018-01-01" max="2028-01-01" class="form-control filter" th:placeholder="#{events.date}">
+                            </div>
+                        </div>
+
+                        <table id="clearedDebtsTable" class="table table-bordered" style="width: 100%">
+                            <thead>
+                            <tr>
+                                <th th:text="#{balance.date}"></th>
+                                <th th:text="#{balance.plateNumber}"></th>
+                                <th th:text="#{balance.amount}"></th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Required datatable js -->
+<script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
+<script th:src="@{/plugins/datatables/dataTables.bootstrap4.min.js}"></script>
+<!-- Buttons examples -->
+<script th:src="@{/plugins/datatables/dataTables.buttons.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.bootstrap4.min.js}"></script>
+<script th:src="@{/plugins/datatables/jszip.min.js}"></script>
+<script th:src="@{/plugins/datatables/pdfmake.min.js}"></script>
+<script th:src="@{/plugins/datatables/vfs_fonts.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.html5.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.print.min.js}"></script>
+<script th:src="@{/plugins/datatables/buttons.colVis.min.js}"></script>
+<!-- Responsive examples -->
+<script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
+<script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+
+<script th:inline="javascript">
+    var address = '/plugins/datatables/json/ru.json';
+    var locale = [[${#locale}]];
+    if (locale == "en") {
+        address = "";
+    }
+
+    let date=new Date();
+    $('#date').val((new Date(date.getFullYear(),date.getMonth(),date.getDate(), 6, 0, 0, 0)).toISOString().substring(0,10));
+
+    function buildAjaxUrl(){
+        return "/rest/balances/cleared/debts?date=" + $('#date').val();
+    }
+
+    const clearedDebtsTable = $('#clearedDebtsTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": buildAjaxUrl(),
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+                return JSON.stringify(d);
+            }
+        },
+        columnDefs: [{
+            "defaultContent": "-",
+            "targets": "_all"
+        }],
+        "columns": [
+            {"data": "date"},
+            {"data": "plateNumber"},
+            {"data": "balance"}
+        ],
+        "order": [ //[[ in thymeleaf is inline script
+            [1, "desc"]
+        ],
+        "buttons": ['copy', 'excel', 'pdf', 'csv'],
+        language: {
+            url: address
+        }
+    });
+
+    $('#date').on('change', function () {
+        clearedDebtsTable.ajax.url(buildAjaxUrl()).load();
+    });
+</script>
+
+</html>
