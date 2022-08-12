@@ -72,6 +72,14 @@
                     </div>
                     <th:block sec:authorize="!hasRole('ROLE_RTA')">
                         <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100">
+                            <!--новая роль - оператор который может открыть без шлагбаум без причин и комментариев -->
+                            <div class="p-1 col-sm-12 col-xs-12"
+                                 sec:authorize="hasAnyRole('ROLE_OPERATOR_PARQOUR')">
+                                <button type="button" class="btn btn-outline-danger w-100"
+                                        th:cameraId="${camera.id}"
+                                        th:onclick="openGateWOReason(this.getAttribute('cameraId'))"
+                                        th:text="#{arm.open.parqour}"></button>
+                            </div>
                             <div class="col-md-6 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-success w-100"
@@ -88,7 +96,7 @@
                             </div>
                         </div>
                         <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100">
-                            <div class="p-2 col-sm-12 col-xs-12"
+                            <div class="p-1 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
                                        th:placeholder="#{arm.licensePlate}"
@@ -276,6 +284,38 @@
             }, 2000);
         };
         console.log('##################');
+    }
+
+    /*функции для октрытия шлагбаума без причин и комментариев*/
+    function sendOpenArmWOReason(){
+        let reasonCameraId = $('#reasonCameraId').val();
+        let reason = 'оператор Parqour';
+        var form = new FormData();
+        form.append("cameraId", reasonCameraId);
+        form.append("reason", reason);
+        form.append("snapshot", cameras[reasonCameraId] && cameras[reasonCameraId].snapshot ? cameras[reasonCameraId].snapshot : null);
+
+        var settings = {
+            "url": "/rest/arm/open/barrier",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (response) {
+            $('#openGateWOReason').modal('hide');
+            console.log(response);
+        });
+    }
+
+    function showOpenGateModalWOReason (cameraId) {
+        $("#reasonCameraId").val(cameraId);
+        sendOpenArmWOReason()
+    }
+
+    function openGateWOReason(cameraId) {
+        showOpenGateModalWOReason(cameraId);
     }
 
     function showGreeting(messageBody) {
