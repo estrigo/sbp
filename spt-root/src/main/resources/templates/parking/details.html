@@ -6,22 +6,34 @@
 <link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
 
 <div class="content">
-    <div class="container" id="mydiv">
+    <div class="container-fluid" id="mydiv">
         <div class="row">
             <div class="col-12 m-b-20">
                 <div class="card-box">
                     <h4 class="text-dark  header-title m-t-0" th:text="${parking.name}"></h4>
                     <p class="text-muted m-b-0 font-15" th:text="${parking.description}"></p>
                     <p class="text-muted m-b-25 font-15" th:text="#{'parking.parkingType.' + ${parking.parkingType}}"></p>
+                    <p sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')">
+
+                    <div class="col-12">
+                        <button data-toggle="modal" data-target="#gate-close-modal" th:parkingId="${parking.id}" class="btn btn-danger waves-effect waves-light"
+                                th:text="#{gate.addNew}" th:onclick="gateModalContent(null, this.getAttribute('parkingId'))"></button>
+                    </div>
+
+                    </p>
                 </div>
             </div>
 
-            <div class="col-12" th:each="gate, iterStat : ${parking.gateList}">
-                <div class="card-box">
+            <div class="col-4" th:each="gate, iterStat : ${parking.gateList}">
+                <div class="card">
+
                     <a href="#" data-toggle="modal" data-target="#gate-close-modal" th:gateId="${gate.id}" th:onclick="gateModalContent(this.getAttribute('gateId'), null)">
-                        <h4 class="header-title m-t-0 m-b-0"><span th:text="${gate.name}"></span> <i class="ion-edit"></i></h4>
+                        <h5 class="card-header header-title m-t-0 m-b-0"><span th:text="${gate.name}"></span> <i class="ion-edit"></i><span class="badge badge-info pull-right"  th:text="${gate.gateType}"></span></h5>
+
+
                     </a>
-                    <p class="text-muted m-b-30" th:text="${gate.description}"></p>
+                    <div class="card-body">
+                    <p class="text-muted m-b-30"></p>
 
                     <ul class="nav nav-tabs">
                         <li class="nav-item">
@@ -99,21 +111,14 @@
                             </div>
                             </p>
                         </div>
-                    </div>
+                    </div> </div>
                 </div>
             </div>
-            <p sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')">
-            <div class="form-group row">
-                <div class="col-12">
-                    <button data-toggle="modal" data-target="#gate-close-modal" th:parkingId="${parking.id}" class="btn btn-danger waves-effect waves-light"
-                            th:text="#{gate.addNew}" th:onclick="gateModalContent(null, this.getAttribute('parkingId'))"></button>
-                </div>
-            </div>
-            </p>
+
         </div>
     </div>
     <div id="camera-close-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <div class="modal-header">
@@ -137,7 +142,7 @@
         </div>
     </div>
     <div id="gate-close-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <div class="modal-header">

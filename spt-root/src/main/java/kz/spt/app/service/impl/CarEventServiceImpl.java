@@ -20,7 +20,6 @@ import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.service.*;
 import kz.spt.lib.utils.StaticValues;
-import kz.spt.lib.utils.Utils;
 import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
@@ -71,6 +70,8 @@ public class CarEventServiceImpl implements CarEventService {
     private final WhitelistRootService whitelistRootService;
     private final PaymentService paymentService;
 
+    private final TabloService tabloService;
+
     @Value("${parking.has.access.unknown.cases}")
     Boolean parkingHasAccessUnknownCases;
 
@@ -112,7 +113,7 @@ public class CarEventServiceImpl implements CarEventService {
                                BarrierService barrierService, BlacklistService blacklistService, PluginService pluginService, QrPanelService qrPanelService,
                                AbonomentService abonomentService, CarModelService carModelService, CarModelRepository carModelRepository,
                                WhitelistRootService whitelistRootService, GateService gateService, ParkingService parkingService,
-                               PaymentService paymentService) {
+                               PaymentService paymentService, TabloService tabloService) {
         this.carsService = carsService;
         this.cameraService = cameraService;
         this.eventLogService = eventLogService;
@@ -129,6 +130,7 @@ public class CarEventServiceImpl implements CarEventService {
         this.gateService = gateService;
         this.parkingService = parkingService;
         this.paymentService = paymentService;
+        this.tabloService = tabloService;
     }
 
     @Override
@@ -821,6 +823,8 @@ public class CarEventServiceImpl implements CarEventService {
                 barrierInProcessingHashtable.remove(camera.getGate().getBarrier().getId());
             }
         }
+
+        tabloService.updateOnIn(camera.getGate());
     }
 
     @Override
@@ -1502,6 +1506,8 @@ public class CarEventServiceImpl implements CarEventService {
                 barrierOutProcessingHashtable.remove(camera.getGate().getBarrier().getId());
             }
         }
+
+        tabloService.updateOnOut(camera.getGate());
     }
 
     private void sendNotification(CarState carState, Date dateOut, BigDecimal rate) {
