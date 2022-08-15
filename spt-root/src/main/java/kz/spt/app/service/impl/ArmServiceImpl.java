@@ -208,7 +208,6 @@ public class ArmServiceImpl implements ArmService {
                             String carImageUrl = carImageService.saveImage(newSnapShot, new Date(), debtPlatenumber);
                             properties.put(StaticValues.carImagePropertyName, carImageUrl);
                             properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
-                            System.out.println("check");
                         } catch (Throwable e) {
                             throw new RuntimeException(e);
                         }
