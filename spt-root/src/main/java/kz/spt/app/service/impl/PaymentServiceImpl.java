@@ -832,6 +832,8 @@ public class PaymentServiceImpl implements PaymentService {
         node.put("carNumber", commandDto.account);
         node.put("sum", commandDto.sum);
         node.put("transaction", commandDto.txn_id);
+        node.put("discount", commandDto.discount);
+        node.put("discountedSum", commandDto.discountedSum);
 
         Long parkingId = null;
         if (carState != null) {

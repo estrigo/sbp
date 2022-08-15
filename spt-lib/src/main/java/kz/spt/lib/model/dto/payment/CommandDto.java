@@ -14,4 +14,6 @@ public class CommandDto {
     public Boolean prepaid = false;
     public String clientId;
     public Integer service_id;
+    public Integer discount;
+    public BigDecimal discountedSum;
 }

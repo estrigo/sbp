@@ -77,5 +77,11 @@ public class Payment {
     private boolean canceled;
 
     private String cancelReason;
-    
+
+    @Column (name="discounted_amount", precision = 8, scale = 2)
+    private BigDecimal discountedPrice;
+
+    @Column(columnDefinition="integer default 0", nullable = false)
+    private Integer discount;
+
 }

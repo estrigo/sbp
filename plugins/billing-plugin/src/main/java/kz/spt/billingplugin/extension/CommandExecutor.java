@@ -90,6 +90,8 @@ public class CommandExecutor implements PluginRegister {
                 Payment payment = new Payment();
                 payment.setCarNumber(command.get("carNumber").textValue());
                 payment.setPrice(command.get("sum").decimalValue());
+                payment.setDiscount(command.get("discount").intValue());
+                payment.setDiscountedPrice(command.get("discountedSum").decimalValue());
                 payment.setProvider(provider);
                 payment.setTransaction(command.get("transaction").textValue());
                 if (command.has("parkingId")) {

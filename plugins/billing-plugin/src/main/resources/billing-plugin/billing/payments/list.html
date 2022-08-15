@@ -78,6 +78,8 @@
                                 <th th:text="#{payments.paymentDate}"></th>
                                 <th th:text="#{payments.fare}"></th>
                                 <th th:text="#{payments.total}"></th>
+                                <th th:text="#{payments.discountedSum}"></th>
+                                <th th:text="#{payments.discount} +  ' %'"></th>
                                 <th th:text="#{payments.provider}"></th>
                                 <th th:text="#{payments.transaction}"></th>
                             </tr>
@@ -137,6 +139,17 @@
                 return JSON.stringify(d);
             }
         },
+        initComplete: function () {
+            var api = this.api();
+            const showDiscount = [[${showDiscount}]];
+            if (showDiscount) {
+                api.column(8).visible(true);
+                api.column(9).visible(true);
+            } else {
+                api.column(8).visible(false);
+                api.column(9).visible(false);
+            }
+        },
         "columns": [
             {"data": "id"},
             {
@@ -150,6 +163,8 @@
             {"data": "created"},
             {"data": "rateDetails"},
             {"data": "price"},
+            {"data": "discountPrice"},
+            {"data": "discount"},
             {"data": "provider"},
             {"data": "transaction"},
         ],
@@ -169,7 +184,7 @@
 
     function excel(element) {
         $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
-        $(element).attr('disabled','disabled');
+        $(element).attr('disabled', 'disabled');
         let request = {
             "dateFrom": $('#dateFrom').val(),
             "dateTo": $('#dateTo').val(),
@@ -178,12 +193,12 @@
             "total": $('#total').val()
         };
         $.ajax({
-            url:"/rest/payments/excel",
-            type:"POST",
-            data:JSON.stringify(request),
-            contentType:"application/json; charset=utf-8",
-            dataType:"json",
-            success: function(data){
+            url: "/rest/payments/excel",
+            type: "POST",
+            data: JSON.stringify(request),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
                 try {
                     let arr = [];
                     for (let i = 0; i < data.length; i++) {
@@ -206,11 +221,11 @@
                         data[i] = JSON.parse(stringified);
                         arr.push(data[i]);
                     }
-                    let ws = XLSX.utils.json_to_sheet(arr, {header:["№","Номер","Паркинг","Дата заезда","Дата выезда","Дата оплаты","Тариф", "Сумма", "Провайдер", "Транзакция"]});
+                    let ws = XLSX.utils.json_to_sheet(arr, {header: ["№", "Номер", "Паркинг", "Дата заезда", "Дата выезда", "Дата оплаты", "Тариф", "Сумма", "Провайдер", "Транзакция"]});
 
                     const wb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(wb, ws, 'Payments');
-                    XLSX.writeFile(wb, "payments.xlsx", {type: "buffer", bookType:"xlsx"});
+                    XLSX.writeFile(wb, "payments.xlsx", {type: "buffer", bookType: "xlsx"});
                 } catch (e) {
                     console.log(e);
                 }
