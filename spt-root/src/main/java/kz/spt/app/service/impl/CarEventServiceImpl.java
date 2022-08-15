@@ -1195,8 +1195,17 @@ public class CarEventServiceImpl implements CarEventService {
                                             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn);
                                             hasAccess = false;
                                         } else if (BigDecimal.ZERO.compareTo(rateResult) == 0) {
-                                            carOutBy = StaticValues.CarOutBy.PAYMENT_PROVIDER;
-                                            hasAccess = true;
+                                            if(BigDecimal.ZERO.compareTo(balance) > 0){
+                                                properties.put("type", EventLog.StatusType.Debt);
+                                                String descriptionRu = "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность " + balance;
+                                                String descriptionEn = "Not allowed to enter: Car " + eventDto.car_number + " is in debt " + balance;
+                                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Debt, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn);
+                                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.DEBT);
+                                                hasAccess = false;
+                                            } else {
+                                                carOutBy = StaticValues.CarOutBy.PAYMENT_PROVIDER;
+                                                hasAccess = true;
+                                            }
                                         } else if (paidByThirdParty) {
                                             ObjectNode nodeThPP = this.objectMapper.createObjectNode();
                                             nodeThPP.put("command", "sendPaymentToThPP");
@@ -1223,8 +1232,17 @@ public class CarEventServiceImpl implements CarEventService {
 
                                         } else {
                                             if (balance.compareTo(rateResult) >= 0) {
-                                                carOutBy = StaticValues.CarOutBy.PAYMENT_PROVIDER;
-                                                hasAccess = true;
+                                                if(BigDecimal.ZERO.compareTo(balance) > 0){
+                                                    properties.put("type", EventLog.StatusType.Debt);
+                                                    String descriptionRu = "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность " + balance;
+                                                    String descriptionEn = "Not allowed to enter: Car " + eventDto.car_number + " is in debt " + balance;
+                                                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Debt, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn);
+                                                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.DEBT);
+                                                    hasAccess = false;
+                                                } else {
+                                                    carOutBy = StaticValues.CarOutBy.PAYMENT_PROVIDER;
+                                                    hasAccess = true;
+                                                }
                                             } else {
                                                 PluginRegister zerotouchPluginRegister = pluginService.getPluginRegister(StaticValues.zerotouchPlugin);
                                                 ObjectNode zerotouchRequestNode = this.objectMapper.createObjectNode();
