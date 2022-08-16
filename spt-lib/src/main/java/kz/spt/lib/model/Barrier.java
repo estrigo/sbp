@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
@@ -112,6 +113,30 @@ public class Barrier {
 
     @Column(name = "photo_element_jetson_pin")
     private Integer photoElementJetsonPin;
+
+    @Column(name = "open_status_oid")
+    private String openStatusOid;
+
+    @Column(name = "open_status_default")
+    private Integer openStatusDefault;
+
+    @Column(name = "close_status_oid")
+    private String closeStatusOid;
+
+    @Column(name = "close_status_default")
+    private Integer closeStatusDefault;
+
+    @ColumnDefault("false")
+    @Column(name = "status_check")
+    private boolean statusCheck;
+
+    @ColumnDefault("false")
+    @Column(name = "impulse_signal")
+    private boolean impulseSignal;
+
+    @ColumnDefault("1000")
+    @Column(name = "signal_delay")
+    private Integer impulseDelay;
 
     @CreationTimestamp
     private Date created;

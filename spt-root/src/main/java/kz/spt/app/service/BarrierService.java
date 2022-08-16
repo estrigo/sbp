@@ -7,8 +7,8 @@ import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.SensorStatusDto;
+import kz.spt.app.model.strategy.AbstractStrategy;
 import kz.spt.lib.model.Barrier;
-import kz.spt.lib.model.Gate;
 
 import java.io.IOException;
 import java.net.UnknownHostException;

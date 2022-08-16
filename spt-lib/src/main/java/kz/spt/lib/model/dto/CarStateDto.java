@@ -1,6 +1,7 @@
 package kz.spt.lib.model.dto;
 
 import kz.spt.lib.model.CarState;
+import kz.spt.lib.model.Parking;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,6 +40,7 @@ public class CarStateDto {
     public String abonomentJson;
     public String inImageUrl;
     public String outImageUrl;
+    public Parking.ParkingType type;
 
     public Date getNullSafeInTimestamp() {
         return this.inTimestamp == null ? new Date() : this.inTimestamp;
@@ -78,6 +80,7 @@ public class CarStateDto {
         }
         dto.inImageUrl  = carState.getInPhotoUrl();
         dto.outImageUrl  = carState.getOutPhotoUrl();
+        dto.type = carState.getType();
 
         return dto;
     }

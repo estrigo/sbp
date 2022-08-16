@@ -125,7 +125,7 @@
         </div>
     </div>
     <div id="barrier-close-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <div class="modal-header">
@@ -210,11 +210,15 @@
                 $('#barrier-close-modal').find('#barrierModalBody').html(data);
                 changeSensorsBlock();
                 changeBarrierType();
+                changeStatusCheck();
+                changeImpulseSignal();
             });
         } else if(gateId) {
             $.get("/parking/" + gateId + "/new/barrier/", function (data) {
                 $('#barrier-close-modal').find('#barrierModalBody').html(data);
                 changeBarrierType();
+                changeStatusCheck();
+                changeImpulseSignal();
             });
         }
     }
@@ -278,6 +282,24 @@
             $('#barrier-close-modal').find('#photoElementModbusDiv').show();
             $('#barrier-close-modal').find('#loopJetsonDiv').hide();
             $('#barrier-close-modal').find('#photoElementJetsonDiv').hide();
+        }
+    }
+
+    function changeStatusCheck() {
+        const status = $("#statusCheck").prop("checked");
+        if (status) {
+            $('#barrier-close-modal').find('#statusSensorBlock').show();
+        } else {
+            $('#barrier-close-modal').find('#statusSensorBlock').hide();
+        }
+    }
+
+    function changeImpulseSignal() {
+        const status = $("#impulseSignal").prop("checked");
+        if (status) {
+            $('#barrier-close-modal').find('#impulseSignalBlock').show();
+        } else {
+            $('#barrier-close-modal').find('#impulseSignalBlock').hide();
         }
     }
 </script>

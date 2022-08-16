@@ -4,12 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import kz.spt.lib.bootstrap.datatable.Column;
-import kz.spt.lib.bootstrap.datatable.Order;
-import kz.spt.lib.bootstrap.datatable.Page;
-import kz.spt.lib.bootstrap.datatable.PagingRequest;
+import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CarState;
+import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.EventLogService;
@@ -24,6 +22,7 @@ import kz.spt.reportplugin.service.ReportService;
 import kz.spt.reportplugin.service.RootServicesGetterService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.java.Log;
 import org.jvnet.hk2.annotations.Service;
 
 import java.math.BigDecimal;
@@ -34,6 +33,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Log
 @Service
 @RequiredArgsConstructor
 public class JournalReportServiceImpl implements ReportService<JournalReportDto> {
@@ -43,6 +43,81 @@ public class JournalReportServiceImpl implements ReportService<JournalReportDto>
     private PluginService pluginService;
     private CarStateService carStateService;
     private RootServicesGetterService rootServicesGetterService;
+
+    @SneakyThrows
+    @Override
+    public Page<JournalReportDto> list(PagingRequest pagingRequest, FilterReportDto filterReportDto) {
+
+        Order order = pagingRequest.getOrder().get(0);
+        int columnIndex = order.getColumn();
+        pagingRequest.getColumns().get(columnIndex).setData("id");
+
+        var filter = (FilterJournalReportDto) filterReportDto;
+        var carStates = (Page<CarStateDto>) getCarStateService().getAll(pagingRequest, CarStateFilterDto.builder()
+                .dateToString(filter.dateToString(filter.getDateTo()))
+                .dateFromString(filter.dateToString(filter.getDateFrom()))
+                .build());
+
+
+        var result = new ArrayList<JournalReportDto>();
+        for (var carState : carStates.getData()) {
+            PluginRegister billingPluginRegister = getPluginService().getPluginRegister(StaticValues.billingPlugin);
+            if (billingPluginRegister != null) {
+                ObjectNode node = this.objectMapper.createObjectNode();
+                node.put("command", "getPayments");
+                node.put("carStateId", carState.getId());
+
+                JsonNode paymentResult = billingPluginRegister.execute(node);
+                ArrayNode payments = paymentResult.withArray("payments");
+                if (payments.isEmpty()) {
+                    result.add(JournalReportDto.builder()
+                            .carStateId(carState.getId())
+                            .carNumber(carState.getCarNumber())
+                            .outTimestamp(carState.getOutTimestamp())
+                            .inTimestamp(carState.getInTimestamp())
+                            .parkingTypeCode(carState.getType() != null ? carState.getType().name() : "")
+                            .paymentId(null)
+                            .sum(BigDecimal.ZERO)
+                            .provider("")
+                            .cashlessPayment(false)
+                            .build());
+                } else {
+                    payments.forEach(p -> {
+                        result.add(JournalReportDto.builder()
+                                .carStateId(carState.getId())
+                                .carNumber(carState.getCarNumber())
+                                .outTimestamp(carState.getOutTimestamp())
+                                .inTimestamp(carState.getInTimestamp())
+                                .parkingTypeCode(carState.getType().name())
+                                .paymentId(p.get("paymentId").longValue())
+                                .sum(p.get("sum").decimalValue())
+                                .provider(p.get("provider").textValue())
+                                .cashlessPayment(p.get("cashlessPayment").booleanValue())
+                                .build());
+                    });
+                }
+            } else {
+                result.add(JournalReportDto.builder()
+                        .carStateId(carState.getId())
+                        .paymentId(null)
+                        .carNumber(carState.getCarNumber())
+                        .outTimestamp(carState.getOutTimestamp())
+                        .inTimestamp(carState.getInTimestamp())
+                        .parkingTypeCode(carState.getType().name())
+                        .sum(BigDecimal.ZERO)
+                        .provider("")
+                        .cashlessPayment(false)
+                        .build());
+            }
+        }
+
+        Page<JournalReportDto> page = new Page<>(result);
+        page.setRecordsFiltered(carStates.getRecordsFiltered());
+        page.setRecordsTotal(carStates.getRecordsTotal());
+        page.setDraw(pagingRequest.getDraw());
+
+        return page;
+    }
 
     @SneakyThrows
     @Override
@@ -69,7 +144,7 @@ public class JournalReportServiceImpl implements ReportService<JournalReportDto>
                             .carNumber(carState.getCarNumber())
                             .outTimestamp(carState.getOutTimestamp())
                             .inTimestamp(carState.getInTimestamp())
-                            .parkingTypeCode(carState.getType().name())
+                            .parkingTypeCode(carState.getType() != null ? carState.getType().name() : "")
                             .paymentId(null)
                             .sum(BigDecimal.ZERO)
                             .provider("")
@@ -110,20 +185,11 @@ public class JournalReportServiceImpl implements ReportService<JournalReportDto>
 
     @Override
     public Page<JournalReportDto> page(PagingRequest pagingRequest) {
-        var all = list(convert(pagingRequest));
+        var all = list(pagingRequest, convert(pagingRequest));
 
-        var filtered = all.stream()
-                .filter(filterPage(pagingRequest))
-                .sorted(sortPage(pagingRequest))
-                .skip(pagingRequest.getStart())
-                .limit(pagingRequest.getLength())
-                .collect(Collectors.toList());
-
-        long count = all.stream().filter(filterPage(pagingRequest)).count();
-
-        Page<JournalReportDto> page = new Page<>(filtered);
-        page.setRecordsFiltered((int) count);
-        page.setRecordsTotal((int) count);
+        Page<JournalReportDto> page = new Page<>(all.getData());
+        page.setRecordsFiltered(all.getRecordsFiltered());
+        page.setRecordsTotal(all.getRecordsTotal());
         page.setDraw(pagingRequest.getDraw());
 
         return page;

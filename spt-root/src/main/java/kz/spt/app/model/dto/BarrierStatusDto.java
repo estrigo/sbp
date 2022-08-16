@@ -5,6 +5,7 @@ import kz.spt.lib.model.Barrier;
 public class BarrierStatusDto {
 
     public Long id;
+    public Long gateId;
     public Barrier.BarrierType type;
     public Barrier.SensorsType sensorsType;
     public String ip;
@@ -18,10 +19,14 @@ public class BarrierStatusDto {
     public Boolean dontSendZero = false;
     public Integer loopModbusRegister;
     public Integer photoElementModbusRegister;
+    public boolean statusCheck;
+    public boolean impulseSignal;
+    public Integer impulseDelay;
 
-    public static BarrierStatusDto fromBarrier(Barrier barrier){
+    public static BarrierStatusDto fromBarrier(Barrier barrier) {
         BarrierStatusDto barrierStatusDto = new BarrierStatusDto();
         barrierStatusDto.id = barrier.getId();
+        barrierStatusDto.gateId = barrier.getGate().getId();
         barrierStatusDto.type = barrier.getBarrierType();
         barrierStatusDto.ip = barrier.getIp();
         barrierStatusDto.password = barrier.getPassword();
@@ -35,6 +40,9 @@ public class BarrierStatusDto {
         barrierStatusDto.dontSendZero = barrier.getDontSendZero() != null ? barrier.getDontSendZero() : false;
         barrierStatusDto.loopModbusRegister = barrier.getLoopModbusRegister();
         barrierStatusDto.photoElementModbusRegister = barrier.getPhotoElementModbusRegister();
+        barrierStatusDto.statusCheck = barrier.isStatusCheck();
+        barrierStatusDto.impulseSignal = barrier.isImpulseSignal();
+        barrierStatusDto.impulseDelay = barrier.getImpulseDelay();
         return barrierStatusDto;
     }
 }

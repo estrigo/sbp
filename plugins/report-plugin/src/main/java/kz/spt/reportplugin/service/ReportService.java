@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 
 public interface ReportService<T> {
     List<T> list(FilterReportDto filterReportDto);
+    Page<T> list(PagingRequest pagingRequest, FilterReportDto filterReportDto);
     Page<T> page(PagingRequest pagingRequest);
     Predicate<T> filterPage(PagingRequest pagingRequest);
     Comparator<T> sortPage(PagingRequest pagingRequest);

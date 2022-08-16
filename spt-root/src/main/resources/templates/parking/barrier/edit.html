@@ -57,6 +57,22 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-4">
+            <div class="form-group">
+                <label for="impulseSignal" class="control-label" th:text="#{barrier.impulseSignal}"></label>
+                <input type="checkbox" id="impulseSignal" th:field="*{impulseSignal}" th:value="*{impulseSignal}" onchange="changeImpulseSignal(this)"/>
+            </div>
+        </div>
+        <div class="col-8" id="impulseSignalBlock">
+            <div class="form-group row">
+                <label for="impulseDelay" class="col-2 control-label" th:text="#{camera.timeout}"></label>
+                <div class="col-10">
+                    <input type="number" class="form-control" id="impulseDelay" th:field="*{impulseDelay}" th:value="*{impulseDelay}">
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row" id="snmpVersionDiv">
         <div class="col-md-6">
             <div class="form-group">
@@ -257,6 +273,45 @@
                         <option value="3">3</option>
                         <option value="4">4</option>
                     </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="statusCheck" class="control-label" th:text="#{barrier.statusCheck}"></label>
+                <input type="checkbox" id="statusCheck" th:field="*{statusCheck}" th:value="*{statusCheck}" onchange="changeStatusCheck(this)"/>
+            </div>
+        </div>
+        <div class="col-md-12 mt-1" id="statusSensorBlock" style="display: none;">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="openStatusOid" class="control-label" th:text="#{barrier.openStatusOid}"></label>
+                        <input type="text" class="form-control" id="openStatusOid" th:field="*{openStatusOid}" th:value="*{openStatusOid}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="openStatusDefault" class="control-label" th:text="#{barrier.statusDefault}"></label>
+                        <input type="number" min="0" max="1" class="form-control" id="openStatusDefault" th:field="*{openStatusDefault}" th:value="*{openStatusDefault}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="closeStatusOid" class="control-label" th:text="#{barrier.closeStatusOid}"></label>
+                        <input type="text" class="form-control" id="closeStatusOid" th:field="*{closeStatusOid}" th:value="*{closeStatusOid}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="closeStatusDefault" class="control-label" th:text="#{barrier.statusDefault}"></label>
+                        <input type="number" min="0" max="1" class="form-control" id="closeStatusDefault" th:field="*{closeStatusDefault}" th:value="*{closeStatusDefault}">
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,5 +1,6 @@
 package kz.spt.billingplugin.rest;
 
+import kz.spt.billingplugin.dto.BalanceDebtLogDto;
 import kz.spt.billingplugin.dto.TransactionDto;
 import kz.spt.billingplugin.dto.TransactionFilterDto;
 import kz.spt.billingplugin.model.Balance;
@@ -40,6 +41,12 @@ public class BalanceRestController {
         dto.amount = amount;
         dto.plateNumber = plateNumber;
         return balanceService.getTransactionList(pagingRequest, dto);
+    }
+
+    @PostMapping("/cleared/debts")
+    public Page<BalanceDebtLogDto> clearedDebts(@RequestBody PagingRequest pagingRequest,
+                                                @RequestParam String date) throws ParseException {
+        return balanceService.getClearedDebtList(pagingRequest, date);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

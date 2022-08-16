@@ -1,6 +1,7 @@
-package kz.spt.app.component;
+package kz.spt.app.job;
 
 
+import kz.spt.app.component.HttpRequestFactoryDigestAuth;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;

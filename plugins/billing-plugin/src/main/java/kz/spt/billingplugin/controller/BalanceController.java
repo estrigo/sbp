@@ -33,4 +33,9 @@ public class BalanceController {
         model.addAttribute("oneDayEarly", format.format(calendar.getTime()));
         return "billing/balance/list";
     }
+
+    @GetMapping("/cleared/debts")
+    public String showAllClearedDebts(Model model) {
+        return "billing/balance/cleared/debts";
+    }
 }
