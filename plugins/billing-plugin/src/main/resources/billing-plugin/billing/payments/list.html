@@ -14,7 +14,7 @@
                     <div class="card-header" th:text="#{payments.payments}"></div>
                     <div class="card-body">
                         <div class="data-filter">
-                            <form method="post">
+                            <form method="post" th:action="@{/billing/payments/download/PAYMENTS/XLSX}">
                                 <div class="form-row">
                                     <div class="form-group col-md-2">
                                         <label for="dateFrom" th:text="#{payments.startDate}"></label>
@@ -50,18 +50,17 @@
                                                th:placeholder="#{payments.total}">
                                     </div>
                                     <div class="form-group col-md-2">
-                                        <button type="button" class="btn btn-success btn-sm filter"
-                                                th:text="#{payments.find}"></button>
+                                            <button  type="submit" class="btn btn-outline-success btn-sm"
+                                                     th:text="#{report.excel}"></button>
+
                                         <button type="reset" class="btn btn-secondary btn-sm"
                                                 th:text="#{payments.clear}"></button>
                                     </div>
                                 </div>
                             </form>
                             <div class="form-row">
-                                <button class="btn btn-success waves-effect waves-light"
-                                        onclick="excel(this)"
-                                        type="button"
-                                        th:text="#{report.excel}"></button>
+                                <button type="button" class="btn btn-success btn-sm filter"
+                                        th:text="#{payments.find}"></button>
                             </div>
                         </div>
                         <hr>

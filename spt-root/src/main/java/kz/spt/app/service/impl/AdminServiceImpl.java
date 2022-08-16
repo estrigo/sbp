@@ -1,5 +1,8 @@
 package kz.spt.app.service.impl;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import kz.spt.app.model.dto.ReportDataSet;
 import kz.spt.app.model.dto.GenericResponse;
 import kz.spt.app.model.dto.WhlResponse;
 import kz.spt.app.repository.PropertyRepository;
@@ -11,6 +14,7 @@ import kz.spt.lib.model.dto.adminPlace.enums.WhlProcessEnum;
 import kz.spt.lib.service.AdminService;
 import kz.spt.lib.service.GitInfoService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,11 +24,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Log
 public class AdminServiceImpl implements AdminService {
 
     private final PropertyRepository propertyRepository;
@@ -36,7 +43,7 @@ public class AdminServiceImpl implements AdminService {
     private String login;
     @Value("${rest-admin.password}")
     private String password;
-
+    private final static String ENCODE = "UTF8";
     private final static String KEY_UID = "uid";
     private final static String KEY_HOST = "admin.host";
     private final static String URL = "%s%s";
@@ -45,6 +52,7 @@ public class AdminServiceImpl implements AdminService {
     private final static String WHL_G_ADD = "/rest/whitelist/group/add";
     private final static String WHL_G_DEL = "/rest/whitelist/group/deleted";
     private final static String WHL_SPECIAL = "rest/whitelist/special";
+    private final static String REPORT = "/rest/report/%s/%s";
 
     @Override
     public String getProperty(String key) {
@@ -146,13 +154,35 @@ public class AdminServiceImpl implements AdminService {
     public void synchronizeWhl() throws Exception {
         String host = getProperty(KEY_HOST);
         if (!ObjectUtils.isEmpty(host)) {
-            WhlResponse whlResponse = (WhlResponse) execute(
-                    String.format(URL, host, WHL_SPECIAL),
-                    adminCommandDto(null), WhlResponse.class).getBody();
-
-            whitelistRootService.updateWhlByGroupId(whlResponse);
-
+            HttpEntity<?> request = null;
+            try {
+                request = execute(
+                        String.format(URL, host, WHL_SPECIAL),
+                        adminCommandDto(null), WhlResponse.class);
+            } catch (Exception e) {
+                log.warning("ERROR synchronizeWhl");
+            }
+            if (!ObjectUtils.isEmpty(request)) {
+                whitelistRootService.updateWhlByGroupId((WhlResponse) request.getBody());
+            }
         }
+    }
+
+    @Override
+    public byte[] report(List<?> list, String reportName, String format) {
+        String host = getProperty(KEY_HOST);
+        if (!ObjectUtils.isEmpty(host)) {
+            String uri = String.format(URL, host, String.format(REPORT, reportName, format));
+            try {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String json = gson.toJson(new ReportDataSet(list));
+                json = URLEncoder.encode(json, ENCODE);
+                return postForEntity(uri,json, byte[].class);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
     }
 
     private void uploadWhiteListGroup(WhiteListGroupEvent whiteListGroupEvent) {
@@ -171,6 +201,11 @@ public class AdminServiceImpl implements AdminService {
         return restTemplate.exchange(
                 url,
                 HttpMethod.POST, request, clazz);
+    }
+
+    public <T> T postForEntity(String uri, Object object, Class<T> clazz) {
+        HttpEntity<?> request = new HttpEntity<>(object, headers());
+        return restTemplate.postForObject(uri, request, clazz);
     }
 
     public ResponseEntity<?> execute(String url, Object object) {
