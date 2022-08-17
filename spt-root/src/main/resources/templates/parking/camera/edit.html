@@ -57,8 +57,8 @@
     <div class="row">
         <div class="col-md-16">
             <div class="form-group">
-                <label for="login" class="control-label" th:text="#{camera.snapshot}"></label>
-                <input type="text" class="form-control" id="login" th:field="*{snapshotUrl}" th:value="*{snapshotUrl}">
+                <label for="snapshotUrl" class="control-label" th:text="#{camera.snapshot}"></label>
+                <input type="text" class="form-control" id="snapshotUrl" th:field="*{snapshotUrl}" th:value="*{snapshotUrl}">
             </div>
         </div>
         <div class="col-md-6">
@@ -72,22 +72,22 @@
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="login" class="control-label" th:text="#{carmen.login}"></label>
-                    <input type="text" class="form-control" id="login" th:field="*{carmenLogin}" th:value="*{carmenLogin}">
+                    <label for="carmenLogin" class="control-label" th:text="#{carmen.login}"></label>
+                    <input type="text" class="form-control" id="carmenLogin" th:field="*{carmenLogin}" th:value="*{carmenLogin}">
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="password" class="control-label" th:text="#{carmen.password}"></label>
-                    <input type="text" class="form-control" id="password" th:field="*{carmenPassword}" th:value="*{carmenPassword}">
+                    <label for="carmenPassword" class="control-label" th:text="#{carmen.password}"></label>
+                    <input type="text" class="form-control" id="carmenPassword" th:field="*{carmenPassword}" th:value="*{carmenPassword}">
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="form-group">
-                    <label for="login" class="control-label" th:text="#{carmen.snapshot}"></label>
-                    <input type="text" class="form-control" id="login" th:field="*{carmenIp}" th:value="*{carmenIp}">
+                    <label for="carmenIp" class="control-label" th:text="#{carmen.snapshot}"></label>
+                    <input type="text" class="form-control" id="carmenIp" th:field="*{carmenIp}" th:value="*{carmenIp}">
                 </div>
             </div>
         </div>
@@ -95,8 +95,8 @@
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">
-                <label for="login" class="control-label" th:text="#{camera.enabled}"></label>
-                <select th:field="*{enabled}"  class="form-control" >
+                <label for="enabled" class="control-label" th:text="#{camera.enabled}"></label>
+                <select id="enabled" th:field="*{enabled}"  class="form-control" >
                     <option th:value="true" th:text="#{crm.yes}"></option>
                     <option th:value="false" th:text="#{crm.no}"></option>
                 </select>
@@ -106,7 +106,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">
-                <label for="login" class="control-label">Detector ID</label>
+                <label for="detectorId" class="control-label">Detector ID</label>
                 <input type="text" class="form-control" id="detectorId" th:field="*{detectorId}" th:value="*{detectorId}">
             </div>
         </div>

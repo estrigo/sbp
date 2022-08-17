@@ -138,6 +138,12 @@ public class Barrier {
     @Column(name = "signal_delay")
     private Integer impulseDelay;
 
+    @Column(name = "confirm_car_pass", columnDefinition="tinyint(1) default 0")
+    private boolean confirmCarPass = false;
+
+    @Column(name = "confirm_car_pass_timeout", columnDefinition = "int default 5")
+    private int confirmCarPassTimeout = 5;
+
     @CreationTimestamp
     private Date created;
 

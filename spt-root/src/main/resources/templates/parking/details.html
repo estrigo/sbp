@@ -235,8 +235,9 @@
     }
 
     function changeSensorsBlock(){
-        let value = $('#barrier-close-modal').find('#sensorsType').val();
-        if("AUTOMATIC" === value){
+        let sensorsTypeValue = $('#barrier-close-modal').find('#sensorsType').val();
+        let confirmCarPassValue = $('#barrier-close-modal').find('#confirmCarPass:checked').length;
+        if("AUTOMATIC" === sensorsTypeValue && confirmCarPassValue == 0){
             $('#barrier-close-modal').find('#sensorBlock').hide();
         } else {
             $('#barrier-close-modal').find('#sensorBlock').show();
