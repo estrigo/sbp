@@ -183,6 +183,27 @@ public class BarrierServiceImpl implements BarrierService {
     }
 
     @Override
+    public Boolean getBarrierStatus(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
+        if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier())) { //  ignore in development
+            GateStatusDto gate = new GateStatusDto();
+            gate.gateType = barrier.getGate().getGateType();
+            gate.gateName = barrier.getGate().getName();
+
+            if (barrier.getBarrierType() == null) {
+                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, "Для принятия сигнала с шлагбаума нужно настроит тип (SNMP, MODBUS, JETSON) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + ((String) properties.get("carNumber") != null ? " для номер авто " + (String) properties.get("carNumber") : ""), "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""));
+                return false;
+            } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
+                return snmpGetValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
+            } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
+                return modbusGetValue(BarrierStatusDto.fromBarrier(barrier));
+            } else if (Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
+                return jetsonGetValue(BarrierStatusDto.fromBarrier(barrier));
+            }
+        }
+        return false;
+    }
+
+    @Override
     public Boolean closeBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
         if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier())) { //  ignore in development
             GateStatusDto gate = new GateStatusDto();
@@ -459,6 +480,27 @@ public class BarrierServiceImpl implements BarrierService {
         var response = new RestTemplateBuilder().build().getForObject("http://" + barrier.ip + ":9001" + "/gate_action?pin=" + pin, JetsonResponse.class);
         log.info(response.toString());
         return response.getSuccess();
+    }
+
+    private Boolean snmpGetValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException {
+
+        SNMPManager barrierClient = new SNMPManager("udp:" + barrier.ip + "/161", barrier.password, barrier.snmpVersion);
+        barrierClient.start();
+
+        String openValue = barrierClient.getCurrentValue(barrier.openOid);
+
+        return BARRIER_ON.equals(openValue);
+    }
+
+    private Boolean modbusGetValue(BarrierStatusDto barrier) throws RuntimeException {
+        int register = barrier.modbusOpenRegister - 1;
+        return GateStatusDto.getModbusMasterOutputValue(barrier.ip, register);
+    }
+
+    private Boolean jetsonGetValue(BarrierStatusDto barrier) throws RuntimeException {
+        var response = new RestTemplateBuilder().build().getForObject("http://" + barrier.ip + ":9001" + "/sensor_status?pin=" + barrier.openOid, JetsonResponse.class);
+        log.info(response.toString());
+        return response.getState() == 0 ? true : false;
     }
 
     private enum Command {
