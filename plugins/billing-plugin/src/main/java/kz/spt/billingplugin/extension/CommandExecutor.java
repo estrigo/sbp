@@ -73,6 +73,9 @@ public class CommandExecutor implements PluginRegister {
                 } else {
                     throw new RuntimeException("Not all getPasswordHash parameters set");
                 }
+            } else if ("checkProvider".equals(commandName)) {
+                PaymentProvider paymentProvider = getPaymentProviderService().getProviderByClientId(command.get("providerName").textValue());
+                node.put("providerExists", paymentProvider != null ? true : false);
             } else if ("savePayment".equals(commandName)) {
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue());
                 List<Payment> oldPayments = getPaymentService().findByTransactionAndProvider(command.get("transaction").textValue(), provider);
