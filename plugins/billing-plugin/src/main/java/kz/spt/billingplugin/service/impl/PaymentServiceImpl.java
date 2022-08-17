@@ -20,9 +20,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.util.ObjectUtils;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -102,8 +104,8 @@ public class PaymentServiceImpl implements PaymentService {
     public void cancelPaymentByTransactionId(String transaction, String reason) throws ResponseStatusException {
         List<Payment> payments = paymentRepository.findByTransaction(transaction);
         if (payments.isEmpty()) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Entity not found by transactionId : " + transaction);
+            throw new HttpClientErrorException(
+                    HttpStatus.NOT_FOUND, "Error : Entity not found by transactionId : " + transaction);
         }
 
         // Тут оставим костыль, т.к. по неведомой причине findByTransaction возвращает List<платежей>
@@ -111,8 +113,13 @@ public class PaymentServiceImpl implements PaymentService {
 
         // Проверим была ли уже отозвана транзакция, если да то не имеет смысла откатывать повторно
         if (firstPayment.isCanceled()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "Request already canceled by transactionId : " + transaction);
+            throw new HttpClientErrorException(
+                    HttpStatus.BAD_REQUEST, "Error : Request already canceled by transactionId : " + transaction);
+        }
+        BigDecimal currentBalance = balanceService.getBalance(firstPayment.getCarNumber());
+        if (currentBalance.compareTo(firstPayment.getPrice()) < 0) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Error : Insufficient funds to cancel transaction : " + transaction +
+                    " current balance : " + currentBalance);
         }
         paymentRepository.cancelPayment(transaction, reason);
         balanceService.subtractBalance(
@@ -246,14 +253,14 @@ public class PaymentServiceImpl implements PaymentService {
     public String toLog(PaymentCheckLog log) {
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm");
         return "created: " + checkField(format.format(log.getCreated())) +
-                ", plateNumber: " +  checkField(log.getPlateNumber() ) +
-                ", message: " +  checkField(log.getMessage()) +
-                ", summ: " +  checkField(log.getSumm()) +
-                ", currentBalance: " +  checkField(log.getCurrentBalance()) +
-                ", carStateId: " +  checkField(log.getCarStateId()) +
-                ", paymentCheckType: " +  checkField(log.getPaymentCheckType()) +
-                ", transaction: " +  checkField(log.getTransaction()) +
-                ", providerName: " +  checkField(log.getProviderName());
+                ", plateNumber: " + checkField(log.getPlateNumber()) +
+                ", message: " + checkField(log.getMessage()) +
+                ", summ: " + checkField(log.getSumm()) +
+                ", currentBalance: " + checkField(log.getCurrentBalance()) +
+                ", carStateId: " + checkField(log.getCarStateId()) +
+                ", paymentCheckType: " + checkField(log.getPaymentCheckType()) +
+                ", transaction: " + checkField(log.getTransaction()) +
+                ", providerName: " + checkField(log.getProviderName());
     }
 
 
