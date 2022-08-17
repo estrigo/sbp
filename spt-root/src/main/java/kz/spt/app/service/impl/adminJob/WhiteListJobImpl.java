@@ -31,7 +31,7 @@ public class WhiteListJobImpl implements WhiteListJob {
     private final static String CRON_WHL = "cron_white_list";
 
     @Bean
-    private void doStart() {
+    public void doStart() {
         start();
     }
 
