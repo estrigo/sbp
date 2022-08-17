@@ -12,6 +12,7 @@ import kz.spt.app.component.HttpRequestFactoryDigestAuth;
 import kz.spt.app.job.SensorStatusCheckJob;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
+import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.strategy.barrier.close.AbstractCloseStrategy;
 import kz.spt.app.model.strategy.barrier.close.ManualCloseStrategy;
 import kz.spt.app.model.strategy.barrier.open.AbstractOpenStrategy;
@@ -53,6 +54,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Future;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.StringUtils;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import net.coobird.thumbnailator.Thumbnails;
 
 @Log
 @Service
@@ -194,6 +201,16 @@ public class ArmServiceImpl implements ArmService {
                         }
                     } else if (Gate.GateType.IN.equals(camera.getGate().getGateType()) || Gate.GateType.REVERSE.equals(camera.getGate().getGateType())) {
                         String debtPlatenumber = eventLogService.findLastWithDebts(camera.getGate().getId());
+
+                        CameraStatusDto cameraStatusDtoById = StatusCheckJob.findCameraStatusDtoById(cameraId);
+                        try {
+                            String newSnapShot = ("data:image/jpg;base64,"+ (snapshot(cameraStatusDtoById.ip, cameraStatusDtoById.login, cameraStatusDtoById.password, cameraStatusDtoById.snapshotUrl)));
+                            String carImageUrl = carImageService.saveImage(newSnapShot, new Date(), debtPlatenumber);
+                            properties.put(StaticValues.carImagePropertyName, carImageUrl);
+                            properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
+                        } catch (Throwable e) {
+                            throw new RuntimeException(e);
+                        }
 
                         if (debtPlatenumber != null) {
                             properties.put("carNumber", debtPlatenumber);
@@ -492,11 +509,11 @@ public class ArmServiceImpl implements ArmService {
         return null;
     }
 
-    /*public String snapshot(String ip, String login, String password, String url) throws Throwable {
-        byte[] img = getSnapshot(ip, login, password, url);
+    public String snapshot(String ip, String login, String password, String url) throws Throwable {
+        Future<byte[]> img = getSnapshot(ip, login, password, url);
 
         ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
-        Thumbnails.of(new ByteArrayInputStream(img))
+        Thumbnails.of(new ByteArrayInputStream(img.get()))
                 .size(500, 500)
                 .outputFormat("JPEG")
                 .outputQuality(1)
@@ -504,7 +521,7 @@ public class ArmServiceImpl implements ArmService {
 
         String base64 = StringUtils.newStringUtf8(Base64.encodeBase64(resultStream.toByteArray(), false));
         return base64;
-    }*/
+    }
 
    /* @Override
     public void enableSnapshot(Long cameraId) {
