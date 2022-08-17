@@ -241,6 +241,8 @@ public class WhitelistController {
             model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
             return "whitelist/edit";
         } else {
+            Whitelist createdDate = whitelistService.prepareById(id);
+            whitelist.setCreated(createdDate.getCreated());
             whitelistService.saveWhitelist(whitelist, currentUser);
             return "redirect:/whitelist/list";
         }
