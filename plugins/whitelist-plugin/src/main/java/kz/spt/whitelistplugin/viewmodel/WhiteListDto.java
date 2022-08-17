@@ -17,4 +17,6 @@ public class WhiteListDto {
     private String address;
     private String parkingNumber;
     private String comment;
+    private String updatedDate;
+    private String updatedUser;
 }
