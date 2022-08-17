@@ -95,6 +95,8 @@
                                         <th th:text="#{car.comment}"></th>
                                         <th></th>
                                         <th></th>
+                                        <th><a th:text="#{whitelist.updatedDate}"></a></th>
+                                        <th><a th:text="#{whitelist.updatedUser}"></a></th>
                                     </tr>
                                     </thead>
                                 </table>
@@ -219,6 +221,12 @@
                     return '<a href="delete/' + data + '">' + del + '</a>';
                 }
             },
+            {
+                "data": "updatedDate"
+            },
+            {
+                "data": "updatedUser"
+            }
         ],
         language: {
             url: address
@@ -294,12 +302,14 @@
         let createdDateH = [[#{whitelist.createdDate}]];
         let conditionDetailH = [[#{whitelist.condition}]];
         let commentH = [[#{car.comment}]];
+        let updatedDateH = [[#{whitelist.updatedDate}]];
+        let updatedUserH = [[#{whitelist.updatedUser}]];
 
         $.get("/rest/whitelist/list/excel", function (data) {
             try {
 
                 data.unshift({id:idH, plateNumber: plateNumberH, fullName : fullNameH, address : addressH, parkingNumber : parkingNumberH,
-                     parkingName : parkingNameH, groupName : groupNameH, createdUser : createdUserH, createdDate : createdDateH, conditionDetail : conditionDetailH, comment : commentH});
+                     parkingName : parkingNameH, groupName : groupNameH, createdUser : createdUserH, createdDate : createdDateH, conditionDetail : conditionDetailH, comment : commentH, updatedDate : updatedDateH, updatedUser : updatedUserH});
 
                 let ws = XLSX.utils.json_to_sheet(data, {skipHeader:true});
 

@@ -149,6 +149,8 @@ public class WhitelistServiceImpl implements WhitelistService {
                         .address(m.getAddress())
                         .parkingNumber(m.getParkingNumber())
                         .comment(m.getComment())
+                        .updatedDate(m.getUpdated().toString())
+                        .updatedUser(m.getUpdatedUser())
                         .build())
                 .collect(Collectors.toList());
         return getPage(list, pagingRequest);
@@ -570,6 +572,8 @@ public class WhitelistServiceImpl implements WhitelistService {
                         .address(m.getAddress())
                         .parkingNumber(m.getParkingNumber())
                         .comment(m.getComment())
+                        .updatedDate(m.getUpdated().toString())
+                        .updatedUser(m.getUpdatedUser())
                         .build())
                 .collect(Collectors.toList());
         return list;
