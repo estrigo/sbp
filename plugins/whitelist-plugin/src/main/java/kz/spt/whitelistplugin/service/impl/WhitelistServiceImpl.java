@@ -566,6 +566,10 @@ public class WhitelistServiceImpl implements WhitelistService {
                         .createdDate(String.valueOf(m.getCreated()))
                         .createdUser(m.getGroup() != null ? m.getGroup().getUpdatedUser() : m.getCreatedUser())
                         .conditionDetail(m.getConditionDetail())
+                        .fullName(m.getFullName())
+                        .address(m.getAddress())
+                        .parkingNumber(m.getParkingNumber())
+                        .comment(m.getComment())
                         .build())
                 .collect(Collectors.toList());
         return list;
