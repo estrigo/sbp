@@ -33,7 +33,7 @@ public class AuthorizationServer extends AuthorizationServerConfigurerAdapter {
 
     private final PluginService pluginService;
 
-    @Value("${admin-place.pass}")
+    @Value("${adminPlace.pass}")
     private String adminPass;
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {

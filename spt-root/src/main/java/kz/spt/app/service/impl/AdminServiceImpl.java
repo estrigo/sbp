@@ -39,9 +39,9 @@ public class AdminServiceImpl implements AdminService {
     private final GitInfoService gitInfoService;
 
     private final WhitelistRootService whitelistRootService;
-    @Value("${rest-admin.login}")
+    @Value("${restAdmin.login}")
     private String login;
-    @Value("${rest-admin.password}")
+    @Value("${restAdmin.password}")
     private String password;
     private final static String ENCODE = "UTF8";
     private final static String KEY_UID = "uid";
