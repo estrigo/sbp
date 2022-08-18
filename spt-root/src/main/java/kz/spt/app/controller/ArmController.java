@@ -21,7 +21,7 @@ public class ArmController {
     }
 
     @GetMapping("/realtime")
-    public String getCamersForRealtime(@Value("${parkomat.ip}") String ip, Model model) {
+    public String realtime(@Value("${parkomat.ip}") String ip, Model model) {
         model.addAttribute("cameras", cameraService.cameraListWithoutTab());
         model.addAttribute("ip", ip);
         return "arm/realtime";
@@ -30,6 +30,14 @@ public class ArmController {
     @GetMapping("/realtime/{cameraTabId}")
     public String getCamersForRealtime(@Value("${parkomat.ip}") String ip, Model model, @PathVariable Long cameraTabId) {
         model.addAttribute("cameras", cameraService.cameraListByTabId(cameraTabId));
+        model.addAttribute("ip", ip);
+        return "arm/realtime";
+    }
+
+    @GetMapping("/enable/{cameraId}")
+    public String enable(@Value("${parkomat.ip}") String ip, @PathVariable Long cameraId, Model model){
+        cameraService.enableSnapshot(cameraId);
+        model.addAttribute("cameras", cameraService.cameraListWithoutTab());
         model.addAttribute("ip", ip);
         return "arm/realtime";
     }

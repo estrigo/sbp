@@ -42,7 +42,7 @@
                  th:id="${'item_' + camera.id}"
                  th:attr="data-id=${camera.id},data-url=${camera.snapshotUrl},data-ip=${camera.ip},data-enabled=${camera.snapshotEnabled}">
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-4">
                         <div class="btn-group" role="group">
                             <button type="button" class="btn btn-secondary move-left">
                                 <span> <i class="mdi mdi-arrow-left"></i></span>
@@ -51,6 +51,14 @@
                                 <span><i class="mdi mdi-arrow-right"></i></span>
                             </button>
                         </div>
+                    </div>
+                    <div class="col-8">
+                        <form class="form-inline" th:action="@{/arm/enable/__${camera.id}__}" method="get">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="snapshotEnabled" th:checked="${camera.snapshotEnabled}" onchange="this.form.submit()">
+                                <label class="form-check-label" for="snapshotEnabled" th:text="#{camera.snapshotEnabled}"></label>
+                            </div>
+                        </form>
                     </div>
                 </div>
                 <div class="card m-b-10">
