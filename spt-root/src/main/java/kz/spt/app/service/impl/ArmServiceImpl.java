@@ -298,6 +298,11 @@ public class ArmServiceImpl implements ArmService {
         return false;
     }
 
+    @Override
+    public void manualEnter(Long cameraId, String plateNumber) {
+        carEventService.handleManualEnter(cameraId, plateNumber);
+    }
+
     @SneakyThrows
     @Override
     public Boolean restartParkomat(String ip) {
