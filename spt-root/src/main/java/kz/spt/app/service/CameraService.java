@@ -30,4 +30,6 @@ public interface CameraService {
     void deleteCamera(Camera camera);
 
     void deleteCameraTab(CameraTab cameraTab);
+
+    void enableSnapshot(Long cameraId);
 }

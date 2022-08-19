@@ -34,4 +34,6 @@ public interface CarEventService {
     void saveCarOutState(CarEventDto eventDto, Camera camera, CarState carState, Map<String, Object> properties, BigDecimal balance, BigDecimal rateResult, BigDecimal zerotouchValue, SimpleDateFormat format, StaticValues.CarOutBy carOutBy, JsonNode abonements, JsonNode whitelists) throws Exception;
 
     void handleRtaCarEvent(String event_descriptor) throws Exception;
+
+    void handleManualEnter(Long cameraId, String plateNumber);
 }
