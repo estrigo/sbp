@@ -104,7 +104,7 @@ public class PaymentServiceImpl implements PaymentService {
     public void cancelPaymentByTransactionId(String transaction, String reason) throws ResponseStatusException {
         List<Payment> payments = paymentRepository.findByTransaction(transaction);
         if (payments.isEmpty()) {
-            throw new HttpClientErrorException(
+            throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Error : Entity not found by transactionId : " + transaction);
         }
 
@@ -113,12 +113,12 @@ public class PaymentServiceImpl implements PaymentService {
 
         // Проверим была ли уже отозвана транзакция, если да то не имеет смысла откатывать повторно
         if (firstPayment.isCanceled()) {
-            throw new HttpClientErrorException(
+            throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Error : Request already canceled by transactionId : " + transaction);
         }
         BigDecimal currentBalance = balanceService.getBalance(firstPayment.getCarNumber());
         if (currentBalance.compareTo(firstPayment.getPrice()) < 0) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Error : Insufficient funds to cancel transaction : " + transaction +
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error : Insufficient funds to cancel transaction : " + transaction +
                     " current balance : " + currentBalance);
         }
         paymentRepository.cancelPayment(transaction, reason);
