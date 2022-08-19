@@ -244,7 +244,7 @@ public class WhitelistController {
         } else {
             Whitelist dataOfWhitelist = whitelistService.prepareById(id);
             whitelist.setCreated(dataOfWhitelist.getCreated());
-            whitelist.setCreatedUser(dataOfWhitelist.getCreatedUser());
+            whitelist.setCreatedUser(currentUser.getUsername());
             whitelistService.saveWhitelist(whitelist, currentUser);
             return "redirect:/whitelist/list";
         }
