@@ -11,10 +11,7 @@ import net.bull.javamelody.SessionListener;
 
 @Configuration
 public class FilterConfig {
-    /**
-     * Настройка мониторинга javamelody
-     * Spring boot будет фильтровать по порядку в соответствии со стоимостью заказа, от малого до большого
-     */
+
     @Bean
     @Order(Integer.MAX_VALUE-1)
     public FilterRegistrationBean<MonitoringFilter> monitoringFilter() {
@@ -25,9 +22,7 @@ public class FilterConfig {
         return registration;
     }
 
-    /**
-     * Настроить javamelody слушатель sessionListener
-     */
+
     @Bean
     public ServletListenerRegistrationBean<SessionListener> servletListenerRegistrationBean() {
         ServletListenerRegistrationBean<SessionListener> slrBean = new ServletListenerRegistrationBean<SessionListener>();
