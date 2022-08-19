@@ -144,7 +144,7 @@ public class WhitelistServiceImpl implements WhitelistService {
                         .groupName(m.getGroup() != null ? m.getGroup().getName() : "")
                         .conditionDetail(m.getConditionDetail())
                         .createdDate(String.valueOf(m.getCreated()))
-                        .createdUser(m.getGroup() != null ? m.getGroup().getUpdatedUser() : m.getCreatedUser())
+                        .createdUser(m.getCreatedUser())
                         .fullName(m.getFullName())
                         .address(m.getAddress())
                         .parkingNumber(m.getParkingNumber())
@@ -489,6 +489,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         if(group.getType() != Whitelist.Type.PERIOD) {
             rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber(), false);
         }
+        whitelist.setCreatedUser(currentUser);
         whitelistRepository.save(whitelist);
     }
 
@@ -566,7 +567,7 @@ public class WhitelistServiceImpl implements WhitelistService {
                         .parkingName(m.getParking().getName())
                         .groupName(m.getGroup() != null ? m.getGroup().getName() : "")
                         .createdDate(String.valueOf(m.getCreated()))
-                        .createdUser(m.getGroup() != null ? m.getGroup().getUpdatedUser() : m.getCreatedUser())
+                        .createdUser(m.getCreatedUser())
                         .conditionDetail(m.getConditionDetail())
                         .fullName(m.getFullName())
                         .address(m.getAddress())
