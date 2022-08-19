@@ -18,6 +18,7 @@ import lombok.extern.java.Log;
 import org.snmp4j.log.LogLevel;
 
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.*;
 
@@ -112,6 +113,12 @@ public class ModbusProtocolThread extends Thread  {
                     Thread.sleep(100);
                 } catch (ModbusProtocolException | ModbusNumberException | ModbusIOException | InterruptedException e) {
                     log.info(barrierStatusDto.ip + " write Registers : " + new_values[0] + " error. message: " + e.getMessage());
+                    try {
+                        modbusMaster.disconnect();
+                        modbusMaster.connect();
+                    } catch (ModbusIOException mie) {
+                        log.info(barrierStatusDto.ip + " disconnect/connect error. message: " + mie.getMessage());
+                    }
                 }
 
                 try {
@@ -120,9 +127,16 @@ public class ModbusProtocolThread extends Thread  {
                     Thread.sleep(100);
                 } catch (ModbusProtocolException | ModbusNumberException | ModbusIOException | InterruptedException e) {
                     log.info(barrierStatusDto.ip + " read Registers error. message: " + e.getMessage());
+                    try {
+                        modbusMaster.disconnect();
+                        modbusMaster.connect();
+                    } catch (ModbusIOException mie) {
+                        log.info(barrierStatusDto.ip + " disconnect/connect error. message: " + mie.getMessage());
+                    }
                 }
             } else{
                 try {
+                    log.info("Reconnecting to: " + barrierStatusDto.ip);
                     modbusMaster.connect();
                 } catch (Exception e) {
                     log.info(barrierStatusDto.ip + " modbus connect error: " + e.getMessage());
@@ -142,12 +156,12 @@ public class ModbusProtocolThread extends Thread  {
         tcpParameters.setPort(Modbus.TCP_PORT);
 
         modbusMaster = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
-        modbusMaster.setResponseTimeout(5000); // 2 seconds timeout
+        modbusMaster.setResponseTimeout(3000); // 3 seconds timeout
         Modbus.setAutoIncrementTransactionId(true);
     }
 
     private void calculateChangedRegisters(int total){
-        int value = 16;
+        int value = 18;
         if(total > 0){
             while (total > 0 && value >= 0){
                 if(total >= (int) Math.pow(2, value)){
