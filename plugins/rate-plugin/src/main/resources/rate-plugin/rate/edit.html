@@ -4,7 +4,7 @@
 <link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
 <link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
 <link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
-
+<meta name="viewport" content="width=device-width"/>
 <div class="content">
     <div class="container-fluid">
         <div class="row">
@@ -45,6 +45,7 @@
                                             <option th:value="DIMENSIONS" th:text="#{'rate.Type.DIMENSIONS'}"></option>
                                             <option th:value="PREPAID" th:text="#{'rate.Type.PREPAID'}"></option>
                                             <option th:value="FREE" th:text="#{'rate.Type.FREE'}"></option>
+                                            <option th:value="INTERVAL2" th:text="#{'rate.Type.INTERVAL2'}"></option>
                                         </select>
                                     </div>
                                 </div>
@@ -193,12 +194,118 @@
                                     </div>
                                 </div>
                             </div>
+                            <!------------------------------------------------->
+
+                            <div id="interval2" class="row" style="display: none;">
+                                <div class="form-group">
+                                    <label class="control-label" th:text="#{rate.Type.INTERVAL}"></label>
+                                    <th:block th:each="intervalRate, ind : ${intervalRates}">
+                                        <div class="card">
+                                            <div class="card-header" id="headingTwo">
+                                                <h5 class="mb-0">
+                                                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                                            th:attr="data-target='#accordion_'+${ind.index}"
+                                                            aria-expanded="false" aria-controls="collapseTwo">
+                                                        <table class="table table-hover w-auto">
+                                                            <thead>
+                                                            <tr>
+                                                                <th th:text="'#'"></th>
+                                                                <th th:text="#{rate.intervalFrom}"></th>
+                                                                <th th:text="#{rate.intervalUntil}"></th>
+                                                            </tr>
+                                                            </thead>
+                                                            <button id="buttonEdit" type="button" class="btn btn-secondary waves-effect"
+                                                                    th:attr="onclick=|testClick('${ind.index}')|"
+                                                                    th:text="edit"></button>
+                                                            <tbody>
+                                                            <tr>
+                                                                <td><a th:text="${ind.index} + 1"></a></td>
+                                                                <td><a th:text="${intervalRate.getDatetimeFrom()}"></a></td>
+                                                                <td><a th:text="${intervalRate.getDatetimeTo()}"></a></td>
+                                                            </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </button>
+                                                </h5>
+                                            </div>
+                                            <div th:id="'accordion_'+${ind.index}" class="collapse" aria-labelledby="headingTwo"
+                                                 data-parent="#interval2">
+                                                <div class="card-body">
+                                                    <table class="table table-hover w-auto">
+                                                        <thead>
+                                                        <tr>
+                                                            <th th:text="#{rate.accrualType}"></th>
+                                                            <th th:text="#{rate.sumOnline}"></th>
+                                                            <th th:text="#{rate.sumParkomat}"></th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        <tr th:each="rateCondition : ${intervalRate.getRateConditions()}">
+                                                            <td><a th:text="${rateCondition.getIntervalType()}"></a></td>
+                                                            <td><a th:text="${rateCondition.getOnlineRate()}"></a></td>
+                                                            <td><a th:text="${rateCondition.getParkomatRate()}"></a></td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th:block>
+
+                                </div>
+                            </div>
+
+
+                            <div id="editInterval" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                                 aria-hidden="true" style="display: none;">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label class="form-label" th:text="'Editing id'"></label>
+                                                        <input type="text" class="form-control" name="id" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <table class="table table-hover w-auto">
+                                                <thead>
+                                                <tr>
+                                                    <th th:text="'#'"></th>
+                                                    <th th:text="#{rate.accrualType}"></th>
+                                                    <th th:text="#{rate.sumOnline}"></th>
+                                                    <th th:text="#{rate.sumParkomat}"></th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr th:each="rateCondition, ind : ${intervalRates.get('1').getRateConditions()}">
+                                                    <td><a th:text="${ind.index} + 1"></a></td>
+                                                    <td><a th:text="${rateCondition.getIntervalType()}"></a></td>
+                                                    <td><a th:text="${rateCondition.getOnlineRate()}"></a></td>
+                                                    <td><a th:text="${rateCondition.getParkomatRate()}"></a></td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-success waves-effect waves-light" th:text="#{crm.save}"
+                                                    th:onclick="saveButton()"></button>
+                                            <button type="button" class="btn btn-danger waves-effect" data-dismiss="modal"
+                                                    th:text="#{crm.close}"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!------------------------------------------------->
                             <div id="dimensions" class="row" style="display: none;">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="cashPaymentValuePassenger" class="control-label" th:text="#{rate.cashPassengerCar}"></label>
+                                        <label for="cashPaymentValuePassenger" class="control-label" th:text="#{`rate.cashPassengerCar`}"></label>
                                         <input type="number" class="form-control" th:field="*{cashPaymentValuePassenger}" th:value="*{cashPaymentValuePassenger}" id="cashPaymentValuePassenger" placeholder="100">
                                     </div>
                                 </div>
@@ -273,8 +380,6 @@
 
                             </div>
 
-
-
                             <!------------------------------------------------->
 
                             <div class="form-group row">
@@ -348,6 +453,11 @@
             drawInterval();
         } else {
             $('#interval').hide();
+        }
+        if(val === 'INTERVAL2'){
+            $('#interval2').show();
+        } else {
+            $('#interval2').hide();
         }
         if(val === 'DIMENSIONS'){
             $('#dimensions').show();
@@ -480,6 +590,28 @@
         $('#intervalContainer').html(html);
         $('#intervalJson').val(JSON.stringify(intervalArray));
     }
+
+    let activeRate = {};
+    function testClick(id) {
+        console.log("id: " + id);
+        activeRate["id"] = id;
+        $('#editInterval').modal('show');
+    }
+
+    function saveButton() {
+        console.log("AAAAAA" + $(this).find("input[name=id]"));
+    }
+
+    $('#editInterval').on('shown.bs.modal', function () {
+        $(this).find("input[name=id]").each(function () {
+            $(this).val(activeRate.id);
+        });
+        console.log("EEEEEEE: " + activeRate.id);
+    })
+    $('#editInterval').on('hide.bs.modal', function () {
+        console.log("DDDDDDD: " + $(this).val(activeRate.id));
+        activeRate = {}
+    })
 
     function saveInterval(){
         let intervalFrom = $('#intervalFrom').val();

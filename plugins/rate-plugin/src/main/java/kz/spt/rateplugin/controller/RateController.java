@@ -43,6 +43,7 @@ public class RateController {
         }
         model.addAttribute("parkingRate", parkingRate);
         model.addAttribute("currencyTypes", ParkingRate.CurrencyType.values());
+        model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
         return "/rate/edit";
     }
 

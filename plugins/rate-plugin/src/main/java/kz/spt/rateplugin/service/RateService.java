@@ -2,6 +2,7 @@ package kz.spt.rateplugin.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import kz.spt.lib.model.Parking;
+import kz.spt.rateplugin.model.IntervalRate;
 import kz.spt.rateplugin.model.ParkingRate;
 import kz.spt.rateplugin.model.dto.ParkingRateDto;
 
@@ -26,4 +27,6 @@ public interface RateService {
     Parking getParkingById(Long parkingId);
 
     String getParkingRateCurrency();
+
+    List<IntervalRate> getIntervalRateByParkingRate(ParkingRate parkingRate);
 }
