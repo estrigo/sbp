@@ -48,5 +48,16 @@ public class CarStateRestController {
         return carStateService.getExcelData(filter);
     }
 
+    @GetMapping("/cars/in")
+    public List<String> getAllCarsInParking()
+    {
+        return carStateService.getCarsInParking();
+    }
+
+    @GetMapping("/cars/in/paid")
+    public List<String> getNotPaidCarsInParking()
+    {
+        return carStateService.getCarsInParkingAndNotPaid();
+    }
 
 }
