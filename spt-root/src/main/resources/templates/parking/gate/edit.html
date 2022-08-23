@@ -39,6 +39,18 @@
                 <input type="checkbox" id="notControlBarrier" th:field="*{notControlBarrier}">
             </div>
         </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="qrPanelIp" class="control-label" th:text="#{gate.tabloIp}"></label>
+                <input type="text" class="form-control" id="tabloIp" th:field="*{tabloIp}" th:value="*{tabloIp}">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="qrPanelIp" class="control-label" th:text="#{gate.parkingSpaceNumber}"></label>
+                <input type="number" class="form-control" id="parkingSpaceNumber" th:field="*{parkingSpaceNumber}" th:value="*{parkingSpaceNumber}">
+            </div>
+        </div>
     </div>
     <div class="modal-footer">
         <button type="submit" class="btn btn-success waves-effect waves-light" th:text="#{crm.saveChanges}"></button>

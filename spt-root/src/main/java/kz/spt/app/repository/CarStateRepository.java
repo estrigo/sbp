@@ -2,6 +2,7 @@ package kz.spt.app.repository;
 
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.CarState;
+import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.Parking;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -64,4 +65,8 @@ public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSp
     @Modifying
     @Query(value = "update car_state set in_barrier = null where in_barrier = :barrierId", nativeQuery = true)
     void updateCarStateByInBarrier(@Param("barrierId") Long barrierId);
+
+    @Query("select count(cs.carNumber) from CarState cs where cs.inGate =:gate and cs.outTimestamp is null")
+    Integer getCarCountInGate(@Param("gate") Gate gate);
+
 }
