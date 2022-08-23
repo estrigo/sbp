@@ -16,7 +16,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>test-plugin</module>
         <module>whitelist-plugin</module>
         <module>rate-plugin</module>
         <module>billing-plugin</module>
