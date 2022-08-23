@@ -185,6 +185,8 @@ kaspi:
 carmen:
   live.enabled: false
   image.enabled: false
+tablo:
+  connected: false
 management:
   endpoints:
     web:

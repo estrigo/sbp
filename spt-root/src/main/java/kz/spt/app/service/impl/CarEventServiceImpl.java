@@ -90,6 +90,9 @@ public class CarEventServiceImpl implements CarEventService {
     @Value("${notification.parkingUid}")
     Object parking_uid;
 
+    @Value("${tablo.connected}")
+    Boolean tabloConnected;
+
     @Value("${notification.url}")
     String notificationUrl;
 
@@ -824,7 +827,9 @@ public class CarEventServiceImpl implements CarEventService {
             }
         }
 
-        tabloService.updateOnIn(camera.getGate());
+        if(tabloConnected){
+            tabloService.updateOnIn(camera.getGate());
+        }
     }
 
     @Override
@@ -1507,7 +1512,9 @@ public class CarEventServiceImpl implements CarEventService {
             }
         }
 
-        tabloService.updateOnOut(camera.getGate());
+        if(tabloConnected){
+            tabloService.updateOnOut(camera.getGate());
+        }
     }
 
     private void sendNotification(CarState carState, Date dateOut, BigDecimal rate) {
