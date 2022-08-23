@@ -511,4 +511,13 @@ public class CarStateServiceImpl implements CarStateService {
         }
     }
 
+    @Override
+    public List<String> getCarsInParking(){
+        return carStateRepository.getPlateNumbersByOutTimestampIsNull();
+    }
+
+    @Override
+    public List<String> getCarsInParkingAndNotPaid(){
+        return carStateRepository.getPlateNumbersByOutTimestampIsNullAndNotPaid();
+    }
 }
