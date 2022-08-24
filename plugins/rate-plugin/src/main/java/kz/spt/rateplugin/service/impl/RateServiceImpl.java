@@ -21,6 +21,7 @@ import kz.spt.rateplugin.repository.RateRepository;
 import kz.spt.rateplugin.service.RateService;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
@@ -181,40 +182,89 @@ public class RateServiceImpl implements RateService {
             int mins = 0;
             if (hourMin.length > 1) mins = Integer.parseInt(hourMin[1]);
             double intervalFrom = hour + (double) mins / 60;
-            log.info("intervalFrom: " + intervalFrom);
             String[] hourMinTo = current.getDatetimeTo().split(":");
             int hourTo = Integer.parseInt(hourMinTo[0]);
             int minsTo = 0;
             if (hourMinTo.length > 1) minsTo = Integer.parseInt(hourMinTo[1]);
             double intervalTo = hourTo + (double) minsTo / 60;
-            log.info("intervalTo: " + intervalTo);
-            String intervalType = null;
+            RateCondition.IntervalType intervalType = null;
             Integer intervalOnlineHours = 0;
             Integer intervalParkomatHours = 0;
             while (inCalendar.before(outCalendar)) {
                 int nextInterval = 60;
                 inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY) + (double) inCalendar.get(Calendar.MINUTE) / 60;
-                log.info("inCalendar: " + inCalendar.getTime());
+//                log.info("inCalendar: " + inCalendar.getTime());
                 if (intervalFrom == intervalTo ||
                         (intervalFrom < intervalTo && inCalendarHour >= intervalFrom && inCalendarHour < intervalTo) ||
                         (intervalFrom > intervalTo && (inCalendarHour >= intervalFrom || inCalendarHour < intervalTo))) {
                 } else {
                     current = getSatisfiedIntervalRate(inCalendarHour);
+                    hourMin = current.getDatetimeFrom().split(":");
+                    hour = Integer.parseInt(hourMin[0]);
+                    mins = 0;
+                    if (hourMin.length > 1) mins = Integer.parseInt(hourMin[1]);
+                    hourMinTo = current.getDatetimeTo().split(":");
+                    hourTo = Integer.parseInt(hourMinTo[0]);
+                    minsTo = 0;
+                    if (hourMinTo.length > 1) minsTo = Integer.parseInt(hourMinTo[1]);
                     conditionIterator = rateConditionRepository.findAllByIntervalRateId(current.getId()).iterator();
                     intervalFrom = hour + (double) mins / 60;
                     intervalTo = hourTo + (double) minsTo / 60;
                     intervalType = null;
                 }
-                if (intervalType == null || (!"entrance".equals(intervalType) && !"allNext".equals(intervalType))) {
+                if (intervalType == null || (!intervalType.equals(RateCondition.IntervalType.entrance) && !intervalType.equals(RateCondition.IntervalType.allNext))) {
                     if (conditionIterator.hasNext()) {
                         RateCondition rateCondition = conditionIterator.next();
-//                      asd####
-                        if(!rateCondition.getIntervalType().equals("")){
-                            nextInterval = 20;
+                        if(rateCondition.getIntervalType().equals(RateCondition.IntervalType.minutes)){
+                            nextInterval = rateCondition.getStanding();
                         }
                         intervalType = rateCondition.getIntervalType();
                         intervalOnlineHours = rateCondition.getOnlineRate();
                         intervalParkomatHours = rateCondition.getParkomatRate();
+                    }
+                }
+                else if (intervalType.equals(RateCondition.IntervalType.entrance)) {
+                    intervalOnlineHours = 0;
+                    intervalParkomatHours = 0;
+                }
+                if (cashlessPayment) {
+                    result = result.add(BigDecimal.valueOf(intervalOnlineHours));
+                } else {
+                    result = result.add(BigDecimal.valueOf(intervalParkomatHours));
+                }
+//                log.info("result is: " + result + ", added prev : " + intervalOnlineHours);
+                inCalendar.add(Calendar.MINUTE, nextInterval);
+            }
+            return result;
+        }
+        else if (parkingRate != null && ParkingRate.RateType.INTERVAL_OLD.equals(parkingRate.getRateType())) {
+            ArrayNode intervalJson = (ArrayNode) mapper.readTree(parkingRate.getIntervalJson());
+            int inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY);
+            JsonNode current = getSatisfiedJsonNode(inCalendarHour, intervalJson);
+            ArrayNode conditionJson = (ArrayNode) current.get("condition");
+            Iterator<JsonNode> conditionIterator = conditionJson.iterator();
+            int intervalFrom = Integer.valueOf(current.get("intervalFrom").textValue());
+            int intervalTo = Integer.valueOf(current.get("intervalTo").textValue());
+            String intervalType = null;
+            Integer intervalOnlineHours = 0;
+            Integer intervalParkomatHours = 0;
+            while (inCalendar.before(outCalendar)) {
+                inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY);
+                if (intervalFrom == intervalTo || (intervalFrom < intervalTo && inCalendarHour >= intervalFrom && inCalendarHour < intervalTo) || (intervalFrom > intervalTo && (inCalendarHour >= intervalFrom || inCalendarHour < intervalTo))) {
+                } else {
+                    current = getSatisfiedJsonNode(inCalendarHour, intervalJson);
+                    conditionJson = (ArrayNode) current.get("condition");
+                    conditionIterator = conditionJson.iterator();
+                    intervalFrom = Integer.parseInt(current.get("intervalFrom").textValue());
+                    intervalTo = Integer.parseInt(current.get("intervalTo").textValue());
+                    intervalType = null;
+                }
+                if (intervalType == null || (!"entrance".equals(intervalType) && !"allNext".equals(intervalType))) {
+                    if (conditionIterator.hasNext()) {
+                        JsonNode conditionNode = conditionIterator.next();
+                        intervalType = conditionNode.get("intervalType").textValue();
+                        intervalOnlineHours = Integer.valueOf(conditionNode.get("intervalOnlineHours").textValue());
+                        intervalParkomatHours = Integer.valueOf(conditionNode.get("intervalParkomatHours").textValue());
                     }
                 }
                 else if (intervalType.equals("entrance")) {
@@ -226,55 +276,10 @@ public class RateServiceImpl implements RateService {
                 } else {
                     result = result.add(BigDecimal.valueOf(intervalParkomatHours));
                 }
-                inCalendar.add(Calendar.MINUTE, nextInterval);
+                inCalendar.add(Calendar.HOUR, 1);
             }
             return result;
         }
-//      ####
-//        else if (parkingRate != null && ParkingRate.RateType.INTERVAL.equals(parkingRate.getRateType())) {
-//            ArrayNode intervalJson = (ArrayNode) mapper.readTree(parkingRate.getIntervalJson());
-//            int inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY);
-//            JsonNode current = getSatisfiedJsonNode(inCalendarHour, intervalJson);
-//            ArrayNode conditionJson = (ArrayNode) current.get("condition");
-//            Iterator<JsonNode> conditionIterator = conditionJson.iterator();
-//            int intervalFrom = Integer.valueOf(current.get("intervalFrom").textValue());
-//            int intervalTo = Integer.valueOf(current.get("intervalTo").textValue());
-//            String intervalType = null;
-//            Integer intervalOnlineHours = 0;
-//            Integer intervalParkomatHours = 0;
-//            while (inCalendar.before(outCalendar)) {
-//                inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY);
-//                if (intervalFrom == intervalTo || (intervalFrom < intervalTo && inCalendarHour >= intervalFrom && inCalendarHour < intervalTo) || (intervalFrom > intervalTo && (inCalendarHour >= intervalFrom || inCalendarHour < intervalTo))) {
-//                } else {
-//                    current = getSatisfiedJsonNode(inCalendarHour, intervalJson);
-//                    conditionJson = (ArrayNode) current.get("condition");
-//                    conditionIterator = conditionJson.iterator();
-//                    intervalFrom = Integer.valueOf(current.get("intervalFrom").textValue());
-//                    intervalTo = Integer.valueOf(current.get("intervalTo").textValue());
-//                    intervalType = null;
-//                }
-//                if (intervalType == null || (!"entrance".equals(intervalType) && !"allNext".equals(intervalType))) {
-//                    if (conditionIterator.hasNext()) {
-//                        JsonNode conditionNode = conditionIterator.next();
-//                        intervalType = conditionNode.get("intervalType").textValue();
-//                        intervalOnlineHours = Integer.valueOf(conditionNode.get("intervalOnlineHours").textValue());
-//                        intervalParkomatHours = Integer.valueOf(conditionNode.get("intervalParkomatHours").textValue());
-//                    }
-//                }
-//                else if (intervalType.equals("entrance")) {
-//                    intervalOnlineHours = 0;
-//                    intervalParkomatHours = 0;
-//                }
-//                if (cashlessPayment) {
-//                    result = result.add(BigDecimal.valueOf(intervalOnlineHours));
-//                } else {
-//                    result = result.add(BigDecimal.valueOf(intervalParkomatHours));
-//                }
-//                inCalendar.add(Calendar.HOUR, 1);
-//            }
-//
-//            return result;
-//        }
         else if (parkingRate != null && ParkingRate.RateType.DIMENSIONS.equals(parkingRate.getRateType())) {
             int hours = 0;
             int nightHours = 0;
@@ -478,7 +483,6 @@ public class RateServiceImpl implements RateService {
         while (iterator.hasNext()) {
             JsonNode node = iterator.next();
             IntervalRate intervalRate = new IntervalRate();
-            log.info("node: " + node);
             intervalRate.setDatetimeFrom(node.get("intervalFrom").textValue());
             intervalRate.setDatetimeTo(node.get("intervalTo").textValue());
             intervalRate.setParkingRate(parkingRate);
@@ -488,10 +492,13 @@ public class RateServiceImpl implements RateService {
             List<RateCondition> rateConditionList = new ArrayList<>();
             while (rateIterator.hasNext()) {
                 JsonNode rateNode = rateIterator.next();
-                log.info("rateNode: " + rateNode);
                 RateCondition rateCondition = new RateCondition();
-                log.info("intervalOnlineHours: " + rateNode.get("intervalOnlineHours").textValue());
-                rateCondition.setIntervalType(rateNode.get("intervalType").textValue());
+
+                String type=rateNode.get("intervalType").textValue().replaceAll("[^A-Za-z]", "");
+                String duration=rateNode.get("intervalType").textValue().replaceAll("[^0-9]", "");
+                rateCondition.setIntervalType(RateCondition.IntervalType.valueOf(type));
+                rateCondition.setStanding(duration.isEmpty() ? null : Integer.valueOf(duration));
+
                 rateCondition.setOnlineRate(Integer.valueOf(rateNode.get("intervalOnlineHours").textValue()));
                 rateCondition.setParkomatRate(Integer.valueOf(rateNode.get("intervalParkomatHours").textValue()));
                 rateConditionList.add(rateCondition);
@@ -500,7 +507,6 @@ public class RateServiceImpl implements RateService {
             intervalRate.setRateConditions(rateConditionList);
             intervalRateRepository.save(intervalRate);
         }
-        log.info("################################");
         IntervalRate resultIntervalRate = getSatisfiedIntervalRate(inCalendarHour);
         return resultIntervalRate;
     }

@@ -1,8 +1,10 @@
 package kz.spt.rateplugin.controller;
 
 import kz.spt.lib.model.Parking;
+import kz.spt.rateplugin.model.IntervalRate;
 import kz.spt.rateplugin.model.ParkingRate;
 import kz.spt.rateplugin.service.RateService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +19,7 @@ import javax.validation.Valid;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+@Slf4j
 @Controller
 @RequestMapping("/rate")
 public class RateController {
@@ -46,6 +49,28 @@ public class RateController {
         model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
         return "/rate/edit";
     }
+
+    @GetMapping("/interval-edit/{parkingId}")
+    public String editingIntervalRate(Model model, @PathVariable Long parkingId) {
+        log.info("parkingId: {}", parkingId);
+        ParkingRate parkingRate = rateService.getByParkingId(parkingId);
+        if(parkingRate == null){
+            parkingRate = new ParkingRate();
+            Parking parking = rateService.getParkingById(parkingId);
+            parkingRate.setParking(parking);
+        }
+        model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
+        return "/rate/interval-edit";
+    }
+
+    @PostMapping("/interval-edit/{parkingId}")
+    public String saveIntervalRate(Model model, @PathVariable Long parkingId, @Valid IntervalRate intervalRate) {
+        log.info("parkingId: {}", parkingId);
+        log.info("model: {}", model);
+
+        return "/rate/edit/";
+    }
+
 
     @PostMapping("/add/parking/{parkingId}")
     public String rateEdit(Model model, @PathVariable Long parkingId, @Valid ParkingRate rate, BindingResult bindingResult){

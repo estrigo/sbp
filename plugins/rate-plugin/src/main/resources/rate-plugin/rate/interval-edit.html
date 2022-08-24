@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<meta name="viewport" content="width=device-width"/>
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header"><b th:text="#{rate.intervalConfiguration}"></b></div>
+                    <div class="card-body">
+                        <div id="interval" class="row" style="display: none;">
+                            <div class="form-group">
+                                <label class="control-label" th:text="'EEDDIITTIINNGG!!!'"></label>
+                                <hr>
+                                <th:block th:each="intervalRate, ind : ${intervalRates}">
+                                    <div class="card">
+                                        <div class="card-header" id="headingTwo">
+                                            <h5 class="mb-0">
+                                                <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                                        th:attr="data-target='#accordion_'+${ind.index}"
+                                                        aria-expanded="false" aria-controls="collapseTwo">
+                                                    <table class="table table-hover w-auto">
+                                                        <thead>
+                                                        <tr>
+                                                            <th th:text="'#'"></th>
+                                                            <th th:text="#{rate.intervalFrom}"></th>
+                                                            <th th:text="#{rate.intervalUntil}"></th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        <tr>
+                                                            <td><a th:text="${ind.index} + 1"></a></td>
+                                                            <td><a th:text="${intervalRate.getDatetimeFrom()}"></a></td>
+                                                            <td><a th:text="${intervalRate.getDatetimeTo()}"></a></td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </button>
+                                            </h5>
+                                        </div>
+
+                                    </div>
+                                </th:block>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+
+</script>
