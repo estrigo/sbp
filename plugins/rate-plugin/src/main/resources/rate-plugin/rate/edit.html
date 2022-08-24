@@ -268,51 +268,6 @@
                                 </div>
                             </div>
 
-                            <div id="editInterval" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-                                 aria-hidden="true" style="display: none;">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-body">
-                                            <div class="row">
-                                                <div class="col-md-12">
-                                                    <div class="form-group">
-                                                        <label class="form-label" th:text="'Editing id'"></label>
-                                                        <input type="text" class="form-control" name="id" required>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <table class="table table-hover w-auto">
-                                                <thead>
-                                                <tr>
-                                                    <th th:text="'#'"></th>
-                                                    <th th:text="#{rate.accrualType}"></th>
-                                                    <th th:text="#{rate.sumOnline}"></th>
-                                                    <th th:text="#{rate.sumParkomat}"></th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <tr th:each="rateCondition, ind : ${intervalRates.get('1').getRateConditions()}">
-                                                    <td><a th:text="${ind.index} + 1"></a></td>
-                                                    <td><a th:text="${rateCondition.getIntervalType()}"></a></td>
-                                                    <td><a th:text="${rateCondition.getOnlineRate()}"></a></td>
-                                                    <td><a th:text="${rateCondition.getParkomatRate()}"></a></td>
-                                                </tr>
-                                                </tbody>
-                                            </table>
-
-
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-success waves-effect waves-light" th:text="#{crm.save}"
-                                                    th:onclick="saveButton()"></button>
-                                            <button type="button" class="btn btn-danger waves-effect" data-dismiss="modal"
-                                                    th:text="#{crm.close}"></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <!------------------------------------------------->
                             <div id="dimensions" class="row" style="display: none;">
                                 <div class="col-md-6">
