@@ -369,20 +369,8 @@ public class PaymentServiceImpl implements PaymentService {
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
         if (commandDto.getAccount() != null) {
-            PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
-            String clientId = null;
-            if (billingPluginRegister != null) {
-                ObjectNode node = this.objectMapper.createObjectNode();
-                node.put("command", "getParkomatClientId");
-                node.put("parkomatId", commandDto.getParkomat());
-                JsonNode clientIdResult = billingPluginRegister.execute(node);
-
-                clientId = clientIdResult.get("clientId").textValue();
-            }
-
             if ("check".equals(commandDto.getCommand())) {
                 CarState carState = carStateService.getLastNotLeft(commandDto.getAccount());
-
                 if (carState == null) {
 
                     JsonNode currentBalanceResult = getCurrentBalance(commandDto.getAccount());
@@ -395,7 +383,7 @@ public class PaymentServiceImpl implements PaymentService {
                     dto.txn_id = commandDto.getTxn_id();
                     dto.message = "Некорректный номер авто свяжитесь с оператором.";
                     dto.result = 1;
-                    savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, null, PaymentCheckLog.PaymentCheckType.NOT_FOUND, dto.current_balance, commandDto.getTxn_id(), clientId);
+                    savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, null, PaymentCheckLog.PaymentCheckType.NOT_FOUND, dto.current_balance, commandDto.getTxn_id(), null);
                     return dto;
                 } else {
                     BillingInfoSuccessDto dto = new BillingInfoSuccessDto();
@@ -432,11 +420,11 @@ public class PaymentServiceImpl implements PaymentService {
                         if (qrPanelService != null) {
                             parkomatBillingInfoSuccessDto.setKaspiQr(qrPanelService.generateUrl(null, carState.getCarNumber()));
                         }
-                        savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance, commandDto.getTxn_id(), clientId);
+                        savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance, commandDto.getTxn_id(), null);
                         return parkomatBillingInfoSuccessDto;
                     }
 
-                    savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance, commandDto.getTxn_id(), clientId);
+                    savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance, commandDto.getTxn_id(), null);
                     return dto;
                 }
             } else if ("pay".equals(commandDto.getCommand())) {
@@ -469,9 +457,14 @@ public class PaymentServiceImpl implements PaymentService {
                     dto.txn_id = commandDto.getTxn_id();
                     return dto;
                 } else {
+                    PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                     if (billingPluginRegister != null) {
                         ObjectNode node = this.objectMapper.createObjectNode();
+                        node.put("command", "getParkomatClientId");
                         node.put("parkomatId", commandDto.getParkomat());
+                        JsonNode clientIdResult = billingPluginRegister.execute(node);
+
+                        String clientId = clientIdResult.get("clientId").textValue();
 
                         node = this.objectMapper.createObjectNode();
                         node.put("command", "savePayment");
@@ -531,6 +524,7 @@ public class PaymentServiceImpl implements PaymentService {
                 }
             } else if ("getCheck".equals(commandDto.getCommand())) {
                 log.info("Webkassa check request " + commandDto);
+                PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                 ObjectNode node = this.objectMapper.createObjectNode();
                 node.put("command", "getCheck");
                 node.put("parkomatId", commandDto.getParkomat());
@@ -542,6 +536,8 @@ public class PaymentServiceImpl implements PaymentService {
                 JsonNode checkResult = billingPluginRegister.execute(node);
                 return checkResult;
             } else if ("zReport".equals(commandDto.getCommand())) {
+
+                PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                 ObjectNode node = this.objectMapper.createObjectNode();
                 node.put("command", "zReport");
                 node.put("parkomatId", commandDto.getParkomat());
