@@ -9,10 +9,16 @@ public class ReportDataSet {
 
    private List<?> dataSet;
 
+   private Object object;
+
    public ReportDataSet() {
    }
 
    public ReportDataSet(List<?> dataSet) {
       this.dataSet = dataSet;
+   }
+
+   public ReportDataSet(Object object) {
+      this.object = object;
    }
 }

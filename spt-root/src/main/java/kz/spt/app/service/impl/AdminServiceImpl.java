@@ -185,6 +185,23 @@ public class AdminServiceImpl implements AdminService {
         return null;
     }
 
+    @Override
+    public byte[] report(Object dto, String reportName, String format) {
+        String host = getProperty(KEY_HOST);
+        if (!ObjectUtils.isEmpty(host)) {
+            String uri = String.format(URL, host, String.format(REPORT, reportName, format));
+            try {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String json = gson.toJson(new ReportDataSet(dto));
+                json = URLEncoder.encode(json, ENCODE);
+                return postForEntity(uri,json, byte[].class);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     private void uploadWhiteListGroup(WhiteListGroupEvent whiteListGroupEvent) {
         String host = getProperty(KEY_HOST);
         if (!ObjectUtils.isEmpty(host)) {

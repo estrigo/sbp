@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -31,11 +33,12 @@ public class SumReportRestController extends BasicRestController<SumReportDto> {
     }
 
 
-    @PostMapping("final")
+    @PostMapping("/final")
     public SumReportFinalDto sumReportFinal(@RequestBody FilterSumReportDto filter) {
         List<String> fields =
                 Arrays.asList("records", "paymentRecords", "whitelistRecords", "abonementRecords", "freeMinuteRecords",
                         "debtRecords", "fromBalanceRecords", "freeRecords", "autoClosedRecords");
+        String pattern = " dd.MM.yyyy hh:mm";
 
         List<SumReportDto> basicResult = reportService.list(filter);
         if (!CollectionUtils.isEmpty(basicResult)) {
@@ -44,17 +47,22 @@ public class SumReportRestController extends BasicRestController<SumReportDto> {
 
             List<Map<String, String>> mapList = new ArrayList<>();
             for (String field : fields) {
-                Map<String, String> map = new HashMap<>();
                 List<SumReportDto> detailResult = reportService.list(
                         FilterSumReportDto.builder().dateFrom(filter.getDateFrom()).dateTo(filter.getDateTo())
                                 .eventType(field).build());
                 String result = "";
                 if (!CollectionUtils.isEmpty(detailResult)) {
-                    result = detailResult.get(0).getResults().get(field);
+                    result = detailResult.get(0).getResults().get("result");
                 }
+                Map<String, String> map = new HashMap<>();
                 map.put(field, result);
                 mapList.add(map);
             }
+            DateFormat dateFormat = new SimpleDateFormat(pattern);
+            Map<String, String> map = new HashMap<>();
+            map.put("dateTime", dateFormat.format(filter.getDateFrom()) + " - " + dateFormat.format(filter.getDateTo()) );
+            mapList.add(map);
+
             finalDto.setMapList(mapList);
 
             List<SumReportDto> paymentsResult = reportService.list(
@@ -65,15 +73,17 @@ public class SumReportRestController extends BasicRestController<SumReportDto> {
             }
 
             List<SumReportDto> detailResult = reportService.list(
-                    FilterSumReportDto.builder().dateFrom(filter.getDateFrom()).dateTo(filter.getDateTo())
-                            .eventType("paymentRecords").type("detailed").build());
+                    FilterSumReportDto.builder()
+                            .dateFrom(filter.getDateFrom())
+                            .dateTo(filter.getDateTo())
+                            .eventType("paymentRecords")
+                            .type("detailed").build());
             if (!CollectionUtils.isEmpty(detailResult)) {
-                finalDto.setListResult(paymentsResult.get(0).getListResult());
+                finalDto.setListResult(detailResult.get(0).getListResult());
             }
             return finalDto;
         }
         return null;
     }
-
 
 }

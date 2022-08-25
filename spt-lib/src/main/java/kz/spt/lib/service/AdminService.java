@@ -19,4 +19,6 @@ public interface AdminService {
     void synchronizeWhl() throws Exception;
 
     byte[] report(List<?> list, String reportName, String format);
+
+    byte[] report(Object dto, String reportName, String format);
 }

@@ -1,30 +1,38 @@
 package kz.spt.reportplugin.controller;
 
+import kz.spt.reportplugin.dto.SumReportDto;
+import kz.spt.reportplugin.dto.SumReportFinalDto;
 import kz.spt.reportplugin.dto.filter.FilterJournalReportDto;
+import kz.spt.reportplugin.dto.filter.FilterSumReportDto;
+import kz.spt.reportplugin.rest.BasicRestController;
 import kz.spt.reportplugin.service.ReportService;
 import kz.spt.reportplugin.service.RootServicesGetterService;
 import kz.spt.reportplugin.service.impl.JournalReportServiceImpl;
 import kz.spt.reportplugin.service.impl.ManualOpenReportServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Controller
 @RequestMapping("/report")
-public class ReportController {
+public class ReportController extends BasicRestController<SumReportDto> {
 
     @Autowired
     private RootServicesGetterService rootServicesGetterService;
+
+    public ReportController(ReportService<SumReportDto> reportService) {
+        super(reportService);
+    }
 
     @GetMapping("/journal")
     public String journal() {
@@ -49,15 +57,31 @@ public class ReportController {
 
                              HttpServletResponse response) throws IOException, ParseException {
         FilterJournalReportDto filter = new FilterJournalReportDto();
-        if (!ObjectUtils.isEmpty(dateFrom)) {
-            filter.setDateFrom(new SimpleDateFormat("dd/MM/yyyy").parse(dateFrom));
-        }
-        if (!ObjectUtils.isEmpty(dateTo)) {
-            filter.setDateTo(new SimpleDateFormat("dd/MM/yyyy").parse(dateTo));
-        }
-        List<?> list = Objects.requireNonNull(getReportService(name)).list(filter);
+        String pattern_1 = "yyyy-MM-dd hh:mm:ss";
+        String pattern_2 = "dd/MM/yyyy";
+        byte[] bytes;
+        if (ReportNameEnum.BILLING.equals(name)) {
 
-        byte[] bytes = rootServicesGetterService.getAdminService().report(list, name.name(), format);
+            String date = dateFrom;
+            dateFrom = date.concat(" 00:00:00");
+            dateTo = date.concat(" 23:59:00");
+            bytes = rootServicesGetterService.getAdminService().report(billingData(
+                    new SimpleDateFormat(pattern_1).parse(dateFrom),
+                    new SimpleDateFormat(pattern_1).parse(dateTo)), name.name(), format);
+        } else {
+            if (!ObjectUtils.isEmpty(dateFrom)) {
+                filter.setDateFrom(new SimpleDateFormat(pattern_2).parse(dateFrom));
+            }
+            if (!ObjectUtils.isEmpty(dateTo)) {
+                filter.setDateTo(new SimpleDateFormat(pattern_2).parse(dateTo));
+            }
+
+            List<?> list = Objects.requireNonNull(getReportService(name)).list(filter);
+            bytes = rootServicesGetterService.getAdminService().report(list, name.name(), format);
+        }
+
+
+
         response.setContentType("application/octet-stream");
         String headerKey = "Content-Disposition";
         String headerValue = "attachment; filename = "
@@ -69,13 +93,70 @@ public class ReportController {
     }
 
 
+
+    private SumReportFinalDto billingData(Date dateFrom, Date dateTo){
+        List<String> fields =
+                Arrays.asList("records", "paymentRecords", "whitelistRecords", "abonementRecords", "freeMinuteRecords",
+                        "debtRecords", "fromBalanceRecords", "freeRecords", "autoClosedRecords");
+        FilterSumReportDto filter = new FilterSumReportDto();
+        filter.setDateFrom(dateFrom);
+        filter.setDateTo(dateTo);
+        filter.setEventType("fields");
+        String pattern = " dd.MM.yyyy hh:mm";
+
+        List<SumReportDto> basicResult = reportService.list(filter);
+        if (!CollectionUtils.isEmpty(basicResult)) {
+            SumReportFinalDto finalDto = new SumReportFinalDto();
+            finalDto.setFieldsMap(basicResult.get(0).getResults());
+
+            List<Map<String, String>> mapList = new ArrayList<>();
+            for (String field : fields) {
+                List<SumReportDto> detailResult = reportService.list(
+                        FilterSumReportDto.builder().dateFrom(filter.getDateFrom()).dateTo(filter.getDateTo())
+                                .eventType(field).build());
+                String result = "";
+                if (!CollectionUtils.isEmpty(detailResult)) {
+                    result = detailResult.get(0).getResults().get("result");
+                }
+                Map<String, String> map = new HashMap<>();
+                map.put(field, result);
+                mapList.add(map);
+            }
+            DateFormat dateFormat = new SimpleDateFormat(pattern);
+            Map<String, String> map = new HashMap<>();
+            map.put("dateTime", dateFormat.format(dateFrom) + " - " + dateFormat.format(dateTo) );
+            mapList.add(map);
+
+            finalDto.setMapList(mapList);
+
+            List<SumReportDto> paymentsResult = reportService.list(
+                    FilterSumReportDto.builder().dateFrom(filter.getDateFrom()).dateTo(filter.getDateTo())
+                            .eventType("payments").build());
+            if (!CollectionUtils.isEmpty(paymentsResult)) {
+                finalDto.setPayments(paymentsResult.get(0).getResults());
+            }
+
+            List<SumReportDto> detailResult = reportService.list(
+                    FilterSumReportDto.builder()
+                            .dateFrom(filter.getDateFrom())
+                            .dateTo(filter.getDateTo())
+                            .eventType("paymentRecords")
+                            .type("detailed").build());
+            if (!CollectionUtils.isEmpty(detailResult)) {
+                finalDto.setListResult(detailResult.get(0).getListResult());
+            }
+            return finalDto;
+        }
+        return null;
+    }
+
     private ReportService<?> getReportService(ReportNameEnum name) {
         switch (name) {
             case JOURNAL:
                 return new JournalReportServiceImpl();
             case MANUAL_OPEN:
                 return new ManualOpenReportServiceImpl();
-            case PAYMENTS:
+            case BILLING:
             default:
                 return null;
         }
