@@ -161,11 +161,13 @@ public class WhitelistServiceImpl implements WhitelistService {
                         .groupName(m.getGroup() != null ? m.getGroup().getName() : "")
                         .conditionDetail(m.getConditionDetail())
                         .createdDate(String.valueOf(m.getCreated()))
-                        .createdUser(m.getGroup() != null ? m.getGroup().getUpdatedUser() : m.getCreatedUser())
+                        .createdUser(m.getCreatedUser())
                         .fullName(m.getFullName())
                         .address(m.getAddress())
                         .parkingNumber(m.getParkingNumber())
                         .comment(m.getComment())
+                        .updatedDate(m.getUpdated().toString())
+                        .updatedUser(m.getUpdatedUser())
                         .build())
                 .collect(Collectors.toList());
         return getPage(list, pagingRequest);
@@ -515,6 +517,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         if(group.getType() != Whitelist.Type.PERIOD) {
             rootServicesGetterService.getCarStateService().removeDebt(car.getPlatenumber(), false);
         }
+        whitelist.setCreatedUser(currentUser);
         whitelistRepository.save(whitelist);
         this.eventPublisher.publishEvent(new GenericWhlEvent<>( new WhiteListEvent(this,
                 whitelist.getCar().getId(),
@@ -597,8 +600,14 @@ public class WhitelistServiceImpl implements WhitelistService {
                         .parkingName(m.getParking().getName())
                         .groupName(m.getGroup() != null ? m.getGroup().getName() : "")
                         .createdDate(String.valueOf(m.getCreated()))
-                        .createdUser(m.getGroup() != null ? m.getGroup().getUpdatedUser() : m.getCreatedUser())
+                        .createdUser(m.getCreatedUser())
                         .conditionDetail(m.getConditionDetail())
+                        .fullName(m.getFullName())
+                        .address(m.getAddress())
+                        .parkingNumber(m.getParkingNumber())
+                        .comment(m.getComment())
+                        .updatedDate(m.getUpdated().toString())
+                        .updatedUser(m.getUpdatedUser())
                         .build())
                 .collect(Collectors.toList());
         return list;

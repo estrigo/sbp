@@ -187,6 +187,7 @@ public class WhitelistController {
             model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
             return "whitelist/groups/add";
         } else {
+            whitelistGroups.setCreatedUser(currentUser.getUsername());
             whitelistGroupsService.saveWhitelistGroup(whitelistGroups, currentUser.getUsername());
             return "redirect:/whitelist/list";
         }
@@ -241,6 +242,9 @@ public class WhitelistController {
             model.addAttribute("parkingList", rootServicesGetterService.getParkingService().listWhitelistParkings());
             return "whitelist/edit";
         } else {
+            Whitelist dataOfWhitelist = whitelistService.prepareById(id);
+            whitelist.setCreated(dataOfWhitelist.getCreated());
+            whitelist.setCreatedUser(currentUser.getUsername());
             whitelistService.saveWhitelist(whitelist, currentUser);
             return "redirect:/whitelist/list";
         }

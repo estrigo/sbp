@@ -247,6 +247,11 @@ public class GateStatusDto {
     public static Boolean getModbusMasterOutputValue(String barrierIp, int register){
         if(!modbusMasterThreadMap.containsKey(barrierIp)){
             createNewThread(barrierIp);
+            try {
+                Thread.sleep(700); // Wait modbus barrier initialization
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         return modbusMasterThreadMap.get(barrierIp).getOutputValue(register);
     }

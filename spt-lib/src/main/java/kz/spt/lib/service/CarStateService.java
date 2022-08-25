@@ -61,4 +61,8 @@ public interface CarStateService {
     CarState manualOutWithDebt(String carNumber, Date outTimestamp, CarState carState) throws Exception ;
 
     void UpdateAndRemoveByBarrier(Barrier barrier);
+
+    List<String> getCarsInParking();
+
+    List<String> getCarsInParkingAndNotPaid();
 }

@@ -63,4 +63,8 @@ public class Gate {
     private Date updated;
 
     private String qrPanelIp;
+
+    private String tabloIp;
+
+    private Integer parkingSpaceNumber;
 }

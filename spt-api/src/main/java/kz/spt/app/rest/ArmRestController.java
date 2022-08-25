@@ -22,7 +22,7 @@ public class ArmRestController {
 
     private final ArmService armService;
 
-    public ArmRestController(ArmService armService){
+    public ArmRestController(ArmService armService) {
         this.armService = armService;
     }
 
@@ -47,12 +47,12 @@ public class ArmRestController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping(value = "/emergency/open/{value}")
-    public Boolean emergencyOpen(@PathVariable("value") String value, @AuthenticationPrincipal UserDetails currentUser){
+    public Boolean emergencyOpen(@PathVariable("value") String value, @AuthenticationPrincipal UserDetails currentUser) {
         return armService.setEmergencyOpen(Boolean.valueOf(value), currentUser);
     }
 
     @GetMapping(value = "/emergency/status")
-    public Boolean emergencyOpen(){
+    public Boolean emergencyOpen() {
         return armService.getEmergencyStatus();
     }
 
@@ -65,17 +65,17 @@ public class ArmRestController {
 
     @SneakyThrows
     @GetMapping(value = "/snapshot/{cameraId}")
-    public byte[] snapshot(@PathVariable("cameraId") Long cameraId,@RequestParam("ver") String ver){
+    public byte[] snapshot(@PathVariable("cameraId") Long cameraId, @RequestParam("ver") String ver) {
         return armService.snapshot(cameraId);
     }
 
     @GetMapping("/restart/{ip}")
-    public Boolean restartParkomat(@PathVariable("ip") String ip){
+    public Boolean restartParkomat(@PathVariable("ip") String ip) {
         return armService.restartParkomat(ip);
     }
 
     @GetMapping("/tab/camera")
-    public JsonNode getTabsWithCameraList(){
+    public JsonNode getTabsWithCameraList() {
         return armService.getTabsWithCameraList();
     }
 
@@ -83,5 +83,11 @@ public class ArmRestController {
     public Boolean saveTabs(@RequestParam("json") String json) throws Exception {
         log.info(json);
         return armService.configureArm(json);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
+    @PostMapping(value = "/enter")
+    public void manualEnter(@RequestParam("cameraId") Long cameraId, @RequestParam("plateNumber") String plateNumber) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
+        armService.manualEnter(cameraId, plateNumber);
     }
 }

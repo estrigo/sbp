@@ -16,7 +16,7 @@ services:
     networks:
       - parking-net
   spt-app:
-    image: doc.smartparking.kz/spt-app:latest
+    image: registry.infra.smartparking.kz/spt-app:238
     restart: always
     environment:
       - "TZ=Asia/Dubai"
@@ -34,9 +34,12 @@ services:
     image: nginx:1.14.0
     restart: always
     ports:
-      - "8888:80"
+      - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl/server.crt:/etc/nginx/ssl/server.crt:ro
+      - ./nginx/ssl/server.key:/etc/nginx/ssl/server.key:ro
       - "/var/www/parking/storage/new_parking:/files"
     links:
       - spt-app

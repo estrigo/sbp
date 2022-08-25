@@ -19,7 +19,7 @@ public class CameraServiceImpl implements CameraService {
 
     private CameraTabRepository cameraTabRepository;
 
-    public CameraServiceImpl(CameraRepository cameraRepository, CameraTabRepository cameraTabRepository){
+    public CameraServiceImpl(CameraRepository cameraRepository, CameraTabRepository cameraTabRepository) {
         this.cameraRepository = cameraRepository;
         this.cameraTabRepository = cameraTabRepository;
     }
@@ -32,7 +32,7 @@ public class CameraServiceImpl implements CameraService {
     @Override
     public CameraTab findCameraTabByIdOrReturnNull(Long id) {
         Optional<CameraTab> cameraTabOptional = cameraTabRepository.findById(id);
-        if(cameraTabOptional.isPresent()){
+        if (cameraTabOptional.isPresent()) {
             return cameraTabOptional.get();
         }
         return null;
@@ -75,7 +75,7 @@ public class CameraServiceImpl implements CameraService {
     @Override
     public void saveCamera(Camera camera, Boolean updateGlobalGatedtos) {
         cameraRepository.save(camera);
-        if(updateGlobalGatedtos){
+        if (updateGlobalGatedtos) {
             StatusCheckJob.emptyGlobalGateDtos();
         }
     }
@@ -95,5 +95,12 @@ public class CameraServiceImpl implements CameraService {
     @Override
     public void deleteCameraTab(CameraTab cameraTab) {
         cameraTabRepository.delete(cameraTab);
+    }
+
+    @Override
+    public void enableSnapshot(Long cameraId) {
+        Camera camera = cameraRepository.getOne(cameraId);
+        camera.setSnapshotEnabled(camera.getSnapshotEnabled() == null ? true : !camera.getSnapshotEnabled());
+        cameraRepository.save(camera);
     }
 }

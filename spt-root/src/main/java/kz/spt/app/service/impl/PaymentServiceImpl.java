@@ -172,6 +172,14 @@ public class PaymentServiceImpl implements PaymentService {
                     dto.txn_id = commandDto.txn_id;
                     return dto;
                 }
+                if (!checkProvider(commandDto.clientId)) {
+                    BillingInfoErrorDto dto = new BillingInfoErrorDto();
+                    dto.message = "Вы не можете производить оплаты в этом объекте";
+                    dto.result = 6;
+                    dto.sum = commandDto.sum;
+                    dto.txn_id = commandDto.txn_id;
+                    return dto;
+                }
                 CarState carState = carStateService.getLastNotLeft(commandDto.account);
                 if (carState == null) {
                     if (commandDto.service_id != null && commandDto.service_id == 2) {
@@ -343,6 +351,18 @@ public class PaymentServiceImpl implements PaymentService {
         return currency;
     }
 
+    private Boolean checkProvider(String providerName) throws Exception {
+        PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+        Boolean providerExists = false;
+        if (billingPluginRegister != null) {
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("command", "checkProvider");
+            node.put("providerName", providerName);
+            JsonNode result = billingPluginRegister.execute(node);
+            providerExists = result.get("providerExists").booleanValue();
+        }
+        return providerExists;
+    }
 
     @Override
     public Object billingInteractions(ParkomatCommandDTO commandDto) throws Exception {

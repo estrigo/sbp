@@ -24,13 +24,16 @@
                                onclick="support(this)"></a>
                             <a class="dropdown-item" href="#" th:text="#{support.barrierNotWork}"
                                onclick="support(this)"></a>
-                            <a class="dropdown-item" href="#" th:text="#{support.cvNotWork}" onclick="support(this)"></a>
+                            <a class="dropdown-item" href="#" th:text="#{support.cvNotWork}"
+                               onclick="support(this)"></a>
                         </div>
                     </span>
                     <button type="button" class="btn btn-primary" th:text="#{arm.restart}"
                             th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart
                     </button>
-                    <button type="button" class="btn btn-primary" th:text="#{arm.configure}" th:onclick="configure()">Configure</button>
+                    <button type="button" class="btn btn-primary" th:text="#{arm.configure}" th:onclick="configure()">
+                        Configure
+                    </button>
                 </div>
             </div>
         </th:block>
@@ -39,7 +42,7 @@
                  th:id="${'item_' + camera.id}"
                  th:attr="data-id=${camera.id},data-url=${camera.snapshotUrl},data-ip=${camera.ip},data-enabled=${camera.snapshotEnabled}">
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-4">
                         <div class="btn-group" role="group">
                             <button type="button" class="btn btn-secondary move-left">
                                 <span> <i class="mdi mdi-arrow-left"></i></span>
@@ -48,6 +51,14 @@
                                 <span><i class="mdi mdi-arrow-right"></i></span>
                             </button>
                         </div>
+                    </div>
+                    <div class="col-8">
+                        <form class="form-inline" th:action="@{/arm/enable/__${camera.id}__}" method="get">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="snapshotEnabled" th:checked="${camera.snapshotEnabled}" onchange="this.form.submit()">
+                                <label class="form-check-label" for="snapshotEnabled" th:text="#{camera.snapshotEnabled}"></label>
+                            </div>
+                        </form>
                     </div>
                 </div>
                 <div class="card m-b-10">
@@ -72,6 +83,14 @@
                     </div>
                     <th:block sec:authorize="!hasRole('ROLE_RTA')">
                         <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100">
+                            <!--новая роль - оператор который может открыть без шлагбаум без причин и комментариев -->
+                            <div class="p-1 col-sm-12 col-xs-12"
+                                 sec:authorize="hasAnyRole('ROLE_OPERATOR_PARQOUR')">
+                                <button type="button" class="btn btn-outline-danger w-100"
+                                        th:cameraId="${camera.id}"
+                                        th:onclick="openGateWOReason(this.getAttribute('cameraId'))"
+                                        th:text="#{arm.open.parqour}"></button>
+                            </div>
                             <div class="col-md-6 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-success w-100"
@@ -88,7 +107,7 @@
                             </div>
                         </div>
                         <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100">
-                            <div class="p-2 col-sm-12 col-xs-12"
+                            <div class="p-1 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
                                        th:placeholder="#{arm.licensePlate}"
@@ -107,6 +126,12 @@
                                         th:cameraId="${camera.id}"
                                         th:onclick="checkBalance(this.getAttribute('cameraId'))"
                                         th:text="#{crm.balance}"></button>
+                            </div>
+                            <div class="p-1 col-sm-12 col-xs-12"
+                                 sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
+                                <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
+                                        th:onclick="manualEnter(this.getAttribute('cameraId'))"
+                                        th:text="#{crm.letInWoBarrier}"></button>
                             </div>
                         </div>
                     </th:block>
@@ -141,7 +166,7 @@
             <div class="modal-header">
             </div>
             <div class="modal-body">
-                <input type="hidden" id="reasonCameraId" />
+                <input type="hidden" id="reasonCameraId"/>
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
@@ -152,7 +177,7 @@
                                 <option value="invalidPerson" th:text="#{arm.handicappedReason}"></option>
                                 <option value="other" th:text="#{arm.otherReason}"></option>
                             </select>
-                            <strong id = "openReasonAlert" style="width: 40%"></strong>
+                            <strong id="openReasonAlert" style="width: 40%"></strong>
                         </div>
                     </div>
                 </div>
@@ -160,21 +185,24 @@
                     <div class="col-md-12">
                         <div class="form-group">
                             <label class="form-label" th:text="#{arm.otherReasonText}"></label>
-                            <textarea id="otherReason" rows="4"  class="form-control"></textarea>
-                            <strong id = "otherReasonAlert" style="width: 40%"></strong>
+                            <textarea id="otherReason" rows="4" class="form-control"></textarea>
+                            <strong id="otherReasonAlert" style="width: 40%"></strong>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-success waves-effect waves-light" th:text="#{arm.open}" onclick="sendOpenArm()"></button>
-                <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal" th:text="#{crm.close}"></button>
+                <button type="button" class="btn btn-success waves-effect waves-light" th:text="#{arm.open}"
+                        onclick="sendOpenArm()"></button>
+                <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal"
+                        th:text="#{crm.close}"></button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="configure-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+<div id="configure-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true" style="display: none;">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -188,19 +216,23 @@
                         <input type="text" class="form-control" id="newTabName" th:placeholder="#{arm.newTab}">
                     </div>
                     <div class="col-6">
-                        <button type="button" class="btn btn-secondary" onclick="addNewTab()" th:text="#{crm.add}"></button>
+                        <button type="button" class="btn btn-secondary" onclick="addNewTab()"
+                                th:text="#{crm.add}"></button>
                     </div>
                 </div>
                 <div id="cameraTabsAccordion" role="tablist" aria-multiselectable="true" class="m-b-20">
                     <div class="card">
                         <div class="card-header" role="tab" id="headingOne">
                             <h5 class="mb-0 mt-0 font-16">
-                                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne" class="collapsed" th:text="#{arm.camerasWithoutTab}">
+                                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne"
+                                   aria-expanded="false" aria-controls="collapseOne" class="collapsed"
+                                   th:text="#{arm.camerasWithoutTab}">
                                 </a>
                             </h5>
                         </div>
 
-                        <div id="collapseOne" class="collapse" role="tabpanel" aria-labelledby="headingOne" aria-expanded="false" style="">
+                        <div id="collapseOne" class="collapse" role="tabpanel" aria-labelledby="headingOne"
+                             aria-expanded="false" style="">
                             <div class="card-block">
                                 <table id="cameraTabsTable" class="table table-bordered">
                                     <thead>
@@ -276,6 +308,38 @@
             }, 2000);
         };
         console.log('##################');
+    }
+
+    /*функции для октрытия шлагбаума без причин и комментариев*/
+    function sendOpenArmWOReason(){
+        let reasonCameraId = $('#reasonCameraId').val();
+        let reason = 'оператор Parqour';
+        var form = new FormData();
+        form.append("cameraId", reasonCameraId);
+        form.append("reason", reason);
+        form.append("snapshot", cameras[reasonCameraId] && cameras[reasonCameraId].snapshot ? cameras[reasonCameraId].snapshot : null);
+
+        var settings = {
+            "url": "/rest/arm/open/barrier",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (response) {
+            $('#openGateWOReason').modal('hide');
+            console.log(response);
+        });
+    }
+
+    function showOpenGateModalWOReason (cameraId) {
+        $("#reasonCameraId").val(cameraId);
+        sendOpenArmWOReason()
+    }
+
+    function openGateWOReason(cameraId) {
+        showOpenGateModalWOReason(cameraId);
     }
 
     function showGreeting(messageBody) {
@@ -370,13 +434,13 @@
         }
     }
 
-    function initGrid(){
+    function initGrid() {
         $(".item").each(function () {
             const $input = $(this);
             const id = $input.data("id");
-            switch (grid){
+            switch (grid) {
                 case 2:
-                    $("#item_"+id)
+                    $("#item_" + id)
                         .addClass("col-sm-2 col-lg-2 col-xs-2")
                         .removeClass("col-sm-3 col-lg-3 col-xs-3")
                         .removeClass("col-sm-4 col-lg-4 col-xs-4")
@@ -384,7 +448,7 @@
                         .removeClass("col-sm-12 col-lg-12 col-xs-12");
                     break;
                 case 4:
-                    $("#item_"+id)
+                    $("#item_" + id)
                         .addClass("col-sm-4 col-lg-4 col-xs-4")
                         .removeClass("col-sm-2 col-lg-2 col-xs-2")
                         .removeClass("col-sm-3 col-lg-3 col-xs-3")
@@ -392,7 +456,7 @@
                         .removeClass("col-sm-12 col-lg-12 col-xs-12");
                     break;
                 case 3:
-                    $("#item_"+id)
+                    $("#item_" + id)
                         .addClass("col-sm-3 col-lg-3 col-xs-3")
                         .removeClass("col-sm-2 col-lg-2 col-xs-2")
                         .removeClass("col-sm-4 col-lg-4 col-xs-4")
@@ -400,7 +464,7 @@
                         .removeClass("col-sm-12 col-lg-12 col-xs-12");
                     break;
                 case 6:
-                    $("#item_"+id)
+                    $("#item_" + id)
                         .addClass("col-sm-6 col-lg-6 col-xs-6")
                         .removeClass("col-sm-2 col-lg-2 col-xs-2")
                         .removeClass("col-sm-3 col-lg-3 col-xs-3")
@@ -408,7 +472,7 @@
                         .removeClass("col-sm-12 col-lg-12 col-xs-12");
                     break;
                 case 12:
-                    $("#item_"+id)
+                    $("#item_" + id)
                         .addClass("col-sm-12 col-lg-12 col-xs-12")
                         .removeClass("col-sm-2 col-lg-2 col-xs-2")
                         .removeClass("col-sm-3 col-lg-3 col-xs-3")
@@ -419,13 +483,23 @@
         })
     }
 
-    function changeGrid(value){
-        switch (grid){
-            case 2: grid = value ? 3 : 2; break;
-            case 3: grid = value ? 4 : 2; break;
-            case 4: grid = value ? 6 : 3; break;
-            case 6: grid = value ? 12 : 4; break;
-            case 12: grid = value ? 12 : 6; break;
+    function changeGrid(value) {
+        switch (grid) {
+            case 2:
+                grid = value ? 3 : 2;
+                break;
+            case 3:
+                grid = value ? 4 : 2;
+                break;
+            case 4:
+                grid = value ? 6 : 3;
+                break;
+            case 6:
+                grid = value ? 12 : 4;
+                break;
+            case 12:
+                grid = value ? 12 : 6;
+                break;
         }
         initGrid();
     }
@@ -519,6 +593,27 @@
         }
     }
 
+    function manualEnter(cameraId) {
+        const plateNumber = $("#plateNumber" + cameraId).val();
+        if (!/^[a-zA-Z0-9]+$/.test(plateNumber)) {
+            console.log(cameras);
+            const logs = cameras[cameraId].logs;
+            $(logs).prepend(content("Error", '[' + plateNumber + ']' + [[#{crm.onlyLatinAndNumbersAllowed}]]));
+        } else if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
+            const settings = {
+                "url": "/rest/arm/enter/",
+                "method": "POST",
+                "data": {'cameraId': cameraId, 'plateNumber': plateNumber}
+            };
+            $.ajax(settings).done(function (response) {
+                console.log(response);
+            });
+        } else {
+            const logs = cameras[cameraId].logs;
+            $(logs).prepend(content("Error", '[' + plateNumber + ']' + [[#{arm.invalidPlateNumber}]]));
+        }
+    }
+
     function checkBalance(cameraId) {
         var plateNumber = $("#plateNumber" + cameraId).val();
 
@@ -559,7 +654,7 @@
         });
     }
 
-    $(document).on('ready',function(){
+    $(document).on('ready', function () {
         $(".item").each(function () {
             const $input = $(this);
             const id = $input.data("id");
@@ -577,61 +672,61 @@
     const parkingName = [[#{whitelist.parking}]];
     const crmDelete = [[#{crm.delete}]];
 
-    function configure(){
+    function configure() {
         tabs = [];
         maxId = 0;
         maxIdIncrement = 0;
         moveOptions = "<option value=''></option>";
         $.get("/rest/arm/tab/camera", function (data) {
             tabs = data;
-            for(let i = 0; i < data.length; i++){
-                if(data[i].id > 0){
-                    moveOptions  = moveOptions + "<option value='" + data[i].id + "'>" + data[i].name + "</option>";
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].id > 0) {
+                    moveOptions = moveOptions + "<option value='" + data[i].id + "'>" + data[i].name + "</option>";
                 }
                 maxIdIncrement = maxId = maxId < data[i].id ? data[i].id : maxId;
             }
             let html = "";
-            for(let i = 0; i < data.length; i++){
+            for (let i = 0; i < data.length; i++) {
                 html = html + "<div class='card' id='card" + data[i].id + "' name='" + data[i].name + "'><div class='card-header' role='tab' id='headingOne" + data[i].id + "'>\n" +
-                      "                            <h5 class='mb-0 mt-0 font-16'>\n" +
-                      "                                <a data-toggle='collapse' data-parent='#cameraTabsAccordion' href='#collapseOne" + data[i].id + "' aria-expanded='false' aria-controls='collapseOne" + data[i].id + "' class='collapsed'>\n" +
-                      "                                    "  + data[i].name +
-                      "                                </a>\n";
-                if(data[i].id > 0){
+                    "                            <h5 class='mb-0 mt-0 font-16'>\n" +
+                    "                                <a data-toggle='collapse' data-parent='#cameraTabsAccordion' href='#collapseOne" + data[i].id + "' aria-expanded='false' aria-controls='collapseOne" + data[i].id + "' class='collapsed'>\n" +
+                    "                                    " + data[i].name +
+                    "                                </a>\n";
+                if (data[i].id > 0) {
                     html = html +
                         "                                   <button type='button' className='btn btn-secondary' onClick='removeTab(" + data[i].id + ",\"" + data[i].name + "\")'>" + crmDelete +
                         "                                   </button>\n";
                 }
                 html = html +
-                      "                            </h5>\n" +
-                      "                        </div><div id='collapseOne" + data[i].id + "' class='collapse' role='tabpanel' aria-labelledby='headingOne" + data[i].id + "' aria-expanded='false' style=''>\n" +
-                      "                            <div class='card-block'>" +
-                      "                                 <table id='cameraTabsTable" + data[i].id + "' class='table table-bordered'>\n" +
-                      "                                    <thead>\n" +
-                      "                                    <tr>\n" +
-                      "                                        <th>" + armMove + "</th>\n" +
-                      "                                        <th>" + crmName + "</th>\n" +
-                      "                                        <th>Ip</th>\n" +
-                      "                                        <th>" + parkingName + "</th>\n" +
-                      "                                    </tr>\n" +
-                      "                                    </thead><tbody>";
-                for(let j = 0; j < data[i].cameras.length; j++){
+                    "                            </h5>\n" +
+                    "                        </div><div id='collapseOne" + data[i].id + "' class='collapse' role='tabpanel' aria-labelledby='headingOne" + data[i].id + "' aria-expanded='false' style=''>\n" +
+                    "                            <div class='card-block'>" +
+                    "                                 <table id='cameraTabsTable" + data[i].id + "' class='table table-bordered'>\n" +
+                    "                                    <thead>\n" +
+                    "                                    <tr>\n" +
+                    "                                        <th>" + armMove + "</th>\n" +
+                    "                                        <th>" + crmName + "</th>\n" +
+                    "                                        <th>Ip</th>\n" +
+                    "                                        <th>" + parkingName + "</th>\n" +
+                    "                                    </tr>\n" +
+                    "                                    </thead><tbody>";
+                for (let j = 0; j < data[i].cameras.length; j++) {
                     html = html + "<tr id='camera" + data[i].cameras[j].id + "'><td><select id='cameraSelect" + data[i].cameras[j].id + "' onchange='moveCameraToTab(" + data[i].cameras[j].id + ")'>" + moveOptions + "</select></td>\n" +
                         "          <td>" + data[i].cameras[j].name + "</td>\n" +
                         "          <td>" + data[i].cameras[j].ip + "</td>\n" +
                         "          <td>" + data[i].cameras[j].parking + "</td></tr>\n"
                 }
                 html = html + "</tbody></table>\n" +
-                      "                            </div>\n" +
-                      "                        </div>\n" +
-                      "                    </div>";
+                    "                            </div>\n" +
+                    "                        </div>\n" +
+                    "                    </div>";
                 $('#cameraTabsAccordion').html(html);
             }
         });
         $('#configure-modal').modal('show');
     }
 
-    function addNewTab(){
+    function addNewTab() {
         let newTabName = $('#newTabName').val();
 
         maxIdIncrement++;
@@ -639,7 +734,7 @@
         $('#cameraTabsAccordion').append("<div class='card' id='card" + maxIdIncrement + "' name='" + newTabName + "'><div class='card-header' role='tab' id='headingOne" + maxIdIncrement + "'>\n" +
             "                            <h5 class='mb-0 mt-0 font-16'>\n" +
             "                                <a data-toggle='collapse' data-parent='#cameraTabsAccordion' href='#collapseOne" + maxIdIncrement + "' aria-expanded='false' aria-controls='collapseOne" + maxIdIncrement + "' class='collapsed'>\n" +
-            "                                    "  + newTabName +
+            "                                    " + newTabName +
             "                                </a>\n" +
             "                                   <button type='button' className='btn btn-secondary' onClick='removeTab(" + maxIdIncrement + ",\"" + newTabName + "\")'>" + crmDelete +
             "                                   </button>\n" +
@@ -654,44 +749,44 @@
             "                                        <th>" + parkingName + "</th>\n" +
             "                                    </tr>\n" +
             "                                    </thead><tbody></tbody></table>\n" +
-        "                            </div>\n" +
-        "                        </div>\n" +
-        "                    </div>");
+            "                            </div>\n" +
+            "                        </div>\n" +
+            "                    </div>");
 
         $('#newTabName').val(undefined);
-        moveOptions = moveOptions + "<option value='" + maxIdIncrement + "'>"  + newTabName + "</option>";
+        moveOptions = moveOptions + "<option value='" + maxIdIncrement + "'>" + newTabName + "</option>";
         $('#cameraTabsAccordion').find('select').html(moveOptions);
     }
 
-    function moveCameraToTab(cameraId){
-        let tr = $('#camera'+cameraId);
-        let newTabId = $('#cameraSelect'+cameraId).val();
+    function moveCameraToTab(cameraId) {
+        let tr = $('#camera' + cameraId);
+        let newTabId = $('#cameraSelect' + cameraId).val();
         $('#cameraTabsAccordion').find('#card' + newTabId).find('table>tbody').append(tr);
         $('#element').remove();
     }
 
-    function removeTab(tabId, tabName){
+    function removeTab(tabId, tabName) {
         let trList = $('#cameraTabsAccordion').find('#card' + tabId).find('table>tbody>tr');
         $('#cameraTabsAccordion').find('#card0').find('table>tbody').append(trList);
         $("#card" + tabId).remove();
-        moveOptions = moveOptions.replace("<option value='" + tabId + "'>"  + tabName + "</option>","");
+        moveOptions = moveOptions.replace("<option value='" + tabId + "'>" + tabName + "</option>", "");
         $('#cameraTabsAccordion').find('select').html(moveOptions);
     }
 
-    function save(){
+    function save() {
         let result = [];
         let cardList = $('#cameraTabsAccordion').find('.card');
 
-        $( "#cameraTabsAccordion>.card" ).each(function( index ) {
+        $("#cameraTabsAccordion>.card").each(function (index) {
             let card = $(this);
             let tab = {
-                id: card.attr("id").replace('card',''),
+                id: card.attr("id").replace('card', ''),
                 name: card.attr("name")
             };
 
             let cameraArray = [];
-            $('#cameraTabsAccordion>#' + card.attr("id") + '>div>div>table>tbody>tr').each(function( index ) {
-                let camera = { id: $(this).attr('id').replace('camera','')  };
+            $('#cameraTabsAccordion>#' + card.attr("id") + '>div>div>table>tbody>tr').each(function (index) {
+                let camera = {id: $(this).attr('id').replace('camera', '')};
                 cameraArray.push(camera);
             });
             tab.cameraArray = cameraArray;
@@ -721,30 +816,30 @@
         $("#openGate").modal('show');
     }
 
-    function selectOpenReason(){
+    function selectOpenReason() {
         let selectOpenReason = $('#openReason').val();
-        if(selectOpenReason === 'other'){
+        if (selectOpenReason === 'other') {
             $('#otherReasonDiv').show();
         } else {
             $('#otherReasonDiv').hide();
         }
     }
 
-    function sendOpenArm(){
+    function sendOpenArm() {
         let reasonCameraId = $('#reasonCameraId').val();
         let openReason = $('#openReason').val();
         $('#openReasonAlert').text('');
         $('#otherReasonAlert').text('');
 
-        if(openReason){
+        if (openReason) {
             let reason = undefined;
-            if(openReason == "emergencyServices"){
+            if (openReason == "emergencyServices") {
                 reason = 'Экстренные службы (служба пожаротушения, полиция, скорая медицинская помощь, аварийная служба газа)';
-            } else if(openReason == "invalidPerson") {
+            } else if (openReason == "invalidPerson") {
                 reason = 'Человек с ограниченными возможностями';
             } else {
                 let otherReason = $('#otherReason').val();
-                if(otherReason && otherReason.length >= 3){
+                if (otherReason && otherReason.length >= 3) {
                     reason = otherReason;
                 } else {
                     $('#otherReasonAlert').text('Необходимо написать причину!');
