@@ -15,9 +15,23 @@ spring:
     plugin-properties:
       spring:
         datasource:
-          url: jdbc:mysql://db/new_parking?allowPublicKeyRetrieval=true&useSSL=false
+          type: com.zaxxer.hikari.HikariDataSource
+          url: jdbc:mysql://db/new_parking?socketTimeout=30000&allowPublicKeyRetrieval=true&useSSL=false
           username: root
           password: root
+          hikari:
+            idle-timeout: 10000
+            pool-name: SptRootHikariPool
+            connection-timeout: 20000 #Максимальное количество миллисекунд для ожидания подключения из пула
+            #Значение конструктора по умолчанию: SECONDS.toMillis(30) = 30000 Значение конфигурации по умолчанию после проверки: 	30000
+            minimum-idle: 10 #Минимальное количество неактивных соединений, поддерживаемых в пуле
+            #Значение конструктора по умолчанию: -1	Значение конфигурации по умолчанию после проверки: 10
+            maximum-pool-size: 10 #Максимальное количество соединений в пуле, включая неактивные и используемые соединения.
+            #Значение конструктора по умолчанию: -1	Значение конфигурации по умолчанию после проверки: 	10
+            max-lifetime: 1800000 # Самый долгий срок жизни соединения в пуле 	MINUTES.toMillis(30) = 1800000 	1800000
+            # Если он не равен 0 и меньше 30 секунд, он будет сброшен до 30 минут.
+            auto-commit: false #Автоматически отправлять соединение, возвращаемое из пула
+              #Значение конструктора по умолчанию: TRUE	Значение конфигурации по умолчанию после проверки: TRUE
         jpa:
           hibernate:
             ddl-auto: update
@@ -28,9 +42,23 @@ spring:
               jdbc:
                 time_zone: UTC
   datasource:
-    url: jdbc:mysql://db/new_parking?allowPublicKeyRetrieval=true&useSSL=false
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:mysql://db/new_parking?socketTimeout=30000&allowPublicKeyRetrieval=true&useSSL=false
     username: root
     password: root
+    hikari:
+      idle-timeout: 10000
+      pool-name: SptRootHikariPool
+      connection-timeout: 20000 #Максимальное количество миллисекунд для ожидания подключения из пула
+      #Значение конструктора по умолчанию: SECONDS.toMillis(30) = 30000 Значение конфигурации по умолчанию после проверки: 	30000
+      minimum-idle: 10 #Минимальное количество неактивных соединений, поддерживаемых в пуле
+      #Значение конструктора по умолчанию: -1	Значение конфигурации по умолчанию после проверки: 10
+      maximum-pool-size: 10 #Максимальное количество соединений в пуле, включая неактивные и используемые соединения.
+      #Значение конструктора по умолчанию: -1	Значение конфигурации по умолчанию после проверки: 	10
+      max-lifetime: 30001 # Самый долгий срок жизни соединения в пуле 	MINUTES.toMillis(30) = 1800000 	1800000
+      # Если он не равен 0 и меньше 30 секунд, он будет сброшен до 30 минут.
+      auto-commit: false #Автоматически отправлять соединение, возвращаемое из пула
+      #Значение конструктора по умолчанию: TRUE	Значение конфигурации по умолчанию после проверки: TRUE
   jpa:
     hibernate:
       ddl-auto: update
@@ -50,8 +78,8 @@ spring:
     allow-bean-definition-overriding: true
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: 50MB
+      max-request-size: 50MB
   mail:
     host: smtp.gmail.com
     port: 587
@@ -90,8 +118,9 @@ barrier:
   open:
     disabled: false
   modbus:
-    keep:
-      connected: false
+    icpdas:
+      old:
+        way: false
 car:
   movement:
     simulate: false
@@ -150,11 +179,14 @@ notification:
   url: http://app.magnum.kz/test-services/parking-api/v2/parking/tickets
   send: false
   parkingUid: DEMO
+  token: ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmxiV0ZwYkNJNkltMWhibUZuWlhKQWJXRm5iblZ0TG10NkluMC5LSE4wWkdsdUtUMGdZekpqTnpNM05qZzJZall4Tm1NMk9XWXdOMkl4WXpkbU16WTJNR0UyTlRnNU1UTXlORGhpWVRKaVpqazJORFprClkyVmpNamN6TVdVek9HTmpOR1JsTndv
 kaspi:
   qr-link: https://kaspi.kz/pay/%s?service_id=%s&%s=
 carmen:
   live.enabled: false
   image.enabled: false
+tablo:
+  connected: false
 management:
   endpoints:
     web:
