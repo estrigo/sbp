@@ -1,5 +1,9 @@
 package kz.spt.app.service.impl;
 
+import kz.spt.app.job.StatusCheckJob;
+import kz.spt.app.model.dto.CameraStatusDto;
+import kz.spt.lib.model.EventLog;
+import kz.spt.lib.model.dto.CarPictureFromRestDto;
 import kz.spt.lib.service.CarImageService;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.utils.StaticValues;
@@ -14,21 +18,25 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
+import java.util.*;
 @Log
 @Service
 public class CarImageServiceImpl implements CarImageService {
 
+    private String debtPlateNumber;
     private String imagePath;
     private EventLogService eventLogService;
+    private StatusCheckJob statusCheckJob;
+    private CameraServiceImpl cameraServiceImpl;
 
-    public CarImageServiceImpl(@Value("${images.file.path}") String imagePath, EventLogService eventLogService) {
+
+    public CarImageServiceImpl(@Value("${images.file.path}") String imagePath,
+                               EventLogService eventLogService, StatusCheckJob statusCheckJob,
+                               CameraServiceImpl cameraServiceImpl) {
         this.imagePath = imagePath;
         this.eventLogService = eventLogService;
+        this.statusCheckJob = statusCheckJob;
+        this.cameraServiceImpl = cameraServiceImpl;
     }
 
     @Override
@@ -96,5 +104,24 @@ public class CarImageServiceImpl implements CarImageService {
             return Files.readAllBytes(thePath.toPath());
         }
         return null;
+    }
+
+    @Override
+    public void checkSnapshotEnabled(CarPictureFromRestDto carPictureFromRestDto) {
+        if (carPictureFromRestDto != null) {
+            CameraStatusDto cameraStatusDtoByIp = statusCheckJob.findCameraStatusDtoByIp(carPictureFromRestDto.getIp_address());
+
+            if (cameraStatusDtoByIp != null) {
+                Map<Long, Boolean> snapshotEnabledRefreshMap = cameraServiceImpl.getSnapshotEnabledRefreshMap();
+                Boolean snapshotEnabled = snapshotEnabledRefreshMap.get(cameraStatusDtoByIp.id);
+                if (!(snapshotEnabled != null && !snapshotEnabled)) {
+                    sendSocketArmPicture(cameraStatusDtoByIp, carPictureFromRestDto);
+                }
+            }
+        }
+    }
+
+    private void sendSocketArmPicture(CameraStatusDto cameraStatusDtoByIp, CarPictureFromRestDto carPictureFromRestDto) {
+        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Picture, EventLog.StatusType.Success, cameraStatusDtoByIp.id, debtPlateNumber, carPictureFromRestDto.getCar_picture(), null);
     }
 }

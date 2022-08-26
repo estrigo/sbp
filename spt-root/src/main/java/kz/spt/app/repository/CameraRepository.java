@@ -27,4 +27,7 @@ public interface CameraRepository extends JpaRepository<Camera, Long> {
 
     @Query("from Camera c LEFT JOIN FETCH c.gate g LEFT JOIN FETCH g.parking WHERE c.detectorId = ?1")
     Camera findCameraByDetectorId(String detectorId);
+
+    @Query("from Camera c")
+    List<Camera> findCameraIdsAndSnapshotEnabled ();
 }

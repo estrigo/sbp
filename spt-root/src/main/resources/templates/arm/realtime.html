@@ -363,6 +363,16 @@
                 context.drawImage(image, 0, 0, image.width, image.height);
                 image = null;
             };
+        } else if (messageBody.eventType == 'Picture') {
+            cameras[messageBody.id].snapshot = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
+            let image = new Image();
+            image.src = cameras[messageBody.id].snapshot;
+            image.onload = function () {
+                canvas.width = image.width + 1;
+                canvas.height = image.height + 1;
+                context.drawImage(image, 0, 0, image.width, image.height);
+                image = null;
+            };
         } else if (messageBody.eventType == 'CarEvent') {
             $(logs).prepend(content(messageBody.eventStatus, '[' + messageBody.plateNumber + ']' + logMessage));
             $(fancyImage).attr("data-caption", messageBody.plateNumber);
