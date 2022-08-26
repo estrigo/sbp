@@ -56,12 +56,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public List<Payment> getPaymentsByCarStateId(List<Long> carStateIds) {
-        return paymentRepository.getPaymentsByCarStateIdWithProvider(carStateIds);
-    }
-
-
-    @Override
     public void updateOutTimestamp(Long carStateId, Date outTimestamp) {
         List<Payment> payments = paymentRepository.getPaymentsByCarStateIdWithProvider(carStateId);
         for (Payment payment : payments) {
