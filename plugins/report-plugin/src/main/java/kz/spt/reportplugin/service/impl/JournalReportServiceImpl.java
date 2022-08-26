@@ -10,7 +10,6 @@ import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.CarStateService;
-import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.reportplugin.ReportPlugin;
@@ -59,18 +58,20 @@ public class JournalReportServiceImpl implements ReportService<JournalReportDto>
                 .dateFromString(filter.dateToString(filter.getDateFrom()))
                 .build());
 
-
+        List<Long> carStateIds = carStates.getData().stream().map(CarStateDto::getId).collect(Collectors.toList());
+        PluginRegister billingPluginRegister = getPluginService().getPluginRegister(StaticValues.billingPlugin);
         var result = new ArrayList<JournalReportDto>();
-        for (var carState : carStates.getData()) {
-            PluginRegister billingPluginRegister = getPluginService().getPluginRegister(StaticValues.billingPlugin);
-            if (billingPluginRegister != null) {
-                ObjectNode node = this.objectMapper.createObjectNode();
-                node.put("command", "getPayments");
-                node.put("carStateId", carState.getId());
-
-                JsonNode paymentResult = billingPluginRegister.execute(node);
-                ArrayNode payments = paymentResult.withArray("payments");
-                if (payments.isEmpty()) {
+        if (billingPluginRegister != null) {
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("command", "getPayments");
+            ObjectMapper mapper = new ObjectMapper();
+            ArrayNode array = mapper.valueToTree(carStateIds);
+            node.set("carStateIds", array);
+            JsonNode paymentResult = billingPluginRegister.execute(node);
+            ArrayNode payments = paymentResult.withArray("payments");
+            for (var carState : carStates.getData()) {
+                JsonNode payment = getPaymentInfo(payments, carState.getId());
+                if (ObjectUtils.isEmpty(payment)) {
                     result.add(JournalReportDto.builder()
                             .carStateId(carState.getId())
                             .carNumber(carState.getCarNumber())
@@ -83,32 +84,18 @@ public class JournalReportServiceImpl implements ReportService<JournalReportDto>
                             .cashlessPayment(false)
                             .build());
                 } else {
-                    payments.forEach(p -> {
-                        result.add(JournalReportDto.builder()
-                                .carStateId(carState.getId())
-                                .carNumber(carState.getCarNumber())
-                                .outTimestamp(carState.getOutTimestamp())
-                                .inTimestamp(carState.getInTimestamp())
-                                .parkingTypeCode(carState.getType().name())
-                                .paymentId(p.get("paymentId").longValue())
-                                .sum(p.get("sum").decimalValue())
-                                .provider(p.get("provider").textValue())
-                                .cashlessPayment(p.get("cashlessPayment").booleanValue())
-                                .build());
-                    });
+                    result.add(JournalReportDto.builder()
+                            .carStateId(carState.getId())
+                            .carNumber(carState.getCarNumber())
+                            .outTimestamp(carState.getOutTimestamp())
+                            .inTimestamp(carState.getInTimestamp())
+                            .parkingTypeCode(carState.getType().name())
+                            .paymentId(payment.get("paymentId").longValue())
+                            .sum(payment.get("sum").decimalValue())
+                            .provider(payment.get("provider").textValue())
+                            .cashlessPayment(payment.get("cashlessPayment").booleanValue())
+                            .build());
                 }
-            } else {
-                result.add(JournalReportDto.builder()
-                        .carStateId(carState.getId())
-                        .paymentId(null)
-                        .carNumber(carState.getCarNumber())
-                        .outTimestamp(carState.getOutTimestamp())
-                        .inTimestamp(carState.getInTimestamp())
-                        .parkingTypeCode(carState.getType().name())
-                        .sum(BigDecimal.ZERO)
-                        .provider("")
-                        .cashlessPayment(false)
-                        .build());
             }
         }
 
