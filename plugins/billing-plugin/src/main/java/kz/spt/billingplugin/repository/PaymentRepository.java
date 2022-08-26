@@ -21,9 +21,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
     @Query("From Payment p LEFT JOIN FETCH p.provider where p.carStateId = ?1")
     List<Payment> getPaymentsByCarStateIdWithProvider(Long carStateId);
 
-    @Query("From Payment p LEFT JOIN FETCH p.provider where p.carStateId in (?1)")
-    List<Payment> getPaymentsByCarStateIdWithProvider(List<Long> carStateId);
-
     @Query("From Payment p WHERE p.transaction = ?1 and p.provider = ?2")
     List<Payment> findByTransactionAndProvider(String transaction, PaymentProvider paymentProvider);
 
