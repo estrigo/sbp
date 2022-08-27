@@ -156,7 +156,7 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public Boolean openBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
-        log.info("Barrier " + barrier.getIp() + " open process started for car number: " + (String) properties.get("carNumber"));
+        log.info("Barrier " + barrier.getIp() + " open process started for car number: " +  properties.get("carNumber"));
         Boolean result = true;
         if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier())) { //  ignore in development
             GateStatusDto gate = new GateStatusDto();
@@ -441,7 +441,6 @@ public class BarrierServiceImpl implements BarrierService {
             if (barrier.modbusDeviceVersion != null && "210-301".equals(barrier.modbusDeviceVersion)) {
                 offset = 470;
                 int new_value = Command.Open.equals(command) ? (int) Math.pow(2, barrier.modbusOpenRegister - 1) : (int) Math.pow(2, barrier.modbusCloseRegister - 1);
-                int quantity = 1;
 
                 int[] new_values = new int[1];
                 new_values[0] = new_value;
@@ -451,22 +450,16 @@ public class BarrierServiceImpl implements BarrierService {
                     new_values[0] = 0; // turn off all holdings
                     m.writeMultipleRegisters(slaveId, offset, new_values);
                 }
+                result = true;
             } else {
                 boolean isOpenValueChanged = modbusRetryWrite(m, slaveId, offset, true);
                 log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
-                if(!isOpenValueChanged){
-                    return isOpenValueChanged;
-                }
                 if(!barrier.dontSendZero) {
                     Thread.sleep(500);
                     boolean isOpenReturnValueChanged = modbusRetryWrite(m, slaveId, offset, false);
                     log.info("modbus isOpenReturnValueChanged: " + isOpenReturnValueChanged);
-                    if(!isOpenReturnValueChanged){
-                        return isOpenReturnValueChanged;
-                    }
-                } else {
-                    return isOpenValueChanged;
                 }
+                result = isOpenValueChanged;
             }
             if (barrier.modbusDeviceVersion != null && "icpdas".equals(barrier.modbusDeviceVersion)) {
                 m.disconnect();
