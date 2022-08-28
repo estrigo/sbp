@@ -1081,17 +1081,23 @@ public class PaymentServiceImpl implements PaymentService {
                                      String transaction,
                                      String clientId) {
         try {
-            clientId = getClientId(clientId);
+            JsonNode result = null;
+            try {
+                clientId = getClientId(clientId);
 
-            ObjectNode node = this.objectMapper.createObjectNode();
-            node.put("command", "getPaymentProvider");
-            node.put("clientId", clientId);
-            PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
-            JsonNode result = billingPluginRegister.execute(node);
+                ObjectNode node = this.objectMapper.createObjectNode();
+                node.put("command", "getPaymentProvider");
+                node.put("clientId", clientId);
+                PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+                result = billingPluginRegister.execute(node);
+            } catch (Exception e){
+                log.warning("Error getting client id for payment check log " +
+                        "clientId: " + clientId + ", carStateId: " + carStateId + ", plateNumber: " + plateNumber + ". error msg +" + e.getMessage());
+            }
 
             Long providerId = null;
             String providerName = null;
-            if (!ObjectUtils.isEmpty(result)) {
+            if (result != null && !ObjectUtils.isEmpty(result)) {
                 providerId = result.get("providerId").longValue();
                 providerName = result.get("providerName").textValue();
             }
