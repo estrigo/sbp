@@ -236,7 +236,7 @@ public class CommandExecutor implements PluginRegister {
                                 .map(m -> objectMapper.createObjectNode()
                                         .put("paymentId", m.getId())
                                         .put("carStateId", m.getCarStateId())
-                                        .put("-Dspring.config.location=C:\\ms-dev\\git_project\\spt-gitlab\\parking_management_software\\test.yml", m.getPrice())
+                                        .put("sum", m.getPrice())
                                         .put("provider", m.getProvider() != null ? m.getProvider().getName() : "")
                                         .put("cashlessPayment", m.getProvider() != null ? m.getProvider().getCashlessPayment() : false)
                                         .put("rate", m.getRateDetails()))
