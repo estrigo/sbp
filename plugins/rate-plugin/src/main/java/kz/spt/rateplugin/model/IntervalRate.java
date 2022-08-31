@@ -21,6 +21,6 @@ public class IntervalRate {
     @OneToMany(mappedBy = "intervalRate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RateCondition> rateConditions;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private ParkingRate parkingRate;
 }

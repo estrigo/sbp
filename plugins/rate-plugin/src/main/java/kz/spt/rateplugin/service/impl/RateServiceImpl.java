@@ -21,7 +21,6 @@ import kz.spt.rateplugin.repository.RateRepository;
 import kz.spt.rateplugin.service.RateService;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
@@ -355,7 +354,6 @@ public class RateServiceImpl implements RateService {
         return calendar1;
     }
 
-
     private Date getLastPaymentDate(String paymentsJson) {
         Date lastPaymentDate = null;
         if(paymentsJson != null && !"".equals(paymentsJson)){
@@ -519,6 +517,37 @@ public class RateServiceImpl implements RateService {
             ir.setRateConditions(rt);
         }
         return rateList;
+    }
+
+    @Override
+    public IntervalRate getIntervalRateById(Long intervalId) {
+        Optional<IntervalRate> intervalRate = intervalRateRepository.findById(intervalId);
+        return intervalRate.orElseGet(IntervalRate::new);
+    }
+
+    @Override
+    public void saveIntervalRate(IntervalRate intervalRate){
+        intervalRateRepository.save(intervalRate);
+    }
+
+    @Override
+    public void deleteIntervalRate(IntervalRate intervalRate){
+        intervalRateRepository.delete(intervalRate);
+    }
+
+    @Override
+    public void saveRateCondition(RateCondition rateCondition){
+        rateConditionRepository.save(rateCondition);
+    }
+
+    @Override
+    public void deleteRateConditionById(Long id) {
+        rateConditionRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<RateCondition> rateConditionById(Long id) {
+        return rateConditionRepository.findById(id);
     }
 
     private JsonNode getSatisfiedJsonNode(int inCalendarHour, ArrayNode intervalJson) {

@@ -45,7 +45,7 @@
                                             <option th:value="DIMENSIONS" th:text="#{'rate.Type.DIMENSIONS'}"></option>
                                             <option th:value="PREPAID" th:text="#{'rate.Type.PREPAID'}"></option>
                                             <option th:value="FREE" th:text="#{'rate.Type.FREE'}"></option>
-                                            <option th:value="INTERVAL_OLD" th:text="#{'rate.Type.INTERVAL_OLD'}"></option>
+<!--                                            <option th:value="INTERVAL_OLD" th:text="#{'rate.Type.INTERVAL_OLD'}"></option>-->
                                         </select>
                                     </div>
                                 </div>
@@ -203,7 +203,7 @@
                                     <a sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')"
                                        th:href="@{|/rate/interval-edit/${parkingRate.parking.id}||}">
                                         <button id="rateEdit" type="button" class="btn btn-primary waves-effect"
-                                                th:text="editRate"></button>
+                                                th:text="#{rate.edit}"></button>
                                     </a>
                                     <hr>
                                     <th:block th:each="intervalRate, ind : ${intervalRates}">
@@ -216,6 +216,7 @@
                                                         <table class="table table-hover w-auto">
                                                             <thead>
                                                             <tr>
+                                                                <th></th>
                                                                 <th th:text="'#'"></th>
                                                                 <th th:text="#{rate.intervalFrom}"></th>
                                                                 <th th:text="#{rate.intervalUntil}"></th>
@@ -223,6 +224,7 @@
                                                             </thead>
                                                             <tbody>
                                                             <tr>
+                                                                <td><i class="fa fa-plus-square"></i></td>
                                                                 <td><a th:text="${ind.index} + 1"></a></td>
                                                                 <td><a th:text="${intervalRate.getDatetimeFrom()}"></a></td>
                                                                 <td><a th:text="${intervalRate.getDatetimeTo()}"></a></td>
