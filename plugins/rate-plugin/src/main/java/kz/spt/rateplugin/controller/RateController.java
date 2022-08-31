@@ -146,8 +146,9 @@ public class RateController {
     public String addRateCondition(@ModelAttribute(value="rateCondition") RateCondition rateCondition) {
         IntervalRate intervalRate = rateService.getIntervalRateById(rateCondition.getIntervalRate().getId());
         rateCondition.setIntervalRate(intervalRate);
+        ParkingRate parkingRate = rateService.getById(intervalRate.getParkingRate().getId());
         rateService.saveRateCondition(rateCondition);
-        return "redirect:interval-edit/2";
+        return "redirect:interval-edit/"+parkingRate.getParking().getId();
     }
 
 
