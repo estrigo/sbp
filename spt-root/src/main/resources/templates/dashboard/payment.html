@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{})" xmlns="http://www.w3.org/1999/html">
+
+
+<div class="content">
+    <div class="container">
+        <div class="card table-responsive table-striped">
+            <div class="card-header">Income</div>
+            <div class="card-body">
+                <div class="col-lg-4">
+                    <div class="btn-group m-b-10">
+                        <button id="year" type="button" class="btn btn-primary waves-effect" onclick="setType('year')">Yearly</button>
+                        <button id="month" type="button" class="btn btn-secondary waves-effect" onclick="setType('month')">Monthly</button>
+                        <button id="week" type="button" class="btn btn-secondary waves-effect" onclick="setType('week')">Weekly</button>
+                        <button id="day" type="button" class="btn btn-secondary waves-effect" onclick="setType('day')">Dayly</button>
+                        <button id="period" type="button" class="btn btn-secondary waves-effect" onclick="setType('period')">Period</button>
+                    </div>
+                </div>
+                <div class="col-lg-4" id="fromDateBlock" style="display: none;">
+                    <label th:text="#{events.dateFrom}"></label>
+                    <input type="date" id="fromDate" class="form-control filter" onchange="dateChanged()">
+                </div>
+                <div class="col-lg-4" id="toDateBlock" style="display: none;">
+                    <label th:text="#{events.dateTo}"></label>
+                    <input type="date" id="toDate" class="form-control filter" onchange="dateChanged()">
+                </div>
+                <div class="col-lg-12">
+                    <div class="card-box">
+                        <canvas id="providersSumBarChart" width="400" height="400"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="card-box">
+                        <canvas id="providersCountBarChart" width="400" height="400"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/plugins/chart.js/dist/chart.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+
+    let type = "year";
+
+    const monthLabels  = {
+        '01': {'ru':'Январь','en':'January'},
+        '02': {'ru':'Февраль','en':'February'},
+        '03': {'ru':'Март','en':'March'},
+        '04': {'ru':'Апрель','en':'April'},
+        '05': {'ru':'Май','en':'May'},
+        '06': {'ru':'Июнь','en':'June'},
+        '07': {'ru':'Июль','en':'July'},
+        '08': {'ru':'Август','en':'August'},
+        '09': {'ru':'Сентябрь','en':'September'},
+        '10': {'ru':'Октябрь','en':'October'},
+        '11': {'ru':'Декабрь','en':'November'},
+        '12': {'ru':'Январь','en':'December'}
+    }
+
+    const colors = [
+        'rgb(255, 99, 132)',
+        'rgb(54, 162, 235)',
+        'rgb(75, 192, 192)',
+        'rgb(255, 159, 64)',
+        'rgb(255, 205, 86)',
+        'rgb(153, 102, 255)',
+        'rgb(201, 203, 207)'
+    ];
+
+    let providersSumBarChart = undefined;
+    let providersCountBarChart = undefined;
+
+    $(document).on('ready',function(){
+        drawProvidersSumBarChart();
+        drawProvidersCountBarChart();
+    });
+
+    function drawProvidersSumBarChart(){
+        let form = new FormData();
+        form.append("type", type);
+        form.append("from", $("#fromDate").val());
+        form.append("to", $("#toDate").val());
+
+        let settings = {
+            "url": "/rest/dashboard/count/incomeByProviders",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (result) {
+            const xIndexes = getXIndexes(result);
+            const data = {
+                labels: type == 'year' ? getMonthLabels(xIndexes) : xIndexes,
+                datasets: getProvidersSumBarChartDataset(result, xIndexes)
+            };
+
+            const config = {
+                type: 'bar',
+                data: data,
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Income by providers'
+                        },
+                    },
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true,
+                        },
+                        y: {
+                            stacked: true
+                        }
+                    }
+                }
+            };
+
+            if(providersSumBarChart){
+                providersSumBarChart.destroy();
+            }
+
+            providersSumBarChart = new Chart(
+                document.getElementById('providersSumBarChart'),
+                config
+            );
+        });
+    }
+
+    function drawProvidersCountBarChart(){
+        let form = new FormData();
+        form.append("type", type);
+        form.append("from", $("#fromDate").val());
+        form.append("to", $("#toDate").val());
+
+        let settings = {
+            "url": "/rest/dashboard/count/countPaymentsByProviders",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (result) {
+            const xIndexes = getXIndexes(result);
+            const data = {
+                labels: type == 'year' ? getMonthLabels(xIndexes) : xIndexes,
+                datasets: getProvidersSumBarChartDataset(result, xIndexes)
+            };
+
+            const config = {
+                type: 'bar',
+                data: data,
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Payment count by providers'
+                        },
+                    },
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true,
+                        },
+                        y: {
+                            stacked: true
+                        }
+                    }
+                }
+            };
+
+            if(providersCountBarChart){
+                providersCountBarChart.destroy();
+            }
+
+            providersCountBarChart = new Chart(
+                document.getElementById('providersCountBarChart'),
+                config
+            );
+        });
+    }
+
+    function getXIndexes(result){
+        let indexArray = [];
+        if(result){
+            for (let i = 0; i < result.length; i++) {
+                if(indexArray.indexOf(result[i][0]) == -1){
+                    indexArray.push(result[i][0]);
+                }
+            }
+        }
+        return indexArray;
+    }
+
+    function getProvidersSumBarChartDataset(result, xIndexes){
+        let resultObject = {};
+        if (result){
+            for (let i = 0; i < result.length; i++) {
+                if(!resultObject[result[i][1]]){
+                    resultObject[result[i][1]] = {};
+                }
+                resultObject[result[i][1]][result[i][0]] = {value: result[i][2]};
+            }
+        }
+        let dataset = [];
+        let counter = 0;
+        for (const key in resultObject) {
+            let datasetObj = {
+                label: key,
+                data: [],
+                backgroundColor: colors[counter++]
+            };
+            for (let i = 0; i < xIndexes.length; i++) {
+                if(resultObject[key][xIndexes[i]]){
+                    datasetObj.data.push(resultObject[key][xIndexes[i]].value);
+                } else{
+                    datasetObj.data.push(0);
+                }
+            }
+            dataset.push(datasetObj);
+        }
+
+        return dataset;
+        /*{
+                label: 'Kaspi',
+                data: [100, 150, 130, 120, 160, 190, 160],
+                backgroundColor: 'rgb(255, 99, 132)',
+            },
+            {
+                label: 'Yurta',
+                data: [10, 20, 30, 40, 20, 10, 30],
+                backgroundColor: 'rgb(54, 162, 235)',
+            },
+            {
+                label: 'Halyk',
+                data: [40, 50, 60, 70, 80, 50, 40],
+                backgroundColor: 'rgb(75, 192, 192)',
+            },
+        */
+    }
+
+    function getMonthLabels(months){
+        let monthLabelList = [];
+        for (let i = 0; i < months.length; i++) {
+            monthLabelList.push(monthLabels[months[i]].en);
+        }
+        return monthLabelList;
+    }
+
+    function setType(val){
+        $('#'+type).removeClass("btn-primary");
+        $('#'+type).addClass("btn-secondary");
+        type = val;
+        $('#'+val).addClass("btn-primary");
+        $('#'+val).removeClass("btn-secondary");
+        if(type == 'period'){
+            $("#fromDateBlock").show();
+            $("#toDateBlock").show();
+            if($("#fromDate").val() && $("#toDate").val()){
+                drawProvidersSumBarChart();
+                drawProvidersCountBarChart();
+            }
+        } else {
+            $("#fromDateBlock").hide();
+            $("#toDateBlock").hide();
+            drawProvidersSumBarChart();
+            drawProvidersCountBarChart();
+        }
+    }
+
+    function dateChanged(){
+        if(type == 'period'){
+            if($("#fromDate").val() && $("#toDate").val()){
+                drawProvidersSumBarChart();
+                drawProvidersCountBarChart();
+            }
+        } else {
+            drawProvidersSumBarChart();
+            drawProvidersCountBarChart();
+        }
+    }
+</script>
+</html>

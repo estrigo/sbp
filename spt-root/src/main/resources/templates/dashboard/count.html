@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<!--Chartist Chart CSS -->
+<link th:href="@{/plugins/chartist/dist/chartist.min.css}" rel="stylesheet" type="text/css">
+
+<div class="content">
+    <div class="container">
+        <div class="card table-responsive table-striped">
+            <div class="card-header">Заполняемость</div>
+            <div class="card-body">
+
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card-box">
+                            <h4 class="m-t-0 header-title"><b>Realtime occupancy</b></h4>
+                            <div id="animating-donut" class="ct-chart ct-golden-section"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card-box">
+                            <canvas id="occupancyMultiLineChart" width="800" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Chartist Chart-->
+<script th:src="@{/plugins/chartist/dist/chartist.min.js}"></script>
+<script th:src="@{/plugins/chart.js/dist/chart.js}"></script>
+<script th:src="@{/plugins/color-js/color.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+    $(document).on('ready',function(){
+        $.get("/rest/dashboard/count/freePercentageByTotal", function (data) {
+            drawOccupancyDougnutChart(data.total, data.occupied, data.percentage);
+        });
+
+        drawOccupancyMultiLineChart();
+    });
+
+    function drawOccupancyDougnutChart(total, occupied, percentage){
+        var chart = new Chartist.Pie('#animating-donut', {
+            series: [occupied, total - occupied],
+            labels: [percentage + '%', occupied + '/' + total]
+        }, {
+            donut: true,
+            showLabel: true,
+            startAngle: 0,
+            total: total
+        });
+
+        chart.on('draw', function(data) {
+            if(data.type === 'slice') {
+                // Get the total path length in order to use for dash array animation
+                var pathLength = data.element._node.getTotalLength();
+
+                // Set a dasharray that matches the path length as prerequisite to animate dashoffset
+                data.element.attr({
+                    'stroke-dasharray': pathLength + 'px ' + pathLength + 'px'
+                });
+
+                // Create animation definition while also assigning an ID to the animation for later sync usage
+                var animationDefinition = {
+                    'stroke-dashoffset': {
+                        id: 'anim' + data.index,
+                        dur: 1000,
+                        from: -pathLength + 'px',
+                        to:  '0px',
+                        easing: Chartist.Svg.Easing.easeOutQuint,
+                        // We need to use `fill: 'freeze'` otherwise our animation will fall back to initial (not visible)
+                        fill: 'freeze'
+                    }
+                };
+
+                // If this was not the first slice, we need to time the animation so that it uses the end sync event of the previous animation
+                if(data.index !== 0) {
+                    animationDefinition['stroke-dashoffset'].begin = 'anim' + (data.index - 1) + '.end';
+                }
+
+                // We need to set an initial value before the animation starts as we are not in guided mode which would do that for us
+                data.element.attr({
+                    'stroke-dashoffset': -pathLength + 'px'
+                });
+
+                // We can't use guided mode as the animations need to rely on setting begin manually
+                // See http://gionkunz.github.io/chartist-js/api-documentation.html#chartistsvg-function-animate
+                data.element.animate(animationDefinition, false);
+            }
+            if (data.type === 'label') {
+                if(data.index == 0){
+                    data.element.attr({
+                        dx: data.element.root().width() / 2,
+                        dy: data.element.root().height() / 2
+                    });
+                    data.element.attr({ style: "font-size: 40px;" });
+                }
+                if(data.index == 1){
+                    data.element.attr({
+                        dx: data.element.root().width() / 2,
+                        dy: data.element.root().height() / 2 + 30
+                    });
+                }
+            }
+        });
+    }
+
+    function drawOccupancyMultiLineChart(){
+        const labels = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00'];
+        const data = {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Белый список',
+                    data: [400, 350, 375, 500, 600, 300, 350],
+                    borderColor: 'rgb(255, 99, 132)',
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Абонементы',
+                    data: [100, 120, 105, 144, 210, 150, 170],
+                    borderColor: 'rgb(54, 162, 235)',
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Платный',
+                    data: [1000, 990, 1100, 800, 950, 970, 900],
+                    borderColor: 'rgb(75, 192, 192)',
+                    yAxisID: 'y',
+                }
+            ]
+        };
+
+        const config = {
+            type: 'line',
+            data: data,
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                stacked: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Заполняемость'
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+
+                        // grid line settings
+                        grid: {
+                            drawOnChartArea: false, // only want the grid lines for one axis to show up
+                        },
+                        min: 0,
+                        max: 1100,
+                        ticks: {
+                            // forces step size to be 50 units
+                            stepSize: 100
+                        }
+                    },
+                }
+            },
+        };
+
+        const occupancyMultiLineChart = new Chart(
+            document.getElementById('occupancyMultiLineChart'),
+            config
+        );
+    }
+
+    function transparentize(value, opacity) {
+        var alpha = opacity === undefined ? 0.5 : 1 - opacity;
+        return index(value).alpha(alpha).rgbString();
+    }
+</script>
