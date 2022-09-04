@@ -76,7 +76,7 @@ public class CommandExecutor implements PluginRegister {
                 }
             } else if ("checkProvider".equals(commandName)) {
                 PaymentProvider paymentProvider = getPaymentProviderService().getProviderByClientId(command.get("providerName").textValue());
-                node.put("providerExists", paymentProvider != null ? true : false);
+                node.put("providerExists", paymentProvider != null);
             } else if ("savePayment".equals(commandName)) {
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue());
                 List<Payment> oldPayments = getPaymentService().findByTransactionAndProvider(command.get("transaction").textValue(), provider);

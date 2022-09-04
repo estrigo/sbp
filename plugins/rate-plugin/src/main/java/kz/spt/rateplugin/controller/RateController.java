@@ -1,22 +1,25 @@
 package kz.spt.rateplugin.controller;
 
 import kz.spt.lib.model.Parking;
+import kz.spt.rateplugin.model.IntervalRate;
 import kz.spt.rateplugin.model.ParkingRate;
+import kz.spt.rateplugin.model.RateCondition;
 import kz.spt.rateplugin.service.RateService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
+@Slf4j
 @Controller
 @RequestMapping("/rate")
 public class RateController {
@@ -43,6 +46,7 @@ public class RateController {
         }
         model.addAttribute("parkingRate", parkingRate);
         model.addAttribute("currencyTypes", ParkingRate.CurrencyType.values());
+        model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
         return "/rate/edit";
     }
 
@@ -96,4 +100,56 @@ public class RateController {
         return "/rate/edit";
 
     }
+
+    @GetMapping("/interval-edit/{parkingId}")
+    public String editingIntervalRate(Model model, @PathVariable Long parkingId) {
+        ParkingRate parkingRate = rateService.getByParkingId(parkingId);
+        if(parkingRate == null){
+            parkingRate = new ParkingRate();
+            Parking parking = rateService.getParkingById(parkingId);
+            parkingRate.setParking(parking);
+        }
+        model.addAttribute("parkingRate", parkingRate);
+        model.addAttribute("IntervalType", RateCondition.IntervalType.values());
+        model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
+        return "/rate/interval-edit";
+    }
+
+    @PostMapping("/interval-delete")
+    public String deleteIntervalRate(@ModelAttribute(value="intervalRate") IntervalRate intervalRate) {
+        IntervalRate intervalRateById = rateService.getIntervalRateById(intervalRate.getId());
+        Long id = intervalRateById.getParkingRate().getParking().getId();
+        rateService.deleteIntervalRate(intervalRateById);
+        return "redirect:interval-edit/"+id;
+    }
+
+    @PostMapping("/interval-add")
+    public String addIntervalRate(@ModelAttribute(value="intervalRate") IntervalRate intervalRate) {
+        IntervalRate newInterval = new IntervalRate();
+        newInterval.setParkingRate(intervalRate.getParkingRate());
+        newInterval.setRateConditions(null);
+        newInterval.setDatetimeTo(intervalRate.getDatetimeTo());
+        newInterval.setDatetimeFrom(intervalRate.getDatetimeFrom());
+        rateService.saveIntervalRate(newInterval);
+        ParkingRate parkingRate = rateService.getById(newInterval.getParkingRate().getId());
+        return "redirect:interval-edit/"+parkingRate.getParking().getId();
+    }
+
+    @PostMapping("/rateCon-delete")
+    public String delRateCondition(@ModelAttribute(value="rateCondition") RateCondition rateCondition) {
+        ParkingRate parkingRate = rateService.getById(rateCondition.getIntervalRate().getParkingRate().getId());
+        rateService.deleteRateConditionById(rateCondition.getId());
+        return "redirect:interval-edit/"+parkingRate.getParking().getId();
+    }
+
+    @PostMapping("/rateCon-add")
+    public String addRateCondition(@ModelAttribute(value="rateCondition") RateCondition rateCondition) {
+        IntervalRate intervalRate = rateService.getIntervalRateById(rateCondition.getIntervalRate().getId());
+        rateCondition.setIntervalRate(intervalRate);
+        ParkingRate parkingRate = rateService.getById(intervalRate.getParkingRate().getId());
+        rateService.saveRateCondition(rateCondition);
+        return "redirect:interval-edit/"+parkingRate.getParking().getId();
+    }
+
+
 }
