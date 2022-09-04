@@ -19,6 +19,7 @@ public interface PaymentService {
     Payment savePayment(Payment payment);
 
     List<Payment> getPaymentsByCarStateId(Long carStateId);
+    List<Payment> getPaymentsByCarStateId(List<Long> carStateId);
 
     void updateOutTimestamp(Long carStateId, Date outTimestamp);
 
