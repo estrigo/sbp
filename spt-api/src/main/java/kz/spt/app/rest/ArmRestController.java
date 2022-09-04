@@ -87,7 +87,7 @@ public class ArmRestController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
     @PostMapping(value = "/enter")
-    public void manualEnter(@RequestParam("cameraId") Long cameraId, @RequestParam("plateNumber") String plateNumber) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
+    public void manualEnter(@RequestParam("cameraId") Long cameraId, @RequestParam("plateNumber") String plateNumber) {
         armService.manualEnter(cameraId, plateNumber);
     }
 }

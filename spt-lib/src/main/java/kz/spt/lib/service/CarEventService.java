@@ -35,5 +35,5 @@ public interface CarEventService {
 
     void handleRtaCarEvent(String event_descriptor) throws Exception;
 
-    void handleManualEnter(Long cameraId, String plateNumber);
+    void handleManualEnter(Long cameraId, String plateNumber) throws Exception;
 }
