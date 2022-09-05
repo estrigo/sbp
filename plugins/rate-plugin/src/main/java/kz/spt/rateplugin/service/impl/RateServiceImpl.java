@@ -172,7 +172,7 @@ public class RateServiceImpl implements RateService {
         else if (parkingRate != null && ParkingRate.RateType.INTERVAL.equals(parkingRate.getRateType()) &&
                 parkingRate.getIntervalJson()!=null) {
             double inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY) + (double) inCalendar.get(Calendar.MINUTE) / 60;
-            IntervalRate current = getSatisfiedIntervalRate(inCalendarHour);
+            IntervalRate current = getSatisfiedIntervalRate(inCalendarHour, parkingRate);
             if (current == null) current = jsonIntervalParser(parkingRate, inCalendarHour);
             Iterator<RateCondition> conditionIterator = rateConditionRepository.findAllByIntervalRateId(
                     current.getId()).iterator();
@@ -197,7 +197,7 @@ public class RateServiceImpl implements RateService {
                         (intervalFrom < intervalTo && inCalendarHour >= intervalFrom && inCalendarHour < intervalTo) ||
                         (intervalFrom > intervalTo && (inCalendarHour >= intervalFrom || inCalendarHour < intervalTo))) {
                 } else {
-                    current = getSatisfiedIntervalRate(inCalendarHour);
+                    current = getSatisfiedIntervalRate(inCalendarHour, parkingRate);
                     hourMin = current.getDatetimeFrom().split(":");
                     hour = Integer.parseInt(hourMin[0]);
                     mins = 0;
@@ -444,9 +444,9 @@ public class RateServiceImpl implements RateService {
         return ObjectUtils.isEmpty(parkingRate) ? "" : parkingRate.getCurrencyType().name();
     }
 
-    private IntervalRate getSatisfiedIntervalRate(double inCalendarHour) {
+    private IntervalRate getSatisfiedIntervalRate(double inCalendarHour, ParkingRate parkingRate) {
         IntervalRate returnRate = null;
-        List<IntervalRate> allRates = intervalRateRepository.findAll();
+        List<IntervalRate> allRates = intervalRateRepository.findAllByParkingRateId(parkingRate.getId());
         for (IntervalRate ir : allRates) {
             String[] hourMinFrom = ir.getDatetimeFrom().split(":");
             int hour = Integer.parseInt(hourMinFrom[0]);
@@ -505,7 +505,7 @@ public class RateServiceImpl implements RateService {
             intervalRate.setRateConditions(rateConditionList);
             intervalRateRepository.save(intervalRate);
         }
-        IntervalRate resultIntervalRate = getSatisfiedIntervalRate(inCalendarHour);
+        IntervalRate resultIntervalRate = getSatisfiedIntervalRate(inCalendarHour, parkingRate);
         return resultIntervalRate;
     }
 
