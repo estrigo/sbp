@@ -2,6 +2,7 @@ package kz.spt.reportplugin.controller;
 
 import kz.spt.reportplugin.dto.SumReportDto;
 import kz.spt.reportplugin.dto.SumReportFinalDto;
+import kz.spt.reportplugin.dto.SumReportListDto;
 import kz.spt.reportplugin.dto.filter.FilterJournalReportDto;
 import kz.spt.reportplugin.dto.filter.FilterSumReportDto;
 import kz.spt.reportplugin.rest.BasicRestController;
@@ -17,9 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -55,31 +54,33 @@ public class ReportController extends BasicRestController<SumReportDto> {
                              @RequestParam(required = false, name = "dateFrom") String dateFrom,
                              @RequestParam(required = false, name = "dateTo") String dateTo,
 
-                             HttpServletResponse response) throws IOException, ParseException {
+                             HttpServletResponse response) throws Exception {
         FilterJournalReportDto filter = new FilterJournalReportDto();
         String pattern_1 = "yyyy-MM-dd hh:mm:ss";
-        String pattern_2 = "dd/MM/yyyy";
         byte[] bytes;
-        if (ReportNameEnum.BILLING.equals(name)) {
-
-            String date = dateFrom;
+        String date = dateFrom;
+        if (!ObjectUtils.isEmpty(date)) {
             dateFrom = date.concat(" 00:00:00");
             dateTo = date.concat(" 23:59:00");
+        }
+        if (ReportNameEnum.BILLING.equals(name)) {
             bytes = rootServicesGetterService.getAdminService().report(billingData(
                     new SimpleDateFormat(pattern_1).parse(dateFrom),
                     new SimpleDateFormat(pattern_1).parse(dateTo)), name.name(), format);
         } else {
             if (!ObjectUtils.isEmpty(dateFrom)) {
-                filter.setDateFrom(new SimpleDateFormat(pattern_2).parse(dateFrom));
+                filter.setDateFrom(new SimpleDateFormat(pattern_1).parse(dateFrom));
             }
             if (!ObjectUtils.isEmpty(dateTo)) {
-                filter.setDateTo(new SimpleDateFormat(pattern_2).parse(dateTo));
+                filter.setDateTo(new SimpleDateFormat(pattern_1).parse(dateTo));
             }
-
+            if ((ObjectUtils.isEmpty(dateFrom) || ObjectUtils.isEmpty(dateTo))
+                    && !ReportNameEnum.MANUAL_OPEN.equals(name)) {
+                throw new Exception("Is null dateFrom or dateTo");
+            }
             List<?> list = Objects.requireNonNull(getReportService(name)).list(filter);
             bytes = rootServicesGetterService.getAdminService().report(list, name.name(), format);
         }
-
 
 
         response.setContentType("application/octet-stream");
@@ -136,15 +137,24 @@ public class ReportController extends BasicRestController<SumReportDto> {
                 finalDto.setPayments(paymentsResult.get(0).getResults());
             }
 
-            List<SumReportDto> detailResult = reportService.list(
-                    FilterSumReportDto.builder()
-                            .dateFrom(filter.getDateFrom())
-                            .dateTo(filter.getDateTo())
-                            .eventType("paymentRecords")
-                            .type("detailed").build());
-            if (!CollectionUtils.isEmpty(detailResult)) {
-                finalDto.setListResult(detailResult.get(0).getListResult());
+            Map<String, List<SumReportListDto>> listResult = new HashMap<>();
+            for (Map.Entry<String, String> entry : basicResult.get(0).getResults().entrySet()) {
+                try {
+                    List<SumReportDto> detailResult = reportService.list(
+                            FilterSumReportDto.builder()
+                                    .dateFrom(filter.getDateFrom())
+                                    .dateTo(filter.getDateTo())
+                                    .eventType(entry.getKey())
+                                    .type("detailed").build());
+                    if (!CollectionUtils.isEmpty(detailResult)
+                            && !CollectionUtils.isEmpty(detailResult.get(0).getListResult())) {
+                        listResult.put(entry.getKey(), detailResult.get(0).getListResult());
+                    }
+                }catch (Exception e) {
+                    System.out.println("detail result by " + entry.getKey() + ". MSG: " + e);
+                }
             }
+            finalDto.setListResult(listResult);
             return finalDto;
         }
         return null;

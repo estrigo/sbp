@@ -85,17 +85,21 @@ public class PaymentController {
                              @RequestParam(required = false, name = "carNumber") String carNumber,
                              @RequestParam(required = false, name = "total") BigDecimal total,
                              @RequestParam(required = false, name = "transaction") String transaction,
-                             HttpServletResponse response) throws IOException, ParseException {
+                             HttpServletResponse response) throws Exception {
+        if (ObjectUtils.isEmpty(dateFrom) || ObjectUtils.isEmpty(dateTo)) {
+            throw new Exception("dateFrom or dateTo is empty");
+        }
         FilterPaymentDTO filter = new FilterPaymentDTO();
         filter.setPaymentProvider(paymentProvider);
         filter.setCarNumber(carNumber);
         filter.setTotal(total);
         filter.setTransaction(transaction);
-        if (!ObjectUtils.isEmpty(dateFrom)) {
-            filter.setDateFrom(new SimpleDateFormat("dd/MM/yyyy").parse(dateFrom));
-        }
-        if (!ObjectUtils.isEmpty(dateTo)) {
-            filter.setDateTo(new SimpleDateFormat("dd/MM/yyyy").parse(dateTo));
+        String pattern = "yyyy-MM-dd";
+        if (!ObjectUtils.isEmpty(dateFrom) && !ObjectUtils.isEmpty(dateTo)) {
+            dateFrom = dateFrom.concat(" 00:00:00");
+            filter.setDateFrom(new SimpleDateFormat(pattern).parse(dateFrom));
+            dateTo = dateTo.concat(" 00:00:00");
+            filter.setDateTo(new SimpleDateFormat(pattern).parse(dateTo));
         }
         List<?> list = paymentService.getPaymentDtoExcelList(filter);
 
