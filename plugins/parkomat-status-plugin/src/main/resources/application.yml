@@ -42,3 +42,6 @@ spring:
 images:
   file:
     path: 'C:\\dev\\files'
+terminal:
+  reconsilation:
+    enable: true
