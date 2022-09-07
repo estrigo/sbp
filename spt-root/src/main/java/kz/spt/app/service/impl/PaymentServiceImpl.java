@@ -270,7 +270,7 @@ public class PaymentServiceImpl implements PaymentService {
         return dto;
     }
 
-    private BillingInfoSuccessDto fillDebtDetails(ParkomatCommandDTO commandDto, BigDecimal currentBalance) {
+    private BillingInfoSuccessDto fillDebtDetails(ParkomatCommandDTO commandDto, BigDecimal currentBalance, String clientId) {
         BillingInfoSuccessDto dto = new BillingInfoSuccessDto();
         dto.current_balance = BigDecimal.ZERO;
         dto.sum = currentBalance.abs().setScale(2);
@@ -281,7 +281,7 @@ public class PaymentServiceImpl implements PaymentService {
         dto.hours = 0;
         dto.txn_id = commandDto.getTxn_id();
 
-        savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, null, PaymentCheckLog.PaymentCheckType.DEBT, dto.current_balance, commandDto.getTxn_id(), null);
+        savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, null, PaymentCheckLog.PaymentCheckType.DEBT, dto.current_balance, commandDto.getTxn_id(), clientId);
 
         return dto;
     }
@@ -370,12 +370,24 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (commandDto.getAccount() != null) {
             if ("check".equals(commandDto.getCommand())) {
+
+                String clientId = null;
+                PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+                if (commandDto.getUsername() != null && billingPluginRegister != null) {
+                    ObjectNode node = this.objectMapper.createObjectNode();
+                    node.put("command", "getParkomatClientId");
+                    node.put("parkomatId", commandDto.getUsername());
+                    JsonNode clientIdResult = billingPluginRegister.execute(node);
+
+                    clientId = clientIdResult.get("clientId").textValue();
+                }
+
                 CarState carState = carStateService.getLastNotLeft(commandDto.getAccount());
                 if (carState == null) {
 
                     JsonNode currentBalanceResult = getCurrentBalance(commandDto.getAccount());
                     if (currentBalanceResult.has("currentBalance") && BigDecimal.ZERO.compareTo(currentBalanceResult.get("currentBalance").decimalValue()) > 0) {
-                        return fillDebtDetails(commandDto, currentBalanceResult.get("currentBalance").decimalValue());
+                        return fillDebtDetails(commandDto, currentBalanceResult.get("currentBalance").decimalValue(), clientId);
                     }
 
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
@@ -383,7 +395,7 @@ public class PaymentServiceImpl implements PaymentService {
                     dto.txn_id = commandDto.getTxn_id();
                     dto.message = "Некорректный номер авто свяжитесь с оператором.";
                     dto.result = 1;
-                    savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, null, PaymentCheckLog.PaymentCheckType.NOT_FOUND, dto.current_balance, commandDto.getTxn_id(), null);
+                    savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, null, PaymentCheckLog.PaymentCheckType.NOT_FOUND, dto.current_balance, commandDto.getTxn_id(), clientId);
                     return dto;
                 } else {
                     BillingInfoSuccessDto dto = new BillingInfoSuccessDto();
@@ -420,11 +432,11 @@ public class PaymentServiceImpl implements PaymentService {
                         if (qrPanelService != null) {
                             parkomatBillingInfoSuccessDto.setKaspiQr(qrPanelService.generateUrl(null, carState.getCarNumber()));
                         }
-                        savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance, commandDto.getTxn_id(), null);
+                        savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance, commandDto.getTxn_id(), clientId);
                         return parkomatBillingInfoSuccessDto;
                     }
 
-                    savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance, commandDto.getTxn_id(), null);
+                    savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, carState.getId(), PaymentCheckLog.PaymentCheckType.STANDARD, dto.current_balance, commandDto.getTxn_id(), clientId);
                     return dto;
                 }
             } else if ("pay".equals(commandDto.getCommand())) {
@@ -1069,17 +1081,23 @@ public class PaymentServiceImpl implements PaymentService {
                                      String transaction,
                                      String clientId) {
         try {
-            clientId = getClientId(clientId);
+            JsonNode result = null;
+            try {
+                clientId = getClientId(clientId);
 
-            ObjectNode node = this.objectMapper.createObjectNode();
-            node.put("command", "getPaymentProvider");
-            node.put("clientId", clientId);
-            PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
-            JsonNode result = billingPluginRegister.execute(node);
+                ObjectNode node = this.objectMapper.createObjectNode();
+                node.put("command", "getPaymentProvider");
+                node.put("clientId", clientId);
+                PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
+                result = billingPluginRegister.execute(node);
+            } catch (Exception e){
+                log.warning("Error getting client id for payment check log " +
+                        "clientId: " + clientId + ", carStateId: " + carStateId + ", plateNumber: " + plateNumber + ". error msg +" + e.getMessage());
+            }
 
             Long providerId = null;
             String providerName = null;
-            if (!ObjectUtils.isEmpty(result)) {
+            if (result != null && !ObjectUtils.isEmpty(result)) {
                 providerId = result.get("providerId").longValue();
                 providerName = result.get("providerName").textValue();
             }

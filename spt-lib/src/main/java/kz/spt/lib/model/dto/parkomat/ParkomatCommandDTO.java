@@ -31,6 +31,9 @@ public class ParkomatCommandDTO {
     // Parkomat provider name
     String parkomat;
 
+    // Parkomat provider username (name)
+    String username;
+
     //Amount of change payed by cash
     BigDecimal change;
 

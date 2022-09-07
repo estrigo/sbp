@@ -34,6 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -75,7 +76,7 @@ public class CommandExecutor implements PluginRegister {
                 }
             } else if ("checkProvider".equals(commandName)) {
                 PaymentProvider paymentProvider = getPaymentProviderService().getProviderByClientId(command.get("providerName").textValue());
-                node.put("providerExists", paymentProvider != null ? true : false);
+                node.put("providerExists", paymentProvider != null);
             } else if ("savePayment".equals(commandName)) {
                 PaymentProvider provider = getPaymentProviderService().getProviderByClientId(command.get("clientId").textValue());
                 List<Payment> oldPayments = getPaymentService().findByTransactionAndProvider(command.get("transaction").textValue(), provider);
@@ -225,19 +226,39 @@ public class CommandExecutor implements PluginRegister {
                 node.set("providerNames", paymentProviders);
             } else if ("getPayments".equals(commandName)) {
                 ArrayNode payments = objectMapper.createArrayNode();
-                var result = (List<Payment>) getPaymentService().getPaymentsByCarStateId(command.get("carStateId").longValue());
-                if (!result.isEmpty()) {
-                    result.stream()
-                            .map(m -> objectMapper.createObjectNode()
-                                    .put("paymentId", m.getId())
-                                    .put("carStateId", m.getCarStateId())
-                                    .put("sum", m.getPrice())
-                                    .put("provider", m.getProvider() != null ? m.getProvider().getName() : "")
-                                    .put("cashlessPayment", m.getProvider() != null ? m.getProvider().getCashlessPayment() : false)
-                                    .put("rate", m.getRateDetails()))
-                            .forEach(m -> {
-                                payments.add(m);
-                            });
+                if (command.has("carStateIds")) {
+                    ArrayNode carStateIds = (ArrayNode) command.get("carStateIds");
+                    List<Long> ids = new ArrayList<>(carStateIds.size());
+                    carStateIds.forEach(jsonNode -> ids.add(jsonNode.longValue()));
+                    List<Payment> paymentList = getPaymentService().getPaymentsByCarStateId(ids);
+                    if (!paymentList.isEmpty()) {
+                        paymentList.stream()
+                                .map(m -> objectMapper.createObjectNode()
+                                        .put("paymentId", m.getId())
+                                        .put("carStateId", m.getCarStateId())
+                                        .put("sum", m.getPrice())
+                                        .put("provider", m.getProvider() != null ? m.getProvider().getName() : "")
+                                        .put("cashlessPayment", m.getProvider() != null ? m.getProvider().getCashlessPayment() : false)
+                                        .put("rate", m.getRateDetails()))
+                                .forEach(m -> {
+                                    payments.add(m);
+                                });
+                    }
+                } else {
+                    var result = (List<Payment>) getPaymentService().getPaymentsByCarStateId(command.get("carStateId").longValue());
+                    if (!result.isEmpty()) {
+                        result.stream()
+                                .map(m -> objectMapper.createObjectNode()
+                                        .put("paymentId", m.getId())
+                                        .put("carStateId", m.getCarStateId())
+                                        .put("sum", m.getPrice())
+                                        .put("provider", m.getProvider() != null ? m.getProvider().getName() : "")
+                                        .put("cashlessPayment", m.getProvider() != null ? m.getProvider().getCashlessPayment() : false)
+                                        .put("rate", m.getRateDetails()))
+                                .forEach(m -> {
+                                    payments.add(m);
+                                });
+                    }
                 }
                 node.set("payments", payments);
             } else if ("deleteAllDebts".equals(commandName)) {
