@@ -1,4 +1,4 @@
-package kz.spt.prkstatusplugin.model;
+package kz.spt.lib.model;
 
 import lombok.Data;
 
@@ -15,6 +15,8 @@ public class PosTerminal {
     private Long id;
 
     private String ip;
+
+    private String apikey;
 
     private Boolean reconsilated;
 }

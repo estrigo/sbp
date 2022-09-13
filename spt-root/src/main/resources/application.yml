@@ -164,6 +164,9 @@ kaspi:
   qr-link: https://kaspi.kz/pay/%s?service_id=%s&%s=
 tablo:
   connected: false
+posterminal:
+  reconsilation:
+    enable: false
 management:
   endpoints:
     web:
