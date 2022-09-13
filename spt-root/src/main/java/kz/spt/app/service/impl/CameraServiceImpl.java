@@ -108,6 +108,19 @@ public class CameraServiceImpl implements CameraService {
         cameraRepository.save(camera);
     }
 
+    @Override
+    public void enableSnapshot(Long cameraId, Boolean isStreamOn) {
+        Camera camera = cameraRepository.getOne(cameraId);
+        if (isStreamOn.equals(false) || isStreamOn==null) {
+            camera.setSnapshotEnabled(camera.getSnapshotEnabled() == null ? true : !camera.getSnapshotEnabled());
+        }
+        if (isStreamOn.equals(true)) {
+            camera.setSnapshotEnabled(camera.getSnapshotEnabled() == true ? true : !camera.getSnapshotEnabled());
+        }
+        snapshotEnabledRefreshMap.put(camera.getId(), camera.getSnapshotEnabled());
+        cameraRepository.save(camera);
+    }
+
     public Map<Long, Boolean> getSnapshotEnabledRefreshMap() {
         if (snapshotEnabledRefreshMap==null || snapshotEnabledRefreshMap.size() == 0){
             List<Camera> cameraIdsAndSnapshotEnabled = cameraRepository.findCameraIdsAndSnapshotEnabled();

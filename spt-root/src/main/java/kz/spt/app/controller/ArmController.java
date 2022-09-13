@@ -5,9 +5,7 @@ import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Log
 @Controller
@@ -41,4 +39,25 @@ public class ArmController {
         model.addAttribute("ip", ip);
         return "arm/realtime";
     }
+
+
+
+//    @RequestMapping(value = "/enable2/{cameraId}", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
+//    public String enable2(@ModelAttribute(value = "camera") Camera camera){
+//        cameraService.enableSnapshot(Long.valueOf(camera.getId()));
+//        return "parking/camera/calibration";
+//    }
+
+//    @RequestMapping(value = "/enable2/{cameraId}", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
+//    public String enable2(@PathVariable Long cameraId, Model model) {
+//        cameraService.enableSnapshot(cameraId);
+//        model.addAttribute("camera" ,cameraService.getCameraById(cameraId));
+//        return "parking/camera/calibration";
+//    }
+@PostMapping(value = "/enable2/{cameraId}")
+public String enable2(@PathVariable("cameraId") Long cameraId, @RequestParam("isStreamOn") Boolean isStreamOn, Model model) {
+    cameraService.enableSnapshot(cameraId, isStreamOn);
+    model.addAttribute("camera" ,cameraService.getCameraById(cameraId));
+    return "parking/camera/calibration";
+}
 }

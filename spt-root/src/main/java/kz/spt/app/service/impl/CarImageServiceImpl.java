@@ -122,6 +122,7 @@ public class CarImageServiceImpl implements CarImageService {
     }
 
     private void sendSocketArmPicture(CameraStatusDto cameraStatusDtoByIp, CarPictureFromRestDto carPictureFromRestDto) {
-        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Picture, EventLog.StatusType.Success, cameraStatusDtoByIp.id, debtPlateNumber, carPictureFromRestDto.getCar_picture(), null);
+        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Picture, EventLog.StatusType.Success,
+                cameraStatusDtoByIp.id, debtPlateNumber, carPictureFromRestDto.getCar_picture(), null);
     }
 }

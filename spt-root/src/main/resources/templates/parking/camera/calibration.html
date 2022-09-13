@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
 
@@ -8,7 +9,7 @@
             <div class="col-8">
                 <div class="btn-toolbar justify-content-between" role="toolbar">
                     <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-secondary mr-2" id="streamOn" onclick="toggleOn(this)"
+                        <button type="submit" class="btn btn-secondary mr-2" id="streamOn" onclick="toggleOn(this)"
                                 th:text="#{camera.streamOn}">On/off
                         </button>
                         <div class="btn-group mr-2" role="group">
@@ -81,10 +82,15 @@
 </div>
 <script th:src="@{/plugins/calibration/PolygonTool.js}"></script>
 <script th:src="@{/plugins/calibration/RectangleTool.js}"></script>
+<script th:src="@{/assets/js/stomp.js}"></script>
 <script>
-    const canvas = document.getElementById('screen');
-    const context = canvas.getContext('2d');
+    // const canvas = document.getElementById('screen');
+    // const context = canvas.getContext('2d');
+    // const cameraId = canvas.getAttribute('data-id');
+    let canvas = document.getElementById('screen');
+    let context = canvas.getContext('2d');
     const cameraId = canvas.getAttribute('data-id');
+    var demoCamera = {};
     let image = null;
     let errorImageView = new Image();
     let currentCanvasTool = null;
@@ -127,9 +133,26 @@
         mask2: [],
     };
     let currentTool;
+    function connect() {
+        console.log('Web socket initializing');
+        socket = new WebSocket((window.location.protocol.indexOf('https') !== -1 ? 'wss' : 'ws') + '://' + window.location.host + '/greeting');
+        ws = Stomp.over(socket);
+
+        ws.connect({}, function (frame) {
+            console.log('Web socket connecting');
+            ws.subscribe("/topic", function (message) {
+                const messageBody = JSON.parse(message.body);
+                console.log(messageBody);
+                showGreeting(messageBody);
+            });
+        }, function (error) {
+            console.log("STOMP error " + error);
+        });
+    }
 
     $(document).ready(function () {
         get();
+        setTimeout(connect, 1000);
         errorImageView.setAttribute('src', '[[#{arm.noConnection}]]');
         errorImageView.addEventListener('load', function () {
             noConnectionViewLoaded = true;
@@ -138,6 +161,7 @@
     });
 
     function toggleOn(e) {
+        console.log(e, "toggleOn")
         if (isStreamOn) {
             streamOff();
             $(e).addClass('btn-secondary').removeClass('btn-success').html('[[#{camera.streamOn}]]');
@@ -179,15 +203,20 @@
     }
 
     function get() {
+        console.log("GET Request");
         $.ajax({
             url: "/rest/camera/getCalibrationById/" + cameraId,
             type: "GET",
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (data) {
+                console.log("Data of camera: ", data);
                 setState(data);
                 setStartState(data);
                 onStateChange(state);
+            },
+            error: function (object, error) {
+                console.log(error, object);
             }
         });
     }
@@ -228,7 +257,9 @@
             }
         });
     }
-
+    function hi(){
+        alert("Submitted");
+    }
     const onToolChange = function (payload) {
         currentTool = payload;
         switch (payload) {
@@ -451,20 +482,85 @@
 
     function streamOff() {
         isStreamOn = false
+        $.post("/arm/enable2/" + cameraId, {
+            isStreamOn: "false"
+        });
+        // $.post("/arm/enable2/" + cameraId)
         isLoading(false);
         if (currentCanvasTool) {
             currentCanvasTool.onlineUpdateDisabled();
         }
     }
+    function initCamera(id) {
+        // const lp = document.getElementById('lp' + id);
+        const logs = document.getElementById('logs' + id);
+        const fancyImage = document.getElementById('fancyImage' + id);
 
+        demoCamera = {
+            "canvas": canvas,
+            "context": context,
+            "snapshot": null,
+            "fancyImage": fancyImage
+        }
+        console.log(demoCamera);
+    }
+    function showGreeting(messageBody) {
+        const logs = demoCamera.logs;
+        const fancyImage = demoCamera.fancyImage;
+        const canvas = demoCamera.canvas;
+        const context = canvas.getContext('2d');
+
+        // let logMessage = locale === "en" ? messageBody.messageEng : messageBody.message;
+        if (messageBody.eventType == 'Picture') {
+            demoCamera.snapshot = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
+            let image = new Image();
+            console.log(image + "--image")
+            // console.log(image)
+            console.log(messageBody.id + "--messageBody.id")
+
+            image.src = demoCamera.snapshot;
+            image.onload = function () {
+                canvas.width = image.width + 1;
+                canvas.height = image.height + 1;
+                context.drawImage(image, 0, 0, image.width, image.height);
+                image = null;
+            };
+        }
+        else {
+            console.log('Unknown event type ' + JSON.stringify(messageBody));
+        }
+    }
     function streamOn() {
         if (!isStreamOn) {
             //clearCanvas();
             isStreamOn = true;
-            updateSnapshotOnline();
-            if (currentCanvasTool) {
-                currentCanvasTool.onlineUpdateEnabled();
-            }
+            console.log("Stream on")
+            // $.post("/arm/enable2/" + cameraId)
+            $.post("/arm/enable2/" + cameraId, {
+                isStreamOn: "true"
+            });
+           /* $.ajax({
+                url: "/arm/enable2/" + cameraId,
+                data: JSON.stringify(data),
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    // console.log("Data of camera: ", data);
+                    "isStreamOn": "true"
+                },
+                error: function (object, error) {
+                    console.log(error, object);
+                    // isStreamOn("true");
+                }
+            });*/
+
+
+            initCamera(cameraId);
+            // updateSnapshotOnline();
+            // if (currentCanvasTool) {
+            //     currentCanvasTool.onlineUpdateEnabled();
+            // }
         }
     }
 
