@@ -290,8 +290,6 @@
         ws.connect({}, function (frame) {
             console.log('Web socket connecting');
             ws.subscribe("/topic", function (message) {
-                console.log("massage")
-                console.log(message)
                 const messageBody = JSON.parse(message.body);
                 showGreeting(messageBody);
             });
@@ -345,22 +343,10 @@
     }
 
     function showGreeting(messageBody) {
-        console.log("LPLPLPLPL", messageBody);
-        console.log("Cameras: ", cameras);
         const lp = cameras[messageBody.id].lp;
-        console.log(cameras[messageBody.id].lp)
-        console.log("PPPPPPPPPP")
-        console.log(cameras)
         const logs = cameras[messageBody.id].logs;
         const fancyImage = cameras[messageBody.id].fancyImage;
-
         const canvas = cameras[messageBody.id].canvas;
-        console.log("sssssss")
-        console.log(messageBody.id)
-        console.log("sssssss")
-        console.log(cameras[messageBody.id])
-        console.log("sssssss")
-        console.log(cameras[messageBody.id].canvas)
         const context = canvas.getContext('2d');
 
         let logMessage = locale === "en" ? messageBody.messageEng : messageBody.message;
@@ -379,10 +365,6 @@
         } else if (messageBody.eventType == 'Picture') {
             cameras[messageBody.id].snapshot = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
             let image = new Image();
-            console.log(image + "--image")
-            // console.log(image)
-            console.log(messageBody.id + "--messageBody.id")
-
             image.src = cameras[messageBody.id].snapshot;
             image.onload = function () {
                 canvas.width = image.width + 1;
@@ -437,7 +419,6 @@
 
     $(function () {
         noImage.src = '[[#{arm.noImageLink}]]';
-        console.log("99999999")
         initGrid();
         setTimeout(connect, 1000);
         setTimeout(enableSnapshot, 1000);
@@ -449,7 +430,6 @@
         const canvas = document.getElementById('image' + id);
         const context = canvas.getContext('2d');
         const fancyImage = document.getElementById('fancyImage' + id);
-
         cameras[id] = {
             "lp": lp,
             "logs": logs,
@@ -462,8 +442,6 @@
 
     function initGrid() {
         $(".item").each(function () {
-            console.log("INITGRID")
-            console.log($(".item"))
             const $input = $(this);
             const id = $input.data("id");
             switch (grid) {
