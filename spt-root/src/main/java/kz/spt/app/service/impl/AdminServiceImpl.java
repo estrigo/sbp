@@ -176,7 +176,7 @@ public class AdminServiceImpl implements AdminService {
             try {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String json = gson.toJson(new ReportDataSet(list));
-                json = URLEncoder.encode(json, ENCODE);
+//                json = URLEncoder.encode(json, ENCODE);
                 return postForEntity(uri,json, byte[].class);
             } catch (Exception e) {
                 return null;
@@ -193,7 +193,7 @@ public class AdminServiceImpl implements AdminService {
             try {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String json = gson.toJson(new ReportDataSet(dto));
-                json = URLEncoder.encode(json, ENCODE);
+//                json = URLEncoder.encode(json, ENCODE);
                 return postForEntity(uri,json, byte[].class);
             } catch (Exception e) {
                 return null;
