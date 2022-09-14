@@ -25,6 +25,36 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="btn-group m-b-10">
+                            <button id="year" type="button" class="btn btn-primary waves-effect" onclick="setType('year')">Yearly</button>
+                            <button id="month" type="button" class="btn btn-secondary waves-effect" onclick="setType('month')">Monthly</button>
+                            <button id="week" type="button" class="btn btn-secondary waves-effect" onclick="setType('week')">Weekly</button>
+                            <button id="day" type="button" class="btn btn-secondary waves-effect" onclick="setType('day')">Dayly</button>
+                            <button id="period" type="button" class="btn btn-secondary waves-effect" onclick="setType('period')">Period</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4" id="fromDateBlock" style="display: none;">
+                        <label th:text="#{events.dateFrom}"></label>
+                        <input type="date" id="fromDate" class="form-control filter" onchange="dateChanged()">
+                    </div>
+                    <div class="col-lg-4" id="toDateBlock" style="display: none;">
+                        <label th:text="#{events.dateTo}"></label>
+                        <input type="date" id="toDate" class="form-control filter" onchange="dateChanged()">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card-box">
+                            <canvas id="occupancyLineChart" width="800" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -36,12 +66,18 @@
 <script th:src="@{/plugins/color-js/color.js}"></script>
 
 <script type="text/javascript" th:inline="javascript">
+    let type = "year";
+
+    let occupancyLineChart = undefined;
+
     $(document).on('ready',function(){
         $.get("/rest/dashboard/count/freePercentageByTotal", function (data) {
             drawOccupancyDougnutChart(data.total, data.occupied, data.percentage);
         });
 
         drawOccupancyMultiLineChart();
+
+        drawTotalCarsInPeriod();
     });
 
     function drawOccupancyDougnutChart(total, occupied, percentage){
@@ -179,8 +215,88 @@
         );
     }
 
-    function transparentize(value, opacity) {
-        var alpha = opacity === undefined ? 0.5 : 1 - opacity;
-        return index(value).alpha(alpha).rgbString();
+    function drawTotalCarsInPeriod(){
+        let form = new FormData();
+        form.append("type", type);
+        form.append("from", $("#fromDate").val());
+        form.append("to", $("#toDate").val());
+
+        let settings = {
+            "url": "/rest/dashboard/count/countOccupancyInPeriod",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (result) {
+            console.log(result);
+
+            const data = {
+                labels: result[0],
+                datasets: [
+                    {
+                        label: 'Cars',
+                        data: result[1][0],
+                        borderColor: 'rgb(255, 99, 132)',
+                        pointStyle: 'circle',
+                        pointRadius: 10,
+                        pointHoverRadius: 15
+                    }
+                ]
+            }
+
+            const config = {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: (ctx) => 'Parked Total',
+                        }
+                    }
+                }
+            };
+
+            if(occupancyLineChart){
+                occupancyLineChart.destroy();
+            }
+
+            occupancyLineChart = new Chart(
+                document.getElementById('occupancyLineChart'),
+                config
+            );
+        });
+    }
+
+    function setType(val){
+        $('#'+type).removeClass("btn-primary");
+        $('#'+type).addClass("btn-secondary");
+        type = val;
+        $('#'+val).addClass("btn-primary");
+        $('#'+val).removeClass("btn-secondary");
+        if(type == 'period'){
+            $("#fromDateBlock").show();
+            $("#toDateBlock").show();
+            if($("#fromDate").val() && $("#toDate").val()){
+                drawTotalCarsInPeriod();
+            }
+        } else {
+            $("#fromDateBlock").hide();
+            $("#toDateBlock").hide();
+            drawTotalCarsInPeriod();
+        }
+    }
+
+    function dateChanged(){
+        if(type == 'period'){
+            if($("#fromDate").val() && $("#toDate").val()){
+                drawTotalCarsInPeriod();
+            }
+        } else {
+            drawTotalCarsInPeriod();
+        }
     }
 </script>

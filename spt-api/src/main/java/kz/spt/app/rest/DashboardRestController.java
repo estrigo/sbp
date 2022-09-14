@@ -32,8 +32,8 @@ public class DashboardRestController {
         return dashboardService.countPaymentsByProviders(type, from, to);
     }
 
-    @RequestMapping(value = "/count/currencyByProviders", method = RequestMethod.POST, consumes = "multipart/form-data")
-    public String getOccupancy(@RequestParam("period") String period, @RequestParam("from") String from, @RequestParam("to") String to) {
-        return dashboardService.test(period, from, to);
+    @RequestMapping(value = "/count/countOccupancyInPeriod", method = RequestMethod.POST, consumes = "multipart/form-data")
+    public List getOccupancyInPeriod(@RequestParam("type") String type, @RequestParam("from") String from, @RequestParam("to") String to) {
+        return dashboardService.occupancyInPeriod(type, from, to);
     }
 }

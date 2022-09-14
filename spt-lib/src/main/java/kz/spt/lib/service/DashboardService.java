@@ -14,5 +14,5 @@ public interface DashboardService {
 
     List countPaymentsByProviders(String period, String from, String to);
 
-    String test(String period, String from, String to);
+    List occupancyInPeriod(String period, String from, String to);
 }

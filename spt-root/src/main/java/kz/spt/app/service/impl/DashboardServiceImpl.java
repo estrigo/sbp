@@ -17,6 +17,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -148,8 +149,6 @@ public class DashboardServiceImpl implements DashboardService {
             current = current.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).truncatedTo(ChronoUnit.DAYS);
         } else if("day".equals(period)){
             current = current.truncatedTo(ChronoUnit.DAYS);
-        } else if("day".equals(period)){
-            current = current.truncatedTo(ChronoUnit.DAYS);
         }
 
         Date fromDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
@@ -209,30 +208,136 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public String test(String period, String from, String to) {
-        LocalDateTime current = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
-        Date toDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
-        Date fromDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
+    public List occupancyInPeriod(String period, String from, String to) {
+        LocalDateTime current = LocalDateTime.now();
+        LocalDateTime till = LocalDateTime.now();
+        List<String> fields = new ArrayList<>();
 
-        if("day".equals(period)){
-            current = current.minusDays(1);
-            fromDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
+        if("year".equals(period)){
+            current = LocalDateTime.of(current.getYear(), 1, 1, 0, 0);
+        } else if("month".equals(period)){
+            current = LocalDateTime.of(current.getYear(), current.getMonth(), 1, 0, 0);
         } else if("week".equals(period)){
-            current = current.minusWeeks(1);
-            fromDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
-        } else if("months".equals(period)){
-            current = current.minusMonths(1);
-            fromDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
+            current = current.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).truncatedTo(ChronoUnit.DAYS);
+        } else if("day".equals(period)){
+            current = current.truncatedTo(ChronoUnit.DAYS);
         } else if("period".equals(period)){
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            fromDate = Date.from(LocalDateTime.parse(from, formatter).truncatedTo(ChronoUnit.HOURS).atZone(ZoneId.systemDefault()).toInstant());
-            toDate = Date.from(LocalDateTime.parse(to, formatter).truncatedTo(ChronoUnit.HOURS).atZone(ZoneId.systemDefault()).toInstant());
+            current = LocalDate.parse(from, formatter).atStartOfDay();
+            till = LocalDate.parse(to, formatter).atStartOfDay();
         }
 
-        if("months".equals(period)){
+        Date fromDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
+        Date toDate = Date.from(till.atZone(ZoneId.systemDefault()).toInstant());
 
+        String queryString = "select " +
+                "PERIOD" +
+                " from car_state cs" +
+                " where (:fromDate between cs.in_timestamp and cs.out_timestamp)" +
+                " or (:toDate between cs.in_timestamp and cs.out_timestamp)" +
+                " or (:toDate >= cs.in_timestamp and cs.out_timestamp is null)" +
+                " or (:fromDate <= cs.in_timestamp and :toDate >= cs.out_timestamp)";
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        if(timezoneShift > 0){
+            current = current.plusHours(timezoneShift);
+            till = till.plusHours(timezoneShift);
+        } else if(timezoneShift < 0){
+            current = current.minusDays(timezoneShift);
+            till = till.minusDays(timezoneShift);
         }
 
-        return null;
+        StringBuilder sum = new StringBuilder("");
+        if("year".equals(period)){
+            while(current.isBefore(till)){
+                if(sum.length() > 0) sum.append(" ,");
+
+                sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "') then 1 else 0 end) as '" + current.getMonth() + "'");
+                fields.add(current.getMonth().toString());
+                current = current.plusMonths(1);
+            }
+            queryString = queryString.replace("PERIOD", sum.toString());
+        } else if("month".equals(period)){
+            while(current.isBefore(till)){
+                if(sum.length() > 0) sum.append(" ,");
+
+                sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "') then 1 else 0 end) as '" + current.getDayOfMonth() + "'");
+                fields.add(String.valueOf(current.getDayOfMonth()));
+                current = current.plusDays(1);
+            }
+            queryString = queryString.replace("PERIOD", sum.toString());
+        } else if("week".equals(period)){
+            while(current.isBefore(till)){
+                if(sum.length() > 0) sum.append(" ,");
+
+                sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "') then 1 else 0 end) as '" + current.getDayOfWeek() + "'");
+                fields.add(current.getDayOfWeek().toString());
+                current = current.plusDays(1);
+            }
+            queryString = queryString.replace("PERIOD", sum.toString());
+        } else if("day".equals(period)){
+            while(current.isBefore(till)){
+                if(sum.length() > 0) sum.append(" ,");
+
+                sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and " + current.plusHours(1).format(formatter) + ") or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "') then 1 else 0 end) as '" + current.getHour() + "'");
+                fields.add(String.valueOf(current.getHour()));
+                current = current.plusHours(1);
+            }
+            queryString = queryString.replace("PERIOD", sum.toString());
+        } else if("period".equals(period)){
+            Long diff = toDate.getTime() - fromDate.getTime();
+            long days = diff / (1000*60*60*24);
+            if(days > 1d){
+                if(days > 7d){
+                    if(days > 31d){
+                        while(current.isBefore(till)){
+                            if(sum.length() > 0) sum.append(" ,");
+
+                            sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "') then 1 else 0 end) as '" + current.getMonth() + "'");
+                            fields.add(current.getMonth().toString());
+                            current = current.plusMonths(1);
+                        }
+                        queryString = queryString.replace("PERIOD", sum.toString());
+                    } else {
+                        while(current.isBefore(till)){
+                            if(sum.length() > 0) sum.append(" ,");
+
+                            sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "') then 1 else 0 end) as '" + current.getDayOfMonth() + "'");
+                            fields.add(String.valueOf(current.getDayOfMonth()));
+                            current = current.plusDays(1);
+                        }
+                        queryString = queryString.replace("PERIOD", sum.toString());
+                    }
+                } else {
+                    while(current.isBefore(till)){
+                        if(sum.length() > 0) sum.append(" ,");
+
+                        sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "') then 1 else 0 end) as '" + current.getDayOfWeek() + "'");
+                        fields.add(current.getDayOfWeek().toString());
+                        current = current.plusDays(1);
+                    }
+                    queryString = queryString.replace("PERIOD", sum.toString());
+                }
+            } else {
+                while(current.isBefore(till)){
+                    if(sum.length() > 0) sum.append(" ,");
+
+                    sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "') then 1 else 0 end) as '" + current.getHour() + "'");
+                    fields.add(String.valueOf(current.getHour()));
+                    current = current.plusHours(1);
+                }
+                queryString = queryString.replace("PERIOD", sum.toString());
+            }
+        }
+
+        log.info("queryString: " + queryString);
+
+        List<Object> result = new ArrayList<>();
+        List queryResult =  entityManager.createNativeQuery(queryString).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
+
+        result.add(fields);
+        result.add(queryResult);
+        return result;
     }
 }
