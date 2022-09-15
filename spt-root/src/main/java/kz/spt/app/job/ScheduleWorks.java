@@ -1,23 +1,31 @@
 package kz.spt.app.job;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.repository.PosTerminalRepository;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.PosTerminal;
+import kz.spt.lib.model.dto.parkomat.ParkomatCommandDTO;
 import kz.spt.lib.service.CarStateService;
+import kz.spt.lib.service.PaymentService;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,16 +42,46 @@ public class ScheduleWorks {
     @Value("${parking.remove.all.debts:false}")
     Boolean parkingRemoveAllDebts;
 
-    @Value("${posterminal.reconsilation.enable:false}")
-    Boolean terminalReconsilation;
+    @Value("${shiftClosing.terminal:false}")
+    Boolean terminalShiftClosing;
+
+    @Value("${shiftClosing.parkomat:false}")
+    Boolean parkomatShiftClosing;
 
     private PosTerminalRepository posTerminalRepository;
 
-    public ScheduleWorks(PosTerminalRepository posTerminalRepository) {
+    private PaymentService paymentService;
+
+    public ScheduleWorks(PosTerminalRepository posTerminalRepository, PaymentService paymentService) {
         this.posTerminalRepository = posTerminalRepository;
+        this.paymentService = paymentService;
     }
 
-    @Scheduled(cron = "0 50 1 * * ?")
+    @Scheduled(cron = "0 */10 2-6 * * ?")
+    public void webKassaCloseSchedule() throws Exception {
+        if (parkomatShiftClosing) {
+            List<PosTerminal> posTerminals =
+                    posTerminalRepository.findPosTerminalsByReconsilatedIsFalseAndType(PosTerminal.terminalType.PARKOMAT);
+            for (PosTerminal pt : posTerminals) {
+                ObjectMapper mapper = new ObjectMapper();
+                ParkomatCommandDTO parkomatCommandDto = new ParkomatCommandDTO();
+                parkomatCommandDto.setParkomat(pt.getIp());
+                parkomatCommandDto.setCommand("zReport");
+                ObjectNode result = (ObjectNode) paymentService.billingInteractions(parkomatCommandDto);
+                if (result != null && result.has("result")) {
+                    JsonNode responseJson = mapper.readTree(result.get("result").textValue());
+                    if (responseJson.has("Data")) {
+                        pt.setReconsilated(true);
+                        posTerminalRepository.save(pt);
+                    } else if (responseJson.has("Errors")) {
+                        log.error(pt.getIp() + ' ' + responseJson.get("Errors"));
+                    }
+                }
+            }
+        }
+    }
+
+    @Scheduled(cron = "0 50 0 * * ?")
     public void terminalNightSchedule2() {
         List<PosTerminal> posTerminalList = posTerminalRepository.findPosTerminalsByReconsilatedIsFalse();
         for (PosTerminal posTerminal : posTerminalList) {
@@ -52,12 +90,12 @@ public class ScheduleWorks {
         posTerminalRepository.saveAll(posTerminalList);
     }
 
-    @Scheduled(cron = "0 */15 2 * * ?")
+    @Scheduled(cron = "0 */10 2-6 * * ?")
     public void terminalNightSchedule() {
-        log.info("Terminal reconsilation enabled");
-        if (terminalReconsilation) {
+        if (terminalShiftClosing) {
             try {
-                List<PosTerminal> posTerminalList = posTerminalRepository.findPosTerminalsByReconsilatedIsFalse();
+                List<PosTerminal> posTerminalList =
+                posTerminalRepository.findPosTerminalsByReconsilatedIsFalseAndType(PosTerminal.terminalType.TERMINAL);
                 for (PosTerminal pt : posTerminalList) {
                     RestTemplate restTemplate = new RestTemplate();
                     String url = "http://" + pt.getIp() + ":8080/apibank/?key=" + pt.getApikey()

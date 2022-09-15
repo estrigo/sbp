@@ -9,6 +9,11 @@ import javax.persistence.*;
 @Table(name = "pos_terminal")
 public class PosTerminal {
 
+    public enum terminalType {
+        TERMINAL,
+        PARKOMAT;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -19,4 +24,7 @@ public class PosTerminal {
     private String apikey;
 
     private Boolean reconsilated;
+
+    @Enumerated(EnumType.STRING)
+    private terminalType type;
 }
