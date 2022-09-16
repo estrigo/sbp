@@ -36,4 +36,14 @@ public class DashboardRestController {
     public List getOccupancyInPeriod(@RequestParam("type") String type, @RequestParam("from") String from, @RequestParam("to") String to) {
         return dashboardService.occupancyInPeriod(type, from, to);
     }
+
+    @RequestMapping(value = "/count/passByGatesInPeriod", method = RequestMethod.POST, consumes = "multipart/form-data")
+    public List passByGatesInPeriod(@RequestParam("type") String type, @RequestParam("from") String from, @RequestParam("to") String to) {
+        return dashboardService.passByGatesInPeriod(type, from, to);
+    }
+
+    @RequestMapping(value = "/count/durationsInPeriod", method = RequestMethod.POST, consumes = "multipart/form-data")
+    public List durationsInPeriod(@RequestParam("type") String type, @RequestParam("from") String from, @RequestParam("to") String to) {
+        return dashboardService.durationsInPeriod(type, from, to);
+    }
 }

@@ -340,4 +340,87 @@ public class DashboardServiceImpl implements DashboardService {
         result.add(queryResult);
         return result;
     }
+
+    @Override
+    public List passByGatesInPeriod(String period, String from, String to) {
+        LocalDateTime current = LocalDateTime.now();
+        LocalDateTime till = LocalDateTime.now();
+
+        if("year".equals(period)){
+            current = LocalDateTime.of(current.getYear(), 1, 1, 0, 0);
+        } else if("month".equals(period)){
+            current = LocalDateTime.of(current.getYear(), current.getMonth(), 1, 0, 0);
+        } else if("week".equals(period)){
+            current = current.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).truncatedTo(ChronoUnit.DAYS);
+        } else if("day".equals(period)){
+            current = current.truncatedTo(ChronoUnit.DAYS);
+        } else if("period".equals(period)){
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            current = LocalDate.parse(from, formatter).atStartOfDay();
+            till = LocalDate.parse(to, formatter).atStartOfDay();
+        }
+
+        Date fromDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
+        Date toDate = Date.from(till.atZone(ZoneId.systemDefault()).toInstant());
+
+        String entryQueryString = "select g.id, g.name, count(g.id)" +
+                " from car_state cs " +
+                "    inner join gate g on cs.in_gate = g.id" +
+                " where cs.in_timestamp between :fromDate and :toDate" +
+                " and cs.in_gate is not null" +
+                " group by g.id, g.name";
+
+        String exitQueryString = "select g.id, g.name, count(g.id)" +
+                " from car_state cs" +
+                "         inner join gate g on cs.out_gate = g.id" +
+                " where cs.in_timestamp between :fromDate and :toDate" +
+                " and cs.out_gate is not null" +
+                " group by g.id, g.name;";
+
+        List entryResult =  entityManager.createNativeQuery(entryQueryString).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
+        List exitResult =  entityManager.createNativeQuery(exitQueryString).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
+
+        entryResult.addAll(exitResult);
+        return entryResult;
+    }
+
+    @Override
+    public List durationsInPeriod(String period, String from, String to) {
+        LocalDateTime current = LocalDateTime.now();
+        LocalDateTime till = LocalDateTime.now();
+
+        if("year".equals(period)){
+            current = LocalDateTime.of(current.getYear(), 1, 1, 0, 0);
+        } else if("month".equals(period)){
+            current = LocalDateTime.of(current.getYear(), current.getMonth(), 1, 0, 0);
+        } else if("week".equals(period)){
+            current = current.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).truncatedTo(ChronoUnit.DAYS);
+        } else if("day".equals(period)){
+            current = current.truncatedTo(ChronoUnit.DAYS);
+        } else if("period".equals(period)){
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            current = LocalDate.parse(from, formatter).atStartOfDay();
+            till = LocalDate.parse(to, formatter).atStartOfDay();
+        }
+
+        Date fromDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
+        Date toDate = Date.from(till.atZone(ZoneId.systemDefault()).toInstant());
+
+        String durationQueryString = "select sum(case when source.diff < 1 then 1 else 0 end) as '0-1', " +
+                "       sum(case when source.diff >= 1 and source.diff < 2 then 1 else 0 end) as '1-2', " +
+                "       sum(case when source.diff >= 2 and source.diff < 3 then 1 else 0 end) as '2-3', " +
+                "       sum(case when source.diff >= 3 and source.diff < 4 then 1 else 0 end) as '3-4', " +
+                "       sum(case when source.diff >= 4 then 1 else 0 end) as '4' " +
+                "from (select TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) as diff " +
+                "      from car_state cs " +
+                "      where (:fromDate between cs.in_timestamp and cs.out_timestamp) " +
+                "         or (:toDate between cs.in_timestamp and cs.out_timestamp) " +
+                "         or (:toDate <= cs.in_timestamp and cs.out_timestamp is null) " +
+                "         or (:fromDate <= cs.in_timestamp and :toDate >= cs.out_timestamp) " +
+                ") as source";
+
+        List durationResult =  entityManager.createNativeQuery(durationQueryString).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
+
+        return durationResult;
+    }
 }

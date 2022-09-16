@@ -11,7 +11,7 @@
             <div class="card-body">
 
                 <div class="row">
-                    <div class="col-lg-6">
+                    <div class="col-lg-12">
                         <div class="card-box">
                             <h4 class="m-t-0 header-title"><b>Realtime occupancy</b></h4>
                             <div id="animating-donut" class="ct-chart ct-golden-section"></div>
@@ -25,7 +25,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="row">
                     <div class="col-lg-4">
                         <div class="btn-group m-b-10">
@@ -55,6 +54,23 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card-box">
+                            <canvas id="gatesDoughnutChart" width="800" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card-box">
+                            <canvas id="durationDoughnutChart" width="800" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -69,6 +85,18 @@
     let type = "year";
 
     let occupancyLineChart = undefined;
+    let gatesDoughnutChart = undefined;
+    let durationDoughnutChart = undefined;
+
+    const colors = [
+        'rgb(255, 99, 132)',
+        'rgb(54, 162, 235)',
+        'rgb(75, 192, 192)',
+        'rgb(255, 159, 64)',
+        'rgb(255, 205, 86)',
+        'rgb(153, 102, 255)',
+        'rgb(201, 203, 207)'
+    ];
 
     $(document).on('ready',function(){
         $.get("/rest/dashboard/count/freePercentageByTotal", function (data) {
@@ -78,6 +106,10 @@
         drawOccupancyMultiLineChart();
 
         drawTotalCarsInPeriod();
+
+        passByGatesInPeriod();
+
+        durationByGatesInPeriod();
     });
 
     function drawOccupancyDougnutChart(total, occupied, percentage){
@@ -230,7 +262,6 @@
             "data": form
         };
         $.ajax(settings).done(function (result) {
-            console.log(result);
 
             const data = {
                 labels: result[0],
@@ -271,6 +302,134 @@
         });
     }
 
+    function passByGatesInPeriod(){
+        let form = new FormData();
+        form.append("type", type);
+        form.append("from", $("#fromDate").val());
+        form.append("to", $("#toDate").val());
+
+        let settings = {
+            "url": "/rest/dashboard/count/passByGatesInPeriod",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (result) {
+            console.log(result);
+
+            let labels = [];
+            let dataset = [];
+            let selectedColors = [];
+
+            let iter = 0;
+            for (let i = 0; i < result.length; i++) {
+                labels.push(result[i][1]);
+                dataset.push(result[i][2]);
+                selectedColors.push(colors[iter++]);
+                if(iter > 7){
+                    iter = 0;
+                }
+            }
+
+            const data = {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '',
+                        data: dataset,
+                        backgroundColor: selectedColors,
+                    }
+                ]
+            };
+
+            const config = {
+              type: 'doughnut',
+              data: data,
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: 'top',
+                  },
+                  title: {
+                    display: true,
+                    text: 'Entry/Exit Gates Percentage'
+                  }
+                }
+              },
+            };
+
+            if(gatesDoughnutChart){
+                gatesDoughnutChart.destroy();
+            }
+
+            gatesDoughnutChart = new Chart(
+                document.getElementById('gatesDoughnutChart'),
+                config
+            );
+        });
+    }
+
+    function durationByGatesInPeriod(){
+        let form = new FormData();
+        form.append("type", type);
+        form.append("from", $("#fromDate").val());
+        form.append("to", $("#toDate").val());
+
+        let settings = {
+            "url": "/rest/dashboard/count/durationsInPeriod",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (result) {
+            console.log(result);
+
+            let labels = ['0-1', '1-2', '2-3', '3-4', 'more 4'];
+
+            const data = {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '',
+                        data: result[0],
+                        backgroundColor: colors,
+                    }
+                ]
+            };
+
+            const config = {
+                type: 'doughnut',
+                data: data,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Car duration in hours'
+                        }
+                    }
+                },
+            };
+
+            if(durationDoughnutChart){
+                durationDoughnutChart.destroy();
+            }
+
+            durationDoughnutChart = new Chart(
+                document.getElementById('durationDoughnutChart'),
+                config
+            );
+        });
+    }
+
     function setType(val){
         $('#'+type).removeClass("btn-primary");
         $('#'+type).addClass("btn-secondary");
@@ -282,11 +441,15 @@
             $("#toDateBlock").show();
             if($("#fromDate").val() && $("#toDate").val()){
                 drawTotalCarsInPeriod();
+                passByGatesInPeriod();
+                durationByGatesInPeriod();
             }
         } else {
             $("#fromDateBlock").hide();
             $("#toDateBlock").hide();
             drawTotalCarsInPeriod();
+            passByGatesInPeriod();
+            durationByGatesInPeriod();
         }
     }
 
@@ -294,9 +457,13 @@
         if(type == 'period'){
             if($("#fromDate").val() && $("#toDate").val()){
                 drawTotalCarsInPeriod();
+                passByGatesInPeriod();
+                durationByGatesInPeriod();
             }
         } else {
             drawTotalCarsInPeriod();
+            passByGatesInPeriod();
+            durationByGatesInPeriod();
         }
     }
 </script>
