@@ -9,12 +9,15 @@ import kz.spt.lib.model.CameraTab;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class CameraServiceImpl implements CameraService {
 
+    private Map<Long, Boolean> snapshotEnabledRefreshMap = new HashMap<>();
     private CameraRepository cameraRepository;
 
     private CameraTabRepository cameraTabRepository;
@@ -101,6 +104,35 @@ public class CameraServiceImpl implements CameraService {
     public void enableSnapshot(Long cameraId) {
         Camera camera = cameraRepository.getOne(cameraId);
         camera.setSnapshotEnabled(camera.getSnapshotEnabled() == null ? true : !camera.getSnapshotEnabled());
+        snapshotEnabledRefreshMap.put(camera.getId(), camera.getSnapshotEnabled());
         cameraRepository.save(camera);
+    }
+
+    @Override
+    public void enableSnapshot(Long cameraId, Boolean isStreamOn) {
+        Camera camera = cameraRepository.getOne(cameraId);
+        if (isStreamOn.equals(false) || isStreamOn==null) {
+            camera.setSnapshotEnabled(camera.getSnapshotEnabled() == null ? true : !camera.getSnapshotEnabled());
+        }
+        if (isStreamOn.equals(true)) {
+            camera.setSnapshotEnabled(camera.getSnapshotEnabled() == true ? true : !camera.getSnapshotEnabled());
+        }
+        snapshotEnabledRefreshMap.put(camera.getId(), camera.getSnapshotEnabled());
+        cameraRepository.save(camera);
+    }
+
+    public Map<Long, Boolean> getSnapshotEnabledRefreshMap() {
+        if (snapshotEnabledRefreshMap==null || snapshotEnabledRefreshMap.size() == 0){
+            List<Camera> cameraIdsAndSnapshotEnabled = cameraRepository.findCameraIdsAndSnapshotEnabled();
+            for (Camera camera: cameraIdsAndSnapshotEnabled) {
+                snapshotEnabledRefreshMap.put(camera.getId(),camera.getSnapshotEnabled());
+            }
+            return snapshotEnabledRefreshMap;
+            }
+        return snapshotEnabledRefreshMap;
+    }
+
+    public void setSnapshotEnabledRefreshMap(Map<Long, Boolean> snapshotEnabledRefreshMap) {
+        this.snapshotEnabledRefreshMap = snapshotEnabledRefreshMap;
     }
 }

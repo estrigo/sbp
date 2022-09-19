@@ -346,7 +346,6 @@
         const lp = cameras[messageBody.id].lp;
         const logs = cameras[messageBody.id].logs;
         const fancyImage = cameras[messageBody.id].fancyImage;
-
         const canvas = cameras[messageBody.id].canvas;
         const context = canvas.getContext('2d');
 
@@ -355,6 +354,16 @@
             cameras[messageBody.id].snapshot = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
             $(fancyImage).attr("data-src", cameras[messageBody.id].snapshot);
 
+            let image = new Image();
+            image.src = cameras[messageBody.id].snapshot;
+            image.onload = function () {
+                canvas.width = image.width + 1;
+                canvas.height = image.height + 1;
+                context.drawImage(image, 0, 0, image.width, image.height);
+                image = null;
+            };
+        } else if (messageBody.eventType == 'Picture') {
+            cameras[messageBody.id].snapshot = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
             let image = new Image();
             image.src = cameras[messageBody.id].snapshot;
             image.onload = function () {
@@ -418,12 +427,9 @@
     function initCamera(id) {
         const lp = document.getElementById('lp' + id);
         const logs = document.getElementById('logs' + id);
-
         const canvas = document.getElementById('image' + id);
         const context = canvas.getContext('2d');
-
         const fancyImage = document.getElementById('fancyImage' + id);
-
         cameras[id] = {
             "lp": lp,
             "logs": logs,
@@ -534,6 +540,7 @@
     function enableSnapshot() {
         $(".item").each(function () {
             const $input = $(this);
+            console.log("Enable snapshot",$(this).data("id"));
             const $id = $input.data("id");
             const $url = $input.data("url");
             const $ip = $input.data("ip");

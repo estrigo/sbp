@@ -32,4 +32,6 @@ public interface CameraService {
     void deleteCameraTab(CameraTab cameraTab);
 
     void enableSnapshot(Long cameraId);
+
+    void enableSnapshot(Long cameraId, Boolean isStreamOn);
 }
