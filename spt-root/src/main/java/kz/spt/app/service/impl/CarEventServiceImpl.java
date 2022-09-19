@@ -38,6 +38,7 @@ import org.thymeleaf.dialect.springdata.util.Strings;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -107,6 +108,8 @@ public class CarEventServiceImpl implements CarEventService {
 
     @Value("${booking.check.out}")
     boolean bookingCheckOut;
+
+//    private Map<Long, Boolean> isTheObjectAvailable = new HashMap<>();
 
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
     private ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(LocaleContextHolder.getLocale().toString().substring(0, 2)));
@@ -437,6 +440,24 @@ public class CarEventServiceImpl implements CarEventService {
         }
 
         if (cameraStatusDto != null) {
+            if ( true) {
+                Date event_date_time = eventDto.event_date_time;
+                Long id = cameraStatusDto.id;
+                Camera camera = cameraService.getCameraById(id);
+                LocalTime dontOpenGateTimeFrom = camera.getStartTime();
+                LocalTime dontOpenGateTimeTo = camera.getEndTime();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(event_date_time);
+                boolean isAfterStartTime11  = dontOpenGateTimeFrom.isBefore(LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE)));
+                boolean isBeforeEndTime11  = dontOpenGateTimeTo.isAfter(LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE)));
+                if ((isAfterStartTime11) && (isBeforeEndTime11)) {
+                    properties.put("type", EventLog.StatusType.Error);
+                    eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + " " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address, "Identified new car with number " + " " + eventDto.car_number + " from unknown camera with ip " + eventDto.ip_address, EventLog.EventType.NEW_CAR_DETECTED);
+                    return;
+                }
+            }
 
             GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(cameraStatusDto.gateId);
 
@@ -541,6 +562,23 @@ public class CarEventServiceImpl implements CarEventService {
             eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + " " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address, "Identified new car with number " + " " + eventDto.car_number + " from unknown camera with ip " + eventDto.ip_address, EventLog.EventType.NEW_CAR_DETECTED);
         }
     }
+
+/*    public Map<Long, Boolean> getIsTheObjectAvailable() {
+        if (isTheObjectAvailable==null || isTheObjectAvailable.size() == 0){
+            List<Camera> cameraIdsAndSnapshotEnabled = cameraRepository.findCameraIdsAndSnapshotEnabled();
+            for (Camera camera: cameraIdsAndSnapshotEnabled) {
+                isTheObjectAvailable.put(camera.getId(),camera.getSnapshotEnabled());
+            }
+            return isTheObjectAvailable;
+        }
+        return isTheObjectAvailable;
+    }*/
+
+
+/*    public void setIsTheObjectAvailable(Map<Long, Boolean> isTheObjectAvailable) {
+        this.isTheObjectAvailable = isTheObjectAvailable;
+    }*/
+
 
     private boolean isAllow(CarEventDto carEvent, CameraStatusDto cameraStatusDto, Map<String, Object> properties, GateStatusDto gate) {
         if (blacklistService.findByPlate(carEvent.car_number).isPresent()) {

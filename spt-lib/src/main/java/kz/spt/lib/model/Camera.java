@@ -9,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
+import java.time.LocalTime;
 import java.util.Date;
 
 @Entity
@@ -72,4 +73,11 @@ public class Camera {
     private String carmenLogin;
     private String carmenPassword;
     private Boolean snapshotEnabled;
+
+    //ans
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private Date updatedTime;
+    private String updatedTimeBy;
+
 }

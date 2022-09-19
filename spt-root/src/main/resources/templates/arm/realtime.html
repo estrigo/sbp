@@ -670,6 +670,9 @@
     const armMove = [[#{arm.move}]];
     const crmName = [[#{crm.name}]];
     const parkingName = [[#{whitelist.parking}]];
+    const startTime = [[#{camera.startTime}]];
+    const endTime = [[#{camera.endTime}]];
+
     const crmDelete = [[#{crm.delete}]];
 
     function configure() {
@@ -708,13 +711,19 @@
                     "                                        <th>" + crmName + "</th>\n" +
                     "                                        <th>Ip</th>\n" +
                     "                                        <th>" + parkingName + "</th>\n" +
+                    "                                        <th>" + startTime + "</th>\n" +
+                    "                                        <th>" + endTime + "</th>\n" +
                     "                                    </tr>\n" +
                     "                                    </thead><tbody>";
                 for (let j = 0; j < data[i].cameras.length; j++) {
                     html = html + "<tr id='camera" + data[i].cameras[j].id + "'><td><select id='cameraSelect" + data[i].cameras[j].id + "' onchange='moveCameraToTab(" + data[i].cameras[j].id + ")'>" + moveOptions + "</select></td>\n" +
                         "          <td>" + data[i].cameras[j].name + "</td>\n" +
                         "          <td>" + data[i].cameras[j].ip + "</td>\n" +
-                        "          <td>" + data[i].cameras[j].parking + "</td></tr>\n"
+                        "          <td>" + data[i].cameras[j].parking + "</td>\n" +
+                        "          <td>" + data[i].cameras[j].startTime + "</td>\n" +
+                        "          <td>" + data[i].cameras[j].endTime + "</td></tr>\n"
+
+
                 }
                 html = html + "</tbody></table>\n" +
                     "                            </div>\n" +
