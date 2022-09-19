@@ -57,7 +57,16 @@ public class ScheduleWorks {
         this.paymentService = paymentService;
     }
 
-    @Scheduled(cron = "0 */10 2-6 * * ?")
+    @Scheduled(cron = "${cron.scheduler.expr_reset}")
+    public void resetKassa() {
+        List<PosTerminal> posTerminalList = posTerminalRepository.findPosTerminalsByReconsilatedIsFalse();
+        for (PosTerminal posTerminal : posTerminalList) {
+            posTerminal.setReconsilated(false);
+        }
+        posTerminalRepository.saveAll(posTerminalList);
+    }
+
+    @Scheduled(cron = "${cron.scheduler.expr_parkomat}")
     public void webKassaCloseSchedule() throws Exception {
         if (parkomatShiftClosing) {
             List<PosTerminal> posTerminals =
@@ -73,44 +82,38 @@ public class ScheduleWorks {
                     if (responseJson.has("Data")) {
                         pt.setReconsilated(true);
                         posTerminalRepository.save(pt);
+                        log.info("[WebKassa] " + pt.getIp() + " parkomat shift closing succeed");
                     } else if (responseJson.has("Errors")) {
-                        log.error(pt.getIp() + ' ' + responseJson.get("Errors"));
+                        log.error("[WebKassa] " + pt.getIp() + ' ' + responseJson.get("Errors"));
                     }
                 }
             }
         }
     }
 
-    @Scheduled(cron = "0 50 0 * * ?")
-    public void terminalNightSchedule2() {
-        List<PosTerminal> posTerminalList = posTerminalRepository.findPosTerminalsByReconsilatedIsFalse();
-        for (PosTerminal posTerminal : posTerminalList) {
-            posTerminal.setReconsilated(false);
-        }
-        posTerminalRepository.saveAll(posTerminalList);
-    }
-
-    @Scheduled(cron = "0 */10 2-6 * * ?")
-    public void terminalNightSchedule() {
+    @Scheduled(cron = "${cron.scheduler.expr_terminal}")
+    public void terminalCloseSchedule() {
         if (terminalShiftClosing) {
-            try {
-                List<PosTerminal> posTerminalList =
-                posTerminalRepository.findPosTerminalsByReconsilatedIsFalseAndType(PosTerminal.terminalType.TERMINAL);
-                for (PosTerminal pt : posTerminalList) {
+            List<PosTerminal> posTerminalList =
+                    posTerminalRepository.findPosTerminalsByReconsilatedIsFalseAndType(PosTerminal.terminalType.TERMINAL);
+            for (PosTerminal pt : posTerminalList) {
+                try {
                     RestTemplate restTemplate = new RestTemplate();
                     String url = "http://" + pt.getIp() + ":8080/apibank/?key=" + pt.getApikey()
                             + "&message=reconciliation&bankSlot=1";
                     ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
                     if (response.getStatusCode().is2xxSuccessful()) {
+                        log.info("[Terminal] " + pt.getIp() + " reconsilation succeed");
                         pt.setReconsilated(true);
                         posTerminalRepository.save(pt);
                     } else {
-                        log.info("Terminal reconsilation request failed, response status: " + response.getStatusCode());
+                        log.warn("[Terminal] " + pt.getIp() + " reconsilation request failed, response status: " + response.getStatusCode());
                     }
+                } catch (Exception e) {
+                    log.error("[Terminal] " + " reconsilation request failed: " + e.getMessage());
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+
         }
     }
 
