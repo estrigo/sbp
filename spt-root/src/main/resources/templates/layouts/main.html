@@ -45,7 +45,20 @@
             <!--- Divider -->
             <div id="sidebar-menu">
                 <ul sec:authorize="isAuthenticated()">
-                    <li class="menu-title" th:text="#{crm.main}"></li>
+                    <li class="menu-title" th:text="#{crm.main}">
+                    <li sec:authorize="hasRole('ROLE_ADMIN')" class="has_sub">
+                        <a href="javascript:void(0);" class="waves-effect waves-primary">
+                            <i class="ti ti-pie-chart"></i><span>Dashboards</span><span class="menu-arrow"></span>
+                        </a>
+                        <ul class="list-unstyled">
+                            <li>
+                                <a th:href="@{|/dashboard/count|}">Occupancy and duration</a>
+                            </li>
+                            <li>
+                                <a th:href="@{|/dashboard/payment|}">Payments and providers</a>
+                            </li>
+                        </ul>
+                    </li>
                     <li sec:authorize="hasRole('ROLE_ADMIN')">
                         <a th:href="@{|/users/list|}" class="waves-effect waves-primary"><i
                                 class="ti-user"></i><span th:text=" #{user.users} "></span></a>

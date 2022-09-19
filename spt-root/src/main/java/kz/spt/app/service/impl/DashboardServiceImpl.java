@@ -17,9 +17,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Log
 @Service
@@ -422,5 +420,15 @@ public class DashboardServiceImpl implements DashboardService {
         List durationResult =  entityManager.createNativeQuery(durationQueryString).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
 
         return durationResult;
+    }
+
+    @Override
+    public Map occupancyAndMoneyByPeriod(String period, String from, String to) {
+
+        Map<String, Long> fieldsMap = new HashMap<>(15);
+
+
+
+        return null;
     }
 }

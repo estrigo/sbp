@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/rest/dashboard")
@@ -45,5 +46,10 @@ public class DashboardRestController {
     @RequestMapping(value = "/count/durationsInPeriod", method = RequestMethod.POST, consumes = "multipart/form-data")
     public List durationsInPeriod(@RequestParam("type") String type, @RequestParam("from") String from, @RequestParam("to") String to) {
         return dashboardService.durationsInPeriod(type, from, to);
+    }
+
+    @RequestMapping(value = "/count/occupancyAndMoneyByPeriod", method = RequestMethod.POST, consumes = "multipart/form-data")
+    public Map occupancyAndMoneyByPeriod(@RequestParam("type") String type, @RequestParam("from") String from, @RequestParam("to") String to) {
+        return dashboardService.occupancyAndMoneyByPeriod(type, from, to);
     }
 }

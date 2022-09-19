@@ -18,7 +18,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row" style="display: none">
                     <div class="col-lg-12">
                         <div class="card-box">
                             <canvas id="occupancyMultiLineChart" width="800" height="400"></canvas>
@@ -31,7 +31,7 @@
                             <button id="year" type="button" class="btn btn-primary waves-effect" onclick="setType('year')">Yearly</button>
                             <button id="month" type="button" class="btn btn-secondary waves-effect" onclick="setType('month')">Monthly</button>
                             <button id="week" type="button" class="btn btn-secondary waves-effect" onclick="setType('week')">Weekly</button>
-                            <button id="day" type="button" class="btn btn-secondary waves-effect" onclick="setType('day')">Dayly</button>
+                            <button id="day" type="button" class="btn btn-secondary waves-effect" onclick="setType('day')">Daily</button>
                             <button id="period" type="button" class="btn btn-secondary waves-effect" onclick="setType('period')">Period</button>
                         </div>
                     </div>
@@ -48,29 +48,38 @@
                 </div>
 
                 <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card-box">
+                            <div style="position: relative;">
+                                <canvas id="gatesDoughnutChart" width="800" height="400"></canvas>
+                                <div style="position:absolute; top: 57%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                                    <p style="font-size: 1.5rem;">Total</p>
+                                    <p style="font-size: 1.5rem;" id="gatesDoughnutChartTotal"></p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card-box">
+                            <div style="position: relative;">
+                                <canvas id="durationDoughnutChart" width="800" height="400"></canvas>
+                                <div style="position:absolute; top: 57%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                                    <p style="font-size: 1.5rem;">Total</p>
+                                    <p style="font-size: 1.5rem;" id="durationDoughnutChartTotal"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
                     <div class="col-lg-12">
                         <div class="card-box">
                             <canvas id="occupancyLineChart" width="800" height="400"></canvas>
                         </div>
                     </div>
                 </div>
-
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="card-box">
-                            <canvas id="gatesDoughnutChart" width="800" height="400"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="card-box">
-                            <canvas id="durationDoughnutChart" width="800" height="400"></canvas>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
     </div>
@@ -317,16 +326,16 @@
             "data": form
         };
         $.ajax(settings).done(function (result) {
-            console.log(result);
-
             let labels = [];
             let dataset = [];
             let selectedColors = [];
+            let total = 0;
 
             let iter = 0;
             for (let i = 0; i < result.length; i++) {
                 labels.push(result[i][1]);
                 dataset.push(result[i][2]);
+                total = total + result[i][2];
                 selectedColors.push(colors[iter++]);
                 if(iter > 7){
                     iter = 0;
@@ -369,6 +378,7 @@
                 document.getElementById('gatesDoughnutChart'),
                 config
             );
+            $("#gatesDoughnutChartTotal").text(total.toLocaleString(undefined, {}));
         });
     }
 
@@ -387,9 +397,13 @@
             "data": form
         };
         $.ajax(settings).done(function (result) {
-            console.log(result);
 
-            let labels = ['0-1', '1-2', '2-3', '3-4', 'more 4'];
+            let total = 0;
+            for(let i = 0; i < result[0].length; i++){
+                total = total + result[0][i];
+            }
+
+            let labels = ['0-1h', '1-2h', '2-3h', '3-4h', 'more 4h'];
 
             const data = {
                 labels: labels,
@@ -427,6 +441,8 @@
                 document.getElementById('durationDoughnutChart'),
                 config
             );
+
+            $("#durationDoughnutChartTotal").text(total.toLocaleString(undefined, {}));
         });
     }
 
