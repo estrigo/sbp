@@ -2,8 +2,10 @@ package kz.spt.app.service;
 
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CameraTab;
+import kz.spt.lib.model.Parking;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CameraService {
 
@@ -32,4 +34,6 @@ public interface CameraService {
     void deleteCameraTab(CameraTab cameraTab);
 
     void enableSnapshot(Long cameraId);
+
+    Optional<Camera> findCameraByIpAndParking(String ip, Parking parking);
 }
