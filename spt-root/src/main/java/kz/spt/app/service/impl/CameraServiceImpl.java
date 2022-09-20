@@ -6,11 +6,17 @@ import kz.spt.lib.model.Camera;
 import kz.spt.app.repository.CameraRepository;
 import kz.spt.app.service.CameraService;
 import kz.spt.lib.model.CameraTab;
+import kz.spt.lib.model.Parking;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 public class CameraServiceImpl implements CameraService {
@@ -50,12 +56,17 @@ public class CameraServiceImpl implements CameraService {
 
     @Override
     public List<Camera> cameraListWithoutTab() {
-        return cameraRepository.findEnabledWithoutTabCameras();
+        return cameraRepository.findEnabledWithoutTabCameras().stream()
+                .filter(distinctByKey(Camera::getIp))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Camera> cameraListByTabId(Long cameraTabId) {
-        return cameraRepository.findEnabledWithTabCameras(cameraTabId);
+        List<Camera> allCameras = cameraRepository.findEnabledWithTabCameras(cameraTabId);
+        return allCameras.stream()
+                .filter(distinctByKey(Camera::getIp))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -102,5 +113,15 @@ public class CameraServiceImpl implements CameraService {
         Camera camera = cameraRepository.getOne(cameraId);
         camera.setSnapshotEnabled(camera.getSnapshotEnabled() == null ? true : !camera.getSnapshotEnabled());
         cameraRepository.save(camera);
+    }
+
+    @Override
+    public Optional<Camera> findCameraByIpAndParking(String ip, Parking parking) {
+        return cameraRepository.findCameraByIpAndGate_Parking(ip, parking);
+    }
+
+    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
     }
 }
