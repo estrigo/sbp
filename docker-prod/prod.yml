@@ -198,6 +198,8 @@ cron:
     expr_parkomat: "0 */5 2-6 * * ?"
     expr_terminal: "0 */5 2-6 * * ?"
     expr_reset: "0 50 0 * * ?"
+web:
+  locale: ru
 management:
   endpoints:
     web:
