@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
+import kz.spt.app.job.StatusCheckJob;
+import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.lib.model.dto.EventLogExcelDto;
 import kz.spt.app.service.GateService;
 import kz.spt.lib.bootstrap.datatable.*;
@@ -111,6 +113,9 @@ public class EventLogServiceImpl implements EventLogService {
 
     public void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long id, String plateNumber, String message, String messageEng) {
 
+        CameraStatusDto cameraStatusDto = StatusCheckJob.findCameraStatusDtoById(id);
+        CameraStatusDto cameraStatusDtoByIp = StatusCheckJob.findCameraStatusDtoByIp(cameraStatusDto.ip);
+
         if (ArmEventType.Photo.equals(eventType) && message == null && messageEng == null) {
             return;
         }
@@ -120,7 +125,7 @@ public class EventLogServiceImpl implements EventLogService {
         node.put("message", message);
         node.put("messageEng", messageEng);
         node.put("plateNumber", plateNumber);
-        node.put("id", id);
+        node.put("id", cameraStatusDtoByIp.id);
         node.put("eventType", eventType.toString());
         node.put("eventStatus", eventStatus.toString());
 
