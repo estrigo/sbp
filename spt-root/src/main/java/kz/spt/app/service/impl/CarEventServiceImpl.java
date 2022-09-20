@@ -13,6 +13,7 @@ import kz.spt.app.model.strategy.barrier.open.AbstractOpenStrategy;
 import kz.spt.app.model.strategy.barrier.open.CarInEventStrategy;
 import kz.spt.app.model.strategy.barrier.open.CarOutEventStrategy;
 import kz.spt.app.model.strategy.barrier.open.CarReverseEventStrategy;
+import kz.spt.app.repository.CameraRepository;
 import kz.spt.app.repository.CarModelRepository;
 import kz.spt.app.service.*;
 import kz.spt.lib.extension.PluginRegister;
@@ -109,8 +110,8 @@ public class CarEventServiceImpl implements CarEventService {
     @Value("${booking.check.out}")
     boolean bookingCheckOut;
 
-//    private Map<Long, Boolean> isTheObjectAvailable = new HashMap<>();
-
+    private Map<Long, Boolean> isTheObjectAvailable = new HashMap<>();
+    private CameraRepository cameraRepository;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
     private ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(LocaleContextHolder.getLocale().toString().substring(0, 2)));
 
@@ -440,7 +441,7 @@ public class CarEventServiceImpl implements CarEventService {
         }
 
         if (cameraStatusDto != null) {
-            if ( true) {
+            if ( cameraStatusDto.getStartTime() != null && cameraStatusDto.getEndTime() !=null) {
                 Date event_date_time = eventDto.event_date_time;
                 Long id = cameraStatusDto.id;
                 Camera camera = cameraService.getCameraById(id);
@@ -563,21 +564,21 @@ public class CarEventServiceImpl implements CarEventService {
         }
     }
 
-/*    public Map<Long, Boolean> getIsTheObjectAvailable() {
+    public Map<Long, Boolean> getIsTheObjectAvailable() {
         if (isTheObjectAvailable==null || isTheObjectAvailable.size() == 0){
             List<Camera> cameraIdsAndSnapshotEnabled = cameraRepository.findCameraIdsAndSnapshotEnabled();
             for (Camera camera: cameraIdsAndSnapshotEnabled) {
-                isTheObjectAvailable.put(camera.getId(),camera.getSnapshotEnabled());
+//                isTheObjectAvailable.put(camera.getId(),camera.getSnapshotEnabled());
             }
             return isTheObjectAvailable;
         }
         return isTheObjectAvailable;
-    }*/
+    }
 
 
-/*    public void setIsTheObjectAvailable(Map<Long, Boolean> isTheObjectAvailable) {
+    public void setIsTheObjectAvailable(Map<Long, Boolean> isTheObjectAvailable) {
         this.isTheObjectAvailable = isTheObjectAvailable;
-    }*/
+    }
 
 
     private boolean isAllow(CarEventDto carEvent, CameraStatusDto cameraStatusDto, Map<String, Object> properties, GateStatusDto gate) {

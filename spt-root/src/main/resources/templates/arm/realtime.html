@@ -679,6 +679,7 @@
     const parkingName = [[#{whitelist.parking}]];
     const startTime = [[#{camera.startTime}]];
     const endTime = [[#{camera.endTime}]];
+    const timeUnavailable = [[#{camera.intervalTimeUnavailable}]];
 
     const crmDelete = [[#{crm.delete}]];
 
@@ -720,6 +721,7 @@
                     "                                        <th>" + parkingName + "</th>\n" +
                     "                                        <th>" + startTime + "</th>\n" +
                     "                                        <th>" + endTime + "</th>\n" +
+                    "                                        <th></th>\n" +
                     "                                    </tr>\n" +
                     "                                    </thead><tbody>";
                 for (let j = 0; j < data[i].cameras.length; j++) {
@@ -728,7 +730,9 @@
                         "          <td>" + data[i].cameras[j].ip + "</td>\n" +
                         "          <td>" + data[i].cameras[j].parking + "</td>\n" +
                         "          <td>" + data[i].cameras[j].startTime + "</td>\n" +
-                        "          <td>" + data[i].cameras[j].endTime + "</td></tr>\n"
+                        "          <td>" + data[i].cameras[j].endTime + "</td>" +
+                        "          <td><a href=\"/arm/edit/timeUnavailable/"+data[i].cameras[j].id+"\" <i class=\"ion-edit\"></i></a></td>" +
+                        "</tr>\n"
 
 
                 }
