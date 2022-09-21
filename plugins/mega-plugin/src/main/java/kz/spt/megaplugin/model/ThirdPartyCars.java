@@ -22,7 +22,7 @@ public class ThirdPartyCars {
     private Long id;
 
     @Unique
-    private String car_number;
+    private String carNumber;
 
     private String type; // direct: акцептное списание, indirect: безакцептное списание
 

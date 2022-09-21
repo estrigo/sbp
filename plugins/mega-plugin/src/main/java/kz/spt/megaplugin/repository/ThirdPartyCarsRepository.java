@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 @Repository("thirdPartyCars")
 public interface ThirdPartyCarsRepository extends JpaRepository<ThirdPartyCars, Long> {
 
-    @Query("from ThirdPartyCars t where t.car_number = ?1")
+    @Query("from ThirdPartyCars t where t.carNumber = ?1")
     ThirdPartyCars findByPlateNumber(String plateNumber);
 
 }

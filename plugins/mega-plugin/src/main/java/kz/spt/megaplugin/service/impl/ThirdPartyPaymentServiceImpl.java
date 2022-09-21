@@ -25,10 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Log
 @Service
@@ -51,7 +48,7 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
 
     public Boolean checkCarIfThirdPartyPayment(String plateNumber) {
         ThirdPartyCars thirdPartyCars = thirdPartyCarsRepository.findByPlateNumber(plateNumber);
-        if (thirdPartyCars != null && thirdPartyCars.getCar_number() != null
+        if (thirdPartyCars != null && thirdPartyCars.getCarNumber() != null
                 && thirdPartyCars.getType().equals("direct") && thirdPartyCars.getStatus()) {
             return true;
         } else {
@@ -62,12 +59,12 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
     @Transactional
     public void saveThirdPartyPayment(String plateNumber, Date entryDate, Date exitDate, BigDecimal rate,
                                       String parkingUid, String thPPUrl) throws Exception {
-        ThirdPartyPayment existPayment = thirdPartyPaymentRepository.findOneThirdPartyPayment(plateNumber, entryDate);
-        if (existPayment==null) {
+        Optional<ThirdPartyPayment> existPayment = thirdPartyPaymentRepository.findFirstByCarNumberAndEntryDate(plateNumber, entryDate);
+        if (existPayment.isEmpty()) {
             Object statusResp = sendPayment(plateNumber, entryDate, exitDate, rate, parkingUid, thPPUrl);
             log.info("statusResp : " + statusResp);
             ThirdPartyPayment thirdPartyPayment = new ThirdPartyPayment();
-            thirdPartyPayment.setCar_number(plateNumber);
+            thirdPartyPayment.setCarNumber(plateNumber);
             thirdPartyPayment.setEntryDate(entryDate);
             thirdPartyPayment.setExitDate(exitDate);
             thirdPartyPayment.setRateAmount(rate);
@@ -77,7 +74,6 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
             } else {
                 thirdPartyPayment.setSent(false);
             }
-            thirdPartyPayment.setSent(false);
             thirdPartyPaymentRepository.save(thirdPartyPayment);
         }
     }
@@ -87,7 +83,7 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
         List<ThirdPartyPayment> thPPList = thirdPartyPaymentRepository.findNotSentThirdPartyPayments();
         if (thPPList != null) {
             for (ThirdPartyPayment pp : thPPList) {
-                Object statusResp = sendPayment(pp.getCar_number(), pp.getEntryDate(), pp.getExitDate(),
+                Object statusResp = sendPayment(pp.getCarNumber(), pp.getEntryDate(), pp.getExitDate(),
                         pp.getRateAmount(), pp.getParkingUID(), thirdPartyPaymentUrl);
                 if (statusResp != null && statusResp.equals("OK")) {
                     pp.setSent(true);
@@ -165,7 +161,7 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
             res.setMessage("успешно добавлен");
         } else {
             ThirdPartyCars ss = new ThirdPartyCars();
-            ss.setCar_number(requestThPP.getPlatenumber());
+            ss.setCarNumber(requestThPP.getPlatenumber());
             ss.setType(requestThPP.getType());
             ss.setStatus(true);
             thirdPartyCarsRepository.save(ss);
