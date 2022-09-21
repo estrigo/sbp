@@ -727,8 +727,8 @@ public class CarEventServiceImpl implements CarEventService {
                         hasAccess = true;
                     } else {
                         properties.put("type", EventLog.StatusType.Deny);
-                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.getCarNumberWithRegion(), "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance);
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance, EventLog.EventType.NOT_ENOUGH_BALANCE);
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.getCarNumberWithRegion(), "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance + ". Выезд с " + carState.getParking().getName(), "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance + ". Departure from " + carState.getParking().getName());
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance + ". Выезд с " + carState.getParking().getName(), "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance + ". Departure from " + carState.getParking().getName(), EventLog.EventType.NOT_ENOUGH_BALANCE);
                         hasAccess = false;
                     }
                 }
@@ -1378,8 +1378,8 @@ public class CarEventServiceImpl implements CarEventService {
                                             }
                                             if (!hasAccess) {
                                                 properties.put("type", EventLog.StatusType.Deny);
-                                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.getCarNumberWithRegion(), "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
-                                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance, EventLog.EventType.NOT_ENOUGH_BALANCE);
+                                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.getCarNumberWithRegion(), "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance + ". Выезд с " + carState.getParking().getName(), "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance + ". Departure from " + carState.getParking().getName());
+                                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance + ". Выезд с " + carState.getParking().getName(), "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance + ". Departure from " + carState.getParking().getName(), EventLog.EventType.NOT_ENOUGH_BALANCE);
                                             }
                                         }
                                     }
@@ -1679,8 +1679,8 @@ public class CarEventServiceImpl implements CarEventService {
             } else {
                 BigDecimal subtractResult = balance.subtract(rateResult);
                 properties.put("type", EventLog.StatusType.Allow);
-                String descriptionRu = "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + rateResult + ". Остаток баланса: " + subtractResult + ". Проезд разрешен.";
-                String descriptionEn = "Allowed: Paid for parking. Total sum: " + rateResult + ". Balance left: " + subtractResult + ". Allowed.";
+                String descriptionRu = "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + rateResult + ". Остаток баланса: " + subtractResult + ". Проезд разрешен. " + "Выезд с " + carState.getParking().getName();
+                String descriptionEn = "Allowed: Paid for parking. Total sum: " + rateResult + ". Balance left: " + subtractResult + ". Allowed." + ". Departure from " + carState.getParking().getName() ;
                 eventType = EventLog.EventType.PAID_PASS;
                 carState.setCarOutType(CarState.CarOutType.PAID_PASS);
                 if (BigDecimal.ZERO.compareTo(rateResult) == 0) {
