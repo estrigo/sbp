@@ -155,6 +155,16 @@ notification:
   parkingUid: DEMO
 kaspi:
   qr-link: https://kaspi.kz/pay/%s?service_id=%s&%s=
+shiftClosing:
+  parkomat: false
+  terminal: false
+cron:
+  scheduler:
+    expr_parkomat: "0 */5 2-6 * * ?"
+    expr_terminal: "0 */5 2-6 * * ?"
+    expr_reset: "0 50 0 * * ?"
+web:
+  locale: ru
 carmen:
   live.enabled: false
   image.enabled: false

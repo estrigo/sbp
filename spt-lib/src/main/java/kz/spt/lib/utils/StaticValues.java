@@ -25,6 +25,7 @@ public class StaticValues {
     public static String bookingPlugin = "booking-plugin";
     public static String zerotouchPlugin = "zerotouch-plugin";
     public static String abonementPlugin = "abonoment-plugin";
+    public static String parkomatPlugin = "parkomat-status-plugin";
     public static String carImageExtension = ".jpeg";
     public static String carImageSmallAddon = "_resize_w_200_h_100";
     public static String carImagePropertyName = "carImageUrl";
