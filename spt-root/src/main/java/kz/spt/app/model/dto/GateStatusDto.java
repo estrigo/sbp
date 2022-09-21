@@ -196,6 +196,10 @@ public class GateStatusDto {
                         gateStatusDto.frontCamera.carmenLogin = camera.getCarmenLogin();
                         gateStatusDto.frontCamera.carmenPassword = camera.getCarmenPassword();
                         gateStatusDto.frontCamera.snapshotEnabled = camera.getSnapshotEnabled();
+                        gateStatusDto.frontCamera.startTime = camera.getStartTime();
+                        gateStatusDto.frontCamera.endTime = camera.getEndTime();
+                        gateStatusDto.frontCamera.updatedTime = camera.getUpdatedTime();
+                        gateStatusDto.frontCamera.updatedTimeBy = camera.getUpdatedTimeBy();
                     } else {
                         gateStatusDto.frontCamera2 = new CameraStatusDto();
                         gateStatusDto.frontCamera2.id = camera.getId();
@@ -210,6 +214,10 @@ public class GateStatusDto {
                         gateStatusDto.frontCamera2.carmenLogin = camera.getCarmenLogin();
                         gateStatusDto.frontCamera2.carmenPassword = camera.getCarmenPassword();
                         gateStatusDto.frontCamera2.snapshotEnabled = camera.getSnapshotEnabled();
+                        gateStatusDto.frontCamera2.startTime = camera.getStartTime();
+                        gateStatusDto.frontCamera2.endTime = camera.getEndTime();
+                        gateStatusDto.frontCamera2.updatedTime = camera.getUpdatedTime();
+                        gateStatusDto.frontCamera2.updatedTimeBy = camera.getUpdatedTimeBy();
                     }
                 }
                 if (Camera.CameraType.BACK.equals(camera.getCameraType())) {
@@ -225,6 +233,10 @@ public class GateStatusDto {
                     gateStatusDto.backCamera.carmenLogin = camera.getCarmenLogin();
                     gateStatusDto.backCamera.carmenPassword = camera.getCarmenPassword();
                     gateStatusDto.backCamera.snapshotEnabled = camera.getSnapshotEnabled();
+                    gateStatusDto.backCamera.startTime = camera.getStartTime();
+                    gateStatusDto.backCamera.endTime = camera.getEndTime();
+                    gateStatusDto.backCamera.updatedTime = camera.getUpdatedTime();
+                    gateStatusDto.backCamera.updatedTimeBy = camera.getUpdatedTimeBy();
                 }
             }
         }

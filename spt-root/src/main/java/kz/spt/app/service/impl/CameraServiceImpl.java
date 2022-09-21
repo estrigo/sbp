@@ -47,6 +47,11 @@ public class CameraServiceImpl implements CameraService {
     }
 
     @Override
+    public List<Camera> findCameraIdsAndSnapshotEnabled() {
+        return cameraRepository.findCameraIdsAndSnapshotEnabled();
+    }
+
+    @Override
     public List<Camera> cameraList() {
         return cameraRepository.findEnabledCameras();
     }

@@ -2,19 +2,17 @@ package kz.spt.app.controller;
 
 import kz.spt.app.service.CameraService;
 import kz.spt.lib.model.Camera;
-import kz.spt.lib.model.Parking;
-import kz.spt.lib.model.User;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.util.Locale;
+import java.util.Arrays;
+import java.util.Date;
 
 @Log
 @Controller
@@ -28,9 +26,10 @@ public class ArmController {
     }
 
     @GetMapping("/realtime")
-    public String realtime(@Value("${parkomat.ip}") String ip, Model model) {
+    public String realtime(@Value("${parkomat.ip}") String ip, Model model, @AuthenticationPrincipal UserDetails currentUser) {
         model.addAttribute("cameras", cameraService.cameraListWithoutTab());
         model.addAttribute("ip", ip);
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN").contains(m.getAuthority())));
         return "arm/realtime";
     }
 
@@ -57,7 +56,7 @@ public class ArmController {
     }
 
     @GetMapping("/edit/timeUnavailable/{cameraId}")
-    public String ddd(Model model, @PathVariable Long cameraId) {
+    public String timeUnavailable(Model model, @PathVariable Long cameraId, @AuthenticationPrincipal UserDetails currentUser) {
         Camera camera = cameraService.getCameraById(cameraId);
         model.addAttribute("camera", camera);
         return "/arm/timeUnavailable";
@@ -65,13 +64,14 @@ public class ArmController {
 
     @Transactional
     @PostMapping("/interval-add")
-    public String editCamera(Model model, @ModelAttribute(value = "camera") Camera camera) {
-        System.out.println("ss");
+    public String editCameraTime(Model model, @ModelAttribute(value = "camera") Camera camera, @AuthenticationPrincipal UserDetails currentUser) {
         Camera updateCameraTime = cameraService.getCameraById(camera.getId());
         updateCameraTime.setStartTime(camera.getStartTime());
         updateCameraTime.setEndTime(camera.getEndTime());
+        updateCameraTime.setUpdatedTime(new Date());
+        updateCameraTime.setUpdatedTimeBy(currentUser.getUsername());
         cameraService.saveCamera(updateCameraTime, true);
         model.addAttribute("camera", updateCameraTime);
-        return "/arm/realtime";
+        return "/arm/timeUnavailable";
     }
 }

@@ -686,6 +686,7 @@
     function configure() {
         tabs = [];
         maxId = 0;
+        const canEdit = [[${canEdit}]];
         maxIdIncrement = 0;
         moveOptions = "<option value=''></option>";
         $.get("/rest/arm/tab/camera", function (data) {
@@ -725,14 +726,18 @@
                     "                                    </tr>\n" +
                     "                                    </thead><tbody>";
                 for (let j = 0; j < data[i].cameras.length; j++) {
+                    let starTime =  data[i].cameras[j].startTime== "null" ? "": data[i].cameras[j].startTime;
+                    let endTime =  data[i].cameras[j].endTime== "null" ? "": data[i].cameras[j].endTime;
                     html = html + "<tr id='camera" + data[i].cameras[j].id + "'><td><select id='cameraSelect" + data[i].cameras[j].id + "' onchange='moveCameraToTab(" + data[i].cameras[j].id + ")'>" + moveOptions + "</select></td>\n" +
                         "          <td>" + data[i].cameras[j].name + "</td>\n" +
                         "          <td>" + data[i].cameras[j].ip + "</td>\n" +
                         "          <td>" + data[i].cameras[j].parking + "</td>\n" +
-                        "          <td>" + data[i].cameras[j].startTime + "</td>\n" +
-                        "          <td>" + data[i].cameras[j].endTime + "</td>" +
-                        "          <td><a href=\"/arm/edit/timeUnavailable/"+data[i].cameras[j].id+"\" <i class=\"ion-edit\"></i></a></td>" +
-                        "</tr>\n"
+                        "          <td>" + starTime + "</td>\n" +
+                        "          <td>" + endTime + "</td>";
+
+                    if(canEdit) html  += "<td><a href=\"/arm/edit/timeUnavailable/"+data[i].cameras[j].id+"\" <i class=\"ion-edit\"></i></a></td>";
+
+                    html += "</tr>\n";
 
 
                 }

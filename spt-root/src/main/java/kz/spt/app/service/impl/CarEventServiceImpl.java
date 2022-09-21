@@ -441,26 +441,29 @@ public class CarEventServiceImpl implements CarEventService {
         }
 
         if (cameraStatusDto != null) {
-            if ( cameraStatusDto.getStartTime() != null && cameraStatusDto.getEndTime() !=null) {
+            GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(cameraStatusDto.gateId);
+            if ( (cameraStatusDto.getStartTime() != null) && (cameraStatusDto.getEndTime() != null)) {
                 Date event_date_time = eventDto.event_date_time;
-                Long id = cameraStatusDto.id;
-                Camera camera = cameraService.getCameraById(id);
-                LocalTime dontOpenGateTimeFrom = camera.getStartTime();
-                LocalTime dontOpenGateTimeTo = camera.getEndTime();
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(event_date_time);
-                boolean isAfterStartTime11  = dontOpenGateTimeFrom.isBefore(LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),
-                        calendar.get(Calendar.MINUTE)));
-                boolean isBeforeEndTime11  = dontOpenGateTimeTo.isAfter(LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),
-                        calendar.get(Calendar.MINUTE)));
-                if ((isAfterStartTime11) && (isBeforeEndTime11)) {
-                    properties.put("type", EventLog.StatusType.Error);
-                    eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + " " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address, "Identified new car with number " + " " + eventDto.car_number + " from unknown camera with ip " + eventDto.ip_address, EventLog.EventType.NEW_CAR_DETECTED);
+                boolean isAfterStartTime  = cameraStatusDto.getStartTime().isBefore
+                        (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
+                boolean isBeforeEndTime  = cameraStatusDto.getEndTime().isAfter
+                        (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
+                if ((isAfterStartTime) && (isBeforeEndTime)) {
+                    if (eventDto.car_picture != null && !"".equals(eventDto.car_picture) && !"null".equals(eventDto.car_picture) && !"undefined".equals(eventDto.car_picture) && !"data:image/jpg;base64,null".equals(eventDto.car_picture)) {
+                        String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_date_time, eventDto.car_number);
+                        properties.put(StaticValues.carImagePropertyName, carImageUrl);
+                        properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
+                    }
+                    properties.put("gateName", gate.gateName);
+                    properties.put("gateId", gate.gateId);
+                    properties.put("gateType", gate.gateType);
+                    properties.put("type", EventLog.StatusType.Ignoring);
+                    eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + eventDto.car_number + " в нерабочее время парковки", "Identified a new car" + eventDto.car_number + " at night time", EventLog.EventType.NEW_CAR_DETECTED);
                     return;
                 }
             }
-
-            GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(cameraStatusDto.gateId);
 
             String secondCameraIp = (gate.frontCamera2 != null) ? (eventDto.ip_address.equals(gate.frontCamera.ip) ? gate.frontCamera2.ip : gate.frontCamera.ip) : null; // If there is two camera, then ignore second by timeout
 
