@@ -36,4 +36,4 @@ spring:
   flyway:
     enabled: false
 thirdPartyPayment:
-  url: https://mega.parqour.com/mega/client/notify
+  url: http://213.5.190.51:8000/api/parking_payments/post_link_spt/

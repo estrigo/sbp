@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository("thirdPartyPaymentRepository")
 public interface ThirdPartyPaymentRepository extends JpaRepository<ThirdPartyPayment, Long> {
@@ -14,6 +15,6 @@ public interface ThirdPartyPaymentRepository extends JpaRepository<ThirdPartyPay
     @Query("from ThirdPartyPayment th WHERE th.sent=false")
     List<ThirdPartyPayment> findNotSentThirdPartyPayments();
 
-    @Query("from ThirdPartyPayment th WHERE th.car_number=?1 and th.entryDate=?2")
-    ThirdPartyPayment findOneThirdPartyPayment(String carNumber, Date entryDate);
+    Optional<ThirdPartyPayment> findFirstByCarNumberAndEntryDate(String carNumber, Date entryDate);
+
 }
