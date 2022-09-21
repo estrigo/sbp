@@ -110,8 +110,6 @@ public class CarEventServiceImpl implements CarEventService {
     @Value("${booking.check.out}")
     boolean bookingCheckOut;
 
-    private Map<Long, Boolean> isTheObjectAvailable = new HashMap<>();
-    private CameraRepository cameraRepository;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
     private ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(LocaleContextHolder.getLocale().toString().substring(0, 2)));
 
@@ -566,23 +564,6 @@ public class CarEventServiceImpl implements CarEventService {
             eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + " " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address, "Identified new car with number " + " " + eventDto.car_number + " from unknown camera with ip " + eventDto.ip_address, EventLog.EventType.NEW_CAR_DETECTED);
         }
     }
-
-    public Map<Long, Boolean> getIsTheObjectAvailable() {
-        if (isTheObjectAvailable==null || isTheObjectAvailable.size() == 0){
-            List<Camera> cameraIdsAndSnapshotEnabled = cameraRepository.findCameraIdsAndSnapshotEnabled();
-            for (Camera camera: cameraIdsAndSnapshotEnabled) {
-//                isTheObjectAvailable.put(camera.getId(),camera.getSnapshotEnabled());
-            }
-            return isTheObjectAvailable;
-        }
-        return isTheObjectAvailable;
-    }
-
-
-    public void setIsTheObjectAvailable(Map<Long, Boolean> isTheObjectAvailable) {
-        this.isTheObjectAvailable = isTheObjectAvailable;
-    }
-
 
     private boolean isAllow(CarEventDto carEvent, CameraStatusDto cameraStatusDto, Map<String, Object> properties, GateStatusDto gate) {
         if (blacklistService.findByPlate(carEvent.car_number).isPresent()) {
