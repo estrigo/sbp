@@ -74,7 +74,6 @@ public class Camera {
     private String carmenPassword;
     private Boolean snapshotEnabled;
 
-    //ans
     private LocalTime startTime;
     private LocalTime endTime;
     private Date updatedTime;
