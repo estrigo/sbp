@@ -8,11 +8,13 @@ import kz.spt.whitelistplugin.model.WhitelistGroups;
 import kz.spt.whitelistplugin.viewmodel.WhiteListDto;
 import kz.spt.whitelistplugin.viewmodel.WhiteListGroupDto;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.util.List;
 
 @Service
+@Transactional
 public interface WhitelistGroupsService {
 
     WhitelistGroups findById(Long id);

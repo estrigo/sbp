@@ -5,8 +5,10 @@ import kz.spt.lib.service.CarsService;
 import kz.spt.megaplugin.MegaPlugin;
 import kz.spt.megaplugin.service.RootServicesGetterService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class RootServicesGetterServiceImpl implements RootServicesGetterService {
 
     private CarsService carsService;

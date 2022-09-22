@@ -7,6 +7,7 @@ import kz.spt.lib.service.QrPanelService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -14,6 +15,7 @@ import java.util.logging.Level;
 
 @Log
 @Service
+@Transactional
 public class QrPanelServiceImpl implements QrPanelService {
 
     @Value("${kaspi.qr-link}")

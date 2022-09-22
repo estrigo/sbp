@@ -15,6 +15,7 @@ import kz.spt.reportplugin.service.ReportService;
 import kz.spt.reportplugin.service.RootServicesGetterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ManualOpenReportServiceImpl implements ReportService<EventsDto> {
     private static final Comparator<EventsDto> EMPTY_COMPARATOR = (e1, e2) -> 0;

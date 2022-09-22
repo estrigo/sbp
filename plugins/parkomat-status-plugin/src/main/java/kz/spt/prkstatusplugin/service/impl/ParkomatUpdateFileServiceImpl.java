@@ -5,6 +5,7 @@ import kz.spt.prkstatusplugin.service.ParkomatUpdateFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -13,6 +14,7 @@ import java.nio.file.Paths;
 
 @Slf4j
 @Service
+@Transactional
 public class ParkomatUpdateFileServiceImpl implements ParkomatUpdateFileService {
 
     @Value("${images.file.path}")

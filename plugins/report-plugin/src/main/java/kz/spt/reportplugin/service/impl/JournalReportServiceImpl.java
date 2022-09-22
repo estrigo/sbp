@@ -24,6 +24,7 @@ import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jvnet.hk2.annotations.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 @Log
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class JournalReportServiceImpl implements ReportService<JournalReportDto> {
     private static final Comparator<JournalReportDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
     private ObjectMapper objectMapper = new ObjectMapper();

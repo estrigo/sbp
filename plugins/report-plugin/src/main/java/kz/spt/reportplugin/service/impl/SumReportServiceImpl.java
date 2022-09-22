@@ -28,6 +28,7 @@ import lombok.extern.java.Log;
 import org.jvnet.hk2.annotations.Service;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
 @Log
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
     @PersistenceContext

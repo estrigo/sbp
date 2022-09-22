@@ -7,6 +7,7 @@ import kz.spt.lib.service.TabloService;
 import lombok.extern.java.Log;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -15,6 +16,7 @@ import java.util.logging.Level;
 
 @Log
 @Service
+@Transactional
 public class TableServiceImpl implements TabloService {
 
     private final GateRepository gateRepository;

@@ -27,6 +27,7 @@ import org.pf4j.util.StringUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 
 @Log
 @Service
+@Transactional
 public class WhitelistServiceImpl implements WhitelistService {
 
     private static final String datePrettyFormat = "dd.MM.yyyy HH:mm:ss";

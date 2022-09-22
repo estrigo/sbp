@@ -9,12 +9,14 @@ import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 @Service
+@Transactional
 public class ReportServiceImpl implements ReportService {
 
     private final PluginService pluginService;

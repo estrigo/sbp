@@ -7,8 +7,10 @@ import kz.spt.lib.service.ParkingService;
 import kz.spt.tgbotplugin.TgBotPlugin;
 import kz.spt.tgbotplugin.service.RootServicesGetterService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class RootServicesGetterServiceImpl implements RootServicesGetterService {
 
     private CarsService carsService;

@@ -8,9 +8,11 @@ import kz.spt.lib.service.CarModelService;
 import kz.spt.lib.service.EventLogService;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Log
 @Service
+@Transactional
 public class CarModelServiceImpl implements CarModelService {
     private CarModelRepository carModelRepository;
     private EventLogService eventLogService;

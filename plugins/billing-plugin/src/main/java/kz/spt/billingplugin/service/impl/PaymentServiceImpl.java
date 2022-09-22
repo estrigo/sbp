@@ -33,6 +33,7 @@ import java.util.List;
 @Slf4j
 @Service("paymentService")
 @RequiredArgsConstructor
+@Transactional
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;

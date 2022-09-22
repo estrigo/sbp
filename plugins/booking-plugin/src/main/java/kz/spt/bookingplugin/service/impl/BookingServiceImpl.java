@@ -20,6 +20,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.net.URI;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
+@Transactional
 public class BookingServiceImpl implements BookingService {
 
     private static String halaparkToken;

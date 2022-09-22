@@ -5,9 +5,11 @@ import kz.spt.app.repository.ControllerRepository;
 import kz.spt.app.service.ControllerService;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Log
+@Transactional
 public class ControllerServiceImpl implements ControllerService {
 
     private final ControllerRepository controllerRepository;

@@ -8,11 +8,13 @@ import kz.spt.app.service.CameraService;
 import kz.spt.lib.model.CameraTab;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class CameraServiceImpl implements CameraService {
 
     private CameraRepository cameraRepository;

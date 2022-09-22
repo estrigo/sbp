@@ -17,6 +17,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -26,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 @Log
 @Service
+@Transactional
 public class ZerotouchServiceImpl implements ZerotouchService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();

@@ -30,6 +30,7 @@ import java.util.*;
 @Log
 @Service
 @EnableScheduling
+@Transactional
 public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
 
     @Value("${thirdPartyPayment.url}")

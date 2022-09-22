@@ -5,8 +5,10 @@ import kz.spt.lib.model.Gate;
 import kz.spt.app.repository.GateRepository;
 import kz.spt.app.service.GateService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class GateServiceImpl implements GateService {
 
     private GateRepository gateRepository;

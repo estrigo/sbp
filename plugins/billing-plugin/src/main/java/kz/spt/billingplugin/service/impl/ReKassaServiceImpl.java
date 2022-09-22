@@ -20,12 +20,14 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 @Slf4j
 @Service
 @AllArgsConstructor
+@Transactional
 public class ReKassaServiceImpl implements WebKassaService {
 
     @Value("${rekassa.host}")
