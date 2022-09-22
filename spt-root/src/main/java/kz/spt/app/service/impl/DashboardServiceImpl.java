@@ -278,7 +278,7 @@ public class DashboardServiceImpl implements DashboardService {
             while(current.isBefore(till)){
                 if(sum.length() > 0) sum.append(" ,");
 
-                sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and " + current.plusHours(1).format(formatter) + ") or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "') then 1 else 0 end) as '" + current.getHour() + "'");
+                sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "') then 1 else 0 end) as '" + current.getHour() + "'");
                 fields.add(String.valueOf(current.getHour()));
                 current = current.plusHours(1);
             }
@@ -384,7 +384,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public List durationsInPeriod(String period, String from, String to) {
-        LocalDateTime current = LocalDateTime.now();
+/*        LocalDateTime current = LocalDateTime.now();
         LocalDateTime till = LocalDateTime.now();
 
         if("year".equals(period)){
@@ -420,15 +420,432 @@ public class DashboardServiceImpl implements DashboardService {
         List durationResult =  entityManager.createNativeQuery(durationQueryString).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
 
         return durationResult;
+        */
+        LocalDateTime current = LocalDateTime.now();
+        LocalDateTime till = LocalDateTime.now();
+        List<String> fields = new ArrayList<>();
+
+        if("year".equals(period)){
+            current = LocalDateTime.of(current.getYear(), 1, 1, 0, 0);
+        } else if("month".equals(period)){
+            current = LocalDateTime.of(current.getYear(), current.getMonth(), 1, 0, 0);
+        } else if("week".equals(period)){
+            current = current.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).truncatedTo(ChronoUnit.DAYS);
+        } else if("day".equals(period)){
+            current = current.truncatedTo(ChronoUnit.DAYS);
+        } else if("period".equals(period)){
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            current = LocalDate.parse(from, formatter).atStartOfDay();
+            till = LocalDate.parse(to, formatter).atStartOfDay();
+        }
+
+        Date fromDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
+        Date toDate = Date.from(till.atZone(ZoneId.systemDefault()).toInstant());
+
+        String queryString = "select " +
+                "PERIOD" +
+                " from car_state cs" +
+                " where (:fromDate between cs.in_timestamp and cs.out_timestamp)" +
+                " or (:toDate between cs.in_timestamp and cs.out_timestamp)" +
+                " or (:toDate >= cs.in_timestamp and cs.out_timestamp is null)" +
+                " or (:fromDate <= cs.in_timestamp and :toDate >= cs.out_timestamp)";
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        if(timezoneShift > 0){
+            current = current.plusHours(timezoneShift);
+            till = till.plusHours(timezoneShift);
+        } else if(timezoneShift < 0){
+            current = current.minusDays(timezoneShift);
+            till = till.minusDays(timezoneShift);
+        }
+
+        StringBuilder sum = new StringBuilder("");
+        if("year".equals(period)){
+            while(current.isBefore(till)){
+                if(sum.length() > 0) sum.append(" ,");
+
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end)");
+                fields.add(current.getMonth().toString());
+                current = current.plusMonths(1);
+            }
+            queryString = queryString.replace("PERIOD", sum.toString());
+        } else if("month".equals(period)){
+            while(current.isBefore(till)){
+                if(sum.length() > 0) sum.append(" ,");
+
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end)");
+
+                fields.add(String.valueOf(current.getDayOfMonth()));
+                current = current.plusDays(1);
+            }
+            queryString = queryString.replace("PERIOD", sum.toString());
+        } else if("week".equals(period)){
+            while(current.isBefore(till)){
+                if(sum.length() > 0) sum.append(" ,");
+
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end)");
+                fields.add(current.getDayOfWeek().toString());
+                current = current.plusDays(1);
+            }
+            queryString = queryString.replace("PERIOD", sum.toString());
+        } else if("day".equals(period)){
+            while(current.isBefore(till)){
+                if(sum.length() > 0) sum.append(" ,");
+
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end)");
+                fields.add(String.valueOf(current.getHour()));
+                current = current.plusHours(1);
+            }
+            queryString = queryString.replace("PERIOD", sum.toString());
+        } else if("period".equals(period)){
+            Long diff = toDate.getTime() - fromDate.getTime();
+            long days = diff / (1000*60*60*24);
+            if(days > 1d){
+                if(days > 7d){
+                    if(days > 31d){
+                        while(current.isBefore(till)){
+                            if(sum.length() > 0) sum.append(" ,");
+
+                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end)");
+                            fields.add(current.getMonth().toString());
+                            current = current.plusMonths(1);
+                        }
+                        queryString = queryString.replace("PERIOD", sum.toString());
+                    } else {
+                        while(current.isBefore(till)){
+                            if(sum.length() > 0) sum.append(" ,");
+
+                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end)");
+                            fields.add(String.valueOf(current.getDayOfMonth()));
+                            current = current.plusDays(1);
+                        }
+                        queryString = queryString.replace("PERIOD", sum.toString());
+                    }
+                } else {
+                    while(current.isBefore(till)){
+                        if(sum.length() > 0) sum.append(" ,");
+
+                        sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                        sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                        sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                        sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                        sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end)");
+                        fields.add(current.getDayOfWeek().toString());
+                        current = current.plusDays(1);
+                    }
+                    queryString = queryString.replace("PERIOD", sum.toString());
+                }
+            } else {
+                while(current.isBefore(till)){
+                    if(sum.length() > 0) sum.append(" ,");
+
+                    sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                    sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                    sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                    sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
+                    sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end)");
+                    fields.add(String.valueOf(current.getHour()));
+                    current = current.plusHours(1);
+                }
+                queryString = queryString.replace("PERIOD", sum.toString());
+            }
+        }
+
+        log.info("queryString: " + queryString);
+
+        List<Object> result = new ArrayList<>();
+        List queryResult =  entityManager.createNativeQuery(queryString).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
+
+        result.add(fields);
+        result.add(queryResult);
+        return result;
     }
 
     @Override
     public Map occupancyAndMoneyByPeriod(String period, String from, String to) {
 
-        Map<String, Long> fieldsMap = new HashMap<>(15);
+        LocalDateTime current = LocalDateTime.now();
+        LocalDateTime till = LocalDateTime.now();
 
+        if("year".equals(period)){
+            current = LocalDateTime.of(current.getYear(), 1, 1, 0, 0);
+        } else if("month".equals(period)){
+            current = LocalDateTime.of(current.getYear(), current.getMonth(), 1, 0, 0);
+        } else if("week".equals(period)){
+            current = current.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).truncatedTo(ChronoUnit.DAYS);
+        } else if("day".equals(period)){
+            current = current.truncatedTo(ChronoUnit.DAYS);
+        } else if("period".equals(period)){
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            current = LocalDate.parse(from, formatter).atStartOfDay();
+            till = LocalDate.parse(to, formatter).atStartOfDay();
+        }
 
+        Date fromDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
+        Date toDate = Date.from(till.atZone(ZoneId.systemDefault()).toInstant());
 
-        return null;
+        Calendar dateFromException = Calendar.getInstance();
+        dateFromException.setTime(fromDate);
+        dateFromException.add(Calendar.MINUTE, -1);
+
+        Calendar dateToException = Calendar.getInstance();
+        dateToException.setTime(toDate);
+        dateToException.add(Calendar.MINUTE, 1);
+
+        Map<String, Object> fieldsMap = new HashMap<>(15);
+
+        String recordsQueryString = "select count(cs.id) as count from car_state cs where cs.out_timestamp between :fromDate and :toDate";
+        List<Long> recordsList = entityManager.createNativeQuery(recordsQueryString)
+                .setParameter("fromDate", fromDate)
+                .setParameter("toDate", toDate)
+                .getResultList();
+
+        Map<String, Object> fields = new HashMap<>();
+        fieldsMap.put("records", recordsList);
+
+        String paymentRecordsQueryString = "select count(distinct cs.car_state_id), sum(cs.totalSumma)" +
+                "from ( " +
+                "         select l.created, l.plate_number " +
+                "         from event_log l " +
+                "         where l.object_class = 'Gate' " +
+                "           and l.created between :dateFromException and :dateToException " +
+                "           and l.event_type = 'PAID_PASS' " +
+                ") l " +
+                "inner join ( " +
+                "    select p.car_state_id as car_state_id, cs.out_timestamp, cs.car_number, sum(p.amount) as totalSumma " +
+                "    from payments p " +
+                "             inner join car_state cs on cs.id = p.car_state_id " +
+                "    where (p.out_date between :dateFrom and :dateTo or p.out_date is null) " +
+                "      and cs.out_timestamp between :dateFrom and :dateTo " +
+                "      and cs.out_gate is not null " +
+                "    group by p.car_state_id " +
+                "    having totalSumma > 0 " +
+                ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second) ";
+        List<Object> paymentRecordsList = entityManager.createNativeQuery(paymentRecordsQueryString)
+                .setParameter("dateFrom", fromDate)
+                .setParameter("dateTo", toDate)
+                .setParameter("dateFromException", dateFromException.getTime())
+                .setParameter("dateToException", dateToException.getTime())
+                .getResultList();
+
+        fieldsMap.put("paymentRecords", paymentRecordsList);
+
+        String whitelistRecordsQueryString = "select count(distinct cs.car_state_id) " +
+                "from ( " +
+                "         select l.created, l.plate_number " +
+                "         from event_log l " +
+                "         where l.object_class = 'Gate' " +
+                "           and l.created between :dateFromException and :dateToException " +
+                "           and l.event_type = 'WHITELIST_OUT' " +
+                ") l " +
+                "inner join ( " +
+                "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
+                "    from car_state cs " +
+                "    where cs.out_timestamp between :dateFrom and :dateTo " +
+                "      and cs.out_gate is not null " +
+                ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
+
+        List<Object> whitelistRecordsList = entityManager.createNativeQuery(whitelistRecordsQueryString)
+                .setParameter("dateFrom", fromDate)
+                .setParameter("dateTo", toDate)
+                .setParameter("dateFromException", dateFromException.getTime())
+                .setParameter("dateToException", dateToException.getTime())
+                .getResultList();
+
+        fieldsMap.put("whitelistRecords", whitelistRecordsList);
+
+        PluginRegister megaPluginRegister = pluginService.getPluginRegister(StaticValues.megaPlugin);
+        if(megaPluginRegister != null){
+            String thirdPartyRecordsQueryString = "select count(distinct cs.car_state_id) " +
+                    "from ( " +
+                    "         select l.created, l.plate_number " +
+                    "         from event_log l " +
+                    "         where l.object_class = 'CarState' " +
+                    "           and l.created between :dateFromException and :dateToException " +
+                    "           and l.event_type = 'PREPAID' " +
+                    ") l " +
+                    "inner join ( " +
+                    "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
+                    "    from car_state cs " +
+                    "    where cs.out_timestamp between :dateFrom and :dateTo " +
+                    "      and cs.out_gate is not null " +
+                    ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
+
+            List<Object> thirdPartyRecordsList = entityManager.createNativeQuery(thirdPartyRecordsQueryString)
+                    .setParameter("dateFrom", fromDate)
+                    .setParameter("dateTo", toDate)
+                    .setParameter("dateFromException", dateFromException.getTime())
+                    .setParameter("dateToException", dateToException.getTime())
+                    .getResultList();
+
+            fieldsMap.put("thirdPartyRecords", thirdPartyRecordsList);
+        }
+
+        String abonementRecordsQueryString = "select count(distinct cs.car_state_id) " +
+                "from ( " +
+                "         select l.created, l.plate_number " +
+                "         from event_log l " +
+                "         where l.object_class = 'Gate' " +
+                "           and l.created between :dateFromException and :dateToException " +
+                "           and l.event_type = 'ABONEMENT_PASS' " +
+                ") l " +
+                "inner join ( " +
+                "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
+                "    from car_state cs " +
+                "    where cs.out_timestamp between :dateFrom and :dateTo " +
+                "      and cs.out_gate is not null " +
+                ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
+
+        List<Object> abonementRecordsList = entityManager.createNativeQuery(abonementRecordsQueryString)
+                .setParameter("dateFrom", fromDate)
+                .setParameter("dateTo", toDate)
+                .setParameter("dateFromException", dateFromException.getTime())
+                .setParameter("dateToException", dateToException.getTime())
+                .getResultList();
+
+        fieldsMap.put("abonementRecords", abonementRecordsList);
+
+        String freeMinuteRecordsQueryString = "select count(distinct cs.car_state_id) " +
+                "from ( " +
+                "         select l.created, l.plate_number " +
+                "         from event_log l " +
+                "         where l.object_class = 'Gate' " +
+                "           and l.created between :dateFromException and :dateToException " +
+                "           and l.event_type = 'FIFTEEN_FREE' " +
+                ") l " +
+                "inner join ( " +
+                "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
+                "    from car_state cs " +
+                "    where cs.out_timestamp between :dateFrom and :dateTo " +
+                "      and cs.out_gate is not null " +
+                ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
+
+        List<Object> freeMinuteRecordsList = entityManager.createNativeQuery(freeMinuteRecordsQueryString)
+                .setParameter("dateFrom", fromDate)
+                .setParameter("dateTo", toDate)
+                .setParameter("dateFromException", dateFromException.getTime())
+                .setParameter("dateToException", dateToException.getTime())
+                .getResultList();
+
+        fieldsMap.put("freeMinuteRecords", freeMinuteRecordsList);
+
+        String debtRecordsQueryString = "select count(distinct cs.car_state_id) " +
+                "from ( " +
+                "         select l.created, l.plate_number " +
+                "         from event_log l " +
+                "         where l.object_class = 'Gate' " +
+                "           and l.created between :dateFromException and :dateToException " +
+                "           and l.event_type = 'DEBT_OUT' " +
+                ") l " +
+                "inner join ( " +
+                "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
+                "    from car_state cs " +
+                "    where cs.out_timestamp between :dateFrom and :dateTo " +
+                "      and cs.out_gate is not null " +
+                ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
+
+        List<Object> debtRecordsList = entityManager.createNativeQuery(debtRecordsQueryString)
+                .setParameter("dateFrom", fromDate)
+                .setParameter("dateTo", toDate)
+                .setParameter("dateFromException", dateFromException.getTime())
+                .setParameter("dateToException", dateToException.getTime())
+                .getResultList();
+
+        fieldsMap.put("debtRecords", debtRecordsList);
+
+        String fromBalanceRecordsQueryString = "select count(distinct cs.car_state_id) " +
+                "from ( " +
+                "         select l.created, l.plate_number " +
+                "         from event_log l " +
+                "         where l.object_class = 'Gate' " +
+                "           and l.created between :dateFromException and :dateToException " +
+                "           and l.event_type = 'PAID_PASS' " +
+                ") l " +
+                "inner join ( " +
+                "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
+                "    from car_state cs " +
+                "        left outer join ( " +
+                "            select p.car_state_id " +
+                "            from payments p " +
+                "            where p.out_date between :dateFrom and :dateTo or p.out_date is null " +
+                "            group by p.car_state_id " +
+                "            having sum(p.amount)  > 0 " +
+                "        ) payments on payments.car_state_id = cs.id " +
+                "    where cs.out_timestamp between :dateFrom and :dateTo " +
+                "    and cs.out_gate is not null " +
+                "    and payments.car_state_id is null " +
+                ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
+
+        List<Object> fromBalanceRecordsList = entityManager.createNativeQuery(fromBalanceRecordsQueryString)
+                .setParameter("dateFrom", fromDate)
+                .setParameter("dateTo", toDate)
+                .setParameter("dateFromException", dateFromException.getTime())
+                .setParameter("dateToException", dateToException.getTime())
+                .getResultList();
+
+        fieldsMap.put("fromBalanceRecords", fromBalanceRecordsList);
+
+        String freeRecordsQueryString = "select count(distinct cs.car_state_id) " +
+                "from ( " +
+                "         select l.created, l.plate_number " +
+                "         from event_log l " +
+                "         where l.object_class = 'Gate' " +
+                "           and l.created between :dateFromException and :dateToException " +
+                "           and l.event_type = 'FREE_PASS' " +
+                ") l " +
+                "inner join ( " +
+                "    select cs.id as car_state_id, cs.out_timestamp, cs.car_number " +
+                "    from car_state cs " +
+                "    where cs.out_timestamp between :dateFrom and :dateTo " +
+                "      and cs.out_gate is not null " +
+                ") cs on cs.car_number = l.plate_number and cs.out_timestamp between date_sub(l.created, INTERVAL 60 second) and date_add(l.created, INTERVAL 60 second)";
+
+        List<Object> freeRecordsList = entityManager.createNativeQuery(freeRecordsQueryString)
+                .setParameter("dateFrom", fromDate)
+                .setParameter("dateTo", toDate)
+                .setParameter("dateFromException", dateFromException.getTime())
+                .setParameter("dateToException", dateToException.getTime())
+                .getResultList();
+
+        fieldsMap.put("freeRecords", freeRecordsList);
+
+        String autoClosedRecordsQueryString = "select count(cs.id) " +
+                "from car_state cs " +
+                "where cs.out_timestamp between :dateFrom and :dateTo " +
+                "and cs.out_gate is null";
+
+        List<Object> autoClosedRecordsList = entityManager.createNativeQuery(autoClosedRecordsQueryString)
+                .setParameter("dateFrom", fromDate)
+                .setParameter("dateTo", toDate)
+                .getResultList();
+
+        fieldsMap.put("autoClosedRecords", autoClosedRecordsList);
+
+        return fieldsMap;
     }
 }

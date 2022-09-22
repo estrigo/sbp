@@ -48,28 +48,62 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-lg-6">
+                    <div class="col-lg-12">
                         <div class="card-box">
-                            <div style="position: relative;">
-                                <canvas id="gatesDoughnutChart" width="800" height="400"></canvas>
-                                <div style="position:absolute; top: 57%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                                    <p style="font-size: 1.5rem;">Total</p>
-                                    <p style="font-size: 1.5rem;" id="gatesDoughnutChartTotal"></p>
-                                </div>
-                            </div>
-
+                            <canvas id="gatesBarChart" width="800" height="400"></canvas>
                         </div>
                     </div>
-                    <div class="col-lg-6">
-                        <div class="card-box">
-                            <div style="position: relative;">
-                                <canvas id="durationDoughnutChart" width="800" height="400"></canvas>
-                                <div style="position:absolute; top: 57%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                                    <p style="font-size: 1.5rem;">Total</p>
-                                    <p style="font-size: 1.5rem;" id="durationDoughnutChartTotal"></p>
-                                </div>
-                            </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="btn-group m-b-10">
+                            <button id="yearDuration" type="button" class="btn btn-primary waves-effect" onclick="setTypeDuration('year')">Yearly</button>
+                            <button id="monthDuration" type="button" class="btn btn-secondary waves-effect" onclick="setTypeDuration('month')">Monthly</button>
+                            <button id="weekDuration" type="button" class="btn btn-secondary waves-effect" onclick="setTypeDuration('week')">Weekly</button>
+                            <button id="dayDuration" type="button" class="btn btn-secondary waves-effect" onclick="setTypeDuration('day')">Daily</button>
+                            <button id="periodDuration" type="button" class="btn btn-secondary waves-effect" onclick="setTypeDuration('period')">Period</button>
                         </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4" id="fromDateDurationBlock" style="display: none;">
+                        <label th:text="#{events.dateFrom}"></label>
+                        <input type="date" id="fromDateDuration" class="form-control filter" onchange="dateDurationChanged()">
+                    </div>
+                    <div class="col-lg-4" id="toDateDurationBlock" style="display: none;">
+                        <label th:text="#{events.dateTo}"></label>
+                        <input type="date" id="toDateDuration" class="form-control filter" onchange="dateDurationChanged()">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card-box">
+                            <canvas id="durationLineChart" width="800" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="btn-group m-b-10">
+                            <button id="yearOccupancy" type="button" class="btn btn-primary waves-effect" onclick="setTypeOccupancy('year')">Yearly</button>
+                            <button id="monthOccupancy" type="button" class="btn btn-secondary waves-effect" onclick="setTypeOccupancy('month')">Monthly</button>
+                            <button id="weekOccupancy" type="button" class="btn btn-secondary waves-effect" onclick="setTypeOccupancy('week')">Weekly</button>
+                            <button id="dayOccupancy" type="button" class="btn btn-secondary waves-effect" onclick="setTypeOccupancy('day')">Daily</button>
+                            <button id="periodOccupancy" type="button" class="btn btn-secondary waves-effect" onclick="setTypeOccupancy('period')">Period</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4" id="fromDateOccupancyBlock" style="display: none;">
+                        <label th:text="#{events.dateFrom}"></label>
+                        <input type="date" id="fromDateOccupancy" class="form-control filter" onchange="dateOccupancyChanged()">
+                    </div>
+                    <div class="col-lg-4" id="toDateOccupancyBlock" style="display: none;">
+                        <label th:text="#{events.dateTo}"></label>
+                        <input type="date" id="toDateOccupancy" class="form-control filter" onchange="dateOccupancyChanged()">
                     </div>
                 </div>
 
@@ -77,6 +111,14 @@
                     <div class="col-lg-12">
                         <div class="card-box">
                             <canvas id="occupancyLineChart" width="800" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="display: none;">
+                    <div class="col-lg-12">
+                        <div class="card-box">
+                            <canvas id="occupancyAndMoneyByPeriodBarChart" width="800" height="400"></canvas>
                         </div>
                     </div>
                 </div>
@@ -92,10 +134,12 @@
 
 <script type="text/javascript" th:inline="javascript">
     let type = "year";
+    let typeDuration = "year";
+    let typeOccupancy = "year";
 
     let occupancyLineChart = undefined;
-    let gatesDoughnutChart = undefined;
-    let durationDoughnutChart = undefined;
+    let gatesBarChart = undefined;
+    let durationLineChart = undefined;
 
     const colors = [
         'rgb(255, 99, 132)',
@@ -119,6 +163,8 @@
         passByGatesInPeriod();
 
         durationByGatesInPeriod();
+
+        //occupancyAndMoneyByPeriod();
     });
 
     function drawOccupancyDougnutChart(total, occupied, percentage){
@@ -258,9 +304,9 @@
 
     function drawTotalCarsInPeriod(){
         let form = new FormData();
-        form.append("type", type);
-        form.append("from", $("#fromDate").val());
-        form.append("to", $("#toDate").val());
+        form.append("type", typeOccupancy);
+        form.append("from", $("#fromDateOccupancy").val());
+        form.append("to", $("#toDateOccupancy").val());
 
         let settings = {
             "url": "/rest/dashboard/count/countOccupancyInPeriod",
@@ -354,39 +400,43 @@
             };
 
             const config = {
-              type: 'doughnut',
+              type: 'bar',
               data: data,
               options: {
-                responsive: true,
-                plugins: {
-                  legend: {
-                    position: 'top',
+                  responsive: true,
+                  scales: {
+                      x: {
+                          stacked: true,
+                      },
+                      y: {
+                          stacked: true
+                      }
                   },
-                  title: {
-                    display: true,
-                    text: 'Entry/Exit Gates Percentage'
-                  }
+                  plugins: {
+                    title: {
+                        display: true,
+                        text: 'Number of Passes through Gates. Total: ' + total.toLocaleString(undefined, {})
+                    }
                 }
               },
             };
 
-            if(gatesDoughnutChart){
-                gatesDoughnutChart.destroy();
+            if(gatesBarChart){
+                gatesBarChart.destroy();
             }
 
-            gatesDoughnutChart = new Chart(
-                document.getElementById('gatesDoughnutChart'),
+            gatesBarChart = new Chart(
+                document.getElementById('gatesBarChart'),
                 config
             );
-            $("#gatesDoughnutChartTotal").text(total.toLocaleString(undefined, {}));
         });
     }
 
     function durationByGatesInPeriod(){
         let form = new FormData();
-        form.append("type", type);
-        form.append("from", $("#fromDate").val());
-        form.append("to", $("#toDate").val());
+        form.append("type", typeDuration);
+        form.append("from", $("#fromDateDuration").val());
+        form.append("to", $("#toDateDuration").val());
 
         let settings = {
             "url": "/rest/dashboard/count/durationsInPeriod",
@@ -398,51 +448,146 @@
         };
         $.ajax(settings).done(function (result) {
 
-            let total = 0;
-            for(let i = 0; i < result[0].length; i++){
-                total = total + result[0][i];
+            let oneHour = [];
+            let twoHour = [];
+            let threeHour = [];
+            let fourHour = [];
+            let moreHour = [];
+
+            for(let i = 0; i < result[1][0].length; i = i + 5){
+                oneHour.push(result[1][0][i]);
+                twoHour.push(result[1][0][i+1]);
+                threeHour.push(result[1][0][i+2]);
+                fourHour.push(result[1][0][i+3]);
+                moreHour.push(result[1][0][i+4]);
             }
 
             let labels = ['0-1h', '1-2h', '2-3h', '3-4h', 'more 4h'];
 
             const data = {
-                labels: labels,
+                labels: result[0],
                 datasets: [
                     {
-                        label: '',
-                        data: result[0],
-                        backgroundColor: colors,
+                        label: '0-1h',
+                        data: oneHour,
+                        borderColor: colors[0],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: '1-2h',
+                        data: twoHour,
+                        borderColor: colors[1],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: '2-3h',
+                        data: threeHour,
+                        borderColor: colors[2],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: '3-4h',
+                        data: fourHour,
+                        borderColor: colors[3],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: 'more 4h',
+                        data: moreHour,
+                        borderColor: colors[4],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
                     }
                 ]
-            };
+            }
 
             const config = {
-                type: 'doughnut',
+                type: 'line',
                 data: data,
                 options: {
                     responsive: true,
                     plugins: {
-                        legend: {
-                            position: 'top',
-                        },
                         title: {
                             display: true,
-                            text: 'Car duration in hours'
+                            text: (ctx) => 'Number of Cars by Parking Duration',
                         }
                     }
-                },
+                }
             };
 
-            if(durationDoughnutChart){
-                durationDoughnutChart.destroy();
+            if(durationLineChart){
+                durationLineChart.destroy();
             }
 
-            durationDoughnutChart = new Chart(
-                document.getElementById('durationDoughnutChart'),
+            durationLineChart = new Chart(
+                document.getElementById('durationLineChart'),
                 config
             );
+        });
+    }
 
-            $("#durationDoughnutChartTotal").text(total.toLocaleString(undefined, {}));
+    function occupancyAndMoneyByPeriod(){
+        let form = new FormData();
+        form.append("type", type);
+        form.append("from", $("#fromDate").val());
+        form.append("to", $("#toDate").val());
+
+        let settings = {
+            "url": "/rest/dashboard/count/occupancyAndMoneyByPeriod",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (result) {
+            console.log(result);
+
+            const xIndexes = getXIndexes(result);
+            const data = {
+                labels: type == 'year' ? getMonthLabels(xIndexes) : xIndexes,
+                datasets: getProvidersSumBarChartDataset(result, xIndexes)
+            };
+
+            const config = {
+                type: 'bar',
+                data: data,
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Payment count by providers'
+                        },
+                    },
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true,
+                        },
+                        y: {
+                            stacked: true
+                        }
+                    }
+                }
+            };
+
+            if(providersCountBarChart){
+                occupancyAndMoneyByPeriodBarChart.destroy();
+            }
+
+            occupancyAndMoneyByPeriodBarChart = new Chart(
+                document.getElementById('occupancyAndMoneyByPeriodBarChart'),
+                config
+            );
         });
     }
 
@@ -456,21 +601,17 @@
             $("#fromDateBlock").show();
             $("#toDateBlock").show();
             if($("#fromDate").val() && $("#toDate").val()){
-                drawTotalCarsInPeriod();
                 passByGatesInPeriod();
-                durationByGatesInPeriod();
             }
         } else {
             $("#fromDateBlock").hide();
             $("#toDateBlock").hide();
-            drawTotalCarsInPeriod();
             passByGatesInPeriod();
-            durationByGatesInPeriod();
         }
     }
 
     function dateChanged(){
-        if(type == 'period'){
+        if(typeDuration == 'period'){
             if($("#fromDate").val() && $("#toDate").val()){
                 drawTotalCarsInPeriod();
                 passByGatesInPeriod();
@@ -480,6 +621,64 @@
             drawTotalCarsInPeriod();
             passByGatesInPeriod();
             durationByGatesInPeriod();
+        }
+    }
+
+    function setTypeDuration(val){
+        $('#'+typeDuration+'Duration').removeClass("btn-primary");
+        $('#'+typeDuration+'Duration').addClass("btn-secondary");
+        typeDuration = val;
+        $('#'+val+'Duration').addClass("btn-primary");
+        $('#'+val+'Duration').removeClass("btn-secondary");
+        if(typeDuration == 'periodDuration'){
+            $("#fromDateDurationBlock").show();
+            $("#toDateDurationBlock").show();
+            if($("#fromDateDuration").val() && $("#toDateDuration").val()){
+                durationByGatesInPeriod();
+            }
+        } else {
+            $("#fromDateDurationBlock").hide();
+            $("#toDateDurationBlock").hide();
+            durationByGatesInPeriod();
+        }
+    }
+
+    function dateDurationChanged(){
+        if(typeDuration == 'periodDuration'){
+            if($("#fromDateDuration").val() && $("#toDateDuration").val()){
+                durationByGatesInPeriod();
+            }
+        } else {
+            durationByGatesInPeriod();
+        }
+    }
+
+    function setTypeOccupancy(val){
+        $('#'+typeOccupancy+'Occupancy').removeClass("btn-primary");
+        $('#'+typeOccupancy+'Occupancy').addClass("btn-secondary");
+        typeOccupancy = val;
+        $('#'+val+'Occupancy').addClass("btn-primary");
+        $('#'+val+'Occupancy').removeClass("btn-secondary");
+        if(typeOccupancy == 'periodOccupancy'){
+            $("#fromDateOccupancyBlock").show();
+            $("#toDateOccupancyBlock").show();
+            if($("#fromDateOccupancy").val() && $("#toDateOccupancy").val()){
+                drawTotalCarsInPeriod();
+            }
+        } else {
+            $("#fromDateOccupancyBlock").hide();
+            $("#toDateOccupancyBlock").hide();
+            drawTotalCarsInPeriod();
+        }
+    }
+
+    function dateOccupancyChanged(){
+        if(typeOccupancy == 'periodOccupancy'){
+            if($("#fromDateOccupancy").val() && $("#toDateOccupancy").val()){
+                drawTotalCarsInPeriod();
+            }
+        } else {
+            drawTotalCarsInPeriod();
         }
     }
 </script>
