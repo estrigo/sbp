@@ -13,7 +13,6 @@ import kz.spt.app.model.strategy.barrier.open.AbstractOpenStrategy;
 import kz.spt.app.model.strategy.barrier.open.CarInEventStrategy;
 import kz.spt.app.model.strategy.barrier.open.CarOutEventStrategy;
 import kz.spt.app.model.strategy.barrier.open.CarReverseEventStrategy;
-import kz.spt.app.repository.CameraRepository;
 import kz.spt.app.repository.CarModelRepository;
 import kz.spt.app.service.*;
 import kz.spt.lib.extension.PluginRegister;
@@ -440,28 +439,6 @@ public class CarEventServiceImpl implements CarEventService {
 
         if (cameraStatusDto != null) {
             GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(cameraStatusDto.gateId);
-            if ( (cameraStatusDto.getStartTime() != null) && (cameraStatusDto.getEndTime() != null)) {
-                Date event_date_time = eventDto.event_date_time;
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(event_date_time);
-                boolean isAfterStartTime  = cameraStatusDto.getStartTime().isBefore
-                        (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
-                boolean isBeforeEndTime  = cameraStatusDto.getEndTime().isAfter
-                        (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
-                if ((isAfterStartTime) && (isBeforeEndTime)) {
-                    if (eventDto.car_picture != null && !"".equals(eventDto.car_picture) && !"null".equals(eventDto.car_picture) && !"undefined".equals(eventDto.car_picture) && !"data:image/jpg;base64,null".equals(eventDto.car_picture)) {
-                        String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_date_time, eventDto.car_number);
-                        properties.put(StaticValues.carImagePropertyName, carImageUrl);
-                        properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
-                    }
-                    properties.put("gateName", gate.gateName);
-                    properties.put("gateId", gate.gateId);
-                    properties.put("gateType", gate.gateType);
-                    properties.put("type", EventLog.StatusType.Ignoring);
-                    eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + eventDto.car_number + " в нерабочее время парковки", "Identified a new car" + eventDto.car_number + " at night time", EventLog.EventType.NEW_CAR_DETECTED);
-                    return;
-                }
-            }
 
             String secondCameraIp = (gate.frontCamera2 != null) ? (eventDto.ip_address.equals(gate.frontCamera.ip) ? gate.frontCamera2.ip : gate.frontCamera.ip) : null; // If there is two camera, then ignore second by timeout
 
@@ -548,6 +525,10 @@ public class CarEventServiceImpl implements CarEventService {
                 if (Gate.GateType.REVERSE.equals(gate.gateType)) {
                     handleCarReverseInEvent(eventDto, camera, gate, properties, format);
                 } else if (Gate.GateType.IN.equals(gate.gateType)) {
+                    if ( (cameraStatusDto.getStartTime() != null) && (cameraStatusDto.getEndTime() != null)) {
+                       unavailableTimeOfObject(eventDto, cameraStatusDto, properties, gate, camera);
+                       return;
+                    }
                     handleCarInEvent(eventDto, camera, gate, properties, format);
                 } else if (Gate.GateType.OUT.equals(gate.gateType)) {
                     handleCarOutEvent(eventDto, camera, gate, properties, format);
@@ -562,6 +543,28 @@ public class CarEventServiceImpl implements CarEventService {
         } else {
             properties.put("type", EventLog.StatusType.Error);
             eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + " " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address, "Identified new car with number " + " " + eventDto.car_number + " from unknown camera with ip " + eventDto.ip_address, EventLog.EventType.NEW_CAR_DETECTED);
+        }
+    }
+
+    private void unavailableTimeOfObject(CarEventDto eventDto, CameraStatusDto cameraStatusDto,
+                                         Map<String, Object> properties, GateStatusDto gate, Camera camera) throws IOException {
+        Date event_date_time = eventDto.event_date_time;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(event_date_time);
+        boolean isAfterStartTime  = cameraStatusDto.getStartTime().isBefore
+                (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
+        boolean isBeforeEndTime  = cameraStatusDto.getEndTime().isAfter
+                (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
+        if ((isAfterStartTime) && (isBeforeEndTime)) {
+            properties.put("gateName", gate.gateName);
+            properties.put("gateId", gate.gateId);
+            properties.put("gateType", gate.gateType);
+            properties.put("type", EventLog.StatusType.Ignoring);
+            String descriptionRu = "Ошибка открытия шлагбаума: Идентифицировано авто в нерабочее с номером: " + eventDto.car_number ;
+            String descriptionEn = "Error while barrier open: Identified a car during non-working hours with plate number  " + eventDto.car_number;
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Ignoring, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn);
+            eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + eventDto.car_number + " в нерабочее время парковки", "Identified a new car" + eventDto.car_number + " at night time", EventLog.EventType.NEW_CAR_DETECTED);
+
         }
     }
 
