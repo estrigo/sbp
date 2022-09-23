@@ -508,7 +508,8 @@ public class RateServiceImpl implements RateService {
                 rateConditionList.add(rateCondition);
                 rateCondition.setIntervalRate(intervalRate);
             }
-            intervalRate.setRateConditions(rateConditionList);
+            intervalRate.getRateConditions().clear();
+            intervalRate.getRateConditions().addAll(rateConditionList);
             intervalRateRepository.save(intervalRate);
         }
         IntervalRate resultIntervalRate = getSatisfiedIntervalRate(inCalendarHour, parkingRate);
@@ -520,7 +521,8 @@ public class RateServiceImpl implements RateService {
         List<IntervalRate> rateList = intervalRateRepository.findAllByParkingRateId(parkingRate.getId());
         for (IntervalRate ir : rateList) {
             List<RateCondition> rt = rateConditionRepository.findAllByIntervalRateId(ir.getId());
-            ir.setRateConditions(rt);
+            ir.getRateConditions().clear();
+            ir.getRateConditions().addAll(rt);
         }
         return rateList;
     }
