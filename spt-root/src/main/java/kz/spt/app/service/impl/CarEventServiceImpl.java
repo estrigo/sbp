@@ -525,9 +525,17 @@ public class CarEventServiceImpl implements CarEventService {
                 if (Gate.GateType.REVERSE.equals(gate.gateType)) {
                     handleCarReverseInEvent(eventDto, camera, gate, properties, format);
                 } else if (Gate.GateType.IN.equals(gate.gateType)) {
-                    if ( (cameraStatusDto.getStartTime() != null) && (cameraStatusDto.getEndTime() != null)) {
-                       unavailableTimeOfObject(eventDto, cameraStatusDto, properties, gate, camera);
-                       return;
+                    if ((cameraStatusDto.getStartTime() != null) && (cameraStatusDto.getEndTime() != null)) {
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(eventDto.event_date_time);
+                        boolean isAfterStartTime  = cameraStatusDto.getStartTime().isBefore
+                                (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
+                        boolean isBeforeEndTime  = cameraStatusDto.getEndTime().isAfter
+                                (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
+                        if ((isAfterStartTime) && (isBeforeEndTime)){
+                            eventPropertiesOfIgnoringType(eventDto, properties, gate, camera);
+                            return;
+                        }
                     }
                     handleCarInEvent(eventDto, camera, gate, properties, format);
                 } else if (Gate.GateType.OUT.equals(gate.gateType)) {
@@ -546,16 +554,8 @@ public class CarEventServiceImpl implements CarEventService {
         }
     }
 
-    private void unavailableTimeOfObject(CarEventDto eventDto, CameraStatusDto cameraStatusDto,
-                                         Map<String, Object> properties, GateStatusDto gate, Camera camera) throws IOException {
-        Date event_date_time = eventDto.event_date_time;
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(event_date_time);
-        boolean isAfterStartTime  = cameraStatusDto.getStartTime().isBefore
-                (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
-        boolean isBeforeEndTime  = cameraStatusDto.getEndTime().isAfter
-                (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
-        if ((isAfterStartTime) && (isBeforeEndTime)) {
+    private void eventPropertiesOfIgnoringType(CarEventDto eventDto, Map<String, Object> properties,
+                                               GateStatusDto gate, Camera camera) {
             properties.put("gateName", gate.gateName);
             properties.put("gateId", gate.gateId);
             properties.put("gateType", gate.gateType);
@@ -564,8 +564,6 @@ public class CarEventServiceImpl implements CarEventService {
             String descriptionEn = "Error while barrier open: Identified a car during non-working hours with plate number  " + eventDto.car_number;
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Ignoring, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn);
             eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + eventDto.car_number + " в нерабочее время парковки", "Identified a new car" + eventDto.car_number + " at night time", EventLog.EventType.NEW_CAR_DETECTED);
-
-        }
     }
 
     private boolean isAllow(CarEventDto carEvent, CameraStatusDto cameraStatusDto, Map<String, Object> properties, GateStatusDto gate) {
