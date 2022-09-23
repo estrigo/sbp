@@ -27,7 +27,7 @@ import java.util.Collections;
 @Slf4j
 @Service
 @AllArgsConstructor
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class ReKassaServiceImpl implements WebKassaService {
 
     @Value("${rekassa.host}")

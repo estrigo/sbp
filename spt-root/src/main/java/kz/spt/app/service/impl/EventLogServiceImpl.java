@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class EventLogServiceImpl implements EventLogService {
 
     @Autowired

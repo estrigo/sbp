@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class AbonomentPluginServiceImpl implements AbonomentPluginService {
 
     private final AbonomentTypesRepository abonomentTypesRepository;

@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 @Log
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class SumReportServiceImpl implements ReportService<SumReportDto> {
 
     @PersistenceContext

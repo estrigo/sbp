@@ -22,7 +22,7 @@ import java.util.List;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class CarImageServiceImpl implements CarImageService {
 
     private String imagePath;

@@ -30,7 +30,7 @@ import java.util.*;
 @Log
 @Service
 @EnableScheduling
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
 
     @Value("${thirdPartyPayment.url}")
@@ -57,7 +57,7 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
         }
     }
 
-    @Transactional
+
     public void saveThirdPartyPayment(String plateNumber, Date entryDate, Date exitDate, BigDecimal rate,
                                       String parkingUid, String thPPUrl) throws Exception {
         Optional<ThirdPartyPayment> existPayment = thirdPartyPaymentRepository.findFirstByCarNumberAndEntryDate(plateNumber, entryDate);

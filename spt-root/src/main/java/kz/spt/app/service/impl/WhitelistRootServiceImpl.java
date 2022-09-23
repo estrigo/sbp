@@ -21,7 +21,7 @@ import java.util.*;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class WhitelistRootServiceImpl implements WhitelistRootService {
 
     private final PluginService pluginService;

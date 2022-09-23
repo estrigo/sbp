@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class CarModelServiceImpl implements CarModelService {
     private CarModelRepository carModelRepository;
     private EventLogService eventLogService;

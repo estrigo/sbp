@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class CalibrationServiceImpl implements CalibrationService {
     private final CalibrationRepository calibrationRepository;
     private final CameraService cameraService;

@@ -27,7 +27,7 @@ import java.util.Optional;
 import static kz.spt.lib.utils.StaticValues.*;
 
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class ParkingServiceImpl implements ParkingService {
 
     private ParkingRepository parkingRepository;

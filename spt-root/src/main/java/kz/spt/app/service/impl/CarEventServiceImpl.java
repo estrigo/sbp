@@ -48,7 +48,7 @@ import static kz.spt.lib.service.EventLogService.ArmEventType;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class CarEventServiceImpl implements CarEventService {
 
     private static Hashtable<String, Long> cameraTimeoutHashtable = new Hashtable<>();

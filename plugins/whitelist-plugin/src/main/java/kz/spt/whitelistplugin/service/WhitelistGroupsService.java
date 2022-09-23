@@ -14,7 +14,7 @@ import java.text.ParseException;
 import java.util.List;
 
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public interface WhitelistGroupsService {
 
     WhitelistGroups findById(Long id);

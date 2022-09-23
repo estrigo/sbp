@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @Log
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class JournalReportServiceImpl implements ReportService<JournalReportDto> {
     private static final Comparator<JournalReportDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
     private ObjectMapper objectMapper = new ObjectMapper();

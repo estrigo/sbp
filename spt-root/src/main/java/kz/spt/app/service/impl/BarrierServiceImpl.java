@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Log
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class BarrierServiceImpl implements BarrierService {
 
     public static Map<String, ModbusMaster> modbusMasterMap = new ConcurrentHashMap<>();

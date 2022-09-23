@@ -28,7 +28,7 @@ import java.util.Collections;
 @Service
 @AllArgsConstructor
 @Slf4j
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class WebKassaServiceImpl implements WebKassaService {
 
     String token;

@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Log
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class ControllerServiceImpl implements ControllerService {
 
     private final ControllerRepository controllerRepository;

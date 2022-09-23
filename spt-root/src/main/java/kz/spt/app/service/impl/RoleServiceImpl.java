@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class RoleServiceImpl implements RoleService {
 
     private RoleRepository roleRepository;

@@ -14,7 +14,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class PaymentCheckLogServiceImpl implements PaymentCheckLogService {
 
     private final PaymentCheckLogRepository paymentCheckLogRepository;

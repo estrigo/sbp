@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class ReportServiceImpl implements ReportService {
 
     private final PluginService pluginService;

@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class PaymentServiceImpl implements PaymentService {
 
     private final PluginService pluginService;

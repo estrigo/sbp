@@ -19,7 +19,7 @@ import java.util.Set;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class SpringDataUserDetailsService implements UserDetailsService {
 
     @Autowired

@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 @RequiredArgsConstructor
 public class ManualOpenReportServiceImpl implements ReportService<EventsDto> {
     private static final Comparator<EventsDto> EMPTY_COMPARATOR = (e1, e2) -> 0;

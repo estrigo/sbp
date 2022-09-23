@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class RootServicesGetterServiceImpl implements RootServicesGetterService {
 
     private ParkingService parkingService;

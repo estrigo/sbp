@@ -27,7 +27,7 @@ import static kz.spt.lib.utils.StaticValues.abonementPlugin;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class AbonomentServiceImpl implements AbonomentService {
 
     private final PluginService pluginService;

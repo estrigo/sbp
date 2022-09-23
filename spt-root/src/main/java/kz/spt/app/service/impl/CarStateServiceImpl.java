@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class CarStateServiceImpl implements CarStateService {
 
     private final CarStateRepository carStateRepository;

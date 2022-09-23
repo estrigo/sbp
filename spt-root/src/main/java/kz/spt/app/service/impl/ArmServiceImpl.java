@@ -64,7 +64,7 @@ import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class ArmServiceImpl implements ArmService {
     @Value("${hardcode.string.noPicture}")
     private String noPicture;

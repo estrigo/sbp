@@ -15,7 +15,7 @@ import java.util.logging.Level;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class QrPanelServiceImpl implements QrPanelService {
 
     @Value("${kaspi.qr-link}")

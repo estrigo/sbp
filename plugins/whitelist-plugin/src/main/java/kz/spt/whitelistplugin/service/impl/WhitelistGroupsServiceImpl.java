@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Log
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
 
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";

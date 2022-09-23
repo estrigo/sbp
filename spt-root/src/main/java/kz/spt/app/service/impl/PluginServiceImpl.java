@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class PluginServiceImpl implements PluginService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();

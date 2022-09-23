@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 
 @Service
 @Slf4j
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class FileServices {
 
     @Autowired

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class BlacklistServiceImpl implements BlacklistService {
     private final BlacklistRepository blacklistRepository;
 

@@ -30,7 +30,7 @@ import java.util.*;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class RateServiceImpl implements RateService {
 
     private RateRepository rateRepository;

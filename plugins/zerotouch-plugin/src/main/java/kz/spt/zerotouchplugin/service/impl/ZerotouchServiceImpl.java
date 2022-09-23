@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class ZerotouchServiceImpl implements ZerotouchService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();

@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class WhitelistServiceImpl implements WhitelistService {
 
     private static final String datePrettyFormat = "dd.MM.yyyy HH:mm:ss";

@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 
 @Log
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class BalanceServiceImpl implements BalanceService {
 
     private BalanceRepository balanceRepository;

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class CameraServiceImpl implements CameraService {
 
     private CameraRepository cameraRepository;

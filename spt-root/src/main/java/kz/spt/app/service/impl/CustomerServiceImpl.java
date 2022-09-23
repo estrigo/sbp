@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class CustomerServiceImpl implements CustomerService {
 
     @Autowired

@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class BookingServiceImpl implements BookingService {
 
     private static String halaparkToken;

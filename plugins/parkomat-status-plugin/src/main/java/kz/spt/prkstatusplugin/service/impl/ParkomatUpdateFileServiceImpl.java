@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 
 @Slf4j
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 public class ParkomatUpdateFileServiceImpl implements ParkomatUpdateFileService {
 
     @Value("${images.file.path}")
