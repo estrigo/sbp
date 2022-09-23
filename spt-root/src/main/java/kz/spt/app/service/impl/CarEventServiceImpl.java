@@ -418,14 +418,13 @@ public class CarEventServiceImpl implements CarEventService {
             Optional<CarState> carStateForCheckGateType = Optional.ofNullable(carStateService.getLastNotLeft(eventDto.car_number));
             if(eventDto.cameraId!=null){
                 Camera camera = cameraService.getCameraById(eventDto.cameraId);
-                if(carStateForCheckGateType.isPresent()
+                if(camera.getGate().getGateType().equals(Gate.GateType.OUT) && carStateForCheckGateType.isPresent()
                         && !camera.getGate().getParking().getId().equals(carStateForCheckGateType.get().getParking().getId())) {
 
                     camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckGateType.get().getParking()).get();
                     eventDto.cameraId = camera.getId();
                 }
             }
-
         }
 
         CameraStatusDto cameraStatusDto = eventDto.cameraId != null ? StatusCheckJob.findCameraStatusDtoById(eventDto.cameraId) : StatusCheckJob.findCameraStatusDtoByIp(eventDto.ip_address);
