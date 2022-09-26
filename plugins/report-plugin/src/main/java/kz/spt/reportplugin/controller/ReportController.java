@@ -58,13 +58,15 @@ public class ReportController extends BasicRestController<SumReportDto> {
         FilterJournalReportDto filter = new FilterJournalReportDto();
         String pattern_1 = "yyyy-MM-dd hh:mm:ss";
         byte[] bytes;
-        if (ReportNameEnum.BILLING.equals(name)) {
-            dateTo = dateFrom;
-        } else if ((ObjectUtils.isEmpty(dateFrom) || ObjectUtils.isEmpty(dateTo))) {
-            throw new Exception("Is null dateFrom or dateTo");
+        if (!ReportNameEnum.MANUAL_OPEN.equals(name)) {
+            if (ReportNameEnum.BILLING.equals(name)) {
+                dateTo = dateFrom;
+            } else if ((ObjectUtils.isEmpty(dateFrom) || ObjectUtils.isEmpty(dateTo))) {
+                throw new Exception("Is null dateFrom or dateTo");
+            }
+            dateFrom = dateFrom.concat(" 00:00:00");
+            dateTo = dateTo.concat(" 23:59:00");
         }
-        dateFrom = dateFrom.concat(" 00:00:00");
-        dateTo = dateTo.concat(" 23:59:00");
         if (ReportNameEnum.BILLING.equals(name)) {
             bytes = rootServicesGetterService.getAdminService().report(billingData(
                     new SimpleDateFormat(pattern_1).parse(dateFrom),
