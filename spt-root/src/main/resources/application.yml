@@ -169,9 +169,9 @@ shiftClosing:
   terminal: false
 cron:
   scheduler:
-    expr_parkomat: "0 */5 2-6 * * ?"
-    expr_terminal: "0 */5 2-6 * * ?"
-    expr_reset: "0 50 0 * * ?"
+    expr_parkomat: "0 */5 0-6 * * ?"
+    expr_terminal: "0 */5 0-6 * * ?"
+    expr_reset: "0 50 23 * * ?"
 web:
   locale: ru
 management:
