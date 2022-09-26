@@ -59,8 +59,9 @@ public class ScheduleWorks {
 
     @Scheduled(cron = "${cron.scheduler.expr_reset}")
     public void resetKassa() {
-        List<PosTerminal> posTerminalList = posTerminalRepository.findPosTerminalsByReconsilatedIsFalse();
+        List<PosTerminal> posTerminalList = posTerminalRepository.findPosTerminalsByReconsilatedIsTrue();
         for (PosTerminal posTerminal : posTerminalList) {
+            log.info("posTerminal id : " + posTerminal.getId());
             posTerminal.setReconsilated(false);
         }
         posTerminalRepository.saveAll(posTerminalList);
