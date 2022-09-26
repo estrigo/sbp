@@ -533,8 +533,7 @@ public class CarEventServiceImpl implements CarEventService {
                     }
                 }
 
-                cameraStatusDto.id = camera.getId();
-                createNewCarEvent(cameraStatusDto, gate, eventDto, properties);
+                createNewCarEvent(camera.getId(), gate, eventDto, properties);
 
                 if (Gate.GateType.REVERSE.equals(gate.gateType)) {
                     handleCarReverseInEvent(eventDto, camera, gate, properties, format);
@@ -1728,11 +1727,11 @@ public class CarEventServiceImpl implements CarEventService {
         }
     }
 
-    private void createNewCarEvent(CameraStatusDto cameraStatusDto, GateStatusDto gateStatusDto, CarEventDto eventDto, Map<String, Object> properties) {
+    private void createNewCarEvent(Long id, GateStatusDto gateStatusDto, CarEventDto eventDto, Map<String, Object> properties) {
         properties.put("type", EventLog.StatusType.Success);
-        eventLogService.sendSocketMessage(ArmEventType.Photo, EventLog.StatusType.Success, cameraStatusDto.id, eventDto.getCarNumberWithRegion(), eventDto.car_picture, null);
-        eventLogService.sendSocketMessage(ArmEventType.Lp, EventLog.StatusType.Success, cameraStatusDto.id, eventDto.car_number, eventDto.lp_picture, null);
-        eventLogService.createEventLog(Camera.class.getSimpleName(), cameraStatusDto.id, properties, "Зафиксирован новый номер авто " + eventDto.car_number, "New license plate number identified " + eventDto.car_number, EventLog.EventType.NEW_CAR_DETECTED);
+        eventLogService.sendSocketMessage(ArmEventType.Photo, EventLog.StatusType.Success, id, eventDto.getCarNumberWithRegion(), eventDto.car_picture, null);
+        eventLogService.sendSocketMessage(ArmEventType.Lp, EventLog.StatusType.Success, id, eventDto.car_number, eventDto.lp_picture, null);
+        eventLogService.createEventLog(Camera.class.getSimpleName(), id, properties, "Зафиксирован новый номер авто " + eventDto.car_number, "New license plate number identified " + eventDto.car_number, EventLog.EventType.NEW_CAR_DETECTED);
         carsService.createCar(eventDto.car_number, eventDto.region, eventDto.vecihleType, Gate.GateType.OUT.equals(gateStatusDto.gateType) ? null : eventDto.car_model); // При выезде не сохранять тип авто
     }
 
