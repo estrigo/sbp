@@ -98,13 +98,13 @@ public class DashboardServiceImpl implements DashboardService {
                     "group by PERIOD, pp.name " +
                     "order by PERIOD, pp.name ";
             if("year".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
             } else if("month".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
             } else if("week".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
             } else if("day".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
             } else if("period".equals(period)){
                 queryString =  queryString.replace("p.created >= :fromDate", "p.created >= :fromDate and p.created  <= :toDate");
                 Long diff = toDate.getTime() - fromDate.getTime();
@@ -112,15 +112,15 @@ public class DashboardServiceImpl implements DashboardService {
                 if(days > 1d){
                     if(days > 7d){
                         if(days > 31d){
-                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
+                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
                         } else {
-                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
+                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
                         }
                     } else {
-                        queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
+                        queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
                     }
                 } else {
-                    queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
+                    queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
                 }
             }
 
@@ -168,13 +168,13 @@ public class DashboardServiceImpl implements DashboardService {
                     "group by PERIOD, pp.name " +
                     "order by PERIOD, pp.name ";
             if("year".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
             } else if("month".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
             } else if("week".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
             } else if("day".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
             } else if("period".equals(period)){
                 queryString =  queryString.replace("p.created >= :fromDate", "p.created >= :fromDate and p.created  <= :toDate");
                 Long diff = toDate.getTime() - fromDate.getTime();
@@ -182,15 +182,15 @@ public class DashboardServiceImpl implements DashboardService {
                 if(days > 1d){
                     if(days > 7d){
                         if(days > 31d){
-                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
+                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
                         } else {
-                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
+                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
                         }
                     } else {
-                        queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
+                        queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
                     }
                 } else {
-                    queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_subtract") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
+                    queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
                 }
             }
 
@@ -374,7 +374,7 @@ public class DashboardServiceImpl implements DashboardService {
                 "         inner join gate g on cs.out_gate = g.id" +
                 " where cs.in_timestamp between :fromDate and :toDate" +
                 " and cs.out_gate is not null" +
-                " group by g.id, g.name;";
+                " group by g.id, g.name";
 
         List entryResult =  entityManager.createNativeQuery(entryQueryString).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
         List exitResult =  entityManager.createNativeQuery(exitQueryString).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
@@ -1146,7 +1146,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         autoClosedRecordsQueryString.append("from car_state cs " +
                 "where cs.in_timestamp between :dateFrom and :dateTo " +
-                "and cs.in_timestamp is null");
+                "and cs.out_timestamp is null");
 
         List<Object> autoClosedRecordsList = entityManager.createNativeQuery(autoClosedRecordsQueryString.toString())
                 .setParameter("dateFrom", fromDate)
