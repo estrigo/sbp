@@ -7,6 +7,7 @@ import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.CameraStatusDto;
+import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.lib.model.dto.EventLogExcelDto;
 import kz.spt.app.service.GateService;
 import kz.spt.lib.bootstrap.datatable.*;
@@ -83,6 +84,10 @@ public class EventLogServiceImpl implements EventLogService {
     @Override
     public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn) {
         EventLog eventLog = new EventLog();
+
+        CameraStatusDto cameraStatusDto = StatusCheckJob.findCameraStatusDtoById(objectId);
+        GateStatusDto gateStatusDto = StatusCheckJob.findGateStatusDtoById(cameraStatusDto.gateId);
+
         eventLog.setObjectClass(objectClass);
         eventLog.setObjectId(objectId);
         eventLog.setPlateNumber((properties != null && properties.containsKey("carNumber")) ? (String) properties.get("carNumber") : "");
@@ -91,6 +96,7 @@ public class EventLogServiceImpl implements EventLogService {
         eventLog.setDescription(description);
         eventLog.setDescriptionEn(descriptionEn);
         eventLog.setCreated(new Date());
+        properties.put("gateName", gateStatusDto.gateName);
         eventLog.setProperties(properties != null ? properties : new HashMap<>());
         eventLogRepository.save(eventLog);
     }
@@ -98,6 +104,10 @@ public class EventLogServiceImpl implements EventLogService {
     @Override
     public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, EventLog.EventType eventType) {
         EventLog eventLog = new EventLog();
+
+        CameraStatusDto cameraStatusDto = StatusCheckJob.findCameraStatusDtoById(objectId);
+        GateStatusDto gateStatusDto = StatusCheckJob.findGateStatusDtoById(cameraStatusDto.gateId);
+
         eventLog.setObjectClass(objectClass);
         eventLog.setObjectId(objectId);
         eventLog.setPlateNumber((properties != null && properties.containsKey("carNumber")) ? (String) properties.get("carNumber") : "");
@@ -106,10 +116,13 @@ public class EventLogServiceImpl implements EventLogService {
         eventLog.setDescription(description);
         eventLog.setDescriptionEn(descriptionEn);
         eventLog.setCreated(new Date());
+        properties.put("gateName", gateStatusDto.gateName);
         eventLog.setProperties(properties != null ? properties : new HashMap<>());
         eventLog.setEventType(eventType);
         eventLogRepository.save(eventLog);
     }
+
+
 
     public void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long id, String plateNumber, String message, String messageEng) {
 
