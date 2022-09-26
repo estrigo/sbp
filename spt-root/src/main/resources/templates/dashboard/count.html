@@ -122,6 +122,14 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card-box">
+                            <canvas id="realTimeOccupancyLineChart" width="800" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -140,6 +148,7 @@
     let occupancyLineChart = undefined;
     let gatesBarChart = undefined;
     let durationLineChart = undefined;
+    let realTimeOccupancyLineChart = undefined;
 
     const colors = [
         'rgb(255, 99, 132)',
@@ -148,7 +157,8 @@
         'rgb(255, 159, 64)',
         'rgb(255, 205, 86)',
         'rgb(153, 102, 255)',
-        'rgb(201, 203, 207)'
+        'rgb(201, 203, 207)',
+        'rgb(255, 255, 64)',
     ];
 
     $(document).on('ready',function(){
@@ -165,6 +175,8 @@
         durationByGatesInPeriod();
 
         //occupancyAndMoneyByPeriod();
+
+        realTimeOccupancy();
     });
 
     function drawOccupancyDougnutChart(total, occupied, percentage){
@@ -630,7 +642,7 @@
         typeDuration = val;
         $('#'+val+'Duration').addClass("btn-primary");
         $('#'+val+'Duration').removeClass("btn-secondary");
-        if(typeDuration == 'periodDuration'){
+        if(typeDuration == 'period'){
             $("#fromDateDurationBlock").show();
             $("#toDateDurationBlock").show();
             if($("#fromDateDuration").val() && $("#toDateDuration").val()){
@@ -644,7 +656,7 @@
     }
 
     function dateDurationChanged(){
-        if(typeDuration == 'periodDuration'){
+        if(typeDuration == 'period'){
             if($("#fromDateDuration").val() && $("#toDateDuration").val()){
                 durationByGatesInPeriod();
             }
@@ -659,7 +671,7 @@
         typeOccupancy = val;
         $('#'+val+'Occupancy').addClass("btn-primary");
         $('#'+val+'Occupancy').removeClass("btn-secondary");
-        if(typeOccupancy == 'periodOccupancy'){
+        if(typeOccupancy == 'period'){
             $("#fromDateOccupancyBlock").show();
             $("#toDateOccupancyBlock").show();
             if($("#fromDateOccupancy").val() && $("#toDateOccupancy").val()){
@@ -673,12 +685,120 @@
     }
 
     function dateOccupancyChanged(){
-        if(typeOccupancy == 'periodOccupancy'){
+        if(typeOccupancy == 'period'){
             if($("#fromDateOccupancy").val() && $("#toDateOccupancy").val()){
                 drawTotalCarsInPeriod();
             }
         } else {
             drawTotalCarsInPeriod();
         }
+    }
+
+    function realTimeOccupancy(){
+        let settings = {
+            "url": "/rest/dashboard/count/realTimeOccupancy",
+            "method": "GET",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false
+        };
+        $.ajax(settings).done(function (result) {
+            console.log('realTimeOccupancy: ', result);
+
+            let labels = result.labels;
+
+            const data = {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Subscriptions',
+                        data: result.abonementRecords[0],
+                        borderColor: colors[0],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: 'Closed by system',
+                        data: result.autoClosedRecords[0],
+                        borderColor: colors[1],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: 'Left by debt',
+                        data: result.debtRecords[0],
+                        borderColor: colors[2],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: 'Left by free minutes',
+                        data: result.freeMinuteRecords[0],
+                        borderColor: colors[3],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: 'Free',
+                        data: result.freeRecords[0],
+                        borderColor: colors[4],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: 'Left by balance',
+                        data: result.fromBalanceRecords[0],
+                        borderColor: colors[5],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: 'Left by paid permit',
+                        data: result.paymentRecords[0],
+                        borderColor: colors[6],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: 'Left by free permit',
+                        data: result.whitelistRecords[0],
+                        borderColor: colors[7],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        pointHoverRadius: 10
+                    }
+                ]
+            }
+
+            const config = {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: (ctx) => 'Number of Cars by Parking Duration',
+                        }
+                    }
+                }
+            };
+
+            if(realTimeOccupancyLineChart){
+                realTimeOccupancyLineChart.destroy();
+            }
+
+            realTimeOccupancyLineChart = new Chart(
+                document.getElementById('realTimeOccupancyLineChart'),
+                config
+            );
+        });
     }
 </script>

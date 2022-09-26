@@ -52,4 +52,9 @@ public class DashboardRestController {
     public Map occupancyAndMoneyByPeriod(@RequestParam("type") String type, @RequestParam("from") String from, @RequestParam("to") String to) {
         return dashboardService.occupancyAndMoneyByPeriod(type, from, to);
     }
+
+    @RequestMapping(value = "/count/realTimeOccupancy", method = RequestMethod.GET)
+    public Map realTimeOccupancy() {
+        return dashboardService.realTimeOccupancy();
+    }
 }
