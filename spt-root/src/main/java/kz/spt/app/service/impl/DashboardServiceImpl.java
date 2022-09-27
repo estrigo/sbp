@@ -8,6 +8,7 @@ import kz.spt.lib.service.DashboardService;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -32,6 +33,9 @@ public class DashboardServiceImpl implements DashboardService {
     private EntityManager entityManager;
 
     private int timezoneShift = 0;
+
+    @Value("${dashboard.enabled}")
+    private Boolean dashboardEnabled;
 
 
     public DashboardServiceImpl(CarStateRepository carStateRepository, ParkingRepository parkingRepository, PluginService pluginService){
@@ -1147,5 +1151,10 @@ public class DashboardServiceImpl implements DashboardService {
         fieldsMap.put("autoClosedRecords", autoClosedRecordsList);
 
         return fieldsMap;
+    }
+
+    @Override
+    public Boolean dashboardEnabled() {
+        return dashboardEnabled;
     }
 }

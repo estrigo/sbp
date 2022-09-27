@@ -24,4 +24,6 @@ public interface DashboardService {
     Map occupancyAndMoneyByPeriod(String period, String from, String to);
 
     Map realTimeOccupancy();
+
+    Boolean dashboardEnabled();
 }
