@@ -39,7 +39,7 @@ public class DashboardRestController {
     }
 
     @RequestMapping(value = "/count/passByGatesInPeriod", method = RequestMethod.POST, consumes = "multipart/form-data")
-    public List passByGatesInPeriod(@RequestParam("type") String type, @RequestParam("from") String from, @RequestParam("to") String to) {
+    public Map passByGatesInPeriod(@RequestParam("type") String type, @RequestParam("from") String from, @RequestParam("to") String to) {
         return dashboardService.passByGatesInPeriod(type, from, to);
     }
 

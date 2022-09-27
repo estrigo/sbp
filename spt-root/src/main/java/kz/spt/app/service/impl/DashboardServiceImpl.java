@@ -17,7 +17,6 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
 
 @Log
@@ -44,7 +43,7 @@ public class DashboardServiceImpl implements DashboardService {
         ZoneOffset zoneOffset = ZoneId.systemDefault().getRules().getOffset(current);
         int seconds = zoneOffset.getTotalSeconds();
         int minutes = seconds / 60;
-        int timezoneShift = minutes / 60;
+        timezoneShift = minutes / 60;
     }
 
     @Override
@@ -98,13 +97,13 @@ public class DashboardServiceImpl implements DashboardService {
                     "group by PERIOD, pp.name " +
                     "order by PERIOD, pp.name ";
             if("year".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
             } else if("month".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
             } else if("week".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
             } else if("day".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
             } else if("period".equals(period)){
                 queryString =  queryString.replace("p.created >= :fromDate", "p.created >= :fromDate and p.created  <= :toDate");
                 Long diff = toDate.getTime() - fromDate.getTime();
@@ -112,19 +111,19 @@ public class DashboardServiceImpl implements DashboardService {
                 if(days > 1d){
                     if(days > 7d){
                         if(days > 31d){
-                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
+                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
                         } else {
-                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
+                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
                         }
                     } else {
-                        queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
+                        queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
                     }
                 } else {
-                    queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
+                    queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
                 }
             }
 
-            log.info("queryString: " + queryString);
+            log.info("payment providers queryString: " + queryString);
 
             Query query = entityManager.createNativeQuery(queryString).setParameter("fromDate", fromDate);
             if("period".equals(period)){
@@ -168,13 +167,13 @@ public class DashboardServiceImpl implements DashboardService {
                     "group by PERIOD, pp.name " +
                     "order by PERIOD, pp.name ";
             if("year".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
             } else if("month".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
             } else if("week".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
             } else if("day".equals(period)){
-                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
+                queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
             } else if("period".equals(period)){
                 queryString =  queryString.replace("p.created >= :fromDate", "p.created >= :fromDate and p.created  <= :toDate");
                 Long diff = toDate.getTime() - fromDate.getTime();
@@ -182,19 +181,19 @@ public class DashboardServiceImpl implements DashboardService {
                 if(days > 1d){
                     if(days > 7d){
                         if(days > 31d){
-                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
+                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%m')");
                         } else {
-                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
+                            queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%d')");
                         }
                     } else {
-                        queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
+                        queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%a')");
                     }
                 } else {
-                    queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift < 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
+                    queryString  = queryString.replaceAll("PERIOD", "DATE_FORMAT(" + (timezoneShift >= 0 ? "date_add" : "date_sub") + "(p.created, INTERVAL " + Math.abs(timezoneShift) + " hour), '%H')");
                 }
             }
 
-            log.info("queryString: " + queryString);
+            log.info("payments queryString: " + queryString);
 
             Query query = entityManager.createNativeQuery(queryString).setParameter("fromDate", fromDate);
             if("period".equals(period)){
@@ -202,7 +201,6 @@ public class DashboardServiceImpl implements DashboardService {
             }
             return query.getResultList();
         }
-
         return null;
     }
 
@@ -239,96 +237,57 @@ public class DashboardServiceImpl implements DashboardService {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        if(timezoneShift >= 0){
-            current = current.minusHours(timezoneShift);
-            till = till.minusHours(timezoneShift);
-        } else if(timezoneShift < 0){
-            current = current.plusHours(Math.abs(timezoneShift));
-            till = till.plusHours(Math.abs(timezoneShift));
-        }
-
         StringBuilder sum = new StringBuilder("");
-        if("year".equals(period)){
-            while(current.isBefore(till)){
-                if(sum.length() > 0) sum.append(" ,");
+        while(current.isBefore(till)){
+            if(sum.length() > 0) sum.append(" ,");
 
-                sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "') then 1 else 0 end) as '" + current.getMonth() + "'");
+            String fromDateString = current.format(formatter);
+            String toDateString = "";
+
+            if("year".equals(period)) {
+                toDateString = current.plusMonths(1).format(formatter);
                 fields.add(current.getMonth().toString());
                 current = current.plusMonths(1);
-            }
-            queryString = queryString.replace("PERIOD", sum.toString());
-        } else if("month".equals(period)){
-            while(current.isBefore(till)){
-                if(sum.length() > 0) sum.append(" ,");
-
-                sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "') then 1 else 0 end) as '" + current.getDayOfMonth() + "'");
+            } else if("month".equals(period)){
+                toDateString = current.plusDays(1).format(formatter);
                 fields.add(String.valueOf(current.getDayOfMonth()));
                 current = current.plusDays(1);
-            }
-            queryString = queryString.replace("PERIOD", sum.toString());
-        } else if("week".equals(period)){
-            while(current.isBefore(till)){
-                if(sum.length() > 0) sum.append(" ,");
-
-                sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "') then 1 else 0 end) as '" + current.getDayOfWeek() + "'");
+            } else if("week".equals(period)){
+                toDateString = current.plusDays(1).format(formatter);
                 fields.add(current.getDayOfWeek().toString());
                 current = current.plusDays(1);
-            }
-            queryString = queryString.replace("PERIOD", sum.toString());
-        } else if("day".equals(period)){
-            while(current.isBefore(till)){
-                if(sum.length() > 0) sum.append(" ,");
-
-                sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "') then 1 else 0 end) as '" + current.getHour() + "'");
+            } else if("day".equals(period)){
+                toDateString = current.plusHours(1).format(formatter);
                 fields.add(String.valueOf(current.getHour()));
                 current = current.plusHours(1);
-            }
-            queryString = queryString.replace("PERIOD", sum.toString());
-        } else if("period".equals(period)){
-            Long diff = toDate.getTime() - fromDate.getTime();
-            long days = diff / (1000*60*60*24);
-            if(days > 1d){
-                if(days > 7d){
-                    if(days > 31d){
-                        while(current.isBefore(till)){
-                            if(sum.length() > 0) sum.append(" ,");
-
-                            sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "') then 1 else 0 end) as '" + current.getMonth() + "'");
+            } else if("period".equals(period)){
+                Long diff = toDate.getTime() - fromDate.getTime();
+                long days = diff / (1000*60*60*24);
+                if(days > 1d){
+                    if(days > 7d){
+                        if(days > 31d){
+                            toDateString = current.plusMonths(1).format(formatter);
                             fields.add(current.getMonth().toString());
                             current = current.plusMonths(1);
-                        }
-                        queryString = queryString.replace("PERIOD", sum.toString());
-                    } else {
-                        while(current.isBefore(till)){
-                            if(sum.length() > 0) sum.append(" ,");
-
-                            sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "') then 1 else 0 end) as '" + current.getDayOfMonth() + "'");
+                        } else {
+                            toDateString = current.plusDays(1).format(formatter);
                             fields.add(String.valueOf(current.getDayOfMonth()));
                             current = current.plusDays(1);
                         }
-                        queryString = queryString.replace("PERIOD", sum.toString());
-                    }
-                } else {
-                    while(current.isBefore(till)){
-                        if(sum.length() > 0) sum.append(" ,");
-
-                        sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "') then 1 else 0 end) as '" + current.getDayOfWeek() + "'");
+                    } else {
+                        toDateString = current.plusDays(1).format(formatter);
                         fields.add(current.getDayOfWeek().toString());
                         current = current.plusDays(1);
                     }
-                    queryString = queryString.replace("PERIOD", sum.toString());
-                }
-            } else {
-                while(current.isBefore(till)){
-                    if(sum.length() > 0) sum.append(" ,");
-
-                    sum.append(" sum(case when (cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "') then 1 else 0 end) as '" + current.getHour() + "'");
+                } else {
+                    toDateString = current.plusHours(1).format(formatter);
                     fields.add(String.valueOf(current.getHour()));
                     current = current.plusHours(1);
                 }
-                queryString = queryString.replace("PERIOD", sum.toString());
             }
+            sum.append(" sum(case when (cs.in_timestamp between '" + fromDateString + "' and '" + toDateString + "') or (cs.out_timestamp between '" + fromDateString + "' and '" + toDateString + "') or (cs.in_timestamp <= '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "') then 1 else 0 end)");
         }
+        queryString = queryString.replace("PERIOD", sum.toString());
 
         log.info("queryString: " + queryString);
 
@@ -341,7 +300,10 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public List passByGatesInPeriod(String period, String from, String to) {
+    public Map passByGatesInPeriod(String period, String from, String to) {
+
+        Map<String, Object> result = new HashMap<>();
+
         LocalDateTime current = LocalDateTime.now();
         LocalDateTime till = LocalDateTime.now();
 
@@ -359,28 +321,137 @@ public class DashboardServiceImpl implements DashboardService {
             till = LocalDate.parse(to, formatter).atStartOfDay();
         }
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        List<Object[]> inGatesResult =  entityManager.createNativeQuery("select g.id, g.name from gate g where g.gate_type = 'IN'").getResultList();
+        List<Object[]> outGatesResult =  entityManager.createNativeQuery("select g.id, g.name from gate g where g.gate_type = 'OUT'").getResultList();
+
         Date fromDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
         Date toDate = Date.from(till.atZone(ZoneId.systemDefault()).toInstant());
 
-        String entryQueryString = "select g.id, g.name, count(g.id)" +
-                " from car_state cs " +
+        StringBuilder entryQueryStringBuilder = new StringBuilder("");
+
+        result.put("inGatesResult", inGatesResult);
+        result.put("outGatesResult", outGatesResult);
+
+        for(Object[] gate: inGatesResult){
+            LocalDateTime currentCopy = current.plusHours(0);
+
+            List<String> fields = new ArrayList<>();
+
+            while(currentCopy.isBefore(till)){
+                if(entryQueryStringBuilder.length() > 0) {
+                    entryQueryStringBuilder.append(" ,");
+                } else {
+                    entryQueryStringBuilder.append("select ");
+                }
+
+                entryQueryStringBuilder.append(" sum(case when cs.in_gate = " + gate[0] + " and cs.in_timestamp >= '" + (timezoneShift >= 0 ? currentCopy.minusDays(timezoneShift).format(formatter) : currentCopy.minusHours(timezoneShift).format(formatter)) + "'");
+
+                if("year".equals(period)){
+                    fields.add(currentCopy.getMonth().toString());
+                    currentCopy = currentCopy.plusMonths(1);
+                } else if("month".equals(period)){
+                    fields.add(String.valueOf(currentCopy.getDayOfMonth()));
+                    currentCopy = currentCopy.plusDays(1);
+                } else if("week".equals(period)){
+                    fields.add(currentCopy.getDayOfWeek().toString());
+                    currentCopy = currentCopy.plusDays(1);
+                } else if("day".equals(period)){
+                    fields.add(String.valueOf(currentCopy.getHour()));
+                    currentCopy = currentCopy.plusHours(1);
+                } else if("period".equals(period)){
+                    Long diff = toDate.getTime() - fromDate.getTime();
+                    long days = diff / (1000*60*60*24);
+                    if(days > 1d){
+                        if(days > 7d){
+                            if(days > 31d){
+                                fields.add(currentCopy.getMonth().toString());
+                                currentCopy = currentCopy.plusMonths(1);
+                            } else {
+                                fields.add(String.valueOf(currentCopy.getDayOfMonth()));
+                                currentCopy = currentCopy.plusDays(1);
+                            }
+                        } else {
+                            fields.add(currentCopy.getDayOfWeek().toString());
+                            currentCopy = currentCopy.plusDays(1);
+                        }
+                    } else {
+                        fields.add(String.valueOf(currentCopy.getHour()));
+                        currentCopy = currentCopy.plusHours(1);
+                    }
+                }
+
+                entryQueryStringBuilder.append(" and cs.in_timestamp < '" + (timezoneShift >= 0 ? currentCopy.plusHours(timezoneShift).format(formatter) : currentCopy.minusHours(timezoneShift).format(formatter)) + "' then 1 else 0 end)");
+            }
+            if(!result.containsKey("fields")){
+                result.put("fields", fields);
+            }
+        }
+
+        entryQueryStringBuilder.append(" from car_state cs " +
                 "    inner join gate g on cs.in_gate = g.id" +
                 " where cs.in_timestamp between :fromDate and :toDate" +
-                " and cs.in_gate is not null" +
-                " group by g.id, g.name";
+                " and cs.in_gate is not null");
 
-        String exitQueryString = "select g.id, g.name, count(g.id)" +
+        StringBuilder exitQueryStringBuilder = new StringBuilder("");
+        for(Object[] gate: outGatesResult){
+            LocalDateTime currentCopy = current.plusHours(0);
+
+            while(currentCopy.isBefore(till)){
+                if(exitQueryStringBuilder.length() > 0) {
+                    exitQueryStringBuilder.append(" ,");
+                } else {
+                    exitQueryStringBuilder.append("select ");
+                }
+
+                exitQueryStringBuilder.append(" sum(case when cs.out_gate = " + gate[0] + " and cs.out_timestamp >= '" + (timezoneShift >= 0 ? currentCopy.plusHours(timezoneShift).format(formatter) : currentCopy.minusHours(timezoneShift).format(formatter)) + "'");
+
+                if("year".equals(period)){
+                    currentCopy = currentCopy.plusMonths(1);
+                } else if("month".equals(period)){
+                    currentCopy = currentCopy.plusDays(1);
+                } else if("week".equals(period)){
+                    currentCopy = currentCopy.plusDays(1);
+                } else if("day".equals(period)){
+                    currentCopy = currentCopy.plusHours(1);
+                } else if("period".equals(period)){
+                    Long diff = toDate.getTime() - fromDate.getTime();
+                    long days = diff / (1000*60*60*24);
+                    if(days > 1d){
+                        if(days > 7d){
+                            if(days > 31d){
+                                currentCopy = currentCopy.plusMonths(1);
+                            } else {
+                                currentCopy = currentCopy.plusDays(1);
+                            }
+                        } else {
+                            currentCopy = currentCopy.plusDays(1);
+                        }
+                    } else {
+                        currentCopy = currentCopy.plusHours(1);
+                    }
+                }
+                exitQueryStringBuilder.append(" and cs.out_timestamp < '" + (timezoneShift >= 0 ? currentCopy.plusHours(timezoneShift).format(formatter) : currentCopy.minusHours(timezoneShift).format(formatter)) + "' then 1 else 0 end)");
+            }
+        }
+
+        exitQueryStringBuilder.append(
                 " from car_state cs" +
-                "         inner join gate g on cs.out_gate = g.id" +
+                "         inner join gate g on cs.out_gate = g.id and cs.out_gate <> cs.in_gate" +
                 " where cs.in_timestamp between :fromDate and :toDate" +
-                " and cs.out_gate is not null" +
-                " group by g.id, g.name";
+                " and cs.out_gate is not null");
 
-        List entryResult =  entityManager.createNativeQuery(entryQueryString).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
-        List exitResult =  entityManager.createNativeQuery(exitQueryString).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
+        log.info("entryQueryStringBuilder.toString(): " + entryQueryStringBuilder);
+        log.info("exitQueryStringBuilder.toString(): " + exitQueryStringBuilder);
 
-        entryResult.addAll(exitResult);
-        return entryResult;
+        List entryResult =  entityManager.createNativeQuery(entryQueryStringBuilder.toString()).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
+        List exitResult =  entityManager.createNativeQuery(exitQueryStringBuilder.toString()).setParameter("fromDate", fromDate).setParameter("toDate", toDate).getResultList();
+
+        result.put("entryResult", entryResult);
+        result.put("exitResult", exitResult);
+
+        return result;
     }
 
     @Override
@@ -416,132 +487,63 @@ public class DashboardServiceImpl implements DashboardService {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        if(timezoneShift >= 0){
-            current = current.minusHours(timezoneShift);
-            till = till.minusHours(timezoneShift);
-        } else if(timezoneShift < 0){
-            current = current.plusHours(Math.abs(timezoneShift));
-            till = till.plusHours(Math.abs(timezoneShift));
-        }
-
         StringBuilder sum = new StringBuilder("");
-        if("year".equals(period)){
-            while(current.isBefore(till)){
-                if(sum.length() > 0) sum.append(" ,");
 
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end)");
+        while(current.isBefore(till)){
+            if(sum.length() > 0) sum.append(" ,");
+
+            String fromDateString = timezoneShift >= 0 ? current.minusHours(timezoneShift).format(formatter) : current.plusHours(Math.abs(timezoneShift)).format(formatter);
+            String toDateString = "";
+
+            if("year".equals(period)){
+                toDateString = timezoneShift >= 0 ? current.plusMonths(1).minusHours(timezoneShift).format(formatter) : current.plusMonths(1).plusHours(Math.abs(timezoneShift)).format(formatter);
                 fields.add(current.getMonth().toString());
                 current = current.plusMonths(1);
-            }
-            queryString = queryString.replace("PERIOD", sum.toString());
-        } else if("month".equals(period)){
-            while(current.isBefore(till)){
-                if(sum.length() > 0) sum.append(" ,");
-
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end)");
-
+            } else if("month".equals(period)){
+                toDateString = timezoneShift >= 0 ? current.plusDays(1).minusHours(timezoneShift).format(formatter) : current.plusDays(1).plusHours(Math.abs(timezoneShift)).format(formatter);
                 fields.add(String.valueOf(current.getDayOfMonth()));
                 current = current.plusDays(1);
-            }
-            queryString = queryString.replace("PERIOD", sum.toString());
-        } else if("week".equals(period)){
-            while(current.isBefore(till)){
-                if(sum.length() > 0) sum.append(" ,");
-
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end)");
-                
+            } else if("week".equals(period)){
+                toDateString = timezoneShift >= 0 ? current.plusDays(1).minusHours(timezoneShift).format(formatter) : current.plusDays(1).plusHours(Math.abs(timezoneShift)).format(formatter);
                 fields.add(current.getDayOfWeek().toString());
                 current = current.plusDays(1);
-            }
-            queryString = queryString.replace("PERIOD", sum.toString());
-        } else if("day".equals(period)){
-            while(current.isBefore(till)){
-                if(sum.length() > 0) sum.append(" ,");
-
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "')) then 1 else 0 end), ");
-                sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "')) then 1 else 0 end)");
-                
+            } else if("day".equals(period)){
+                toDateString = timezoneShift >= 0 ? current.plusDays(1).minusHours(timezoneShift).format(formatter) : current.plusHours(1).plusHours(Math.abs(timezoneShift)).format(formatter);
                 fields.add(String.valueOf(current.getHour()));
                 current = current.plusHours(1);
-            }
-            queryString = queryString.replace("PERIOD", sum.toString());
-        } else if("period".equals(period)){
-            Long diff = toDate.getTime() - fromDate.getTime();
-            long days = diff / (1000*60*60*24);
-            if(days > 1d){
-                if(days > 7d){
-                    if(days > 31d){
-                        while(current.isBefore(till)){
-                            if(sum.length() > 0) sum.append(" ,");
-
-                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
-                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
-                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
-                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end), ");
-                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusMonths(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusMonths(1).format(formatter) + "')) then 1 else 0 end)");
+            } else if("period".equals(period)){
+                Long diff = toDate.getTime() - fromDate.getTime();
+                long days = diff / (1000*60*60*24);
+                if(days > 1d){
+                    if(days > 7d){
+                        if(days > 31d){
+                            toDateString = timezoneShift >= 0 ? current.plusMonths(1).minusHours(timezoneShift).format(formatter) : current.plusMonths(1).plusHours(Math.abs(timezoneShift)).format(formatter);
                             fields.add(current.getMonth().toString());
                             current = current.plusMonths(1);
-                        }
-                        queryString = queryString.replace("PERIOD", sum.toString());
-                    } else {
-                        while(current.isBefore(till)){
-                            if(sum.length() > 0) sum.append(" ,");
-
-                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end)");
+                        } else {
+                            toDateString = timezoneShift >= 0 ? current.plusDays(1).minusHours(timezoneShift).format(formatter) : current.plusDays(1).plusHours(Math.abs(timezoneShift)).format(formatter);
                             fields.add(String.valueOf(current.getDayOfMonth()));
                             current = current.plusDays(1);
                         }
-                        queryString = queryString.replace("PERIOD", sum.toString());
-                    }
-                } else {
-                    while(current.isBefore(till)){
-                        if(sum.length() > 0) sum.append(" ,");
-
-                        sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                        sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                        sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                        sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end), ");
-                        sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusDays(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusDays(1).format(formatter) + "')) then 1 else 0 end)");
+                    } else {
+                        toDateString = timezoneShift >= 0 ? current.plusDays(1).minusHours(timezoneShift).format(formatter) : current.plusDays(1).plusHours(Math.abs(timezoneShift)).format(formatter);
                         fields.add(current.getDayOfWeek().toString());
                         current = current.plusDays(1);
                     }
-                    queryString = queryString.replace("PERIOD", sum.toString());
-                }
-            } else {
-                while(current.isBefore(till)){
-                    if(sum.length() > 0) sum.append(" ,");
-
-                    sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "')) then 1 else 0 end), ");
-                    sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "')) then 1 else 0 end), ");
-                    sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "')) then 1 else 0 end), ");
-                    sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "')) then 1 else 0 end), ");
-                    sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.out_timestamp between '" + current.format(formatter) + "' and '" + current.plusHours(1).format(formatter) + "') or (cs.in_timestamp <= '" + current.format(formatter) + "' and cs.out_timestamp >= '" + current.plusHours(1).format(formatter) + "')) then 1 else 0 end)");
-
+                } else {
+                    toDateString = timezoneShift >= 0 ? current.plusDays(1).minusHours(timezoneShift).format(formatter) : current.plusHours(1).plusHours(Math.abs(timezoneShift)).format(formatter);
                     fields.add(String.valueOf(current.getHour()));
                     current = current.plusHours(1);
                 }
-                queryString = queryString.replace("PERIOD", sum.toString());
             }
+
+            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 1 and ((cs.in_timestamp between '" + fromDateString + "' and '" + toDateString + "') or (cs.out_timestamp between '" + fromDateString + "' and '" + toDateString + "') or (cs.in_timestamp <= '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "')) then 1 else 0 end), ");
+            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 1 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 2 and ((cs.in_timestamp between '" + fromDateString + "' and '" + toDateString + "') or (cs.out_timestamp between '" + fromDateString + "' and '" + toDateString + "') or (cs.in_timestamp <= '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "')) then 1 else 0 end), ");
+            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 2 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 3 and ((cs.in_timestamp between '" + fromDateString + "' and '" + toDateString + "') or (cs.out_timestamp between '" + fromDateString + "' and '" + toDateString + "') or (cs.in_timestamp <= '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "')) then 1 else 0 end), ");
+            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 3 and TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) < 4 and ((cs.in_timestamp between '" + fromDateString + "' and '" + toDateString + "') or (cs.out_timestamp between '" + fromDateString + "' and '" + toDateString + "') or (cs.in_timestamp <= '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "')) then 1 else 0 end), ");
+            sum.append(" sum(case when TIMESTAMPDIFF(hour, cs.in_timestamp, coalesce(cs.out_timestamp, now())) >= 4 and ((cs.in_timestamp between '" + fromDateString + "' and '" + toDateString + "') or (cs.out_timestamp between '" + fromDateString + "' and '" + toDateString + "') or (cs.in_timestamp <= '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "')) then 1 else 0 end)");
         }
+        queryString = queryString.replace("PERIOD", sum.toString());
 
         log.info("queryString: " + queryString);
 
@@ -836,14 +838,6 @@ public class DashboardServiceImpl implements DashboardService {
         dateToException.setTime(toDate);
         dateToException.add(Calendar.MINUTE, 1);
 
-        if(timezoneShift >= 0){
-            from = from.minusHours(timezoneShift);
-            till = till.minusHours(timezoneShift);
-        } else if(timezoneShift < 0){
-            from = from.plusHours(timezoneShift*(-1));
-            till = till.plusHours(timezoneShift*(-1));
-        }
-
         Map<String, Object> fieldsMap = new HashMap<>(15);
 
         String recordsQueryString = "select count(cs.id) as count from car_state cs where cs.in_timestamp between :fromDate and :toDate";
@@ -866,75 +860,73 @@ public class DashboardServiceImpl implements DashboardService {
         StringBuilder autoClosedRecordsQueryString = new StringBuilder("");
 
         while(from.isBefore(till)){
-
-            if(timezoneShift >= 0){
-                fields.add(from.plusHours(timezoneShift).format(labelFormatter));
-            } else if(timezoneShift < 0){
-                fields.add(from.minusHours(timezoneShift*(-1)).format(labelFormatter));
-            }
+            fields.add(from.format(labelFormatter));
+            
+            String fromDateString  = from.plusHours(1).format(formatter);
+            String toDateString  = from.format(formatter);
 
             if(paymentRecordsQueryString.length() > 0) {
                 paymentRecordsQueryString.append(" ,");
             } else {
                 paymentRecordsQueryString.append("select ");
             }
-            paymentRecordsQueryString.append("sum(case when cs.in_timestamp < '" + from.plusHours(1).format(formatter) + "' and cs.out_timestamp >= '" + from.format(formatter) + "' then 1 else 0 end) ");
+            paymentRecordsQueryString.append("sum(case when cs.in_timestamp < '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "' then 1 else 0 end) ");
 
             if(whitelistRecordsQueryString.length() > 0) {
                 whitelistRecordsQueryString.append(" ,");
             } else {
                 whitelistRecordsQueryString.append("select ");
             }
-            whitelistRecordsQueryString.append("sum(case when cs.in_timestamp < '" + from.plusHours(1).format(formatter) + "' and cs.out_timestamp >= '" + from.format(formatter) + "' then 1 else 0 end) ");
+            whitelistRecordsQueryString.append("sum(case when cs.in_timestamp < '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "' then 1 else 0 end) ");
 
             if(thirdPartyRecordsQueryString.length() > 0) {
                 thirdPartyRecordsQueryString.append(" ,");
             } else {
                 thirdPartyRecordsQueryString.append("select ");
             }
-            thirdPartyRecordsQueryString.append("sum(case when cs.in_timestamp < '" + from.plusHours(1).format(formatter) + "' and cs.out_timestamp >= '" + from.format(formatter) + "' then 1 else 0 end) ");
+            thirdPartyRecordsQueryString.append("sum(case when cs.in_timestamp < '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "' then 1 else 0 end) ");
 
             if(abonementRecordsQueryString.length() > 0) {
                 abonementRecordsQueryString.append(" ,");
             } else {
                 abonementRecordsQueryString.append("select ");
             }
-            abonementRecordsQueryString.append("sum(case when cs.in_timestamp < '" + from.plusHours(1).format(formatter) + "' and cs.out_timestamp >= '" + from.format(formatter) + "' then 1 else 0 end) ");
+            abonementRecordsQueryString.append("sum(case when cs.in_timestamp < '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "' then 1 else 0 end) ");
 
             if(freeMinuteRecordsQueryString.length() > 0) {
                 freeMinuteRecordsQueryString.append(" ,");
             } else {
                 freeMinuteRecordsQueryString.append("select ");
             }
-            freeMinuteRecordsQueryString.append("sum(case when cs.in_timestamp < '" + from.plusHours(1).format(formatter) + "' and cs.out_timestamp >= '" + from.format(formatter) + "' then 1 else 0 end) ");
+            freeMinuteRecordsQueryString.append("sum(case when cs.in_timestamp < '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "' then 1 else 0 end) ");
 
             if(debtRecordsQueryString.length() > 0) {
                 debtRecordsQueryString.append(" ,");
             } else {
                 debtRecordsQueryString.append("select ");
             }
-            debtRecordsQueryString.append("sum(case when cs.in_timestamp < '" + from.plusHours(1).format(formatter) + "' and cs.out_timestamp >= '" + from.format(formatter) + "' then 1 else 0 end) ");
+            debtRecordsQueryString.append("sum(case when cs.in_timestamp < '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "' then 1 else 0 end) ");
 
             if(fromBalanceRecordsQueryString.length() > 0) {
                 fromBalanceRecordsQueryString.append(" ,");
             } else {
                 fromBalanceRecordsQueryString.append("select ");
             }
-            fromBalanceRecordsQueryString.append("sum(case when cs.in_timestamp < '" + from.plusHours(1).format(formatter) + "' and cs.out_timestamp >= '" + from.format(formatter) + "' then 1 else 0 end) ");
+            fromBalanceRecordsQueryString.append("sum(case when cs.in_timestamp < '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "' then 1 else 0 end) ");
 
             if(freeRecordsQueryString.length() > 0) {
                 freeRecordsQueryString.append(" ,");
             } else {
                 freeRecordsQueryString.append("select ");
             }
-            freeRecordsQueryString.append("sum(case when cs.in_timestamp < '" + from.plusHours(1).format(formatter) + "' and cs.out_timestamp >= '" + from.format(formatter) + "' then 1 else 0 end) ");
+            freeRecordsQueryString.append("sum(case when cs.in_timestamp < '" + fromDateString + "' and cs.out_timestamp >= '" + toDateString + "' then 1 else 0 end) ");
 
             if(autoClosedRecordsQueryString.length() > 0) {
                 autoClosedRecordsQueryString.append(" ,");
             } else {
                 autoClosedRecordsQueryString.append("select ");
             }
-            autoClosedRecordsQueryString.append("sum(case when cs.in_timestamp < '" + from.plusHours(1).format(formatter) + "' then 1 else 0 end) ");
+            autoClosedRecordsQueryString.append("sum(case when cs.in_timestamp < '" + fromDateString + "' then 1 else 0 end) ");
 
             from = from.plusHours(1);
         }

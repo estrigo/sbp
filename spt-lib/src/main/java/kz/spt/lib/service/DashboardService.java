@@ -17,7 +17,7 @@ public interface DashboardService {
 
     List occupancyInPeriod(String period, String from, String to);
 
-    List passByGatesInPeriod(String period, String from, String to);
+    Map passByGatesInPeriod(String period, String from, String to);
 
     List durationsInPeriod(String period, String from, String to);
 

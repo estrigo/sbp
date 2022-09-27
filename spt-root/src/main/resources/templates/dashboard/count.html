@@ -384,53 +384,55 @@
             "data": form
         };
         $.ajax(settings).done(function (result) {
-            let labels = [];
-            let dataset = [];
-            let selectedColors = [];
-            let total = 0;
+            console.log(result);
 
-            let iter = 0;
-            for (let i = 0; i < result.length; i++) {
-                labels.push(result[i][1]);
-                dataset.push(result[i][2]);
-                total = total + result[i][2];
-                selectedColors.push(colors[iter++]);
-                if(iter > 7){
-                    iter = 0;
+            let datasets = [];
+
+            let colorsCount = 0;
+            for(let i = 0; i < result.inGatesResult.length; i++){
+                datasets.push({
+                    label: result.inGatesResult[i][1],
+                    data: result.entryResult[0].slice(i*result.fields.length, (i+1)*result.fields.length),
+                    borderColor: colors[colorsCount++],
+                    pointStyle: 'circle',
+                    pointRadius: 5,
+                    pointHoverRadius: 10
+                });
+                if(colorsCount == 8){
+                    colorsCount = 0;
+                }
+            }
+            for(let i = 0; i < result.outGatesResult.length; i++){
+                datasets.push({
+                    label: result.outGatesResult[i][1],
+                    data: result.exitResult[0].slice(i*result.fields.length, (i+1)*result.fields.length),
+                    borderColor: colors[colorsCount++],
+                    pointStyle: 'circle',
+                    pointRadius: 5,
+                    pointHoverRadius: 10
+                });
+                if(colorsCount == 8){
+                    colorsCount = 0;
                 }
             }
 
             const data = {
-                labels: labels,
-                datasets: [
-                    {
-                        label: '',
-                        data: dataset,
-                        backgroundColor: selectedColors,
-                    }
-                ]
-            };
+                labels: result.fields,
+                datasets: datasets
+            }
 
             const config = {
-              type: 'bar',
-              data: data,
-              options: {
-                  responsive: true,
-                  scales: {
-                      x: {
-                          stacked: true,
-                      },
-                      y: {
-                          stacked: true
-                      }
-                  },
-                  plugins: {
-                    title: {
-                        display: true,
-                        text: 'Number of Passes through Gates. Total: ' + total.toLocaleString(undefined, {})
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: (ctx) => 'Number of Passes through Gates',
+                        }
                     }
                 }
-              },
             };
 
             if(gatesBarChart){
@@ -623,16 +625,12 @@
     }
 
     function dateChanged(){
-        if(typeDuration == 'period'){
+        if(type == 'period'){
             if($("#fromDate").val() && $("#toDate").val()){
-                drawTotalCarsInPeriod();
                 passByGatesInPeriod();
-                durationByGatesInPeriod();
             }
         } else {
-            drawTotalCarsInPeriod();
             passByGatesInPeriod();
-            durationByGatesInPeriod();
         }
     }
 
