@@ -75,8 +75,6 @@ public class DashboardServiceImpl implements DashboardService {
             current = current.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).truncatedTo(ChronoUnit.DAYS);
         } else if("day".equals(period)){
             current = current.truncatedTo(ChronoUnit.DAYS);
-        } else if("day".equals(period)){
-            current = current.truncatedTo(ChronoUnit.DAYS);
         }
 
         Date fromDate = Date.from(current.atZone(ZoneId.systemDefault()).toInstant());
@@ -307,6 +305,7 @@ public class DashboardServiceImpl implements DashboardService {
         LocalDateTime current = LocalDateTime.now();
         LocalDateTime till = LocalDateTime.now();
 
+
         if("year".equals(period)){
             current = LocalDateTime.of(current.getYear(), 1, 1, 0, 0);
         } else if("month".equals(period)){
@@ -346,7 +345,7 @@ public class DashboardServiceImpl implements DashboardService {
                     entryQueryStringBuilder.append("select ");
                 }
 
-                entryQueryStringBuilder.append(" sum(case when cs.in_gate = " + gate[0] + " and cs.in_timestamp >= '" + (timezoneShift >= 0 ? currentCopy.minusDays(timezoneShift).format(formatter) : currentCopy.minusHours(timezoneShift).format(formatter)) + "'");
+                entryQueryStringBuilder.append(" sum(case when cs.in_gate = " + gate[0] + " and cs.in_timestamp >= '" + (timezoneShift >= 0 ? currentCopy.minusHours(timezoneShift).format(formatter) : currentCopy.plusHours(Math.abs(timezoneShift)).format(formatter)) + "'");
 
                 if("year".equals(period)){
                     fields.add(currentCopy.getMonth().toString());
@@ -382,7 +381,7 @@ public class DashboardServiceImpl implements DashboardService {
                     }
                 }
 
-                entryQueryStringBuilder.append(" and cs.in_timestamp < '" + (timezoneShift >= 0 ? currentCopy.plusHours(timezoneShift).format(formatter) : currentCopy.minusHours(timezoneShift).format(formatter)) + "' then 1 else 0 end)");
+                entryQueryStringBuilder.append(" and cs.in_timestamp < '" + (timezoneShift >= 0 ? currentCopy.minusHours(timezoneShift).format(formatter) : currentCopy.plusHours(Math.abs(timezoneShift)).format(formatter)) + "' then 1 else 0 end)");
             }
             if(!result.containsKey("fields")){
                 result.put("fields", fields);
@@ -405,7 +404,7 @@ public class DashboardServiceImpl implements DashboardService {
                     exitQueryStringBuilder.append("select ");
                 }
 
-                exitQueryStringBuilder.append(" sum(case when cs.out_gate = " + gate[0] + " and cs.out_timestamp >= '" + (timezoneShift >= 0 ? currentCopy.plusHours(timezoneShift).format(formatter) : currentCopy.minusHours(timezoneShift).format(formatter)) + "'");
+                exitQueryStringBuilder.append(" sum(case when cs.out_gate = " + gate[0] + " and cs.out_timestamp >= '" + (timezoneShift >= 0 ? currentCopy.minusHours(timezoneShift).format(formatter) : currentCopy.plusHours(Math.abs(timezoneShift)).format(formatter)) + "'");
 
                 if("year".equals(period)){
                     currentCopy = currentCopy.plusMonths(1);
@@ -432,14 +431,14 @@ public class DashboardServiceImpl implements DashboardService {
                         currentCopy = currentCopy.plusHours(1);
                     }
                 }
-                exitQueryStringBuilder.append(" and cs.out_timestamp < '" + (timezoneShift >= 0 ? currentCopy.plusHours(timezoneShift).format(formatter) : currentCopy.minusHours(timezoneShift).format(formatter)) + "' then 1 else 0 end)");
+                exitQueryStringBuilder.append(" and cs.out_timestamp < '" + (timezoneShift >= 0 ? currentCopy.minusHours(timezoneShift).format(formatter) : currentCopy.plusHours(Math.abs(timezoneShift)).format(formatter)) + "' then 1 else 0 end)");
             }
         }
 
         exitQueryStringBuilder.append(
                 " from car_state cs" +
                 "         inner join gate g on cs.out_gate = g.id and cs.out_gate <> cs.in_gate" +
-                " where cs.in_timestamp between :fromDate and :toDate" +
+                " where cs.out_timestamp between :fromDate and :toDate" +
                 " and cs.out_gate is not null");
 
         log.info("entryQueryStringBuilder.toString(): " + entryQueryStringBuilder);
