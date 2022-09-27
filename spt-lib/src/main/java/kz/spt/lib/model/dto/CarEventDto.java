@@ -1,12 +1,14 @@
 package kz.spt.lib.model.dto;
 
 import kz.spt.lib.utils.Utils;
+import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.Date;
 
+@ToString
 public class CarEventDto {
 
     @NotNull
