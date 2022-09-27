@@ -212,3 +212,5 @@ management:
     distribution:
       percentiles-histogram:
         "[http.server.requests]": true
+dashboard:
+  enabled: false
