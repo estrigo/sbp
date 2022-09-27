@@ -533,6 +533,7 @@ public class CarEventServiceImpl implements CarEventService {
                     }
                 }
 
+
                 createNewCarEvent(camera.getId(), gate, eventDto, properties);
 
                 if (Gate.GateType.REVERSE.equals(gate.gateType)) {
