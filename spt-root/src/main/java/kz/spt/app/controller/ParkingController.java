@@ -39,7 +39,7 @@ public class ParkingController {
 
     public ParkingController(ParkingService parkingService, CameraService cameraService, GateService gateService,
                              BarrierService barrierService, ControllerService controllerService,
-                             CarStateRepository carStateRepository, CarStateService carStateService){
+                             CarStateRepository carStateRepository, CarStateService carStateService) {
         this.parkingService = parkingService;
         this.cameraService = cameraService;
         this.gateService = gateService;
@@ -78,7 +78,7 @@ public class ParkingController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteParking(Model model, @PathVariable Long id) throws Exception{
+    public String deleteParking(Model model, @PathVariable Long id) throws Exception {
         parkingService.deleteById(id);
         return "redirect:/parking/list";
     }
@@ -96,7 +96,7 @@ public class ParkingController {
     @GetMapping("/details/{parkingId}")
     public String showAllParking(Model model, @PathVariable Long parkingId) {
         Parking parking = parkingService.findById(parkingId);
-        if(parking != null){
+        if (parking != null) {
             model.addAttribute("parking", parking);
             return "parking/details";
         } else {
@@ -108,12 +108,12 @@ public class ParkingController {
     @GetMapping("/camera/{cameraId}")
     public String getEditingCameraId(Model model, @PathVariable Long cameraId) {
         model.addAttribute("camera", cameraService.getCameraById(cameraId));
-        model.addAttribute("carmenLiveEnabled",carmenLiveEnabled);
+        model.addAttribute("carmenLiveEnabled", carmenLiveEnabled);
         return "parking/camera/edit";
     }
 
     @PostMapping("/camera/{gateId}")
-    public String cameraEdit(@PathVariable Long gateId, @Valid Camera camera, BindingResult bindingResult){
+    public String cameraEdit(@PathVariable Long gateId, @Valid Camera camera, BindingResult bindingResult) {
 
         if (!bindingResult.hasErrors()) {
             Gate gate = gateService.getById(gateId);
@@ -131,6 +131,14 @@ public class ParkingController {
         return "parking/camera/edit";
     }
 
+    @GetMapping("/gate/{gateId}/delete")
+    public String deleteGate(@PathVariable Long gateId) {
+        Gate gate = gateService.getById(gateId);
+        Long parkingId = gate.getParking().getId();
+        gateService.deleteGateWithCamAndBar(gate);
+        return "redirect:/parking/details/" + parkingId;
+    }
+
     @GetMapping("/barrier/{barrierId}")
     public String getEditingBarrierId(Model model, @PathVariable Long barrierId) {
         model.addAttribute("barrier", barrierService.getBarrierById(barrierId));
@@ -138,7 +146,7 @@ public class ParkingController {
     }
 
     @PostMapping("/barrier/{gateId}")
-    public String barrierEdit(@PathVariable Long gateId, @Valid Barrier barrier, BindingResult bindingResult){
+    public String barrierEdit(@PathVariable Long gateId, @Valid Barrier barrier, BindingResult bindingResult) {
 
         if (!bindingResult.hasErrors()) {
             Gate gate = gateService.getById(gateId);
@@ -155,7 +163,7 @@ public class ParkingController {
         model.addAttribute("barrier", barrier);
         return "parking/barrier/edit";
     }
-    
+
     @GetMapping("/gate/{gateId}")
     public String getEditingGateId(Model model, @PathVariable Long gateId) {
         model.addAttribute("gate", gateService.getById(gateId));
@@ -163,7 +171,7 @@ public class ParkingController {
     }
 
     @PostMapping("/gate/{parkingId}")
-    public String gateEdit(@PathVariable Long parkingId, @Valid Gate gate, BindingResult bindingResult){
+    public String gateEdit(@PathVariable Long parkingId, @Valid Gate gate, BindingResult bindingResult) {
 
         if (!bindingResult.hasErrors()) {
             Parking parking = parkingService.findById(parkingId);
@@ -182,16 +190,14 @@ public class ParkingController {
     }
 
     @GetMapping("/cars")
-    public String showCurrentStatus(Model model)
-    {
+    public String showCurrentStatus(Model model) {
         model.addAttribute("parkingCars", parkingService.listAllParkingCars());
         return "cars-in-parkings/list";
     }
 
     @GetMapping("/cars/details/{id}")
-    public String showCarsInParking(Model model, @PathVariable Long id)
-    {
-        model.addAttribute("parkingCars" ,parkingService.carsInParking(id));
+    public String showCarsInParking(Model model, @PathVariable Long id) {
+        model.addAttribute("parkingCars", parkingService.carsInParking(id));
         return "cars-in-parkings/cars/list";
     }
 
@@ -217,7 +223,7 @@ public class ParkingController {
     public String removeBarrier(@PathVariable Long barrierId) {
         Barrier barrier = barrierService.getBarrierById(barrierId);
         if (barrier != null) {
-                carStateService.UpdateAndRemoveByBarrier(barrier);
+            carStateService.UpdateAndRemoveByBarrier(barrier);
         }
         return "redirect:/parking/list";
     }

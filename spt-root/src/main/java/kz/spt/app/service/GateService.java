@@ -14,5 +14,7 @@ public interface GateService {
 
     void deleteGate(Gate gate);
 
+    void deleteGateWithCamAndBar(Gate gate);
+
     Iterable<Gate> listAllGatesWithDependents();
 }

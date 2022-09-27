@@ -26,14 +26,23 @@
 
             <div class="col-4" th:each="gate, iterStat : ${parking.gateList}">
                 <div class="card">
+                    <h5 class="card-header header-title m-t-0 m-b-0">
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                            <span th:text="${gate.name}"></span>
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#gate-close-modal"
+                               th:text="#{crm.edit}" th:gateId="${gate.id}"
+                               th:onclick="gateModalContent(this.getAttribute('gateId'), null)"></a>
+                            <a class="dropdown-item" href="#"
+                               th:text="#{crm.delete}"
+                               th:href="@{|/parking/gate/${gate.id}/delete|}"></a>
+                        </div>
+                        <span class="badge badge-info pull-right" style="float: right" th:text="${gate.gateType}" ></span>
+                    </h5>
 
-                    <a href="#" data-toggle="modal" data-target="#gate-close-modal" th:gateId="${gate.id}" th:onclick="gateModalContent(this.getAttribute('gateId'), null)">
-                        <h5 class="card-header header-title m-t-0 m-b-0"><span th:text="${gate.name}"></span> <i class="ion-edit"></i><span class="badge badge-info pull-right"  th:text="${gate.gateType}"></span></h5>
-
-
-                    </a>
                     <div class="card-body">
-                    <p class="text-muted m-b-30"></p>
+                    <p class="text-muted m-b-5"></p>
 
                     <ul class="nav nav-tabs">
                         <li class="nav-item">
