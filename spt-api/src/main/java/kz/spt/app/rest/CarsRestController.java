@@ -34,6 +34,7 @@ public class CarsRestController {
     @ResponseBody
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addCarEvent(@Valid @RequestBody CarEventDto carEventDto) throws Exception{
+        log.info("request_body_carEventDto: {} " + carEventDto.toString());
         carEventDto.event_date_time = new Date(); // Не можем полагаться на время камеры
         carEventService.saveCarEvent(carEventDto);
     }
