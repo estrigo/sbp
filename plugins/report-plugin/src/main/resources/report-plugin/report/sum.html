@@ -13,10 +13,10 @@
                     <div class="card-header" th:text="#{report.billing}"></div>
                     <div class="card-body" id="main">
                         <div>
-                            <form method="post">
+                            <form method="post" th:action="@{/report/download/BILLING/XLSX}">
                                 <div class="form-row">
                                     <div class="col-4">
-                                        <input id="dateFrom" type="date" class="form-control" />
+                                        <input id="dateFrom" name="dateFrom" type="date" class="form-control" />
                                     </div>
                                     <div class="col-4" style="display: none">
                                         <input id="dateTo" type="date" class="form-control" />
@@ -31,10 +31,13 @@
                                                 onclick="clear()"
                                                 th:text="#{report.clear}"></button>
                                     </div>
-                                    <div class="col-2">
-                                        <button type="button" class="btn btn-success mr-1"
-                                                onclick="excel(this)"
-                                                th:text="#{report.excel}"></button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-row float-right mt-1">
+                                        <div class="col-12">
+                                            <button  type="submit" class="btn btn-success mr-1"
+                                                     th:text="#{report.excel}"></button>
+                                        </div>
                                     </div>
                                 </div>
                             </form>

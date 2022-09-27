@@ -15,7 +15,6 @@ import java.util.List;
 @Service
 public interface WhitelistGroupsService {
 
-    WhitelistGroups findById(Long id);
 
     WhitelistGroups getWithCars(Long id);
 
