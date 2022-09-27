@@ -6,6 +6,7 @@ import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.CarEventService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import javax.validation.Valid;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping(value = "/rest/cars")
 public class CarsRestController {
@@ -46,6 +48,7 @@ public class CarsRestController {
     @ResponseBody
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addCarEvent(@RequestParam("upload") MultipartFile upload, @RequestParam("json") String json) throws Exception{
+        log.info("request_body: {}", json);
         carEventService.handleTempCarEvent(upload, json);
     }
 
