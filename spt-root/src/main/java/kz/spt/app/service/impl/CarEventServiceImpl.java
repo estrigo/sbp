@@ -150,6 +150,13 @@ public class CarEventServiceImpl implements CarEventService {
                     }
                 }
 
+                Optional<CarState> carStateForCheckDuplicate = Optional.ofNullable(carStateService.getLastNotLeft(platenumber));
+                if(carStateForCheckDuplicate.isPresent()
+                        && !camera.getGate().getParking().getId().equals(carStateForCheckDuplicate.get().getParking().getId())){
+                    camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckDuplicate.get().getParking()).get();
+                    cameraId = camera.getId();
+                }
+
                 CarEventDto eventDto = new CarEventDto();
                 eventDto.event_date_time = new Date();
                 eventDto.car_number = platenumber;
@@ -367,6 +374,13 @@ public class CarEventServiceImpl implements CarEventService {
                 }
             }
 
+            Optional<CarState> carStateForCheckDuplicate = Optional.ofNullable(carStateService.getLastNotLeft(plateNumber));
+            if(carStateForCheckDuplicate.isPresent()
+                    && !camera.getGate().getParking().getId().equals(carStateForCheckDuplicate.get().getParking().getId())){
+                camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckDuplicate.get().getParking()).get();
+                cameraId = camera.getId();
+            }
+
             CarEventDto eventDto = new CarEventDto();
             eventDto.event_date_time = new Date();
             eventDto.car_number = plateNumber;
@@ -415,17 +429,16 @@ public class CarEventServiceImpl implements CarEventService {
         eventDto.car_number = eventDto.car_number.toUpperCase();
 
         if (eventDto.manualEnter){
-            Optional<CarState> carStateForCheckGateType = Optional.ofNullable(carStateService.getLastNotLeft(eventDto.car_number));
+            Optional<CarState> carStateForCheckDuplicate = Optional.ofNullable(carStateService.getLastNotLeft(eventDto.car_number));
             if(eventDto.cameraId!=null){
                 Camera camera = cameraService.getCameraById(eventDto.cameraId);
-                if(carStateForCheckGateType.isPresent()
-                        && !camera.getGate().getParking().getId().equals(carStateForCheckGateType.get().getParking().getId())) {
+                if(carStateForCheckDuplicate.isPresent()
+                        && !camera.getGate().getParking().getId().equals(carStateForCheckDuplicate.get().getParking().getId())) {
 
-                    camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckGateType.get().getParking()).get();
+                    camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckDuplicate.get().getParking()).get();
                     eventDto.cameraId = camera.getId();
                 }
             }
-
         }
 
         CameraStatusDto cameraStatusDto = eventDto.cameraId != null ? StatusCheckJob.findCameraStatusDtoById(eventDto.cameraId) : StatusCheckJob.findCameraStatusDtoByIp(eventDto.ip_address);
