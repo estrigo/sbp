@@ -33,13 +33,14 @@ public class CarEventDto {
     public Boolean manualEnter = false; //Ручной запуск авто через набор номера
     public Boolean manualOpen = false; //Ручное открытие шлагбаума
 
-    public String region;
+    public String lp_region;
+    public String lp_country;
     public String vecihleType;
     public String car_model;
 
     public Long cameraId = null;
 
     public String getCarNumberWithRegion() {
-        return (this.region != null ? Utils.convertRegion(this.region) + " " : "") + this.car_number;
+        return (this.lp_region != null ? Utils.convertRegion(this.lp_region) + " " : "") + this.car_number;
     }
 }
