@@ -86,10 +86,12 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public void deleteCustomer(Customer customer) {
-        for (Cars car : customer.getCars()) {
-            car.setCustomer(null);
-        }
+        List<Cars> cars = customer.getCars();
         customerRepository.delete(customer);
+        for (Cars car : cars) {
+            car.setCustomer(null);
+            carsService.saveCars(car);
+        }
     }
 
     private Page<Customer> getPage(List<Customer> customers, PagingRequest pagingRequest) {
