@@ -423,10 +423,7 @@ public class PaymentServiceImpl implements PaymentService {
                         parkomatBillingInfoSuccessDto.setIn_date(simpleFormat.format(carState.getInTimestamp().getTime()));
                         parkomatBillingInfoSuccessDto.setHours(paymentOfflineResult.hours);
 
-                        long timeDiff = new Date().getTime() - inDate.getTime();
-                        long minutes = TimeUnit.MINUTES.convert(timeDiff, TimeUnit.MILLISECONDS);
-
-                        long leftFreeMinutes = paymentOfflineResult.left_free_time_minutes - minutes;
+                        long leftFreeMinutes = paymentOfflineResult.left_free_time_minutes;
 
                         parkomatBillingInfoSuccessDto.setLeft_free_time_minutes((leftFreeMinutes > 0) ? (int) leftFreeMinutes : 0);
                         if (qrPanelService != null) {
