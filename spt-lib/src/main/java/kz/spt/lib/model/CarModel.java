@@ -5,9 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.checkerframework.common.aliasing.qual.Unique;
-import org.hibernate.envers.Audited;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import java.time.LocalTime;
 
 @Entity
 @Data
@@ -24,4 +27,6 @@ public class CarModel {
     private String model;
     private Integer type; //types: 1 - passenger car	1, gazelle	2, truck 3
 
+    private String updatedBy;
+    private LocalTime updatedTime;
 }
