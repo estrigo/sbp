@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface PosTerminalRepository extends JpaRepository<PosTerminal, Long> {
 
-    List<PosTerminal> findPosTerminalsByReconsilatedIsFalse();
+    List<PosTerminal> findPosTerminalsByReconsilatedIsTrue();
 
     @Query("from PosTerminal p where p.type = ?1 and p.reconsilated = false")
     List<PosTerminal> findPosTerminalsByReconsilatedIsFalseAndType(PosTerminal.terminalType type);

@@ -11,14 +11,17 @@
             <div class="col-12">
                 <div class="card table-responsive">
                     <div class="card-header" th:text="#{events.events}"></div>
+                    <form method="post" th:action="@{/report/download/MANUAL_OPEN/XLSX}">
                     <div class="card-body">
-                        <div class="row">
+                        <div class="form-row float-right mt-1">
                             <div class="col-12">
-                                <button type="button" class="btn btn-success mr-1"
-                                        onclick="excel(this)"
-                                        th:text="#{report.excel}"></button>
+                                <button  type="submit" class="btn btn-success mr-1"
+                                         th:text="#{report.excel}"></button>
                             </div>
                         </div>
+                    </div>
+                    </form>
+
                         <div class="row">
                             <div class="col-12 table-responsive" data-pattern="priority-columns">
                                 <table id="eventTable" class="table table-bordered table-striped">

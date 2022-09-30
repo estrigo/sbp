@@ -169,9 +169,9 @@ shiftClosing:
   terminal: false
 cron:
   scheduler:
-    expr_parkomat: "0 */5 2-6 * * ?"
-    expr_terminal: "0 */5 2-6 * * ?"
-    expr_reset: "0 50 0 * * ?"
+    expr_parkomat: "0 */5 0-6 * * ?"
+    expr_terminal: "0 */5 0-6 * * ?"
+    expr_reset: "0 50 23 * * ?"
 web:
   locale: ru
 management:
@@ -186,3 +186,10 @@ management:
     distribution:
       percentiles-histogram:
         "[http.server.requests]": true
+dashboard:
+  enabled: false
+adminPlace:
+  pass: $2a$10$FMkv8WJlOGDnrsZ7Ph4/9uyWrFhxiTwRXAS50qs.R9jPdpI7J3poK
+restAdmin:
+  login: rest
+  password: d8G3v1@0Ig#lNyrVG3I7Sw1oxx!

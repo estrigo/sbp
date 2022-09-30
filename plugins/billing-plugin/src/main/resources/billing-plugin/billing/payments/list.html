@@ -14,16 +14,16 @@
                     <div class="card-header" th:text="#{payments.payments}"></div>
                     <div class="card-body">
                         <div class="data-filter">
-                            <form method="post">
+                            <form method="post" th:action="@{/billing/payments/download/PAYMENTS/XLSX}">
                                 <div class="form-row">
                                     <div class="form-group col-md-2">
-                                        <label for="dateFrom" th:text="#{payments.startDate}"></label>
-                                        <input id="dateFrom" type="date" class="form-control form-control-sm"
+                                        <label for="dateFrom"  th:text="#{payments.startDate}"></label>
+                                        <input id="dateFrom" name="dateFrom" type="date" class="form-control form-control-sm"
                                                th:placeholder="#{payments.startDate}">
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="dateTo" th:text="#{payments.endDate}"></label>
-                                        <input id="dateTo" type="date" class="form-control form-control-sm"
+                                        <input id="dateTo" name="dateTo" type="date" class="form-control form-control-sm"
                                                th:placeholder="#{payments.endDate}">
                                     </div>
                                     <div class="form-group col-md-2">
@@ -50,6 +50,8 @@
                                                th:placeholder="#{payments.total}">
                                     </div>
                                     <div class="form-group col-md-2">
+                                            <button  type="submit" class="btn btn-outline-success btn-sm"
+                                                     th:text="#{report.excel}"></button>
                                         <button type="button" class="btn btn-success btn-sm filter"
                                                 th:text="#{payments.find}"></button>
                                         <button type="reset" class="btn btn-secondary btn-sm"
@@ -57,12 +59,12 @@
                                     </div>
                                 </div>
                             </form>
-                            <div class="form-row">
-                                <button class="btn btn-success waves-effect waves-light"
-                                        onclick="excel(this)"
-                                        type="button"
-                                        th:text="#{report.excel}"></button>
-                            </div>
+<!--                            <div class="form-row">-->
+<!--                                <button class="btn btn-success waves-effect waves-light"-->
+<!--                                        onclick="excel(this)"-->
+<!--                                        type="button"-->
+<!--                                        th:text="#{report.excel}"></button>-->
+<!--                            </div>-->
                         </div>
                         <hr>
                         <table class="table table-striped table-bordered" style="width:100%" id="payments">
