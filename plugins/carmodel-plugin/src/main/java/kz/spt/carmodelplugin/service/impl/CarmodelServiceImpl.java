@@ -1,19 +1,22 @@
 package kz.spt.carmodelplugin.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import kz.spt.carmodelplugin.bootstrap.datatable.CarmodelComparators;
 import kz.spt.carmodelplugin.repository.CarmodelRepository;
+import kz.spt.carmodelplugin.repository.CarmodelRepository2;
 import kz.spt.carmodelplugin.service.CarmodelService;
 import kz.spt.carmodelplugin.service.RootServicesGetterService;
+import kz.spt.carmodelplugin.viewmodel.CarModelDtoV2;
 import kz.spt.carmodelplugin.viewmodel.CarmodelDto;
-import kz.spt.lib.bootstrap.datatable.*;
-import kz.spt.lib.model.CarState;
+import kz.spt.lib.bootstrap.datatable.Column;
+import kz.spt.lib.bootstrap.datatable.Order;
+import kz.spt.lib.bootstrap.datatable.Page;
+import kz.spt.lib.bootstrap.datatable.PagingRequest;
+import kz.spt.lib.model.CarModel;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -21,11 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.util.StringUtils;
 
 import java.math.BigInteger;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Log
 @Service
@@ -35,16 +39,17 @@ public class CarmodelServiceImpl implements CarmodelService {
     private CarmodelRepository carmodelRepository;
     private RootServicesGetterService rootServicesGetterService;
 
-    public CarmodelServiceImpl(CarmodelRepository carmodelRepository, RootServicesGetterService rootServicesGetterService) {
+    private CarmodelRepository2 carmodelRepository2;
+    public CarmodelServiceImpl(CarmodelRepository carmodelRepository, RootServicesGetterService rootServicesGetterService, CarmodelRepository2 carmodelRepository2) {
         this.carmodelRepository = carmodelRepository;
         this.rootServicesGetterService = rootServicesGetterService;
+        this.carmodelRepository2 = carmodelRepository2;
     }
 
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
 
     private static final Comparator<CarmodelDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public Page<CarmodelDto> listCarsBy(PagingRequest pagingRequest, CarmodelDto filter) {
         Long count = carmodelRepository.countCarsByFilter(filter);
@@ -183,6 +188,39 @@ public class CarmodelServiceImpl implements CarmodelService {
 
     }
 
+    @Override
+    public List<CarModel> findAll() {
+        return carmodelRepository2.findAll();
 
+    }
+    @Override
+    public CarModel getCarModelById(Integer id) {
+        return carmodelRepository2.getById(id);
+    }
 
+    @Override
+    public void deleteCarModel (Integer id) {
+        CarModel carmodel = carmodelRepository2.getById(id);
+        carmodelRepository2.delete(carmodel);
+    }
+
+    @Override
+    public void createCarModel (CarModelDtoV2 carModelDtoV2) {
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        carModelDtoV2.setUpdatedTime(LocalTime.parse(dtf.format(now)));
+        CarModel carModel = CarModel
+                .builder()
+                .model(carModelDtoV2.getModel())
+                .type(carModelDtoV2.getType())
+                .updatedBy(carModelDtoV2.getUpdatedBy())
+//                .updatedTime(new Date())
+                .build();
+
+    }
+    @Override
+    public org.springframework.data.domain.Page<CarModel> findAllUsersPageable (Pageable pageable) {
+        return carmodelRepository2.findAll(pageable);
+    }
 }

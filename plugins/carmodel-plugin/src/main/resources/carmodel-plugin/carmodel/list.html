@@ -28,7 +28,15 @@
                 </form>
                 <div class="mb-5"></div>
 
-
+                <th:block sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')">
+                    <div class="form-group row">
+                        <div class="col-12">
+                            <a th:href="@{|/carmodel/configure/car|}"
+                               class="btn btn-success waves-effect waves-light"
+                               th:text="#{carmodel.configure}"></a>
+                        </div>
+                    </div>
+                </th:block>
                 <div class="row">
                     <div class="table-responsive" data-pattern="priority-columns">
                         <table id="CarmodelTable" class="table table-bordered">
