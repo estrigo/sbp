@@ -134,6 +134,8 @@
 <script th:src="@{/assets/js/week-hours-picker.js}"></script>
 
 <script type="text/javascript" th:inline="javascript">
+    var locale = [[${#locale}]];
+
     function checkSelectedTypes(value){
         if(value === 'PERIOD'){
             $('#beginDate').show();
@@ -170,7 +172,7 @@
             "data": form
         };
         $.ajax(settings).done(function (response) {
-            let html = '<option value="">Не выбрано</option>';
+            let html = '<option value="">' + (locale === "ru" ? 'Не выбрано' : 'Not selected') + '</option>';
             for(let i=0; i < response.length; i++){
                 html = html + '<option value="' + response[i].id + '">' + response[i].name + '</option>';
             }
@@ -214,14 +216,14 @@
         }
         if(/[^A-Za-z0-9]+$/.test(plateNumber)||(hasCyrullic)){
             // alert([[#{crm.onlyLatinAndNumbersAllowed}]]);
-            $('#alertText').text("Введите правильный номер машины");
+            $('#alertText').text(locale === "ru" ? 'Введите правильный номер машины' : 'Enter correct plate number');
             $('#alertText').css("background-color", "#ef5350");
             $('#alertText').css("color", "white");
             $('#submitButton').prop('disabled', true);
             $('#submitButton').css("color", "gray");
         }
         else if (/\s/.test(plateNumber) || plateNumber === ""){
-            $('#alertText').text("Заполните поле для ГРНЗ");
+            $('#alertText').text(locale === "ru" ? 'Заполните поле для ГРНЗ' : 'Fill plate number field');
             $('#alertText').css("background-color", "inherit");
             $('#alertText').css("color", "Black");
             $('#submitButton').prop('disabled', true);
@@ -249,13 +251,13 @@
         const options = {
             // custom days names (it's default values)
             days: {
-                0: 'Понедельник',
-                1: 'Вторник',
-                2: 'Среда',
-                3: 'Четверг',
-                4: 'Пятница',
-                5: 'Суббота',
-                6: 'Воскресенье',
+                0: locale === "ru" ? 'Понедельник' : 'Monday',
+                1: locale === "ru" ? 'Вторник' : 'Tuesday',
+                2: locale === "ru" ? 'Среда' : 'Wednesday',
+                3: locale === "ru" ? 'Четверг' : 'Thursday',
+                4: locale === "ru" ? 'Пятница' : 'Friday',
+                5: locale === "ru" ? 'Суббота' : 'Saturday',
+                6: locale === "ru" ? 'Воскресенье' : 'Sunday',
             },
 
             // custom class names for dom elements (it's default values)
@@ -298,6 +300,5 @@
             }
         }
     });
-
 </script>
 </html>
