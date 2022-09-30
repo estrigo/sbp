@@ -11,7 +11,7 @@ public class CarStateFilterDto {
     private String dateFromString;
     private String dateToString;
     private String plateNumber;
-    private Integer amount;
+    private Double amount;
     private Long inGateId;
     private Long outGateId;
     private boolean inParking;

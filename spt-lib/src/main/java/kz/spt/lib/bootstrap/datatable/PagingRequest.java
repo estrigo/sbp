@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.java.Log;
+import org.pf4j.util.StringUtils;
 
 @Log
 @Setter
@@ -30,40 +31,33 @@ public class PagingRequest {
 
     public <T> T convertTo(T object){
         if(this.customFilters.isEmpty()) return object;
-
         Field[] fields = object.getClass().getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
-
-            String value = this.customFilters.get(field.getName());
-            if(value == null || value.isEmpty()) continue;
-
+            Object value = this.customFilters.get(field.getName());
+            if(value == null || "".equals(value)) continue;
             try {
-                if (Long.class.equals(field.getType())) {
-                    field.set(object, Long.valueOf(value));
-                } else if (BigDecimal.class.equals(field.getType())) {
-                    field.set(object, new BigDecimal(value));
-                }else if(Date.class.equals(field.getType())){
-                    if(value.length() == 10){ // 2022-05-04
-                        field.set(object, new SimpleDateFormat("yyyy-MM-dd").parse(value));
-                    } else if(value.length() == 16){
-                        field.set(object, new SimpleDateFormat("yyyy-MM-dd'T'hh:mm").parse(value));
-                    } else if(value.length() == 19){ //2022-05-27T11:00:00
-                        field.set(object, new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").parse(value));
-                    } else if(value.length() == 23){ //2022-05-27T11:00:00.000
-                        field.set(object, new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").parse(value));
-                    }
-                }else if(boolean.class.equals(field.getType())){
-                    field.set(object, Boolean.valueOf(value).booleanValue());
+                if(boolean.class.equals(field.getType())){
+                    field.set(object, Boolean.valueOf(String.valueOf(value)));
+                } else if(Double.class.equals(field.getType())){
+                    field.set(object, Double.valueOf(String.valueOf(value)));
+                } else if(Integer.class.equals(field.getType())){
+                    field.set(object, Double.valueOf(String.valueOf(value)).intValue());
+                } else {
+                    field.set(object, convertInstanceOfObject(value, field.getType()));
                 }
-                else{
-                    field.set(object, value);
-                }
-            } catch (IllegalAccessException | ParseException e) {
+            } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
-
         return object;
+    }
+
+    private static <T> T convertInstanceOfObject(Object o, Class<T> clazz) {
+        try {
+            return clazz.cast(o);
+        } catch(ClassCastException e) {
+            return null;
+        }
     }
 }
