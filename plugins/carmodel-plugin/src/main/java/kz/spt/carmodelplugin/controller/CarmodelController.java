@@ -1,9 +1,10 @@
 package kz.spt.carmodelplugin.controller;
 
 import kz.spt.carmodelplugin.service.CarmodelService;
-import kz.spt.carmodelplugin.viewmodel.CarModelDtoV2;
 import kz.spt.carmodelplugin.viewmodel.CarmodelDto;
+import kz.spt.lib.model.CarModel;
 import lombok.extern.java.Log;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,14 +12,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.util.StringUtils;
 
 import javax.validation.Valid;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 
 @Log
 @Controller
@@ -55,7 +56,7 @@ public class CarmodelController {
 
     @GetMapping("/configure/car")
     public String configureOfCarModel(Model model, @AuthenticationPrincipal UserDetails currentUser,
-                                      @PageableDefault(size = 15,
+                                      @PageableDefault(size = 10,
                                               sort = {"model", "type"}) Pageable pageable) {
         model.addAttribute("carModels", carmodelService.findAllUsersPageable(pageable));
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
@@ -95,11 +96,55 @@ public class CarmodelController {
     }
 
     @PostMapping("/configure/car/create")
-    public String addCarModel(@ModelAttribute("carmodel") @Valid CarModelDtoV2 carModelDtoV2,
-                              BindingResult bindingResult,
-                              Model model) {
-        carmodelService.createCarModel(carModelDtoV2);
-        return "redirect:/activities";
+    public String createCarModel(@ModelAttribute("carmodel") @Valid CarModel carModel,
+                                 Model model,
+                                 BindingResult bindingResult,
+                                 @AuthenticationPrincipal UserDetails currentUser) {
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru-RU";
+        }
+
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
+
+        if (StringUtils.isEmpty(carModel.getModel())) {
+            ObjectError error = new ObjectError("modelIsNull", bundle.getString("carmodel.modelIsNull"));
+            bindingResult.addError(error);
+        } else {
+            CarModel carModel1FromDB = carmodelService.findByModel(carModel.getModel());
+            if (carModel1FromDB != null) {
+                ObjectError error = new ObjectError("alreadyRegisteredMessage", bundle.getString("carmodel.alreadyRegisteredMessage"));
+                bindingResult.addError(error);
+            }
+        }
+        if (StringUtils.isEmpty(String.valueOf(carModel.getType()))) {
+            ObjectError error = new ObjectError("typeIsNull", bundle.getString("carmodel.typeIsNull"));
+            bindingResult.addError(error);
+        }
+        if (bindingResult.hasErrors()) {
+            return "redirect:/carmodel/configure/car/add";}
+        else {
+            carmodelService.saveCarModel(carModel, currentUser);
+            return "redirect:/carmodel/configure/car";
+        }
     }
+
+    @GetMapping("/configure/car/add")
+    public String addCarModel(Model model, @AuthenticationPrincipal UserDetails currentUser) {
+        model.addAttribute("carModel", new CarModel());
+        return "/carmodel/create";
+    }
+
+    @PostMapping("/configure/car/update/{id}")
+    public String updateCarModel(@PathVariable("id") int id,
+                             @ModelAttribute("carModel") @Valid CarModel carModel,
+                                 Model model,
+                                 @AuthenticationPrincipal UserDetails currentUser) {
+        carmodelService.updateCarModel(id, carModel, currentUser);
+
+        return "redirect:/carmodel/configure/car";
+    }
+
 
 }

@@ -6,7 +6,7 @@
                 <p class="page-link" th:text="#{carmodel.paginator}"></p>
             </li>
             <li class="page-item" th:classappend="${c == page.size} ? 'active'"
-                th:each="c : ${#numbers.sequence(5, 20, 5)}">
+                th:each="c : ${#numbers.sequence(0, 100, 25)}">
                 <a class="page-link" th:if="${c == page.size}" href="#" th:text="${c}"></a>
                 <a class="page-link" th:unless="${c == page.size}" th:href="@{${url}(page=${page.number},size=${c})}"
                    th:text="${c}"></a>
@@ -24,12 +24,12 @@
             </li>
             <li class="page-item"
                 th:classappend="${i == page.number} ? 'active'"
-                th:each="i : ${#numbers.sequence(page.number, page.totalPages - 1 > 5 + page.number - 1 ? 5 + page.number - 1 : page.totalPages - 1, 1)}">
+                th:each="i : ${#numbers.sequence(page.number, page.totalPages - 1 > 10 + page.number - 1 ? 10 + page.number - 1 : page.totalPages - 1, 1)}">
                 <a class="page-link" th:if="${i == page.number}" href="#" th:text="${i + 1}"></a>
                 <a class="page-link" th:unless="${i == page.number}" th:href="@{${url}(page=${i}, size=${page.size})}"
                    th:text="${i + 1}"></a>
             </li>
-            <li class="page-item disabled" th:if="${page.number + 5 < page.totalPages}">
+            <li class="page-item disabled" th:if="${page.number + 10 < page.totalPages}">
                 <a class="page-link" href="#">
                     ...
                 </a>

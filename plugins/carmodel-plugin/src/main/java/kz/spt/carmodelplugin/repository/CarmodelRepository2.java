@@ -11,4 +11,5 @@ public interface CarmodelRepository2  extends JpaRepository<CarModel, Integer> {
     @Query(nativeQuery = true, value = "SELECT * FROM car_model c WHERE c.id = :id")
     CarModel getById(Integer id);
 
+    CarModel findByModel (String model);
 }

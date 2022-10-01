@@ -14,7 +14,7 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <form th:action="@{/carmodel/configure/car/edit/{id}(id=${carModelOne.id})}" th:object="${carModelOne}" method="post">
+                                <form th:action="@{/carmodel/configure/car/update/{id}(id=${carModelOne.id})}" th:object="${carModel}" method="post">
                                     <div class="row">
                                         <div class="form-group col-md-6">
                                             <label class="col-form-label"
@@ -31,13 +31,13 @@
                                         <div class="form-group col-md-6">
                                             <label class="col-form-label"
                                                    th:text="#{carmodel.createdTime}">Updated Time</label>
-                                            <input type="text" th:field="${carModelOne.updatedTime}" class="form-control"
+                                            <input type="hidden" th:field="${carModelOne.updatedTime}" class="form-control"
                                                    th:value="${carModelOne.updatedTime}">
                                         </div>
                                         <div class="form-group col-md-6">
                                             <label class="col-form-label"
                                                    th:text="#{carmodel.createdBy}">Created By</label>
-                                            <input type="text" th:field="${carModelOne.updatedBy}" class="form-control"
+                                            <input type="hidden" th:field="${carModelOne.updatedBy}" class="form-control"
                                                    th:value="${carModelOne.updatedBy}">
                                         </div>
                                     </div>
