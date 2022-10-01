@@ -5,7 +5,6 @@ import kz.spt.carmodelplugin.repository.CarmodelRepository;
 import kz.spt.carmodelplugin.repository.CarmodelRepository2;
 import kz.spt.carmodelplugin.service.CarmodelService;
 import kz.spt.carmodelplugin.service.RootServicesGetterService;
-import kz.spt.carmodelplugin.viewmodel.CarModelDtoV2;
 import kz.spt.carmodelplugin.viewmodel.CarmodelDto;
 import kz.spt.lib.bootstrap.datatable.Column;
 import kz.spt.lib.bootstrap.datatable.Order;
@@ -15,18 +14,16 @@ import kz.spt.lib.model.CarModel;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.EventLog;
-import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -203,22 +200,40 @@ public class CarmodelServiceImpl implements CarmodelService {
     }
 
     @Override
-    public void createCarModel (CarModelDtoV2 carModelDtoV2) {
-        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        carModelDtoV2.setUpdatedTime(LocalTime.parse(dtf.format(now)));
-        CarModel carModel = CarModel
-                .builder()
-                .model(carModelDtoV2.getModel())
-                .type(carModelDtoV2.getType())
-                .updatedBy(carModelDtoV2.getUpdatedBy())
-//                .updatedTime(new Date())
-                .build();
-
-    }
-    @Override
     public org.springframework.data.domain.Page<CarModel> findAllUsersPageable (Pageable pageable) {
         return carmodelRepository2.findAll(pageable);
+    }
+
+    @Override
+    public CarModel findByModel (String model) {
+        return carmodelRepository2.findByModel(model);
+    }
+    @Override
+    public void saveCarModel (CarModel carModel, UserDetails currentUser) {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        carModel.setUpdatedTime(localDateTime);
+        carModel.setUpdatedBy(currentUser.getUsername());
+        carmodelRepository2.save(carModel);
+    }
+
+    @Override
+    public void updateCarModel(int id, CarModel updateCarModel, UserDetails currentUser) {
+        CarModel carModel = getCarModelById(id);
+        carModel.setModel(updateCarModel.getModel());
+        carModel.setType(updateCarModel.getType());
+        carModel.setUpdatedBy(currentUser.getUsername());
+        LocalDateTime localDateTime = LocalDateTime.now();
+        carModel.setUpdatedTime(localDateTime);
+
+        try {
+            carmodelRepository2.save(carModel);
+            CarModel carModel1 = carModel;
+            System.out.println("s");
+
+        } catch (Exception e) {
+            System.out.println("SS");
+            log.warning(": " + carModel.getModel());
+
+        }
     }
 }

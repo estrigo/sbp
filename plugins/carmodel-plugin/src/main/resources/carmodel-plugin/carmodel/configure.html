@@ -12,14 +12,23 @@
     <div class="card table-responsive table-striped">
       <div class="card-header" th:text="#{carmodel.title}"></div>
       <div class="card-body">
+        <th:block sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')">
+          <div class="form-group row">
+            <div class="col-12">
+              <a th:href="@{|/carmodel/configure/car/add|}"
+                 class="btn btn-primary btn-custom waves-effect waves-light w-md"
+                 th:text="#{carmodel.add}"></a>
+            </div>
+          </div>
+        </th:block>
         <div class="table-responsive" data-pattern="priority-columns">
           <table id="CarmodelTable" class="table table-bordered">
             <thead>
             <tr>
               <th th:text="#{carmodel.model}">Model</th>
               <th th:text="#{carmodel.type}">Type</th>
-              <th th:text="#{carmodel.createdBy}">Created By</th>
-              <th th:text="#{carmodel.createdTime}">Update Time</th>
+              <th th:text="#{carmodel.updatedBy}">Created By</th>
+              <th th:text="#{carmodel.updatedTime}">Update Time</th>
               <th th:text="#{carmodel.edit}">Edit</th>
               <th th:text="#{carmodel.delete}">Delete</th>
             </tr>
@@ -53,29 +62,13 @@
 </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
         integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
         crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
-<!-- Buttons examples -->
-<script th:src="@{/plugins/datatables/dataTables.buttons.min.js}"></script>
-<script th:src="@{/plugins/datatables/buttons.bootstrap4.min.js}"></script>
-<script th:src="@{/plugins/datatables/jszip.min.js}"></script>
-<script th:src="@{/plugins/datatables/pdfmake.min.js}"></script>
-<script th:src="@{/plugins/datatables/vfs_fonts.js}"></script>
-<script th:src="@{/plugins/datatables/buttons.html5.min.js}"></script>
-<script th:src="@{/plugins/datatables/buttons.print.min.js}"></script>
-<script th:src="@{/plugins/datatables/buttons.colVis.min.js}"></script>
-<!-- Responsive examples -->
-<script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
-<script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
-<script th:src="@{/assets/js/fancybox.umd.js}"></script>
-<script th:src="@{/assets/js/xlsx.js}"></script>
 
 </html>
 
