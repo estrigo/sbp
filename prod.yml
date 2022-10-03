@@ -169,10 +169,13 @@ carmen:
   live.enabled: false
   image.enabled: false
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,prometheus
+  health:
+    mail:
+      enabled: false
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,prometheus
   metrics:
     export:
       prometheus:
