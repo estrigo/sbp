@@ -2,7 +2,6 @@ package kz.spt.app.job;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.repository.PosTerminalRepository;
 import kz.spt.lib.extension.PluginRegister;
@@ -13,19 +12,17 @@ import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.PaymentService;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 
@@ -104,17 +101,40 @@ public class ScheduleWorks {
                             + "&message=reconciliation&bankSlot=1";
                     ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
                     if (response.getStatusCode().is2xxSuccessful()) {
-                        log.info("[Terminal] " + pt.getIp() + " reconsilation succeed");
-                        pt.setReconsilated(true);
-                        posTerminalRepository.save(pt);
+                        Thread.sleep(15000);
+                        checkTerminalsReconciliationStatus(pt);
                     } else {
-                        log.warn("[Terminal] " + pt.getIp() + " reconsilation request failed, response status: " + response.getStatusCode());
+                        log.error("[Terminal] " + pt.getIp() + " reconciliation request failed, response status code: "
+                                + response.getStatusCode());
                     }
                 } catch (Exception e) {
-                    log.error("[Terminal] " + " reconsilation request failed: " + e.getMessage());
+                    log.error("[Terminal] " + " reconciliation request failed: " + e.getMessage());
                 }
             }
+        }
+    }
 
+    public void checkTerminalsReconciliationStatus(PosTerminal posTerminal) {
+        try {
+            String url = "http://" + posTerminal.getIp() + ":8080/dump/bank/batches?key=" + posTerminal.getApikey();
+            String authStr = "1:1";
+            String base64Creds = Base64.getEncoder().encodeToString(authStr.getBytes());
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Basic " + base64Creds);
+            HttpEntity<String> request = new HttpEntity<>(headers);
+            ResponseEntity<String> response = new RestTemplate().exchange(url, HttpMethod.GET, request, String.class);
+            JSONObject obj = new JSONObject(response.getBody());
+            JSONArray arr = obj.getJSONArray("batches");
+            String status = arr.getJSONObject(0).getString("status");
+            if (status.equals("closed")) {
+                log.info("[Terminal] " + posTerminal.getIp() + " reconciliation succeed, status: " + status);
+                posTerminal.setReconsilated(true);
+                posTerminalRepository.save(posTerminal);
+            } else {
+                log.warn("[Terminal] status is: {} ", status);
+            }
+        } catch (Exception e) {
+            log.error("[Terminal] get status request failed.");
         }
     }
 
