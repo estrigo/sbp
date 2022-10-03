@@ -10,91 +10,72 @@
         <div class="row">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header"><b th:text="#{camera.intervalTimeUnavailable}"></b></div>
+                    <div class="card-header"><b th:text="#{carmodel.title}"></b></div>
                     <div class="card-body">
-                        <div id="interval" class="row">
-                            <div class="form-group">
-                                <th:block th:each="intervalRate, ind : ${camera}">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <tbody>
-                                                    <tr>
-                                                        <td><i class="fa fa-plus-square"></i></td>
-                                                        <div class="form-group row"  >
-                                                            <form th:action="@{/arm/interval-add}" th:object="${camera}" method="post" >
-                                                                <input type="hidden" name="parkingRate.id" th:field="${camera.id}" th:value="${camera.id}">
-                                                                <td>
-                                                                    <label class="col-form-label" th:text="#{camera.startTime}">
-                                                                    </label>
-                                                                    <div class="col-10">
-                                                                        <input type="time" th:field="${camera.startTime}" th:value="${camera.startTime}"/>
-                                                                    </div>
-                                                                </td>
-                                                                <td>
-                                                                    <label class="col-form-label" th:text="#{camera.endTime}">
-                                                                    </label>
-                                                                    <div class="col-10">
-                                                                        <input type="time" th:field="${camera.endTime}" th:value="${camera.endTime}"/>
-                                                                    </div>
-                                                                </td>
-
-                                                                    <button style="margin-top: 20px" type="submit" class="btn btn-primary" th:text="#{arm.save}"></button>
-                                                            </form>
-                                                            <div>
-
-                                                                <button style="margin-top: 30px" type="button" class="btn btn-primary" th:text="#{arm.back}" th:onclick="configure()">
-                                                                    Configure
-                                                                </button>
-                                                                <div id="configure-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-                                                                     aria-hidden="true" style="display: none;">
-                                                                    <div class="modal-dialog modal-lg">
-                                                                        <div class="modal-content">
-                                                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                                                                            <div class="modal-header">
-                                                                                <h4 class="modal-title"></h4>
-                                                                            </div>
-                                                                            <div class="modal-body" id="configureModalBody">
-                                                                                <div id="cameraTabsAccordion" role="tablist" aria-multiselectable="true" class="m-b-20">
-                                                                                    <div class="card">
-                                                                                        <div class="card-header" role="tab" id="headingOne">
-                                                                                            <h5 class="mb-0 mt-0 font-16">
-                                                                                                <a data-parent="#accordion"
-                                                                                                   aria-expanded="false" aria-controls="collapseOne" class="collapsed"
-                                                                                                   th:text="#{arm.camerasWithoutTab}">
-                                                                                                </a>
-                                                                                            </h5>
-                                                                                        </div>
-
-                                                                                        <div id="collapseOne" class="collapse" role="tabpanel" aria-labelledby="headingOne"
-                                                                                             aria-expanded="false" style="">
-                                                                                            <div class="card-block">
-                                                                                                <table id="cameraTabsTable" class="table table-bordered">
-                                                                                                    <thead>
-                                                                                                    <tr>
-                                                                                                        <th th:text="#{crm.name}"></th>
-                                                                                                        <th>Ip</th>
-                                                                                                        <th th:text="#{whitelist.parking}"></th>
-                                                                                                    </tr>
-                                                                                                    </thead>
-                                                                                                </table>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <form th:action="@{/arm/interval-add}" th:object="${camera}" method="post" >
+                                    <input type="hidden" name="parkingRate.id" th:field="${camera.id}" th:value="${camera.id}">
+                                    <td>
+                                        <label class="col-form-label" th:text="#{camera.startTime}">
+                                        </label>
+                                        <div class="col-10">
+                                            <input type="time" th:field="${camera.startTime}" th:value="${camera.startTime}"/>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <label class="col-form-label" th:text="#{camera.endTime}">
+                                        </label>
+                                        <div class="col-10">
+                                            <input type="time" th:field="${camera.endTime}" th:value="${camera.endTime}"/>
+                                        </div>
+                                    </td>
+                                    <button style="margin-top: 20px" type="submit" class="btn btn-primary" th:text="#{arm.save}"></button>
+                                </form>
+                                <div>
+                                    <button style="margin-top: 30px" type="button" class="btn btn-primary" th:text="#{arm.back}" th:onclick="configure()">
+                                        Configure
+                                    </button>
+                                    <div id="configure-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                                         aria-hidden="true" style="display: none;">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <div class="modal-header">
+                                                    <h4 class="modal-title"></h4>
+                                                </div>
+                                                <div class="modal-body" id="configureModalBody">
+                                                    <div id="cameraTabsAccordion" role="tablist" aria-multiselectable="true" class="m-b-20">
+                                                        <div class="card">
+                                                            <div class="card-header" role="tab" id="headingOne">
+                                                                <h5 class="mb-0 mt-0 font-16">
+                                                                    <a data-parent="#accordion"
+                                                                       aria-expanded="false" aria-controls="collapseOne" class="collapsed"
+                                                                       th:text="#{arm.camerasWithoutTab}">
+                                                                    </a>
+                                                                </h5>
+                                                            </div>
+                                                            <div id="collapseOne" class="collapse" role="tabpanel" aria-labelledby="headingOne"
+                                                                 aria-expanded="false" style="">
+                                                                <div class="card-block">
+                                                                    <table id="cameraTabsTable" class="table table-bordered">
+                                                                        <thead>
+                                                                        <tr>
+                                                                            <th th:text="#{crm.name}"></th>
+                                                                            <th>Ip</th>
+                                                                            <th th:text="#{whitelist.parking}"></th>
+                                                                        </tr>
+                                                                        </thead>
+                                                                    </table>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </tr>
-                                                    </tbody>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                </th:block>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

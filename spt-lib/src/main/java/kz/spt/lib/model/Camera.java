@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.time.LocalTime;
@@ -74,7 +75,9 @@ public class Camera {
     private String carmenPassword;
     private Boolean snapshotEnabled;
 
+    @DateTimeFormat(pattern = "HH:mm")
     private LocalTime startTime;
+    @DateTimeFormat(pattern = "HH:mm")
     private LocalTime endTime;
     private Date updatedTime;
     private String updatedTimeBy;

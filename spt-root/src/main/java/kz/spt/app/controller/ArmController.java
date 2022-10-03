@@ -34,9 +34,10 @@ public class ArmController {
     }
 
     @GetMapping("/realtime/{cameraTabId}")
-    public String getCamersForRealtime(@Value("${parkomat.ip}") String ip, Model model, @PathVariable Long cameraTabId) {
+    public String getCamersForRealtime(@Value("${parkomat.ip}") String ip, Model model, @PathVariable Long cameraTabId, @AuthenticationPrincipal UserDetails currentUser) {
         model.addAttribute("cameras", cameraService.cameraListByTabId(cameraTabId));
         model.addAttribute("ip", ip);
+        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN").contains(m.getAuthority())));
         return "arm/realtime";
     }
 
