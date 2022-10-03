@@ -15,7 +15,7 @@ import javax.persistence.*;
 @Table(name = "whitelist", uniqueConstraints = @UniqueConstraint(columnNames={"car_id", "parking_id"}))
 public class Whitelist extends AbstractWhitelist {
 
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "car_id")
     private Cars car;
 

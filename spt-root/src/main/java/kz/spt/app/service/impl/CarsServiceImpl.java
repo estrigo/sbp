@@ -59,7 +59,7 @@ public class CarsServiceImpl implements CarsService {
 
     public Cars saveCars(Cars cars){
         cars.setPlatenumber(cars.getPlatenumber().toUpperCase());
-        return carsRepository.save(cars);
+        return carsRepository.saveAndFlush(cars);
     }
 
     @Override
