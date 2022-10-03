@@ -10,7 +10,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card-box table-responsive">
-                    <h4 class="m-t-0 header-title"><b th:text="#{Parking.parkingList}"></b>
+                    <h4 class="m-t-0 header-title"><b th:text="#{parking.cars}"></b>
                         <b th:text="${parkingCars.getParking().getName()}"></b>
                     </h4>
 
@@ -19,15 +19,12 @@
                         <tr>
                             <th><a th:text="#{ordinal.number}"></a></th>
                             <th><a th:text="#{car.platenumber}"></a></th>
-                            <th><a th:text="#{car.brand}"></a></th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="car, iterStat : ${parkingCars.carsList}">
                             <td th:text="${iterStat.count}"></td>
                             <td th:text="${car.getPlatenumber()}"></td>
-                            <td th:text="${car.getBrand()}"></td>
-
                         </tr>
                         </tbody>
                     </table>
