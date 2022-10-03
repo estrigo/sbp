@@ -77,9 +77,9 @@
                                 <th th:text="#{payments.checkOut}"></th>
                                 <th th:text="#{payments.paymentDate}"></th>
                                 <th th:text="#{payments.fare}"></th>
+                                <th th:text="#{payments.paid}"></th>
+                                <th th:text="#{payments.discount}"></th>
                                 <th th:text="#{payments.total}"></th>
-                                <th th:text="#{payments.discountedSum}"></th>
-                                <th th:text="#{payments.discount} +  ' %'"></th>
                                 <th th:text="#{payments.provider}"></th>
                                 <th th:text="#{payments.transaction}"></th>
                             </tr>
@@ -143,11 +143,11 @@
             var api = this.api();
             const showDiscount = [[${showDiscount}]];
             if (showDiscount) {
+                api.column(7).visible(true);
                 api.column(8).visible(true);
-                api.column(9).visible(true);
             } else {
+                api.column(7).visible(false);
                 api.column(8).visible(false);
-                api.column(9).visible(false);
             }
         },
         "columns": [
@@ -162,9 +162,9 @@
             {"data": "outDate"},
             {"data": "created"},
             {"data": "rateDetails"},
-            {"data": "price"},
-            {"data": "discountPrice"},
+            {"data": "discountedSum"},
             {"data": "discount"},
+            {"data": "price"},
             {"data": "provider"},
             {"data": "transaction"},
         ],

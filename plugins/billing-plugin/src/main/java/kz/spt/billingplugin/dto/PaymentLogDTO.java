@@ -39,9 +39,9 @@ public class PaymentLogDTO {
 
     public String parking;
 
-    public Integer discount;
+    public BigDecimal discount;
 
-    public BigDecimal discountPrice;
+    public BigDecimal discountedSum;
 
     public Date getNullSafeInDate(){
         return (getInDate() == null ? new Date() : getInDate());
@@ -64,7 +64,7 @@ public class PaymentLogDTO {
         paymentLogDTO.setTransaction(payment.getTransaction());
         paymentLogDTO.setRateDetails(payment.getRateDetails());
         paymentLogDTO.setDiscount(payment.getDiscount());
-        paymentLogDTO.setDiscountPrice(payment.getDiscountedPrice());
+        paymentLogDTO.setDiscountedSum(payment.getDiscountedSum());
         paymentLogDTO.setParking(payment.getParking() != null ? payment.getParking().getName() : "");
         paymentLogDTO.setCustomerDetail(payment.getCustomer() != null ? payment.getCustomer().getFirstName() + " " + payment.getCustomer().getLastName(): null);
         return paymentLogDTO;

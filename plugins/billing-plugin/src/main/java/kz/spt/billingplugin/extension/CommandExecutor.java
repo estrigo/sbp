@@ -90,8 +90,14 @@ public class CommandExecutor implements PluginRegister {
                 Payment payment = new Payment();
                 payment.setCarNumber(command.get("carNumber").textValue());
                 payment.setPrice(command.get("sum").decimalValue());
-                payment.setDiscount(command.get("discount").intValue());
-                payment.setDiscountedPrice(command.get("discountedSum").decimalValue());
+
+                payment.setDiscountedSum(command.has("discountedSum") &&
+                        !command.get("discountedSum").decimalValue().equals(BigDecimal.valueOf(0)) ?
+                        command.get("discountedSum").decimalValue() : BigDecimal.valueOf(0));
+
+                payment.setDiscount(command.has("discount") &&
+                        !command.get("discount").decimalValue().equals(BigDecimal.valueOf(0)) ?
+                        command.get("discount").decimalValue() : BigDecimal.valueOf(0));
                 payment.setProvider(provider);
                 payment.setTransaction(command.get("transaction").textValue());
                 if (command.has("parkingId")) {
@@ -106,16 +112,15 @@ public class CommandExecutor implements PluginRegister {
                 payment.setRateDetails(command.has("rateName") ? command.get("rateName").textValue() : "");
                 payment.setCarStateId(command.has("carStateId") ? command.get("carStateId").longValue() : null);
 
-                payment.setIkkm(command.has("paymentType") ? command.get("paymentType").intValue() == 1 : false);
+                payment.setIkkm(command.has("paymentType") && command.get("paymentType").intValue() == 1);
 
                 Payment savedPayment = getPaymentService().savePayment(payment);
                 node.put("paymentId", savedPayment.getId());
                 node.put("cashlessPayment", payment.getProvider().getCashlessPayment() != null ? payment.getProvider().getCashlessPayment() : false);
 
                 String carNumber = command.get("carNumber").textValue();
-                BigDecimal sum = command.get("sum").decimalValue();
                 Long carStateId = command.has("carStateId") ? command.get("carStateId").longValue() : null;
-                getBalanceService().addBalance(carNumber, sum, carStateId, "Received payment from " + payment.getProvider().getName(), "Получен платеж от " + payment.getProvider().getName(), payment.getProvider().getName());
+                getBalanceService().addBalance(carNumber, payment.getPrice(), carStateId, "Received payment from " + payment.getProvider().getName(), "Получен платеж от " + payment.getProvider().getName(), payment.getProvider().getName());
 
                 if (savedPayment.getCarStateId() != null) {
                     List<Payment> carStatePayments = getPaymentService().getPaymentsByCarStateId(savedPayment.getCarStateId());

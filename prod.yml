@@ -141,6 +141,8 @@ webkassa:
   host: https://kkm.webkassa.kz
 rekassa:
   host: https://api.rekassa.kz/api
+discountPayments:
+  show: false
 telegram:
   bot:
     external:
