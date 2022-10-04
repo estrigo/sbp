@@ -35,8 +35,9 @@
                                th:text="#{crm.edit}" th:gateId="${gate.id}"
                                th:onclick="gateModalContent(this.getAttribute('gateId'), null)"></a>
                             <a class="dropdown-item" href="#"
-                               th:text="#{crm.delete}"
-                               th:href="@{|/parking/gate/${gate.id}/delete|}"></a>
+                               th:text="#{crm.delete}" th:gateId="${gate.id}"
+                               onclick="deleteGate(this.getAttribute('gateId'))"
+                            ></a>
                         </div>
                         <span class="badge badge-info pull-right" style="float: right" th:text="${gate.gateType}" ></span>
                     </h5>
@@ -190,6 +191,19 @@
             $.get("/parking/" + gateId + "/new/camera/", function (data) {
                 $('#camera-close-modal').find('#cameraModalBody').html(data);
             });
+        }
+    }
+    function deleteGate(gateId) {
+        console.log("gateId: " + gateId);
+        if(confirm('[[#{crm.alertBeforeRemoveGate}]]')) {
+            if(gateId) {
+                $.get("/parking/gate/" + gateId + "/delete", function (data) {
+                    console.log("gate is deleted");
+                    $("#mydiv").load(location.href + " #mydiv");
+                });
+            } else {
+                console.log("No gate id");
+            }
         }
     }
     function deleteCamera(cameraId) {
