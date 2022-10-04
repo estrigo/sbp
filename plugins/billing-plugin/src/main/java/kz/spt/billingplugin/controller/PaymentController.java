@@ -2,6 +2,7 @@ package kz.spt.billingplugin.controller;
 
 
 import kz.spt.billingplugin.BillingPlugin;
+import kz.spt.billingplugin.dto.FilterPaymentDTO;
 import kz.spt.billingplugin.service.PaymentProviderService;
 import kz.spt.billingplugin.service.PaymentService;
 import kz.spt.billingplugin.service.RootServicesGetterService;
@@ -15,7 +16,14 @@ import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Controller
@@ -67,4 +75,44 @@ public class PaymentController {
         }
         return rootServicesGetterService;
     }
+
+
+    @PostMapping("/download/{name}/{format}")
+    public void downloadFile(@PathVariable String name, @PathVariable String format,
+                             @RequestParam(required = false, name = "dateFrom") String dateFrom,
+                             @RequestParam(required = false, name = "dateTo") String dateTo,
+                             @RequestParam(required = false, name = "paymentProvider") Long paymentProvider,
+                             @RequestParam(required = false, name = "carNumber") String carNumber,
+                             @RequestParam(required = false, name = "total") BigDecimal total,
+                             @RequestParam(required = false, name = "transaction") String transaction,
+                             HttpServletResponse response) throws Exception {
+        if (ObjectUtils.isEmpty(dateFrom) || ObjectUtils.isEmpty(dateTo)) {
+            throw new Exception("dateFrom or dateTo is empty");
+        }
+        FilterPaymentDTO filter = new FilterPaymentDTO();
+        filter.setPaymentProvider(paymentProvider);
+        filter.setCarNumber(carNumber);
+        filter.setTotal(total);
+        filter.setTransaction(transaction);
+        String pattern = "yyyy-MM-dd";
+        if (!ObjectUtils.isEmpty(dateFrom) && !ObjectUtils.isEmpty(dateTo)) {
+            dateFrom = dateFrom.concat(" 00:00:00");
+            filter.setDateFrom(new SimpleDateFormat(pattern).parse(dateFrom));
+            dateTo = dateTo.concat(" 00:00:00");
+            filter.setDateTo(new SimpleDateFormat(pattern).parse(dateTo));
+        }
+        List<?> list = paymentService.getPaymentDtoExcelList(filter);
+
+        byte[] bytes = rootServicesGetterService.getAdminService().report(list, name, format);
+        response.setContentType("application/octet-stream");
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename = "
+                .concat(UUID.randomUUID().toString()).concat(".").concat(format.toLowerCase());
+        response.setHeader(headerKey, headerValue);
+        ServletOutputStream outputStream = response.getOutputStream();
+        outputStream.write(bytes);
+        outputStream.close();
+    }
+
+
 }

@@ -22,7 +22,7 @@ public class ThirdPartyPayment {
     @Column(name = "id")
     private Long id;
 
-    private String car_number;
+    private String carNumber;
 
     @Column(name = "entry_date")
     private Date entryDate;

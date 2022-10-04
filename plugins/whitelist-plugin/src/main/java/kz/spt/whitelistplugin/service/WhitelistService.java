@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public interface WhitelistService {
 
@@ -52,4 +53,6 @@ public interface WhitelistService {
     List<String> findCarsByPlatenumber(String platenumber);
 
     List<String> findPlatenumbersByPlatenumber(String platenumber);
+
+    Optional<WhitelistGroups> findWhitelistGroups(Long groupId);
 }

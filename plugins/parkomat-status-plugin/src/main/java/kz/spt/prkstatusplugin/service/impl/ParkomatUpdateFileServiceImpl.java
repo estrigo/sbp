@@ -2,7 +2,6 @@ package kz.spt.prkstatusplugin.service.impl;
 
 import kz.spt.prkstatusplugin.model.ParkomatUpdate;
 import kz.spt.prkstatusplugin.service.ParkomatUpdateFileService;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,6 +10,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 @Slf4j
 @Service
 public class ParkomatUpdateFileServiceImpl implements ParkomatUpdateFileService {
@@ -34,8 +34,7 @@ public class ParkomatUpdateFileServiceImpl implements ParkomatUpdateFileService 
 
     @Override
     public File getFile(ParkomatUpdate parkomatUpdate) {
-        return new File( imagePath + "/updates/" + parkomatUpdate.getId() + "/update.zip");
+        return new File(imagePath + "/updates/" + parkomatUpdate.getId() + "/update.zip");
     }
-
 
 }

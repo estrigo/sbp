@@ -7,6 +7,7 @@ import kz.spt.app.viewResolver.PdfViewResolver;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Description;
@@ -40,6 +41,9 @@ public class WebAppConfig implements WebMvcConfigurer {
     @Autowired
     @Lazy
     private PluginManager pluginManager;
+
+    @Value("${web.locale}")
+    String locale;
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
@@ -194,7 +198,7 @@ public class WebAppConfig implements WebMvcConfigurer {
     @Bean
     public LocaleResolver localeResolver() {
         CookieLocaleResolver clr = new CookieLocaleResolver();
-        clr.setDefaultLocale(new Locale("ru"));
+        clr.setDefaultLocale(new Locale(locale));
         return clr;
     }
 

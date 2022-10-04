@@ -1,5 +1,7 @@
 package kz.spt.lib.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class StaticValues {
 
     public enum CarOutBy {
@@ -15,6 +17,8 @@ public class StaticValues {
         THIRD_PARTY_PAYMENT; // Оплата на стороннем приложении
     }
 
+    public static final ObjectMapper objectMapper = new ObjectMapper();
+
     public static String dateFormatTZ = "yyyy-MM-dd'T'HH:mm:ssZ";
     public static String dateOnly = "yyyy-MM-dd";
     public static String simpleDateTimeFormat = "yyyy-MM-dd HH:mm:ss";
@@ -25,6 +29,7 @@ public class StaticValues {
     public static String bookingPlugin = "booking-plugin";
     public static String zerotouchPlugin = "zerotouch-plugin";
     public static String abonementPlugin = "abonoment-plugin";
+    public static String parkomatPlugin = "parkomat-status-plugin";
     public static String carImageExtension = ".jpeg";
     public static String carImageSmallAddon = "_resize_w_200_h_100";
     public static String carImagePropertyName = "carImageUrl";

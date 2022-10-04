@@ -10,6 +10,8 @@ import java.util.*;
 
 public class PrkstatusPlugin extends SpringBootPlugin implements CustomPlugin {
 
+    public static PrkstatusPlugin INSTANCE;
+
     public PrkstatusPlugin(PluginWrapper wrapper) {
         super(wrapper);
     }

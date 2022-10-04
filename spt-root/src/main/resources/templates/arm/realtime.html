@@ -843,16 +843,17 @@
 
         if (openReason) {
             let reason = undefined;
+
             if (openReason == "emergencyServices") {
-                reason = 'Экстренные службы (служба пожаротушения, полиция, скорая медицинская помощь, аварийная служба газа)';
+                reason = [[#{arm.emergencyReason}]];
             } else if (openReason == "invalidPerson") {
-                reason = 'Человек с ограниченными возможностями';
+                reason = [[#{arm.handicappedReason}]];
             } else {
                 let otherReason = $('#otherReason').val();
                 if (otherReason && otherReason.length >= 3) {
                     reason = otherReason;
                 } else {
-                    $('#otherReasonAlert').text('Необходимо написать причину!');
+                    $('#otherReasonAlert').text((locale === "ru" ? 'Необходимо написать причину!' : 'Open reason required!'));
                     $('#otherReasonAlert').css("background-color", "#ef5350");
                     $('#otherReasonAlert').css("color", "white");
                     return;
