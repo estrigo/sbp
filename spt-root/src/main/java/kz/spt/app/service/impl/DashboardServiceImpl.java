@@ -586,7 +586,7 @@ public class DashboardServiceImpl implements DashboardService {
         if (billingPluginRegister != null) {
 
 
-            String queryString = "select PERIOD, records, sum(count) " +
+            String queryString = "select PERIOD, records, sum(count), sum(summ) " +
                     "from billing_rep_pivot " +
                     "where onDay >= :fromDate " +
                     "group by 1, 2 " +

@@ -320,16 +320,17 @@ CLOSE cursor1;
 END;
 
 create or replace view billing_rep_pivot as
-select onDay, 'records', records as count from billing_rep union all
-select onDay, 'paymentRecords', paymentRecords as count from billing_rep union all
-select onDay, 'whitelistRecords', whitelistRecords from billing_rep union all
-select onDay, 'abonementRecords', abonementRecords from billing_rep union all
-select onDay, 'freeMinuteRecords', freeMinuteRecords from billing_rep union all
-select onDay, 'debtRecords', debtRecords from billing_rep union all
-select onDay, 'fromBalanceRecords', fromBalanceRecords from billing_rep union all
-select onDay, 'freeRecords', freeRecords from billing_rep union all
-select onDay, 'autoClosedRecords', autoClosedRecords from billing_rep union all
-select onDay, 'thirdPartyRecords', thirdPartyRecords from billing_rep order by onDay;
+select onDay, 'records', records as count, 0 as summ from billing_rep union all
+select br.onDay, 'paymentRecords', paymentRecords as count, bpr.totalSum from billing_rep br
+                                                                                  left join billing_payments_rep bpr on br.onDay = bpr.onDay and bpr.prov = 'totalSum' union all
+select onDay, 'whitelistRecords', whitelistRecords, 0 from billing_rep union all
+select onDay, 'abonementRecords', abonementRecords, 0 from billing_rep union all
+select onDay, 'freeMinuteRecords', freeMinuteRecords, 0 from billing_rep union all
+select onDay, 'debtRecords', debtRecords, 0 from billing_rep union all
+select onDay, 'fromBalanceRecords', fromBalanceRecords, 0 from billing_rep union all
+select onDay, 'freeRecords', freeRecords, 0 from billing_rep union all
+select onDay, 'autoClosedRecords', autoClosedRecords, 0 from billing_rep union all
+select onDay, 'thirdPartyRecords', thirdPartyRecords, 0 from billing_rep order by onDay;
 
 call run_billingrep();
 
