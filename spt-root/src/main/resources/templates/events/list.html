@@ -59,6 +59,11 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="row mt-1">
+                                <button type="button" class="btn btn-primary mr-1"
+                                        onclick="find()"
+                                        th:text="#{payments.find}"></button>
+                            </div>
                         </form>
 
                         <div class="mb-5"></div>
@@ -193,9 +198,12 @@
         $('#search').submit();
     })
 
-    $('#plateNumber').on('keyup', function () {
+    function find() {
         table.ajax.url(buildAjaxUrl()).load();
-    });
+    }
+    // $('#plateNumber').on('keyup', function () {
+    //     table.ajax.url(buildAjaxUrl()).load();
+    // });
 
     function excelForEventCar(element){
         $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');

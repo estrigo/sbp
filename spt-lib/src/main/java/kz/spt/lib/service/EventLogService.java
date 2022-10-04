@@ -10,6 +10,7 @@ import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.model.dto.EventLogExcelDto;
 import kz.spt.lib.model.dto.EventsDto;
+import org.springframework.data.domain.Pageable;
 
 import java.text.ParseException;
 import java.util.List;
@@ -31,6 +32,13 @@ public interface EventLogService {
     void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long gateId, String plateNumber, String message, String messageEng);
 
     Iterable<EventLog> listByType(EventLog.EventType type);
+
+    List<EventLog> listByType(List<EventLog.EventType> type);
+
+    List<EventLog> listByType(List<EventLog.EventType> type, Pageable pageable);
+
+    Long countByType(List<EventLog.EventType> type);
+
 
     EventLog getById(Long id);
 

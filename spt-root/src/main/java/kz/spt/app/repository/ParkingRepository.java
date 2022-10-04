@@ -18,4 +18,7 @@ public interface ParkingRepository extends JpaRepository<Parking, Long> {
 
     @Query("from Parking p where p.parkingType = 'PAYMENT' or p.parkingType = 'WHITELIST_PAYMENT'")
     List<Parking> paymentParkings();
+
+    @Query("select sum(p.parkingSpaceNumber) from Parking p")
+    Long totalOccupancy();
 }

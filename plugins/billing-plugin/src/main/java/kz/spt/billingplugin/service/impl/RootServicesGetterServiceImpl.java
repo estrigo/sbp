@@ -13,9 +13,8 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     private CustomerService customerService;
     private CarStateService carStateService;
     private PaymentProviderRepository paymentProviderRepository;
-
     private PaymentCheckLogService paymentCheckLogService;
-
+    private AdminService adminService;
 
     @Override
     public ParkingService getParkingService() {
@@ -57,5 +56,13 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
                     BillingPlugin.INSTANCE.getMainApplicationContext().getBean("paymentCheckLogServiceImpl");
         }
         return paymentCheckLogService;
+    }
+
+    @Override
+    public AdminService getAdminService() {
+        if (this.adminService == null) {
+            adminService = (AdminService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("adminServiceImpl");
+        }
+        return this.adminService;
     }
 }

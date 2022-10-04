@@ -27,11 +27,12 @@ public class PaymentCheckLogServiceImpl implements PaymentCheckLogService {
     }
 
     @Override
-    public PaymentCheckLog findLastSuccessCheck(String plateNumber) {
+    public PaymentCheckLog findLastSuccessCheck(String plateNumber, Date lastPaymentDate) {
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
+        calendar.setTime(lastPaymentDate);
         calendar.add(Calendar.MINUTE, -10);
+
         List<PaymentCheckLog> list = paymentCheckLogRepository.findLastSuccessCheck(plateNumber, calendar.getTime());
         if(list != null && list.size() > 0){
             return list.get(0);

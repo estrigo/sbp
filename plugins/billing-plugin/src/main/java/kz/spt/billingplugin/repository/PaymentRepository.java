@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,8 +22,10 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
     @Query("From Payment p LEFT JOIN FETCH p.provider where p.carStateId = ?1")
     List<Payment> getPaymentsByCarStateIdWithProvider(Long carStateId);
 
-    @Query("From Payment p LEFT JOIN FETCH p.provider where p.carStateId in (?1)")
-    List<Payment> getPaymentsByCarStateIdWithProvider(List<Long> carStateId);
+    @Query(value = "select * from payments p " +
+            "LEFT JOIN payment_provider pp on p.provider_id = pp.id " +
+            "where p.car_state_id in ?1", nativeQuery = true)
+    List<Payment> getPaymentsByCarStateIdWithProvider(Collection<Long> carStateId);
 
     @Query("From Payment p WHERE p.transaction = ?1 and p.provider = ?2")
     List<Payment> findByTransactionAndProvider(String transaction, PaymentProvider paymentProvider);

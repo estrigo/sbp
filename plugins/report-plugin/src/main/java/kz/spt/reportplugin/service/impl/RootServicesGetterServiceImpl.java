@@ -1,8 +1,7 @@
 package kz.spt.reportplugin.service.impl;
 
-import kz.spt.lib.service.CarStateService;
-import kz.spt.lib.service.EventLogService;
-import kz.spt.lib.service.PluginService;
+import kz.spt.lib.service.*;
+
 import kz.spt.reportplugin.ReportPlugin;
 import kz.spt.reportplugin.service.RootServicesGetterService;
 import org.springframework.stereotype.Service;
@@ -12,6 +11,9 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     private PluginService pluginService;
     private CarStateService carStateService;
     private EventLogService eventLogService;
+    private AdminService adminService;
+
+
 
     @Override
     public PluginService getPluginService() {
@@ -38,5 +40,13 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
         }
 
         return this.eventLogService;
+    }
+
+    @Override
+    public AdminService getAdminService() {
+        if (this.adminService == null) {
+            adminService = (AdminService) ReportPlugin.INSTANCE.getMainApplicationContext().getBean("adminServiceImpl");
+        }
+        return this.adminService;
     }
 }
