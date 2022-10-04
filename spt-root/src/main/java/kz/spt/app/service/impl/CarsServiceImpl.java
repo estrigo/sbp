@@ -69,6 +69,13 @@ public class CarsServiceImpl implements CarsService {
 
     @Override
     public Cars createCar(String platenumber, String region, String type, String car_model){
+        Cars car = createCarObject(platenumber, region, type, car_model);
+        car = saveCars(car);
+        return car;
+    }
+
+    @Override
+    public Cars createCarObject(String platenumber, String region, String type, String car_model) {
         platenumber = platenumber.toUpperCase();
 
         Boolean contains = Pattern.matches(".*\\p{InCyrillic}.*", platenumber);
@@ -96,7 +103,6 @@ public class CarsServiceImpl implements CarsService {
         if(car_model != null){
             car.setModel(car_model);
         }
-        car = saveCars(car);
         return car;
     }
 

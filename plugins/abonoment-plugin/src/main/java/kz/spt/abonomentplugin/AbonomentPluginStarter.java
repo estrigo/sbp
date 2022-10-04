@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @SpringBootApplication
-@EntityScan(basePackages = {"kz.spt.lib.model", "kz.spt.abonomentplugin.model"})
+@EntityScan(basePackages = {"kz.spt.lib.model", "kz.spt.abonomentplugin.model", "kz.spt.app.model"})
 public class AbonomentPluginStarter {
 
     public static void main(String[] args) {

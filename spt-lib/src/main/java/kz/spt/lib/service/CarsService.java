@@ -22,6 +22,8 @@ public interface CarsService {
 
     Cars createCar(String platenumber, String region, String type, String car_model);
 
+    Cars createCarObject(String platenumber, String region, String type, String car_model);
+
     Cars createCar(String platenumber);
 
     Page<Cars> getCars(PagingRequest pagingRequest);
