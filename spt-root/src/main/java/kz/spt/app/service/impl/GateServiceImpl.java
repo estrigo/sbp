@@ -1,6 +1,7 @@
 package kz.spt.app.service.impl;
 
 import kz.spt.app.job.StatusCheckJob;
+import kz.spt.app.repository.CarStateRepository;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
 import kz.spt.app.service.ControllerService;
@@ -21,13 +22,16 @@ public class GateServiceImpl implements GateService {
     private final ControllerService controllerService;
     private final CameraService cameraService;
     private final BarrierService barrierService;
+    private final CarStateRepository carStateRepository;
 
     public GateServiceImpl(GateRepository gateRepository, BarrierService barrierService,
-                           ControllerService controllerService, CameraService cameraService) {
+                           ControllerService controllerService, CameraService cameraService,
+                           CarStateRepository carStateRepository) {
         this.gateRepository = gateRepository;
         this.controllerService = controllerService;
         this.cameraService = cameraService;
         this.barrierService = barrierService;
+        this.carStateRepository = carStateRepository;
     }
 
     @Override
@@ -60,6 +64,11 @@ public class GateServiceImpl implements GateService {
     @Override
     @Transactional
     public void deleteGateWithCamAndBar(Gate gate) {
+        if (gate.getGateType().equals(Gate.GateType.IN)) {
+            carStateRepository.removeGateInFromCarStates(gate.getId());
+        } else if (gate.getGateType().equals(Gate.GateType.OUT)) {
+            carStateRepository.removeGateOutFromCarStates(gate.getId());
+        }
         if (gate.getController() != null) {
             controllerService.deleteController(gate.getController());
         }

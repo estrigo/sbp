@@ -63,6 +63,16 @@ public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSp
 
     @Transactional
     @Modifying
+    @Query(value = "update car_state set in_gate = null, in_barrier = null where in_gate = :inGate", nativeQuery = true)
+    void removeGateInFromCarStates(@Param("inGate") Long inGate);
+
+    @Transactional
+    @Modifying
+    @Query(value = "update car_state set out_gate = null, out_barrier = null where out_gate = :outGate", nativeQuery = true)
+    void removeGateOutFromCarStates(@Param("outGate") Long outGate);
+
+    @Transactional
+    @Modifying
     @Query(value = "update car_state set in_barrier = null where in_barrier = :barrierId", nativeQuery = true)
     void updateCarStateByInBarrier(@Param("barrierId") Long barrierId);
 
