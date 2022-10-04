@@ -175,10 +175,13 @@ cron:
 web:
   locale: ru
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,prometheus
+  health:
+    mail:
+      enabled: false
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,prometheus
   metrics:
     export:
       prometheus:
