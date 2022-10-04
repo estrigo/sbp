@@ -21,7 +21,7 @@ public interface DashboardService {
 
     List durationsInPeriod(String period, String from, String to);
 
-    Map occupancyAndMoneyByPeriod(String period, String from, String to);
+    List occupancyAndMoneyByPeriod(String period, String from, String to);
 
     Map realTimeOccupancy();
 
