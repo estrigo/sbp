@@ -63,7 +63,7 @@ public class JournalReportServiceImpl implements ReportService<JournalReportDto>
         List<Long> carStateIds = carStates.getData().stream().map(CarStateDto::getId).collect(Collectors.toList());
         PluginRegister billingPluginRegister = getPluginService().getPluginRegister(StaticValues.billingPlugin);
         var result = new ArrayList<JournalReportDto>();
-        if (billingPluginRegister != null) {
+        if (billingPluginRegister != null && !ObjectUtils.isEmpty(carStateIds)) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("command", "getPayments");
             ObjectMapper mapper = new ObjectMapper();
@@ -120,7 +120,7 @@ public class JournalReportServiceImpl implements ReportService<JournalReportDto>
         List<Long> carStateIds = carStates.stream().map(CarState::getId).collect(Collectors.toList());
         PluginRegister billingPluginRegister = getPluginService().getPluginRegister(StaticValues.billingPlugin);
         var result = new ArrayList<JournalReportDto>();
-        if (billingPluginRegister != null) {
+        if (billingPluginRegister != null && !ObjectUtils.isEmpty(carStateIds)) {
             ObjectNode node = this.objectMapper.createObjectNode();
             node.put("command", "getPayments");
             ObjectMapper mapper = new ObjectMapper();

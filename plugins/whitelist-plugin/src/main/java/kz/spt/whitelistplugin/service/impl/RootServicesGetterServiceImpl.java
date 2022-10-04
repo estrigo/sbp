@@ -1,8 +1,6 @@
 package kz.spt.whitelistplugin.service.impl;
 
-import kz.spt.lib.service.CarStateService;
-import kz.spt.lib.service.CarsService;
-import kz.spt.lib.service.ParkingService;
+import kz.spt.lib.service.*;
 import kz.spt.whitelistplugin.WhitelistPlugin;
 import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import org.springframework.stereotype.Service;
@@ -15,6 +13,8 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     private CarsService carsService;
     private CarStateService carStateService;
     private ParkingService parkingService;
+
+    private AdminService adminService;
 
     @Override
     public CarsService getCarsService() {
@@ -39,4 +39,13 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
         }
         return this.parkingService;
     }
+
+    @Override
+    public AdminService getAdminService() {
+        if (this.adminService == null) {
+            adminService = (AdminService) WhitelistPlugin.INSTANCE.getMainApplicationContext().getBean("adminServiceImpl");
+        }
+        return this.adminService;
+    }
+
 }

@@ -241,7 +241,7 @@ public class CarEventServiceImpl implements CarEventService {
             eventDto.ip_address = camera.getIp();
             eventDto.car_picture = base64;
             eventDto.lp_picture = base64_lp;
-            eventDto.region = country;
+            eventDto.lp_region = country;
             eventDto.vecihleType = null;
             saveCarEvent(eventDto);
         } else {
@@ -283,7 +283,7 @@ public class CarEventServiceImpl implements CarEventService {
             eventDto.event_date_time = event_timestamp != null ? new Date(Long.valueOf(event_timestamp)) : new Date();
             eventDto.ip_address = camera.getIp();
             eventDto.car_picture = base64;
-            eventDto.region = country;
+            eventDto.lp_region = country;
             eventDto.vecihleType = null;
             saveCarEvent(eventDto);
         } else {
@@ -321,7 +321,7 @@ public class CarEventServiceImpl implements CarEventService {
             eventDto.ip_address = camera.getIp();
             eventDto.car_picture = base64;
             eventDto.lp_picture = base64_lp;
-            eventDto.region = country;
+            eventDto.lp_region = country;
             eventDto.vecihleType = null;
             saveCarEvent(eventDto);
         } else {
@@ -428,8 +428,8 @@ public class CarEventServiceImpl implements CarEventService {
         properties.put("lp_rect", eventDto.lp_rect);
         properties.put("cameraIp", eventDto.ip_address);
         properties.put("cameraId", eventDto.cameraId);
-        if (eventDto.region != null) {
-            properties.put("region", eventDto.region);
+        if (eventDto.lp_region != null) {
+            properties.put("lp_region", eventDto.lp_region);
         }
         if (eventDto.vecihleType != null) {
             properties.put("vecihleType", eventDto.vecihleType);
@@ -589,7 +589,7 @@ public class CarEventServiceImpl implements CarEventService {
         eventDto.ip_address = ip_address;
         eventDto.car_picture = base64;
         eventDto.lp_picture = base64_lp;
-        eventDto.region = region;
+        eventDto.lp_region = region;
         eventDto.vecihleType = vecihleType;
         saveCarEvent(eventDto);
     }
@@ -942,7 +942,7 @@ public class CarEventServiceImpl implements CarEventService {
             }
             if (hasAccess) {
                 return true;
-            } else if (checkBooking(eventDto.car_number, eventDto.region, "1")) {
+            } else if (checkBooking(eventDto.car_number, eventDto.lp_region, "1")) {
                 properties.put("type", EventLog.StatusType.Allow);
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(), "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.");
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.", EventLog.EventType.BOOKING_PASS);
@@ -956,7 +956,7 @@ public class CarEventServiceImpl implements CarEventService {
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, description_en, EventLog.EventType.NOT_PASS);
                 return false;
             }
-        } else if (checkBooking(eventDto.car_number, eventDto.region, "1")) {
+        } else if (checkBooking(eventDto.car_number, eventDto.lp_region, "1")) {
             log.info(eventDto.car_number + ": booking check booking return true");
             properties.put("type", EventLog.StatusType.Allow);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(), "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.", "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.");
@@ -1152,7 +1152,7 @@ public class CarEventServiceImpl implements CarEventService {
                 } else {
                     if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
                         if (bookingCheckOut) {
-                            hasAccess = checkBooking(eventDto.car_number, eventDto.region, "2");
+                            hasAccess = checkBooking(eventDto.car_number, eventDto.lp_region, "2");
                             if (hasAccess) {
                                 properties.put("type", EventLog.StatusType.Allow);
                                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(), "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.", "Entering record not found. Car with license plate " + eventDto.car_number + ". For free permits exit is allowed");
@@ -1227,7 +1227,7 @@ public class CarEventServiceImpl implements CarEventService {
                             hasAccess = true;
                             carOutBy = StaticValues.CarOutBy.WHITELIST;
                         } else if (bookingCheckOut) {
-                            hasAccess = checkBooking(eventDto.car_number, eventDto.region, "2");
+                            hasAccess = checkBooking(eventDto.car_number, eventDto.lp_region, "2");
                             if (hasAccess) {
                                 hasAccess = true;
                                 carOutBy = StaticValues.CarOutBy.BOOKING;
@@ -1721,7 +1721,7 @@ public class CarEventServiceImpl implements CarEventService {
         eventLogService.sendSocketMessage(ArmEventType.Photo, EventLog.StatusType.Success, cameraStatusDto.id, eventDto.getCarNumberWithRegion(), eventDto.car_picture, null);
         eventLogService.sendSocketMessage(ArmEventType.Lp, EventLog.StatusType.Success, cameraStatusDto.id, eventDto.car_number, eventDto.lp_picture, null);
         eventLogService.createEventLog(Camera.class.getSimpleName(), cameraStatusDto.id, properties, "Зафиксирован новый номер авто " + eventDto.car_number, "New license plate number identified " + eventDto.car_number, EventLog.EventType.NEW_CAR_DETECTED);
-        carsService.createCar(eventDto.car_number, eventDto.region, eventDto.vecihleType, Gate.GateType.OUT.equals(gateStatusDto.gateType) ? null : eventDto.car_model); // При выезде не сохранять тип авто
+        carsService.createCar(eventDto.car_number, eventDto.lp_region, eventDto.vecihleType, Gate.GateType.OUT.equals(gateStatusDto.gateType) ? null : eventDto.car_model); // При выезде не сохранять тип авто
     }
 
     private BigDecimal calculateRate(Date inDate, Date outDate, Camera camera, CarState carState, CarEventDto eventDto, SimpleDateFormat format, Map<String, Object> properties, Boolean isCheck) throws Exception {

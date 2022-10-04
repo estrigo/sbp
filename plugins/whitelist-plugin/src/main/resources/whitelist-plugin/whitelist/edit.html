@@ -114,6 +114,7 @@
 <script th:src="@{/assets/js/week-hours-picker.js}"></script>
 <script type="text/javascript" th:inline="javascript">
     let groupId = [[${whitelist.groupId}]];
+    var locale = [[${#locale}]];
 
     function checkSelectedTypes(value){
         if(value == 'PERIOD'){
@@ -158,7 +159,7 @@
             "data": form
         };
         $.ajax(settings).done(function (response) {
-            let html = '<option value="">Не выбрано</option>';
+            let html = '<option value="">' + (locale === "ru" ? 'Не выбрано' : 'Not selected') + '</option>';
             let firstLoadedGroupIdsLength = firstLoadedGroupIds.length;
             for(let i=0; i < response.length; i++){
                 html = html + '<option value="' + response[i].id + '">' + response[i].name + '</option>';
@@ -193,13 +194,13 @@
         const options = {
             // custom days names (it's default values)
             days: {
-                0: 'Понедельник',
-                1: 'Вторник',
-                2: 'Среда',
-                3: 'Четверг',
-                4: 'Пятница',
-                5: 'Суббота',
-                6: 'Воскресенье',
+                0: locale === "ru" ? 'Понедельник' : 'Monday',
+                1: locale === "ru" ? 'Вторник' : 'Tuesday',
+                2: locale === "ru" ? 'Среда' : 'Wednesday',
+                3: locale === "ru" ? 'Четверг' : 'Thursday',
+                4: locale === "ru" ? 'Пятница' : 'Friday',
+                5: locale === "ru" ? 'Суббота' : 'Saturday',
+                6: locale === "ru" ? 'Воскресенье' : 'Sunday',
             },
 
             // custom class names for dom elements (it's default values)

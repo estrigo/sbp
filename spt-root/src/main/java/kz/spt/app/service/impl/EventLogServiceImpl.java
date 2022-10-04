@@ -164,6 +164,21 @@ public class EventLogServiceImpl implements EventLogService {
         return eventLogRepository.listByType(type);
     }
 
+    @Override
+    public List<EventLog> listByType(List<EventLog.EventType> types) {
+        return eventLogRepository.findByEventTypeIn(types);
+    }
+
+    @Override
+    public List<EventLog> listByType(List<EventLog.EventType> types, Pageable pageable) {
+        return eventLogRepository.findByEventTypeIn(types, pageable);
+    }
+
+    @Override
+    public Long countByType(List<EventLog.EventType> types) {
+        return eventLogRepository.countByEventTypeIn(types);
+    }
+
     public Long countByFilters(Specification<EventLog> eventLogSpecification) {
         if (eventLogSpecification != null) {
             return eventLogRepository.count(eventLogSpecification);

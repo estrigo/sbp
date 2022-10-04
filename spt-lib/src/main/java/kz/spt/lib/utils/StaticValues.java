@@ -1,5 +1,7 @@
 package kz.spt.lib.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class StaticValues {
 
     public enum CarOutBy {
@@ -14,6 +16,8 @@ public class StaticValues {
         FREE, //  Бесплатный заездь
         THIRD_PARTY_PAYMENT; // Оплата на стороннем приложении
     }
+
+    public static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static String dateFormatTZ = "yyyy-MM-dd'T'HH:mm:ssZ";
     public static String dateOnly = "yyyy-MM-dd";

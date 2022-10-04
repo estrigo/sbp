@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.model.dto.Period;
+import kz.spt.app.model.dto.WhlResponse;
 import kz.spt.app.service.WhitelistRootService;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.service.PluginService;
@@ -174,5 +175,22 @@ public class WhitelistRootServiceImpl implements WhitelistRootService {
             validWhiteListsInPeriodResult = result.get("validWhiteListsInPeriodResult");
         }
         return validWhiteListsInPeriodResult;
+    }
+
+
+    public void updateWhlByGroupId(WhlResponse whlResponse) throws Exception {
+        PluginRegister whitelistPluginRegister = pluginService.getPluginRegister(StaticValues.whitelistPlugin);
+        ObjectNode node = objectMapper.createObjectNode();
+        for (String plateNumber : whlResponse.getPlateNumbers()) {
+            node.put("command", "updateSpecialWhl");
+            node.put("specialWhl", plateNumber);
+            if (whlResponse.getGroupId() != null) {
+                node.put("specialWhlGroup", whlResponse.getGroupId());
+            }
+            if (whitelistPluginRegister != null) {
+                JsonNode result = whitelistPluginRegister.execute(node);
+            }
+        }
+
     }
 }

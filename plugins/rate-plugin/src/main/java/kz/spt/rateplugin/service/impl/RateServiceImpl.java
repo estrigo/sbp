@@ -96,17 +96,21 @@ public class RateServiceImpl implements RateService {
             Date lastPaymentDate = getLastPaymentDate(paymentsJson); // Если была оплата проверяем прошли минуты до которые даются для выезда
             if(lastPaymentDate != null){
                 log.info("lastPaymentDate: " +  lastPaymentDate);
-                PaymentCheckLog paymentCheckLog = getPaymentCheckLogService().findLastSuccessCheck(plateNumber);
-                if(paymentCheckLog != null && lastPaymentDate.after(paymentCheckLog.getCreated()) && lastPaymentDate.getTime() - paymentCheckLog.getCreated().getTime() <= 10*60*1000){  // Если время между проверкой суммы для оплаты и время оплаты не больше 10ти минут, то берем дату проверки как дату оплаты
-                    lastPaymentDate = paymentCheckLog.getCreated();
-                }
+                PaymentCheckLog paymentCheckLog = getPaymentCheckLogService().findLastSuccessCheck(plateNumber, lastPaymentDate);
 
                 int seconds = (int) ((new Date()).getTime() - lastPaymentDate.getTime()) / 1000;
                 int minutesPassedAfterLastPay = seconds / 60;
                 int secondsPassedAfterLastPay = seconds % 60;
-                log.info("minutesPassedAfterLastPay: " + minutesPassedAfterLastPay);
-                log.info("secondsPassedAfterLastPay: " + secondsPassedAfterLastPay);
+                log.info("passedAfterLastPay: " + minutesPassedAfterLastPay + " minutes and " + secondsPassedAfterLastPay + " seconds");
+
                 if (minutesPassedAfterLastPay < parkingRate.getAfterFreeMinutes()) {
+                    if(paymentCheckLog != null && lastPaymentDate.after(paymentCheckLog.getCreated()) && lastPaymentDate.getTime() - paymentCheckLog.getCreated().getTime() <= 10*60*1000){
+                        seconds = (int) ((new Date()).getTime() - paymentCheckLog.getCreated().getTime()) / 1000;
+                        minutesPassedAfterLastPay = seconds / 60;
+                        secondsPassedAfterLastPay = seconds % 60;
+                        log.info("time passed after payment check freeze: " + minutesPassedAfterLastPay + " minutes and " + secondsPassedAfterLastPay + " seconds");
+                    }
+
                     outCalendar.add(Calendar.MINUTE, (-1) * minutesPassedAfterLastPay);
                     outCalendar.add(Calendar.SECOND, (-1) * secondsPassedAfterLastPay);
                 }

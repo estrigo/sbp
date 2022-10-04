@@ -69,10 +69,12 @@ public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSp
     @Query("select count(cs.carNumber) from CarState cs where cs.inGate =:gate and cs.outTimestamp is null")
     Integer getCarCountInGate(@Param("gate") Gate gate);
 
-
     @Query("select distinct cs.carNumber from CarState cs where cs.outTimestamp is null and (cs.paid is null or cs.paid = false)")
     List<String> getPlateNumbersByOutTimestampIsNullAndNotPaid();
 
     @Query("select distinct cs.carNumber from CarState cs where cs.outTimestamp is null")
     List<String> getPlateNumbersByOutTimestampIsNull();
+
+    @Query("select coalesce(count(cs.id),0) from CarState cs where cs.outTimestamp is null")
+    Long countTotalParked();
 }

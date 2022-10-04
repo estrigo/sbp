@@ -9,14 +9,15 @@ import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.reportplugin.ReportPlugin;
 import kz.spt.reportplugin.datatable.ManualOpenReportDtoComparators;
-import kz.spt.reportplugin.dto.filter.FilterJournalReportDto;
 import kz.spt.reportplugin.dto.filter.FilterReportDto;
 import kz.spt.reportplugin.service.ReportService;
 import kz.spt.reportplugin.service.RootServicesGetterService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +35,36 @@ public class ManualOpenReportServiceImpl implements ReportService<EventsDto> {
 
     @Override
     public List<EventsDto> list(FilterReportDto filterReportDto) {
-        var result = Stream.of((List<EventLog>) getEventLogService().listByType(EventLog.EventType.MANUAL_GATE_CLOSE), (List<EventLog>) eventLogService.listByType(EventLog.EventType.MANUAL_GATE_OPEN))
+        List<EventLog> eventLogs = getEventLogService().listByType(Arrays.asList(EventLog.EventType.MANUAL_GATE_CLOSE, EventLog.EventType.MANUAL_GATE_OPEN));
+      return eventsDtoList(eventLogs);
+    }
+
+    @Override
+    public Page<EventsDto> list(PagingRequest pagingRequest, FilterReportDto filterReportDto) {
+        return null;
+    }
+
+    @Override
+    public Page<EventsDto> page(PagingRequest pagingRequest) {
+        List<EventLog.EventType> eventLogs = Arrays.asList(EventLog.EventType.MANUAL_GATE_CLOSE,
+                EventLog.EventType.MANUAL_GATE_OPEN);
+        var all = getEventLogService()
+                .listByType(eventLogs,
+                        PageRequest.of(pagingRequest.getStart(),
+                        pagingRequest.getLength()));
+        Long count = getEventLogService().countByType(eventLogs);
+        var eventDtoList = eventsDtoList(all);
+
+
+        Page<EventsDto> page = new Page<>(eventDtoList);
+        page.setRecordsFiltered(count.intValue());
+        page.setRecordsTotal(count.intValue());
+        page.setDraw(pagingRequest.getDraw());
+        return page;
+    }
+
+    private List<EventsDto> eventsDtoList (List<EventLog> eventLogs) {
+     return    Stream.of(eventLogs)
                 .flatMap(m -> m.stream()
                         .map(e -> EventsDto.builder()
                                 .id(e.getId())
@@ -46,34 +76,8 @@ public class ManualOpenReportServiceImpl implements ReportService<EventsDto> {
                                 .bigImgUrl(e.getProperties().get("carImageUrl") != null ? (String) e.getProperties().get("carImageUrl") : "")
                                 .build()))
                 .collect(Collectors.toList());
-        return result;
     }
 
-    @Override
-    public Page<EventsDto> list(PagingRequest pagingRequest, FilterReportDto filterReportDto) {
-        return null;
-    }
-
-    @Override
-    public Page<EventsDto> page(PagingRequest pagingRequest) {
-        var all = list(FilterJournalReportDto.builder().build());
-
-        var filtered = all.stream()
-                .filter(filterPage(pagingRequest))
-                .sorted(sortPage(pagingRequest))
-                .skip(pagingRequest.getStart())
-                .limit(pagingRequest.getLength())
-                .collect(Collectors.toList());
-
-        long count = all.stream().filter(filterPage(pagingRequest)).count();
-
-        Page<EventsDto> page = new Page<>(filtered);
-        page.setRecordsFiltered((int) count);
-        page.setRecordsTotal((int) count);
-        page.setDraw(pagingRequest.getDraw());
-
-        return page;
-    }
 
     @Override
     public Predicate<EventsDto> filterPage(PagingRequest pagingRequest) {

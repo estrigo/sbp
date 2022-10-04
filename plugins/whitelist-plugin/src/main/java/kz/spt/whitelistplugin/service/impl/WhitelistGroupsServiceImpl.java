@@ -7,7 +7,10 @@ import kz.spt.lib.bootstrap.datatable.Order;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Parking;
-import kz.spt.whitelistplugin.bootstrap.datatable.WhiteListComparators;
+import kz.spt.lib.model.dto.adminPlace.GenericWhlEvent;
+import kz.spt.lib.model.dto.adminPlace.WhiteListEvent;
+import kz.spt.lib.model.dto.adminPlace.WhiteListGroupEvent;
+import kz.spt.lib.model.dto.adminPlace.enums.WhlProcessEnum;
 import kz.spt.whitelistplugin.bootstrap.datatable.WhiteListGroupComparators;
 import kz.spt.whitelistplugin.model.Whitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
@@ -16,15 +19,14 @@ import kz.spt.whitelistplugin.repository.WhitelistRepository;
 import kz.spt.whitelistplugin.service.RootServicesGetterService;
 import kz.spt.whitelistplugin.service.WhitelistGroupsService;
 import kz.spt.whitelistplugin.service.WhitelistService;
-import kz.spt.whitelistplugin.viewmodel.WhiteListDto;
 import kz.spt.whitelistplugin.viewmodel.WhiteListGroupDto;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.pf4j.util.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Predicate;
@@ -40,22 +42,21 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
     private WhitelistGroupsRepository whitelistGroupsRepository;
     private RootServicesGetterService rootServicesGetterService;
     private WhitelistService whitelistService;
+    private ApplicationEventPublisher eventPublisher;
     private static final Comparator<WhiteListGroupDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     public WhitelistGroupsServiceImpl(WhitelistRepository whitelistRepository,
                                       WhitelistGroupsRepository whitelistGroupsRepository,
                                       RootServicesGetterService rootServicesGetterService,
-                                      WhitelistService whitelistService) {
+                                      WhitelistService whitelistService,
+                                      ApplicationEventPublisher eventPublisher) {
         this.whitelistRepository = whitelistRepository;
         this.whitelistGroupsRepository = whitelistGroupsRepository;
         this.rootServicesGetterService = rootServicesGetterService;
         this.whitelistService = whitelistService;
+        this.eventPublisher = eventPublisher;
     }
 
-    @Override
-    public WhitelistGroups findById(Long id) {
-        return whitelistGroupsRepository.getOne(id);
-    }
 
     @Override
     public WhitelistGroups getWithCars(Long id) {
@@ -83,6 +84,13 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
         whitelistGroups.setParking(parking);
         whitelistGroups.setUpdatedUser(currentUser);
         WhitelistGroups updatedWhitelistGroups = whitelistGroupsRepository.save(whitelistGroups);
+
+        this.eventPublisher.publishEvent(new GenericWhlEvent<>( new WhiteListGroupEvent(
+                this,
+                whitelistGroups.getName(),
+                whitelistGroups.getId(),
+                whitelistGroups.getParkingId()),
+                WhlProcessEnum.CREATE));
 
         Set<String> updatedPlateNumbers = whitelistGroups.getPlateNumbers().stream().collect(Collectors.toSet());
         if (whitelistGroups.getId() == null) {
@@ -164,9 +172,32 @@ public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
         if (groupWhitelists != null) {
             for (Whitelist w : groupWhitelists) {
                 whitelistService.deleteById(w.getId());
+
+                try {
+                    this.eventPublisher.publishEvent(new GenericWhlEvent<>( new WhiteListEvent(this,
+                            w.getCar().getId(),
+                            w.getCar().getPlatenumber(),
+                            w.getGroup().getId(),
+                            w.getCar().getModel()), WhlProcessEnum.DELETE));
+                } catch (Exception e) {
+                    log.warning(e.getMessage());
+                }
+
             }
         }
         whitelistGroupsRepository.deleteById(id);
+
+        try {
+            this.eventPublisher.publishEvent(new GenericWhlEvent<>( new WhiteListGroupEvent(
+                    this,
+                    whitelistGroups.getName(),
+                    whitelistGroups.getId(),
+                    whitelistGroups.getParkingId()),
+                    WhlProcessEnum.DELETE));
+        } catch (Exception e) {
+            log.warning(e.getMessage());
+        }
+
     }
 
     @Override

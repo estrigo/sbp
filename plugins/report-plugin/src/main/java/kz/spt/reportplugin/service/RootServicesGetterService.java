@@ -7,4 +7,5 @@ public interface RootServicesGetterService {
     PluginService getPluginService();
     CarStateService getCarStateService();
     EventLogService getEventLogService();
+    AdminService getAdminService();
 }

@@ -17,7 +17,6 @@ import java.util.List;
 @Transactional(noRollbackFor = Exception.class)
 public interface WhitelistGroupsService {
 
-    WhitelistGroups findById(Long id);
 
     WhitelistGroups getWithCars(Long id);
 
