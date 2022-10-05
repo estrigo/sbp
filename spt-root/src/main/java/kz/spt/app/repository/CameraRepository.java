@@ -1,11 +1,14 @@
 package kz.spt.app.repository;
 
 import kz.spt.lib.model.Camera;
+import kz.spt.lib.model.Gate;
+import kz.spt.lib.model.Parking;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CameraRepository extends JpaRepository<Camera, Long> {
@@ -27,6 +30,9 @@ public interface CameraRepository extends JpaRepository<Camera, Long> {
 
     @Query("from Camera c LEFT JOIN FETCH c.gate g LEFT JOIN FETCH g.parking WHERE c.detectorId = ?1")
     Camera findCameraByDetectorId(String detectorId);
+
+    Optional<Camera> findCameraByIpAndGate_Parking(String ip, Parking parking);
+
 
     @Query("from Camera c")
     List<Camera> findCameraIdsAndSnapshotEnabled ();

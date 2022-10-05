@@ -415,6 +415,19 @@ public class CarEventServiceImpl implements CarEventService {
         SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
         eventDto.car_number = eventDto.car_number.toUpperCase();
 
+        if (eventDto.manualEnter){
+            Optional<CarState> carStateForCheckGateType = Optional.ofNullable(carStateService.getLastNotLeft(eventDto.car_number));
+            if(eventDto.cameraId!=null){
+                Camera camera = cameraService.getCameraById(eventDto.cameraId);
+                if(camera.getGate().getGateType().equals(Gate.GateType.OUT) && carStateForCheckGateType.isPresent()
+                        && !camera.getGate().getParking().getId().equals(carStateForCheckGateType.get().getParking().getId())) {
+
+                    camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckGateType.get().getParking()).get();
+                    eventDto.cameraId = camera.getId();
+                }
+            }
+        }
+
         CameraStatusDto cameraStatusDto = eventDto.cameraId != null ? StatusCheckJob.findCameraStatusDtoById(eventDto.cameraId) : StatusCheckJob.findCameraStatusDtoByIp(eventDto.ip_address);
 
         //Если камера не зайдействована, то не фиксировать события по ней. Задача #170
