@@ -151,6 +151,14 @@ public class CarEventServiceImpl implements CarEventService {
                     }
                 }
 
+                Optional<CarState> carStateForCheckDuplicate = Optional.ofNullable(carStateService.getLastNotLeft(platenumber));
+                if(camera.getGate().getGateType().equals(Gate.GateType.OUT)
+                        && carStateForCheckDuplicate.isPresent()
+                        && !camera.getGate().getParking().getId().equals(carStateForCheckDuplicate.get().getParking().getId())){
+                    camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckDuplicate.get().getParking()).get();
+                    cameraId = camera.getId();
+                }
+
                 CarEventDto eventDto = new CarEventDto();
                 eventDto.event_date_time = new Date();
                 eventDto.car_number = platenumber;
@@ -368,6 +376,14 @@ public class CarEventServiceImpl implements CarEventService {
                 }
             }
 
+            Optional<CarState> carStateForCheckDuplicate = Optional.ofNullable(carStateService.getLastNotLeft(plateNumber));
+            if(camera.getGate().getGateType().equals(Gate.GateType.OUT)
+                    && carStateForCheckDuplicate.isPresent()
+                    && !camera.getGate().getParking().getId().equals(carStateForCheckDuplicate.get().getParking().getId())){
+                camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckDuplicate.get().getParking()).get();
+                cameraId = camera.getId();
+            }
+
             CarEventDto eventDto = new CarEventDto();
             eventDto.event_date_time = new Date();
             eventDto.car_number = plateNumber;
@@ -416,16 +432,18 @@ public class CarEventServiceImpl implements CarEventService {
         eventDto.car_number = eventDto.car_number.toUpperCase();
 
         if (eventDto.manualEnter){
-            Optional<CarState> carStateForCheckGateType = Optional.ofNullable(carStateService.getLastNotLeft(eventDto.car_number));
+            Optional<CarState> carStateForCheckDuplicate = Optional.ofNullable(carStateService.getLastNotLeft(eventDto.car_number));
             if(eventDto.cameraId!=null){
                 Camera camera = cameraService.getCameraById(eventDto.cameraId);
-                if(camera.getGate().getGateType().equals(Gate.GateType.OUT) && carStateForCheckGateType.isPresent()
-                        && !camera.getGate().getParking().getId().equals(carStateForCheckGateType.get().getParking().getId())) {
+                if(camera.getGate().getGateType().equals(Gate.GateType.OUT)
+                        && carStateForCheckDuplicate.isPresent()
+                        && !camera.getGate().getParking().getId().equals(carStateForCheckDuplicate.get().getParking().getId())) {
 
-                    camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckGateType.get().getParking()).get();
+                    camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckDuplicate.get().getParking()).get();
                     eventDto.cameraId = camera.getId();
                 }
             }
+
         }
 
         CameraStatusDto cameraStatusDto = eventDto.cameraId != null ? StatusCheckJob.findCameraStatusDtoById(eventDto.cameraId) : StatusCheckJob.findCameraStatusDtoByIp(eventDto.ip_address);
@@ -451,6 +469,7 @@ public class CarEventServiceImpl implements CarEventService {
         }
 
         if (cameraStatusDto != null) {
+
             GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(cameraStatusDto.gateId);
 
             String secondCameraIp = (gate.frontCamera2 != null) ? (eventDto.ip_address.equals(gate.frontCamera.ip) ? gate.frontCamera2.ip : gate.frontCamera.ip) : null; // If there is two camera, then ignore second by timeout
@@ -532,8 +551,8 @@ public class CarEventServiceImpl implements CarEventService {
                     }
                 }
 
-                cameraStatusDto.id = camera.getId();
-                createNewCarEvent(cameraStatusDto, gate, eventDto, properties);
+
+                createNewCarEvent(camera.getId(), gate, eventDto, properties);
 
                 if (Gate.GateType.REVERSE.equals(gate.gateType)) {
                     handleCarReverseInEvent(eventDto, camera, gate, properties, format);
@@ -750,8 +769,8 @@ public class CarEventServiceImpl implements CarEventService {
                         hasAccess = true;
                     } else {
                         properties.put("type", EventLog.StatusType.Deny);
-                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.getCarNumberWithRegion(), "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance);
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance, EventLog.EventType.NOT_ENOUGH_BALANCE);
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.getCarNumberWithRegion(), "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance + ". Выезд с " + carState.getParking().getName(), "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance + ". Departure from " + carState.getParking().getName());
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance + ". Выезд с " + carState.getParking().getName(), "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance + ". Departure from " + carState.getParking().getName(), EventLog.EventType.NOT_ENOUGH_BALANCE);
                         hasAccess = false;
                     }
                 }
@@ -1401,8 +1420,8 @@ public class CarEventServiceImpl implements CarEventService {
                                             }
                                             if (!hasAccess) {
                                                 properties.put("type", EventLog.StatusType.Deny);
-                                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.getCarNumberWithRegion(), "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance);
-                                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance, "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance, EventLog.EventType.NOT_ENOUGH_BALANCE);
+                                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.getCarNumberWithRegion(), "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance + ". Выезд с " + carState.getParking().getName(), "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance + ". Departure from " + carState.getParking().getName());
+                                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + rateResult + ". Баланс: " + balance + ". Выезд с " + carState.getParking().getName(), "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + rateResult + ". Balance: " + balance + ". Departure from " + carState.getParking().getName(), EventLog.EventType.NOT_ENOUGH_BALANCE);
                                             }
                                         }
                                     }
@@ -1702,8 +1721,8 @@ public class CarEventServiceImpl implements CarEventService {
             } else {
                 BigDecimal subtractResult = balance.subtract(rateResult);
                 properties.put("type", EventLog.StatusType.Allow);
-                String descriptionRu = "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + rateResult + ". Остаток баланса: " + subtractResult + ". Проезд разрешен.";
-                String descriptionEn = "Allowed: Paid for parking. Total sum: " + rateResult + ". Balance left: " + subtractResult + ". Allowed.";
+                String descriptionRu = "Пропускаем авто: Оплата за паркинг присутствует. Сумма к оплате: " + rateResult + ". Остаток баланса: " + subtractResult + ". Проезд разрешен. " + "Выезд с " + carState.getParking().getName();
+                String descriptionEn = "Allowed: Paid for parking. Total sum: " + rateResult + ". Balance left: " + subtractResult + ". Allowed." + ". Departure from " + carState.getParking().getName() ;
                 eventType = EventLog.EventType.PAID_PASS;
                 carState.setCarOutType(CarState.CarOutType.PAID_PASS);
                 if (BigDecimal.ZERO.compareTo(rateResult) == 0) {
@@ -1751,11 +1770,11 @@ public class CarEventServiceImpl implements CarEventService {
         }
     }
 
-    private void createNewCarEvent(CameraStatusDto cameraStatusDto, GateStatusDto gateStatusDto, CarEventDto eventDto, Map<String, Object> properties) {
+    private void createNewCarEvent(Long id, GateStatusDto gateStatusDto, CarEventDto eventDto, Map<String, Object> properties) {
         properties.put("type", EventLog.StatusType.Success);
-        eventLogService.sendSocketMessage(ArmEventType.Photo, EventLog.StatusType.Success, cameraStatusDto.id, eventDto.getCarNumberWithRegion(), eventDto.car_picture, null);
-        eventLogService.sendSocketMessage(ArmEventType.Lp, EventLog.StatusType.Success, cameraStatusDto.id, eventDto.car_number, eventDto.lp_picture, null);
-        eventLogService.createEventLog(Camera.class.getSimpleName(), cameraStatusDto.id, properties, "Зафиксирован новый номер авто " + eventDto.car_number, "New license plate number identified " + eventDto.car_number, EventLog.EventType.NEW_CAR_DETECTED);
+        eventLogService.sendSocketMessage(ArmEventType.Photo, EventLog.StatusType.Success, id, eventDto.getCarNumberWithRegion(), eventDto.car_picture, null);
+        eventLogService.sendSocketMessage(ArmEventType.Lp, EventLog.StatusType.Success, id, eventDto.car_number, eventDto.lp_picture, null);
+        eventLogService.createEventLog(Camera.class.getSimpleName(), id, properties, "Зафиксирован новый номер авто " + eventDto.car_number, "New license plate number identified " + eventDto.car_number, EventLog.EventType.NEW_CAR_DETECTED);
         carsService.createCar(eventDto.car_number, eventDto.lp_region, eventDto.vecihleType, Gate.GateType.OUT.equals(gateStatusDto.gateType) ? null : eventDto.car_model); // При выезде не сохранять тип авто
     }
 

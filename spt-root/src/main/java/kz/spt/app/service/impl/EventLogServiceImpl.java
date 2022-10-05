@@ -7,19 +7,20 @@ import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.CameraStatusDto;
-import kz.spt.lib.model.dto.EventLogExcelDto;
+import kz.spt.app.model.dto.GateStatusDto;
+import kz.spt.app.repository.EventLogRepository;
 import kz.spt.app.service.GateService;
+import kz.spt.app.utils.StringExtensions;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.EventLogSpecification;
 import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.dto.EventFilterDto;
+import kz.spt.lib.model.dto.EventLogExcelDto;
 import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.EventLogService;
-import kz.spt.app.repository.EventLogRepository;
 import kz.spt.lib.utils.StaticValues;
-import kz.spt.app.utils.StringExtensions;
 import kz.spt.lib.utils.Utils;
 import lombok.extern.java.Log;
 import org.pf4j.PluginManager;
@@ -27,7 +28,6 @@ import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -83,6 +83,10 @@ public class EventLogServiceImpl implements EventLogService {
     @Override
     public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn) {
         EventLog eventLog = new EventLog();
+
+        if(objectClass.equals("Camera"))
+            checkDuplicateAndSetGateName(objectId, properties);
+
         eventLog.setObjectClass(objectClass);
         eventLog.setObjectId(objectId);
         eventLog.setPlateNumber((properties != null && properties.containsKey("carNumber")) ? (String) properties.get("carNumber") : "");
@@ -98,6 +102,10 @@ public class EventLogServiceImpl implements EventLogService {
     @Override
     public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, EventLog.EventType eventType) {
         EventLog eventLog = new EventLog();
+
+        if(objectClass.equals("Camera"))
+            checkDuplicateAndSetGateName(objectId, properties);
+
         eventLog.setObjectClass(objectClass);
         eventLog.setObjectId(objectId);
         eventLog.setPlateNumber((properties != null && properties.containsKey("carNumber")) ? (String) properties.get("carNumber") : "");
@@ -110,6 +118,8 @@ public class EventLogServiceImpl implements EventLogService {
         eventLog.setEventType(eventType);
         eventLogRepository.save(eventLog);
     }
+
+
 
     public void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long id, String plateNumber, String message, String messageEng) {
 
@@ -397,5 +407,14 @@ public class EventLogServiceImpl implements EventLogService {
             }
         }
         return null;
+    }
+
+    private void checkDuplicateAndSetGateName(Long cameraId, Map<String, Object> properties){
+        CameraStatusDto cameraStatusDto = StatusCheckJob.findCameraStatusDtoById(cameraId);
+        if(cameraStatusDto != null){
+            GateStatusDto gateStatusDto = StatusCheckJob.findGateStatusDtoById(cameraStatusDto.gateId);
+
+            properties.put("gateName", gateStatusDto.gateName);
+        }
     }
 }
