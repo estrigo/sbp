@@ -151,7 +151,8 @@ public class CarEventServiceImpl implements CarEventService {
                 }
 
                 Optional<CarState> carStateForCheckDuplicate = Optional.ofNullable(carStateService.getLastNotLeft(platenumber));
-                if(carStateForCheckDuplicate.isPresent()
+                if(camera.getGate().getGateType().equals(Gate.GateType.OUT)
+                        && carStateForCheckDuplicate.isPresent()
                         && !camera.getGate().getParking().getId().equals(carStateForCheckDuplicate.get().getParking().getId())){
                     camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckDuplicate.get().getParking()).get();
                     cameraId = camera.getId();
@@ -375,7 +376,8 @@ public class CarEventServiceImpl implements CarEventService {
             }
 
             Optional<CarState> carStateForCheckDuplicate = Optional.ofNullable(carStateService.getLastNotLeft(plateNumber));
-            if(carStateForCheckDuplicate.isPresent()
+            if(camera.getGate().getGateType().equals(Gate.GateType.OUT)
+                    && carStateForCheckDuplicate.isPresent()
                     && !camera.getGate().getParking().getId().equals(carStateForCheckDuplicate.get().getParking().getId())){
                 camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckDuplicate.get().getParking()).get();
                 cameraId = camera.getId();
@@ -432,7 +434,8 @@ public class CarEventServiceImpl implements CarEventService {
             Optional<CarState> carStateForCheckDuplicate = Optional.ofNullable(carStateService.getLastNotLeft(eventDto.car_number));
             if(eventDto.cameraId!=null){
                 Camera camera = cameraService.getCameraById(eventDto.cameraId);
-                if(carStateForCheckDuplicate.isPresent()
+                if(camera.getGate().getGateType().equals(Gate.GateType.OUT)
+                        && carStateForCheckDuplicate.isPresent()
                         && !camera.getGate().getParking().getId().equals(carStateForCheckDuplicate.get().getParking().getId())) {
 
                     camera = cameraService.findCameraByIpAndParking(camera.getIp(), carStateForCheckDuplicate.get().getParking()).get();
