@@ -41,7 +41,8 @@ public class EventLog {
         Success,
         Debt,
         NotFound,
-        Warning
+        Warning,
+        Ignoring
     }
 
     @Id

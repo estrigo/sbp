@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<meta name="viewport" content="width=device-width"/>
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header"><b th:text="#{carmodel.title}"></b></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <form th:action="@{/arm/interval-add}" th:object="${camera}" method="post" >
+                                    <input type="hidden" name="parkingRate.id" th:field="${camera.id}" th:value="${camera.id}">
+                                    <td>
+                                        <label class="col-form-label" th:text="#{camera.startTime}">
+                                        </label>
+                                        <div class="col-10">
+                                            <input type="time" th:field="${camera.startTime}" th:value="${camera.startTime}"/>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <label class="col-form-label" th:text="#{camera.endTime}">
+                                        </label>
+                                        <div class="col-10">
+                                            <input type="time" th:field="${camera.endTime}" th:value="${camera.endTime}"/>
+                                        </div>
+                                    </td>
+                                    <button style="margin-top: 20px" type="submit" class="btn btn-primary" th:text="#{arm.save}"></button>
+                                </form>
+                                <div>
+                                    <button style="margin-top: 30px" type="button" class="btn btn-primary" th:text="#{arm.back}" th:onclick="configure()">
+                                        Configure
+                                    </button>
+                                    <div id="configure-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                                         aria-hidden="true" style="display: none;">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <div class="modal-header">
+                                                    <h4 class="modal-title"></h4>
+                                                </div>
+                                                <div class="modal-body" id="configureModalBody">
+                                                    <div id="cameraTabsAccordion" role="tablist" aria-multiselectable="true" class="m-b-20">
+                                                        <div class="card">
+                                                            <div class="card-header" role="tab" id="headingOne">
+                                                                <h5 class="mb-0 mt-0 font-16">
+                                                                    <a data-parent="#accordion"
+                                                                       aria-expanded="false" aria-controls="collapseOne" class="collapsed"
+                                                                       th:text="#{arm.camerasWithoutTab}">
+                                                                    </a>
+                                                                </h5>
+                                                            </div>
+                                                            <div id="collapseOne" class="collapse" role="tabpanel" aria-labelledby="headingOne"
+                                                                 aria-expanded="false" style="">
+                                                                <div class="card-block">
+                                                                    <table id="cameraTabsTable" class="table table-bordered">
+                                                                        <thead>
+                                                                        <tr>
+                                                                            <th th:text="#{crm.name}"></th>
+                                                                            <th>Ip</th>
+                                                                            <th th:text="#{whitelist.parking}"></th>
+                                                                        </tr>
+                                                                        </thead>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+
+    $('tr').on('shown.bs.collapse', function(){
+        $(this).prev('i').find(".fa-plus-square").removeClass("fa-plus-square").addClass("fa-minus-square");
+    }).on('hidden.bs.collapse', function(){
+        $(this).prev('i').find(".fa-minus-square").removeClass("fa-minus-square").addClass("fa-plus-square");
+    });
+
+    $(".accordion-toggle").on("click", function () {
+        if($(this).find(".fa").hasClass("fa-plus-square")) {
+            $(this).find(".fa").removeClass("fa-plus-square").addClass("fa-minus-square");
+        } else {
+            $(this).find(".fa").removeClass("fa-minus-square").addClass("fa-plus-square");
+        }
+    });
+
+</script>
+
+<script th:inline="javascript">
+    let tabs = [];
+    let maxId = 0;
+    let maxIdIncrement = 0;
+    let moveOptions = "<option value=''></option>";
+
+    const armMove = [[#{arm.move}]];
+    const crmName = [[#{crm.name}]];
+    const parkingName = [[#{whitelist.parking}]];
+    const startTime = [[#{camera.startTime}]];
+    const endTime = [[#{camera.endTime}]];
+    const timeUnavailable = [[#{camera.intervalTimeUnavailable}]];
+
+    const crmDelete = [[#{crm.delete}]];
+
+    function configure() {
+        tabs = [];
+        maxId = 0;
+        maxIdIncrement = 0;
+        moveOptions = "<option value=''></option>";
+        $.get("/rest/arm/tab/camera", function (data) {
+            tabs = data;
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].id > 0) {
+                    moveOptions = moveOptions + "<option value='" + data[i].id + "'>" + data[i].name + "</option>";
+                }
+                maxIdIncrement = maxId = maxId < data[i].id ? data[i].id : maxId;
+            }
+            let html = "";
+            for (let i = 0; i < data.length; i++) {
+                html = html +
+                    "<div class='card' id='card" + data[i].id + "' name='" + data[i].name + "'><div class='card-header' role='tab' id='headingOne" + data[i].id + "'>\n" +
+                    "                            <h5 class='mb-0 mt-0 font-16'>\n" +
+                    "                                \n";
+
+                html = html +
+                    "                            </h5>\n" +
+                    "                        </div><div  role='tabpanel' aria-labelledby='headingOne" + data[i].id + "' aria-expanded='false' style=''>\n" +
+                    "                            <div class='card-block'>" +
+                    "                                 <table id='cameraTabsTable" + data[i].id + "' class='table table-bordered'>\n" +
+                    "                                    <thead>\n" +
+                    "                                    <tr>\n" +
+                    "                                        <th>" + crmName + "</th>\n" +
+                    "                                        <th>Ip</th>\n" +
+                    "                                        <th>" + parkingName + "</th>\n" +
+                    "                                        <th>" + startTime + "</th>\n" +
+                    "                                        <th>" + endTime + "</th>\n" +
+                    "                                        <th></th>\n" +
+                    "                                    </tr>\n" +
+                    "                                    </thead><tbody>";
+                for (let j = 0; j < data[i].cameras.length; j++) {
+                    let starTime =  data[i].cameras[j].startTime== "null" ? "": data[i].cameras[j].startTime;
+                    let endTime =  data[i].cameras[j].endTime== "null" ? "": data[i].cameras[j].endTime;
+                    html = html + "<tr id='camera" + data[i].cameras[j].id + "'>\n" +
+                        "          <td>" + data[i].cameras[j].name + "</td>\n" +
+                        "          <td>" + data[i].cameras[j].ip + "</td>\n" +
+                        "          <td>" + data[i].cameras[j].parking + "</td>\n" +
+                        "          <td>" + starTime + "</td>\n" +
+                        "          <td>" + endTime + "</td>" +
+                        "          <td><a href=\"/arm/edit/timeUnavailable/"+data[i].cameras[j].id+"\" <i class=\"ion-edit\"></i></a></td>" +
+                        "</tr>\n"
+
+
+                }
+                html = html + "</tbody></table>\n" +
+                    "                            </div>\n" +
+                    "                        </div>\n" +
+                    "                    </div>";
+                $('#cameraTabsAccordion').html(html);
+            }
+        });
+        $('#configure-modal').modal('show');
+    }
+
+
+</script>
+</html>

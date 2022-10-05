@@ -38,6 +38,7 @@ import org.thymeleaf.dialect.springdata.util.Strings;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -437,7 +438,6 @@ public class CarEventServiceImpl implements CarEventService {
         }
 
         if (cameraStatusDto != null) {
-
             GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(cameraStatusDto.gateId);
 
             String secondCameraIp = (gate.frontCamera2 != null) ? (eventDto.ip_address.equals(gate.frontCamera.ip) ? gate.frontCamera2.ip : gate.frontCamera.ip) : null; // If there is two camera, then ignore second by timeout
@@ -525,6 +525,18 @@ public class CarEventServiceImpl implements CarEventService {
                 if (Gate.GateType.REVERSE.equals(gate.gateType)) {
                     handleCarReverseInEvent(eventDto, camera, gate, properties, format);
                 } else if (Gate.GateType.IN.equals(gate.gateType)) {
+                    if ((cameraStatusDto.getStartTime() != null) && (cameraStatusDto.getEndTime() != null)) {
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(eventDto.event_date_time);
+                        boolean isAfterStartTime  = cameraStatusDto.getStartTime().isBefore
+                                (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
+                        boolean isBeforeEndTime  = cameraStatusDto.getEndTime().isAfter
+                                (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
+                        if ((isAfterStartTime) && (isBeforeEndTime)){
+                            eventPropertiesOfIgnoringType(eventDto, properties, gate, camera);
+                            return;
+                        }
+                    }
                     handleCarInEvent(eventDto, camera, gate, properties, format);
                 } else if (Gate.GateType.OUT.equals(gate.gateType)) {
                     handleCarOutEvent(eventDto, camera, gate, properties, format);
@@ -540,6 +552,18 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("type", EventLog.StatusType.Error);
             eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + " " + eventDto.car_number + " от неизвестной камеры с ip " + eventDto.ip_address, "Identified new car with number " + " " + eventDto.car_number + " from unknown camera with ip " + eventDto.ip_address, EventLog.EventType.NEW_CAR_DETECTED);
         }
+    }
+
+    private void eventPropertiesOfIgnoringType(CarEventDto eventDto, Map<String, Object> properties,
+                                               GateStatusDto gate, Camera camera) {
+            properties.put("gateName", gate.gateName);
+            properties.put("gateId", gate.gateId);
+            properties.put("gateType", gate.gateType);
+            properties.put("type", EventLog.StatusType.Ignoring);
+            String descriptionRu = "Ошибка открытия шлагбаума: Идентифицировано авто в нерабочее с номером: " + eventDto.car_number ;
+            String descriptionEn = "Error while barrier open: Identified a car during non-working hours with plate number  " + eventDto.car_number;
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Ignoring, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn);
+            eventLogService.createEventLog(null, null, properties, "Зафиксирован новый номер авто " + eventDto.car_number + " в нерабочее время парковки", "Identified a new car" + eventDto.car_number + " at night time", EventLog.EventType.NEW_CAR_DETECTED);
     }
 
     private boolean isAllow(CarEventDto carEvent, CameraStatusDto cameraStatusDto, Map<String, Object> properties, GateStatusDto gate) {

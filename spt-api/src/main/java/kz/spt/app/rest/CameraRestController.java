@@ -1,6 +1,5 @@
 package kz.spt.app.rest;
 
-import kz.spt.lib.model.dto.CalibrationDto;
 import kz.spt.lib.service.CalibrationService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;

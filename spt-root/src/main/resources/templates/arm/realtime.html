@@ -346,7 +346,6 @@
         const lp = cameras[messageBody.id].lp;
         const logs = cameras[messageBody.id].logs;
         const fancyImage = cameras[messageBody.id].fancyImage;
-
         const canvas = cameras[messageBody.id].canvas;
         const context = canvas.getContext('2d');
 
@@ -355,6 +354,16 @@
             cameras[messageBody.id].snapshot = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
             $(fancyImage).attr("data-src", cameras[messageBody.id].snapshot);
 
+            let image = new Image();
+            image.src = cameras[messageBody.id].snapshot;
+            image.onload = function () {
+                canvas.width = image.width + 1;
+                canvas.height = image.height + 1;
+                context.drawImage(image, 0, 0, image.width, image.height);
+                image = null;
+            };
+        } else if (messageBody.eventType == 'Picture') {
+            cameras[messageBody.id].snapshot = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
             let image = new Image();
             image.src = cameras[messageBody.id].snapshot;
             image.onload = function () {
@@ -394,6 +403,10 @@
                 p.className += " bg-poop";
                 p.className += " text-white";
                 break;
+            case "Ignoring":
+                p.className += " bg-info";
+                p.className += " text-white";
+                break;
             case "Warning":
                 p.className += " bg-purple";
                 p.className += " text-white";
@@ -418,12 +431,9 @@
     function initCamera(id) {
         const lp = document.getElementById('lp' + id);
         const logs = document.getElementById('logs' + id);
-
         const canvas = document.getElementById('image' + id);
         const context = canvas.getContext('2d');
-
         const fancyImage = document.getElementById('fancyImage' + id);
-
         cameras[id] = {
             "lp": lp,
             "logs": logs,
@@ -534,6 +544,7 @@
     function enableSnapshot() {
         $(".item").each(function () {
             const $input = $(this);
+            console.log("Enable snapshot",$(this).data("id"));
             const $id = $input.data("id");
             const $url = $input.data("url");
             const $ip = $input.data("ip");
@@ -670,11 +681,16 @@
     const armMove = [[#{arm.move}]];
     const crmName = [[#{crm.name}]];
     const parkingName = [[#{whitelist.parking}]];
+    const startTime = [[#{camera.startTime}]];
+    const endTime = [[#{camera.endTime}]];
+    const timeUnavailable = [[#{camera.intervalTimeUnavailable}]];
+
     const crmDelete = [[#{crm.delete}]];
 
     function configure() {
         tabs = [];
         maxId = 0;
+        const canEdit = [[${canEdit}]];
         maxIdIncrement = 0;
         moveOptions = "<option value=''></option>";
         $.get("/rest/arm/tab/camera", function (data) {
@@ -708,13 +724,25 @@
                     "                                        <th>" + crmName + "</th>\n" +
                     "                                        <th>Ip</th>\n" +
                     "                                        <th>" + parkingName + "</th>\n" +
+                    "                                        <th>" + startTime + "</th>\n" +
+                    "                                        <th>" + endTime + "</th>\n" +
+                    "                                        <th></th>\n" +
                     "                                    </tr>\n" +
                     "                                    </thead><tbody>";
                 for (let j = 0; j < data[i].cameras.length; j++) {
+                    let starTime =  data[i].cameras[j].startTime== "null" ? "": data[i].cameras[j].startTime;
+                    let endTime =  data[i].cameras[j].endTime== "null" ? "": data[i].cameras[j].endTime;
                     html = html + "<tr id='camera" + data[i].cameras[j].id + "'><td><select id='cameraSelect" + data[i].cameras[j].id + "' onchange='moveCameraToTab(" + data[i].cameras[j].id + ")'>" + moveOptions + "</select></td>\n" +
                         "          <td>" + data[i].cameras[j].name + "</td>\n" +
                         "          <td>" + data[i].cameras[j].ip + "</td>\n" +
-                        "          <td>" + data[i].cameras[j].parking + "</td></tr>\n"
+                        "          <td>" + data[i].cameras[j].parking + "</td>\n" +
+                        "          <td>" + starTime + "</td>\n" +
+                        "          <td>" + endTime + "</td>";
+                    if(canEdit) html  += "<td><a href=\"/arm/edit/timeUnavailable/"+data[i].cameras[j].id+"\" <i class=\"ion-edit\"></i></a></td>";
+
+                    html += "</tr>\n";
+
+
                 }
                 html = html + "</tbody></table>\n" +
                     "                            </div>\n" +

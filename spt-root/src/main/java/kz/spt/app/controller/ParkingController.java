@@ -197,6 +197,8 @@ public class ParkingController {
 
     @GetMapping("/cars/calibration/{id}")
     public String calibration(@PathVariable Long id, Model model){
+        Camera camera = cameraService.getCameraById(id);
+        model.addAttribute("isSnapshotEnable", camera.getSnapshotEnabled());
         model.addAttribute("camera" ,cameraService.getCameraById(id));
         return "parking/camera/calibration";
     }
