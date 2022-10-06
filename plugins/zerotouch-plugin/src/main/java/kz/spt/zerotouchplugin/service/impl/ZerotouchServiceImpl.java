@@ -63,7 +63,7 @@ public class ZerotouchServiceImpl implements ZerotouchService {
         Boolean result = false;
 
         if(zeroTouchRahmetCheck) {
-            ZeroTouchLog zeroTouchLog = zeroTouchLogRepository.findZeroTouchLogByCarStateId(carStateId);
+            ZeroTouchLog zeroTouchLog = zeroTouchLogRepository.findFirstByCarStateIdOrderByIdDesc(carStateId);
 
             if (zeroTouchLog != null && zeroTouchLog.getIsPaid())
                 return true;
