@@ -96,16 +96,18 @@ public class ScheduleWorks {
                     posTerminalRepository.findPosTerminalsByReconsilatedIsFalseAndType(PosTerminal.terminalType.TERMINAL);
             for (PosTerminal pt : posTerminalList) {
                 try {
-                    RestTemplate restTemplate = new RestTemplate();
-                    String url = "http://" + pt.getIp() + ":8080/apibank/?key=" + pt.getApikey()
-                            + "&message=reconciliation&bankSlot=1";
-                    ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-                    if (response.getStatusCode().is2xxSuccessful()) {
-                        Thread.sleep(15000);
-                        checkTerminalsReconciliationStatus(pt);
-                    } else {
-                        log.error("[Terminal] " + pt.getIp() + " reconciliation request failed, response status code: "
-                                + response.getStatusCode());
+                    if (!checkTerminalsReconciliationStatus(pt)) {
+                        RestTemplate restTemplate = new RestTemplate();
+                        String url = "http://" + pt.getIp() + ":8080/apibank/?key=" + pt.getApikey()
+                                + "&message=reconciliation&bankSlot=1";
+                        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+                        if (response.getStatusCode().is2xxSuccessful()) {
+                            Thread.sleep(30000);
+                            checkTerminalsReconciliationStatus(pt);
+                        } else {
+                            log.error("[Terminal] " + pt.getIp() + " reconciliation request failed, response status code: "
+                                    + response.getStatusCode());
+                        }
                     }
                 } catch (Exception e) {
                     log.error("[Terminal] " + " reconciliation request failed: " + e.getMessage());
@@ -114,7 +116,7 @@ public class ScheduleWorks {
         }
     }
 
-    public void checkTerminalsReconciliationStatus(PosTerminal posTerminal) {
+    public Boolean checkTerminalsReconciliationStatus(PosTerminal posTerminal) {
         try {
             String url = "http://" + posTerminal.getIp() + ":8080/dump/bank/batches?key=" + posTerminal.getApikey();
             String authStr = "1:1";
@@ -130,12 +132,14 @@ public class ScheduleWorks {
                 log.info("[Terminal] " + posTerminal.getIp() + " reconciliation succeed, status: " + status);
                 posTerminal.setReconsilated(true);
                 posTerminalRepository.save(posTerminal);
+                return true;
             } else {
                 log.warn("[Terminal] status is: {} ", status);
             }
         } catch (Exception e) {
             log.error("[Terminal] get status request failed.");
         }
+        return false;
     }
 
     @Scheduled(cron = "0 0 3 * * ?")

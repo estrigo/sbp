@@ -13,6 +13,8 @@ public interface CameraService {
 
     Camera findCameraByDetectorId(String detectorId);
 
+    List<Camera> findCameraIdsAndSnapshotEnabled();
+
     List<Camera> cameraList();
 
     List<Camera> cameraListWithoutTab();
@@ -32,4 +34,6 @@ public interface CameraService {
     void deleteCameraTab(CameraTab cameraTab);
 
     void enableSnapshot(Long cameraId);
+
+    void enableSnapshot(Long cameraId, Boolean isStreamOn);
 }

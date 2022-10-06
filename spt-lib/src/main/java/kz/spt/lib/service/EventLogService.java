@@ -20,6 +20,7 @@ public interface EventLogService {
 
     enum ArmEventType {
         Photo,
+        Picture,
         CarEvent,
         Lp
     }

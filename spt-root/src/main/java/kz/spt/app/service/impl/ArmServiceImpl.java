@@ -425,6 +425,8 @@ public class ArmServiceImpl implements ArmService {
                 cameraNode.put("name", camera.getName());
                 cameraNode.put("ip", camera.getIp());
                 cameraNode.put("parking", camera.getGate().getParking().getName());
+                cameraNode.put("startTime", String.valueOf(camera.getStartTime()));
+                cameraNode.put("endTime", String.valueOf(camera.getEndTime()));
                 camerasWithoutTabs.add(cameraNode);
             }
         }
@@ -443,6 +445,8 @@ public class ArmServiceImpl implements ArmService {
                 cameraNode.put("name", camera.getName());
                 cameraNode.put("ip", camera.getIp());
                 cameraNode.put("parking", camera.getGate().getParking().getName());
+                cameraNode.put("startTime", String.valueOf(camera.getStartTime()));
+                cameraNode.put("endTime", String.valueOf(camera.getEndTime()));
                 cameras.add(cameraNode);
             }
             cameraTabNode.set("cameras", cameras);
