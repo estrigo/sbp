@@ -15,6 +15,8 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+
 @Service
 @Transactional(noRollbackFor = Exception.class)
 public class CustomerServiceImpl implements CustomerService {
@@ -87,11 +89,11 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void deleteCustomer(Customer customer) {
         List<Cars> cars = customer.getCars();
-        customerRepository.delete(customer);
         for (Cars car : cars) {
             car.setCustomer(null);
             carsService.saveCars(car);
         }
+        customerRepository.delete(customer);
     }
 
     private Page<Customer> getPage(List<Customer> customers, PagingRequest pagingRequest) {
