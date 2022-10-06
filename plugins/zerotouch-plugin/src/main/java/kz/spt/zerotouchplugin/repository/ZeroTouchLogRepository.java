@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ZeroTouchLogRepository extends JpaRepository<ZeroTouchLog, Long> {
-    ZeroTouchLog findZeroTouchLogByCarStateId(long carStateId);
+    ZeroTouchLog findFirstByCarStateIdOrderByIdDesc(long carStateId);
 }
