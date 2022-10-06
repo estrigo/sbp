@@ -8,11 +8,13 @@ import kz.spt.lib.model.dto.CalibrationDto;
 import kz.spt.lib.service.CalibrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(noRollbackFor = Exception.class)
 public class CalibrationServiceImpl implements CalibrationService {
     private final CalibrationRepository calibrationRepository;
     private final CameraService cameraService;

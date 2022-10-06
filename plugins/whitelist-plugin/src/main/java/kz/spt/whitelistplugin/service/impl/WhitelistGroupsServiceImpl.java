@@ -25,6 +25,7 @@ import lombok.extern.java.Log;
 import org.pf4j.util.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Log
+@Transactional(noRollbackFor = Exception.class)
 public class WhitelistGroupsServiceImpl implements WhitelistGroupsService {
 
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";

@@ -31,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.dialect.springdata.util.Strings;
@@ -48,6 +49,7 @@ import static kz.spt.lib.service.EventLogService.ArmEventType;
 
 @Log
 @Service
+@Transactional(noRollbackFor = Exception.class)
 public class CarEventServiceImpl implements CarEventService {
 
     private static Hashtable<String, Long> cameraTimeoutHashtable = new Hashtable<>();

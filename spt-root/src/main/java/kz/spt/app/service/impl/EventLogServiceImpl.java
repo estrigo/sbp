@@ -37,6 +37,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -49,6 +50,7 @@ import java.util.stream.Collectors;
 
 @Log
 @Service
+@Transactional(noRollbackFor = Exception.class)
 public class EventLogServiceImpl implements EventLogService {
 
     @Autowired

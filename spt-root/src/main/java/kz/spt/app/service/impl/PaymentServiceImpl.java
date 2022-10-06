@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 @Log
 @Service
+@Transactional(noRollbackFor = Exception.class)
 public class PaymentServiceImpl implements PaymentService {
 
     private final PluginService pluginService;

@@ -21,6 +21,7 @@ import kz.spt.rateplugin.repository.RateRepository;
 import kz.spt.rateplugin.service.RateService;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
@@ -29,6 +30,7 @@ import java.util.*;
 
 @Log
 @Service
+@Transactional(noRollbackFor = Exception.class)
 public class RateServiceImpl implements RateService {
 
     private RateRepository rateRepository;

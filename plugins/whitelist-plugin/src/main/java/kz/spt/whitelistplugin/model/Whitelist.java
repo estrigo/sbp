@@ -17,7 +17,7 @@ import javax.persistence.*;
 @Proxy(lazy = false)
 public class Whitelist extends AbstractWhitelist {
 
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "car_id")
     private Cars car;
 

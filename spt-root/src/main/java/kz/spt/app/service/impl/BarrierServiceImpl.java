@@ -23,6 +23,7 @@ import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -33,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Log
+@Transactional(noRollbackFor = Exception.class)
 public class BarrierServiceImpl implements BarrierService {
 
     public static Map<String, ModbusMaster> modbusMasterMap = new ConcurrentHashMap<>();

@@ -15,6 +15,7 @@ import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Transactional(noRollbackFor = Exception.class)
 public class PluginServiceImpl implements PluginService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();

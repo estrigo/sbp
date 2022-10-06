@@ -7,11 +7,13 @@ import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional(noRollbackFor = Exception.class)
 public class RoleServiceImpl implements RoleService {
 
     private RoleRepository roleRepository;

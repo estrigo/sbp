@@ -8,13 +8,17 @@ import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.util.StringUtils;
 
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+
 @Service
+@Transactional(noRollbackFor = Exception.class)
 public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
@@ -84,8 +88,10 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public void deleteCustomer(Customer customer) {
-        for (Cars car : customer.getCars()) {
+        List<Cars> cars = customer.getCars();
+        for (Cars car : cars) {
             car.setCustomer(null);
+            carsService.saveCars(car);
         }
         customerRepository.delete(customer);
     }

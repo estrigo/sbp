@@ -16,6 +16,7 @@ import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -26,6 +27,7 @@ import static kz.spt.lib.utils.StaticValues.abonementPlugin;
 
 @Log
 @Service
+@Transactional(noRollbackFor = Exception.class)
 public class AbonomentServiceImpl implements AbonomentService {
 
     private final PluginService pluginService;

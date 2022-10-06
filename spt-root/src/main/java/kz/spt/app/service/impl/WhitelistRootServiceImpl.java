@@ -13,6 +13,7 @@ import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,6 +22,7 @@ import java.util.*;
 
 @Log
 @Service
+@Transactional(noRollbackFor = Exception.class)
 public class WhitelistRootServiceImpl implements WhitelistRootService {
 
     private final PluginService pluginService;

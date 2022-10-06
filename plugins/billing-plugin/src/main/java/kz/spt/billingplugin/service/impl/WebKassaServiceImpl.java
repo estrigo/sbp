@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -27,6 +28,7 @@ import java.util.Collections;
 @Service
 @AllArgsConstructor
 @Slf4j
+@Transactional(noRollbackFor = Exception.class)
 public class WebKassaServiceImpl implements WebKassaService {
 
     String token;

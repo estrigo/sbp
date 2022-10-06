@@ -14,6 +14,7 @@ import kz.spt.abonomentplugin.model.AbonomentTypes;
 import kz.spt.abonomentplugin.model.dto.AbonementFilterDto;
 import kz.spt.abonomentplugin.repository.AbonomentRepository;
 import kz.spt.abonomentplugin.repository.AbonomentTypesRepository;
+import kz.spt.abonomentplugin.repository.CarsRepository;
 import kz.spt.abonomentplugin.service.AbonomentPluginService;
 import kz.spt.abonomentplugin.service.RootServicesGetterService;
 import kz.spt.lib.bootstrap.datatable.*;
@@ -21,13 +22,13 @@ import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.Parking;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
-import org.modelmapper.ModelMapper;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -42,11 +43,14 @@ import java.util.stream.Collectors;
 
 @Log
 @Service
+@Transactional(noRollbackFor = Exception.class)
 public class AbonomentPluginServiceImpl implements AbonomentPluginService {
 
     private final AbonomentTypesRepository abonomentTypesRepository;
     private final AbonomentRepository abonomentRepository;
     private final RootServicesGetterService rootServicesGetterService;
+    private final CarsRepository carsRepository;
+
     private ObjectMapper objectMapper = new ObjectMapper();
     private static final Map<String, String> dayValues = new HashMap<>() {{
         put("0", "Понедельник");
@@ -61,10 +65,14 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
 
     private static final Comparator<AbonomentTypeDTO> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
-    public AbonomentPluginServiceImpl(AbonomentTypesRepository abonomentTypesRepository, AbonomentRepository abonomentRepository, RootServicesGetterService rootServicesGetterService){
+    public AbonomentPluginServiceImpl(CarsRepository carsRepository,
+                                      AbonomentTypesRepository abonomentTypesRepository,
+                                      AbonomentRepository abonomentRepository,
+                                      RootServicesGetterService rootServicesGetterService){
         this.abonomentTypesRepository = abonomentTypesRepository;
         this.abonomentRepository = abonomentRepository;
         this.rootServicesGetterService = rootServicesGetterService;
+        this.carsRepository = carsRepository;
     }
 
     @Override
@@ -191,7 +199,8 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         final String dateTimeFormat = "yyyy-MM-dd'T'HH:mm";
 
         platenumber = platenumber.toUpperCase();
-        Cars car = rootServicesGetterService.getCarsService().createCar(platenumber);
+        Cars car = rootServicesGetterService.getCarsService().createCarObject(platenumber, null, null, null);
+        carsRepository.save(car);
         Parking parking = rootServicesGetterService.getParkingService().findById(parkingId);
         AbonomentTypes type = abonomentTypesRepository.findById(typeId).get();
         SimpleDateFormat format = new SimpleDateFormat(dateTimeFormat);
@@ -225,9 +234,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         abonement.setPaidType(type.getType());
         calendar.add(Calendar.DATE, type.getPeriod());
         abonement.setEnd(calendar.getTime());
-        Abonement savedAbonement = abonomentRepository.save(abonement);
-
-        return savedAbonement;
+        return abonomentRepository.save(abonement);
     }
 
     @Override

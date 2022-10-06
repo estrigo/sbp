@@ -5,8 +5,10 @@ import kz.spt.lib.service.*;
 import kz.spt.reportplugin.ReportPlugin;
 import kz.spt.reportplugin.service.RootServicesGetterService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(noRollbackFor = Exception.class)
 public class RootServicesGetterServiceImpl implements RootServicesGetterService {
     private PluginService pluginService;
     private CarStateService carStateService;

@@ -30,6 +30,7 @@ import java.util.*;
 @Slf4j
 @Service("paymentService")
 @RequiredArgsConstructor
+@Transactional(noRollbackFor = Exception.class)
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
@@ -103,7 +104,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = Exception.class)
     public void cancelPaymentByTransactionId(String transaction, String reason) throws ResponseStatusException {
         List<Payment> payments = paymentRepository.findByTransaction(transaction);
         if (payments.isEmpty()) {

@@ -11,6 +11,7 @@ import lombok.extern.java.Log;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.util.StringUtils;
 
 import java.util.*;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Log
 @Service
+@Transactional(noRollbackFor = Exception.class)
 public class CarsServiceImpl implements CarsService {
 
     private CarsRepository carsRepository;
@@ -57,7 +59,7 @@ public class CarsServiceImpl implements CarsService {
 
     public Cars saveCars(Cars cars){
         cars.setPlatenumber(cars.getPlatenumber().toUpperCase());
-        return carsRepository.save(cars);
+        return carsRepository.saveAndFlush(cars);
     }
 
     @Override
@@ -67,6 +69,13 @@ public class CarsServiceImpl implements CarsService {
 
     @Override
     public Cars createCar(String platenumber, String region, String type, String car_model){
+        Cars car = createCarObject(platenumber, region, type, car_model);
+        car = saveCars(car);
+        return car;
+    }
+
+    @Override
+    public Cars createCarObject(String platenumber, String region, String type, String car_model) {
         platenumber = platenumber.toUpperCase();
 
         Boolean contains = Pattern.matches(".*\\p{InCyrillic}.*", platenumber);
@@ -94,7 +103,6 @@ public class CarsServiceImpl implements CarsService {
         if(car_model != null){
             car.setModel(car_model);
         }
-        car = saveCars(car);
         return car;
     }
 
