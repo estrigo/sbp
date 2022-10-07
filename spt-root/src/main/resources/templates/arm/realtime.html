@@ -15,7 +15,7 @@
                             <span><i class="mdi mdi-minus"></i></span>
                         </button>
                     </div>
-                    <span class="dropdown">
+                    <!--span class="dropdown">
                         <button class="btn btn-info dropdown-toggle" type="button" data-toggle="dropdown"
                                 aria-expanded="false" th:text="#{parking.support}">
                         </button>
@@ -27,7 +27,7 @@
                             <a class="dropdown-item" href="#" th:text="#{support.cvNotWork}"
                                onclick="support(this)"></a>
                         </div>
-                    </span>
+                    </span-->
                     <button type="button" class="btn btn-primary" th:text="#{arm.restart}"
                             th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart
                     </button>

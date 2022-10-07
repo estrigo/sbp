@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(noRollbackFor = Exception.class)
 public class MailServiceImpl implements MailService {
-    private final JavaMailSender javaMailSender;
+    //private final JavaMailSender javaMailSender;
 
     @Override
     public void sendMail(SendMailDto model) {
@@ -22,6 +22,6 @@ public class MailServiceImpl implements MailService {
         msg.setSubject(model.getSubject());
         msg.setText(model.getMessage());
 
-        javaMailSender.send(msg);
+        //javaMailSender.send(msg);
     }
 }
