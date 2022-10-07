@@ -97,13 +97,38 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public List<Balance> listAllBalances() {
-        return balanceRepository.findAll();
+    public org.springframework.data.domain.Page<Balance> filterBalances(String plateNumber, PagingRequest pagingRequest) {
+        Specification<Balance> specification = getBalanceSpecification(plateNumber);
+
+        Order order = pagingRequest.getOrder().get(0);
+
+        int columnIndex = order.getColumn();
+        Column column = pagingRequest.getColumns().get(columnIndex);
+        String columnName = column.getData();  // ГНРЗ, сумма
+        Direction dir = order.getDir();
+
+        Sort sort = null;
+        if ("plateNumber".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
+                sort = Sort.by("plateNumber").descending();
+            } else {
+                sort = Sort.by("plateNumber").ascending();
+            }
+        } else if ("balance".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
+                sort = Sort.by("balance").descending();
+            } else {
+                sort = Sort.by("balance").ascending();
+            }
+        }
+
+        Pageable rows = PageRequest.of(pagingRequest.getStart() / pagingRequest.getLength(), pagingRequest.getLength(), sort);
+        return balanceRepository.findAll(specification, rows);
     }
 
     @Override
-    public Page<Balance> getBalanceList(PagingRequest pagingRequest) {
-        List<Balance> allBalances = (List<Balance>) this.listAllBalances();
+    public Page<Balance> getBalanceList(PagingRequest pagingRequest, String plateNumber) {
+        org.springframework.data.domain.Page<Balance> allBalances = this.filterBalances(plateNumber, pagingRequest);
         return getPage(allBalances, pagingRequest);
     }
 
@@ -131,17 +156,10 @@ public class BalanceServiceImpl implements BalanceService {
         return getBalanceDebtLogPage(balanceDebtLogs, pagingRequest);
     }
 
-    private Page<Balance> getPage(List<Balance> balancesList, PagingRequest pagingRequest) {
-        List<Balance> filtered = balancesList.stream()
-                .sorted(sortBalance(pagingRequest))
-                .filter(filterBalance(pagingRequest))
-                .skip(pagingRequest.getStart())
-                .limit(pagingRequest.getLength())
-                .collect(Collectors.toList());
+    private Page<Balance> getPage(org.springframework.data.domain.Page<Balance> balancesList, PagingRequest pagingRequest) {
+        List<Balance> filtered = balancesList.stream().collect(Collectors.toList());
 
-        long count = balancesList.stream()
-                .filter(filterBalance(pagingRequest))
-                .count();
+        long count = balancesList.stream().count();
 
         Page<Balance> page = new Page<>(filtered);
         page.setRecordsFiltered((int) count);
@@ -262,6 +280,15 @@ public class BalanceServiceImpl implements BalanceService {
         Specification<BalanceDebtLog> specification = BalanceDebtLogSpecification.lessDate(end);
         specification = specification.and(BalanceDebtLogSpecification.greaterDate(begin));
 
+        return specification;
+    }
+
+    private Specification<Balance> getBalanceSpecification(String plateNumber) {
+        Specification<Balance> specification = null;
+
+        if (plateNumber != null && !"".equals(plateNumber)) {
+            specification = specification == null ? BalanceSpecification.likePlateNumber(plateNumber) : specification.and(BalanceSpecification.likePlateNumber(plateNumber));
+        }
         return specification;
     }
 

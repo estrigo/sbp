@@ -4,7 +4,6 @@ import kz.spt.billingplugin.dto.BalanceDebtLogDto;
 import kz.spt.billingplugin.dto.TransactionDto;
 import kz.spt.billingplugin.dto.TransactionFilterDto;
 import kz.spt.billingplugin.model.Balance;
-import kz.spt.billingplugin.model.Transaction;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 
@@ -22,9 +21,9 @@ public interface BalanceService {
 
     BigDecimal getBalance(String plateNumber);
 
-    List<Balance> listAllBalances();
+    org.springframework.data.domain.Page<Balance> filterBalances(String plateNumber, PagingRequest pagingRequest);
 
-    Page<Balance> getBalanceList(PagingRequest pagingRequest);
+    Page<Balance> getBalanceList(PagingRequest pagingRequest, String plateNumber);
 
     void deleteAllDebts();
 

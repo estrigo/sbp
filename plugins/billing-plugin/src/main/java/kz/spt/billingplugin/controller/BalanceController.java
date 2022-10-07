@@ -25,7 +25,6 @@ public class BalanceController {
     @GetMapping("/list")
     public String showAllBalances(Model model) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-        model.addAttribute("whitelist", balanceService.listAllBalances());
         Calendar calendar = Calendar.getInstance();
         model.addAttribute("currentDate", format.format(calendar.getTime()));
         calendar.add(Calendar.MINUTE, 1);
