@@ -27,8 +27,10 @@ public class ImageRestController {
     public byte[] getSnapshot(@PathVariable("filename") String filename, @RequestParam("ver") String ver) throws Exception {
         System.out.println(filename + " -------filename");
         if (filename.substring(1)=="/") {
+            System.out.println("filename.substring(1)==/");
             return carImageService.getByUrl(filename);
         }
+        System.out.println("without /");
         return carImageService.getByUrl("/" + filename);
     }
 }
