@@ -132,7 +132,11 @@ public class CarImageServiceImpl implements CarImageService {
     private void saveImageFromBase64ToPicture(CarPictureFromRestDto carPictureFromRestDto) throws IOException {
         try {
             byte[] decodedImageBytes = Base64.decodeBase64(carPictureFromRestDto.getCar_picture());
+            String ss = carPictureFromRestDto.getIp_address().replace(".", "-") + ".jpeg";
+            log.info("saveImageFromBase64ToPicture-------- " + imagePath +  "/" + ss);
+            log.info("saveImageFromBase64ToPicture---decodedImageBytes----- " +decodedImageBytes);
             Files.write(Paths.get(imagePath + "/" + carPictureFromRestDto.getIp_address().replace(".", "-") + ".jpeg"), decodedImageBytes);
+
         }
         catch (Exception e) {
             log.warning("Error of saveImageFromBase64ToPicture: " + e);

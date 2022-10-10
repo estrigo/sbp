@@ -22,15 +22,15 @@ public class ImageRestController {
         return carImageService.getByUrl("/" + year + "/" + month + "/" + day + "/" + filename);
     }
 
-    @RequestMapping(value = "/pictures/{filename}", method = RequestMethod.GET)
+    @RequestMapping(value = "/pictures1/{filename}", method = RequestMethod.GET)
     @ResponseBody
     public byte[] getSnapshot(@PathVariable("filename") String filename, @RequestParam("ver") String ver) throws Exception {
-        System.out.println(filename + " -------filename");
+        log.info(filename + " -------filename");
         if (filename.substring(1)=="/") {
-            System.out.println("filename.substring(1)==/");
+            log.info("filename.substring(1)==/");
             return carImageService.getByUrl(filename);
         }
-        System.out.println("without /");
+        log.info("without /");
         return carImageService.getByUrl("/" + filename);
     }
 }
