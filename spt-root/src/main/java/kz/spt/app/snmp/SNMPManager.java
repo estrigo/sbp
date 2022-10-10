@@ -66,9 +66,14 @@ public class SNMPManager {
         return false;
     }
 
-    public void close() throws IOException, ParseException{
-        snmp.close();
-        transport.close();
+    public void close() throws IOException, ParseException {
+        if(snmp != null){
+            snmp.close();
+        }
+
+        if(transport != null){
+            transport.close();
+        }
     };
 
     private Target getTarget() {
