@@ -25,6 +25,7 @@ public class ImageRestController {
     @RequestMapping(value = "/pictures/{filename}", method = RequestMethod.GET)
     @ResponseBody
     public byte[] getSnapshot(@PathVariable("filename") String filename, @RequestParam("ver") String ver) throws Exception {
+        System.out.println(filename + " -------filename");
         if (filename.substring(1)=="/") {
             return carImageService.getByUrl(filename);
         }

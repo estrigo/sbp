@@ -103,6 +103,8 @@ public class CarImageServiceImpl implements CarImageService {
 
     @Override
     public byte[] getByUrl(String url) throws IOException {
+        System.out.println(url + " ------url");
+        System.out.println(imagePath + url + " ------imagePath + url");
         File thePath = new File(imagePath + url);
         if (thePath.exists()) {
             return Files.readAllBytes(thePath.toPath());
