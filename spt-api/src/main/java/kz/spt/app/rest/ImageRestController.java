@@ -22,7 +22,7 @@ public class ImageRestController {
         return carImageService.getByUrl("/" + year + "/" + month + "/" + day + "/" + filename);
     }
 
-    @RequestMapping(value = "/pictures1/{filename}", method = RequestMethod.GET)
+    @RequestMapping(value = "/pictures/{filename}", method = RequestMethod.GET)
     @ResponseBody
     public byte[] getSnapshot(@PathVariable("filename") String filename, @RequestParam("ver") String ver) throws Exception {
         log.info(filename + " -------filename");
