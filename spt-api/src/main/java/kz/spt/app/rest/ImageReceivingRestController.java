@@ -15,11 +15,9 @@ import java.io.IOException;
 @Log
 public class ImageReceivingRestController {
     private CarImageService carImageService;
-
     public ImageReceivingRestController(CarImageService carImageService) {
         this.carImageService = carImageService;
     }
-
     @RequestMapping(value = "/arm/picture", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
     public void pictureReader (@RequestBody CarPictureFromRestDto carPictureFromRestDto) throws IOException {
         carImageService.checkSnapshotEnabled(carPictureFromRestDto);
