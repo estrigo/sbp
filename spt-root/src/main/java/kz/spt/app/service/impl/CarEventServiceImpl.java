@@ -566,9 +566,11 @@ public class CarEventServiceImpl implements CarEventService {
                                 (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
                         boolean isBeforeEndTime  = cameraStatusDto.getEndTime().isAfter
                                 (LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)));
-                        if ((isAfterStartTime) && (isBeforeEndTime)){
-                            eventPropertiesOfIgnoringType(eventDto, properties, gate, camera);
-                            return;
+                        if(!eventDto.manualEnter) {
+                            if ((isAfterStartTime) && (isBeforeEndTime)) {
+                                eventPropertiesOfIgnoringType(eventDto, properties, gate, camera);
+                                return;
+                            }
                         }
                     }
                     handleCarInEvent(eventDto, camera, gate, properties, format);

@@ -2,6 +2,7 @@ package kz.spt.app.service.impl;
 
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.CameraStatusDto;
+import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.dto.CarPictureFromRestDto;
 import kz.spt.lib.service.CarImageService;
@@ -18,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 @Log
@@ -109,22 +111,29 @@ public class CarImageServiceImpl implements CarImageService {
     }
 
     @Override
-    public void checkSnapshotEnabled(CarPictureFromRestDto carPictureFromRestDto) {
-        if (carPictureFromRestDto != null) {
-            CameraStatusDto cameraStatusDtoByIp = statusCheckJob.findCameraStatusDtoByIp(carPictureFromRestDto.getIp_address());
-
-            if (cameraStatusDtoByIp != null) {
-                Map<Long, Boolean> snapshotEnabledRefreshMap = cameraServiceImpl.getSnapshotEnabledRefreshMap();
-                Boolean snapshotEnabled = snapshotEnabledRefreshMap.get(cameraStatusDtoByIp.id);
-                if (!(snapshotEnabled != null && !snapshotEnabled)) {
-                    sendSocketArmPicture(cameraStatusDtoByIp, carPictureFromRestDto);
+    public void checkSnapshotEnabled(CarPictureFromRestDto carPictureFromRestDto) throws IOException {
+        for (GateStatusDto gateStatusDto : StatusCheckJob.globalGateDtos) {
+            CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
+            if (cameraStatusDto != null &&
+                    cameraStatusDto.getIp().equals(carPictureFromRestDto.getIp_address())) {
+                if (cameraStatusDto.snapshotEnabled != null) {
+                    if (!cameraStatusDto.snapshotEnabled) {
+                        return;
+                    }
                 }
+                saveImageFromBase64ToPicture(carPictureFromRestDto);
             }
         }
     }
 
-    private void sendSocketArmPicture(CameraStatusDto cameraStatusDtoByIp, CarPictureFromRestDto carPictureFromRestDto) {
-        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Picture, EventLog.StatusType.Success,
-                cameraStatusDtoByIp.id, debtPlateNumber, carPictureFromRestDto.getCar_picture(), null);
+    private void saveImageFromBase64ToPicture(CarPictureFromRestDto carPictureFromRestDto) throws IOException {
+        try {
+            byte[] decodedImageBytes = Base64.decodeBase64(carPictureFromRestDto.getCar_picture());
+            Files.write(Paths.get(imagePath + "/" + carPictureFromRestDto.getIp_address().replace(".", "-") + ".jpeg"), decodedImageBytes);
+
+        }
+        catch (Exception e) {
+            log.warning("Error of saveImageFromBase64ToPicture: " + e);
+        }
     }
 }
