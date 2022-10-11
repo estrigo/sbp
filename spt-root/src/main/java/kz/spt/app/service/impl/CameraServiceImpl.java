@@ -113,6 +113,7 @@ public class CameraServiceImpl implements CameraService {
         camera.setSnapshotEnabled(camera.getSnapshotEnabled() == null ? true : !camera.getSnapshotEnabled());
         snapshotEnabledRefreshMap.put(camera.getId(), camera.getSnapshotEnabled());
         cameraRepository.save(camera);
+        StatusCheckJob.emptyGlobalGateDtos();
     }
 
     @Override

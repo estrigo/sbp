@@ -531,7 +531,8 @@
         };
 
         const carImageExtension = ".jpeg";
-        image.src = '/files/pictures/' + ip.replaceAll(".", "-") + carImageExtension + "?ver=" + Math.random();
+        // image.src = '/files/pictures/' + ip.replaceAll(".", "-") + carImageExtension + "?ver=" + Math.random();
+        image.src = '/files/pic/v2/' + ip.replaceAll(".", "-") + carImageExtension + "?ver=" + Math.random();
 
         image.onerror = function () {
             image = null;

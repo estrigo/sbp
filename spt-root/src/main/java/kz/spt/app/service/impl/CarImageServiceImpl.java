@@ -103,8 +103,6 @@ public class CarImageServiceImpl implements CarImageService {
 
     @Override
     public byte[] getByUrl(String url) throws IOException {
-        System.out.println(url + " ------url");
-        System.out.println(imagePath + url + " ------imagePath + url");
         File thePath = new File(imagePath + url);
         if (thePath.exists()) {
             return Files.readAllBytes(thePath.toPath());
@@ -116,11 +114,10 @@ public class CarImageServiceImpl implements CarImageService {
     public void checkSnapshotEnabled(CarPictureFromRestDto carPictureFromRestDto) throws IOException {
         for (GateStatusDto gateStatusDto : StatusCheckJob.globalGateDtos) {
             CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
-            if (cameraStatusDto != null && cameraStatusDto.getIp().equals(carPictureFromRestDto.getIp_address())) {
+            if (cameraStatusDto != null &&
+                    cameraStatusDto.getIp().equals(carPictureFromRestDto.getIp_address())) {
                 if (cameraStatusDto.snapshotEnabled != null) {
-                    Map<Long, Boolean> snapshotEnabledRefreshMap = cameraServiceImpl.getSnapshotEnabledRefreshMap();
-                    Boolean isSnapshotEnabled = snapshotEnabledRefreshMap.get(cameraStatusDto.id);
-                    if (isSnapshotEnabled != null && !isSnapshotEnabled) {
+                    if (!cameraStatusDto.snapshotEnabled) {
                         return;
                     }
                 }
@@ -132,9 +129,6 @@ public class CarImageServiceImpl implements CarImageService {
     private void saveImageFromBase64ToPicture(CarPictureFromRestDto carPictureFromRestDto) throws IOException {
         try {
             byte[] decodedImageBytes = Base64.decodeBase64(carPictureFromRestDto.getCar_picture());
-            String ss = carPictureFromRestDto.getIp_address().replace(".", "-") + ".jpeg";
-            log.info("saveImageFromBase64ToPicture-------- " + imagePath +  "/" + ss);
-            log.info("saveImageFromBase64ToPicture---decodedImageBytes----- " +decodedImageBytes);
             Files.write(Paths.get(imagePath + "/" + carPictureFromRestDto.getIp_address().replace(".", "-") + ".jpeg"), decodedImageBytes);
 
         }

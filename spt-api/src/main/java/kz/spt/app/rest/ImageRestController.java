@@ -1,7 +1,6 @@
 package kz.spt.app.rest;
 
 import kz.spt.lib.service.CarImageService;
-import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,12 +24,9 @@ public class ImageRestController {
     @RequestMapping(value = "/pictures/{filename}", method = RequestMethod.GET)
     @ResponseBody
     public byte[] getSnapshot(@PathVariable("filename") String filename, @RequestParam("ver") String ver) throws Exception {
-        log.info(filename + " -------filename");
         if (filename.substring(1)=="/") {
-            log.info("filename.substring(1)==/");
             return carImageService.getByUrl(filename);
         }
-        log.info("without /");
         return carImageService.getByUrl("/" + filename);
     }
 }
