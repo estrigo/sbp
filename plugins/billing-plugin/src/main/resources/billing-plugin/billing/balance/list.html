@@ -21,6 +21,7 @@
                                 <label th:text="#{events.dateTo}"></label>
                                 <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" id="dateToString" class="form-control filter" placeholder="#{events.dateTo}">
                             </div>
+
                         </div>
                         <div class="row">
                             <div class="col-4">
@@ -28,6 +29,9 @@
                             </div>
                             <div class="col-4">
                                 <input type="number" id="amount" class="form-control" th:placeholder="#{balance.amount}">
+                            </div>
+                            <div class="col-4">
+                                <button id="search" type="button" class="btn btn-success btn-sm filter" th:text="#{payments.find}" onclick="findBilling()"></button>
                             </div>
                         </div>
 
@@ -50,9 +54,21 @@
                 <div class="card table-responsive mt-2">
                     <div class="card-header" th:text="#{balance.balance}"></div>
                     <div class="card-body">
+                        <div class="row">
+                            <div class="col-4">
+                                <input type="text" id="value" class="form-control">
+                            </div>
+                            <div class="col-4">
+                                <button id="searchBalance" type="button" class="btn btn-success btn-sm filter" th:text="#{payments.find}" onclick="findBalance()"></button>
+                            </div>
+                        </div>
                         <table id="balanceTable" class="table table-bordered">
-                            <th th:text="#{balance.plateNumber}"></th>
-                            <th th:text="#{balance.balance}"></th>
+                            <thead>
+                                <tr>
+                                    <th th:text="#{balance.plateNumber}"></th>
+                                    <th th:text="#{balance.balance}"></th>
+                                </tr>
+                            </thead>
                         </table>
                     </div>
                 </div>
@@ -177,9 +193,10 @@
         }
         if (!$("#billingTable_filter").hasClass("d-none")) {
             $("#billingTable_filter").addClass("d-none");
+            $("#balanceTable_filter").addClass("d-none");
         }
     }
-
+/*
     $('#platenumber').on('keyup', function () {
         billingTable.ajax.url(buildAjaxUrl()).load();
     });
@@ -192,12 +209,16 @@
     $('#dateToString').on('change', function () {
         billingTable.ajax.url(buildAjaxUrl()).load();
     });
+*/
+    function findBilling() {
+        billingTable.ajax.url(buildAjaxUrl()).load();
+    };
 
     const table = $('#balanceTable').DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
-            "url": "/rest/balances",
+            "url": buildBalanceAjaxUrl(),
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",
@@ -214,6 +235,14 @@
             url: address
         }
     });
+
+    function buildBalanceAjaxUrl(){
+        return "/rest/balances?plateNumber=" + $('#value').val();
+    }
+
+    function findBalance() {
+        table.ajax.url(buildBalanceAjaxUrl()).load();
+    };
 
     function showModalClick(e){
         const $input = $(e);

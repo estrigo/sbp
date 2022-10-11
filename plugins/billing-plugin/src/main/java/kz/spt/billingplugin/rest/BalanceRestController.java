@@ -25,8 +25,8 @@ public class BalanceRestController {
     }
 
     @PostMapping
-    public Page<Balance> list(@RequestBody PagingRequest pagingRequest) throws ParseException {
-        return balanceService.getBalanceList(pagingRequest);
+    public Page<Balance> list(@RequestBody PagingRequest pagingRequest, @RequestParam String plateNumber) throws ParseException {
+        return balanceService.getBalanceList(pagingRequest, plateNumber);
     }
 
     @PostMapping("/transactions")
