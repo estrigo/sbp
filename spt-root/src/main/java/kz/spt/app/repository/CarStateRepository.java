@@ -50,28 +50,23 @@ public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSp
     @Query("from CarState cs where cs.carNumber = :carNumber order by cs.inTimestamp desc")
     List<CarState> getLastCarState(@Param("carNumber") String carNumber, Pageable page);
 
-    @Transactional
     @Modifying
     @Query(value = "update car_state cs set cs.out_barrier=null, cs.in_barrier=null, cs.in_gate=null, cs.out_gate=null," +
             " cs.parking=null where cs.parking = :parkingId", nativeQuery = true)
     void updateCarStateByParkingId(@Param("parkingId") Long parkingId);
 
-    @Transactional
     @Modifying
     @Query(value = "update car_state set out_barrier = null where out_barrier = :barrierId", nativeQuery = true)
     void updateCarStateByOutBarrier(@Param("barrierId") Long barrierId);
 
-    @Transactional
     @Modifying
     @Query(value = "update car_state set in_gate = null, in_barrier = null where in_gate = :inGate", nativeQuery = true)
     void removeGateInFromCarStates(@Param("inGate") Long inGate);
 
-    @Transactional
     @Modifying
     @Query(value = "update car_state set out_gate = null, out_barrier = null where out_gate = :outGate", nativeQuery = true)
     void removeGateOutFromCarStates(@Param("outGate") Long outGate);
 
-    @Transactional
     @Modifying
     @Query(value = "update car_state set in_barrier = null where in_barrier = :barrierId", nativeQuery = true)
     void updateCarStateByInBarrier(@Param("barrierId") Long barrierId);
