@@ -29,9 +29,34 @@
                         <canvas id="providersSumBarChart" width="400" height="400"></canvas>
                     </div>
                 </div>
+
                 <div class="col-lg-12">
                     <div class="card-box">
                         <canvas id="providersCountBarChart" width="400" height="400"></canvas>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="btn-group m-b-10">
+                        <button id="yearProvider" type="button" class="btn btn-primary waves-effect" onclick="setProviderType('year')">Yearly</button>
+                        <button id="monthProvider" type="button" class="btn btn-secondary waves-effect" onclick="setProviderType('month')">Monthly</button>
+                        <button id="weekProvider" type="button" class="btn btn-secondary waves-effect" onclick="setProviderType('week')">Weekly</button>
+                        <button id="dayProvider" type="button" class="btn btn-secondary waves-effect" onclick="setProviderType('day')">Daily</button>
+                        <button id="periodProvider" type="button" class="btn btn-secondary waves-effect" onclick="setProviderType('period')">Period</button>
+                    </div>
+                </div>
+                <div class="col-lg-4" id="providerFromDateBlock" style="display: none;">
+                    <label th:text="#{events.dateFrom}"></label>
+                    <input type="date" id="providerFromDate" class="form-control filter" onchange="providerDateChanged()">
+                </div>
+                <div class="col-lg-4" id="providerToDateBlock" style="display: none;">
+                    <label th:text="#{events.dateTo}"></label>
+                    <input type="date" id="providerToDate" class="form-control filter" onchange="providerDateChanged()">
+                </div>
+
+                <div class="col-lg-12">
+                    <div class="card-box">
+                        <canvas id="occupancyAndMoneyByPeriodLineChart" width="400" height="400"></canvas>
                     </div>
                 </div>
             </div>
@@ -44,6 +69,7 @@
 <script type="text/javascript" th:inline="javascript">
 
     let type = "year";
+    let typeProvider = "year";
 
     const monthLabels  = {
         '01': {'ru':'Январь','en':'January'},
@@ -67,15 +93,18 @@
         'rgb(255, 159, 64)',
         'rgb(255, 205, 86)',
         'rgb(153, 102, 255)',
-        'rgb(201, 203, 207)'
+        'rgb(201, 203, 207)',
+        'rgb(255, 255, 64)',
     ];
 
     let providersSumBarChart = undefined;
     let providersCountBarChart = undefined;
+    let occupancyAndMoneyByPeriodLineChart = undefined;
 
     $(document).on('ready',function(){
         drawProvidersSumBarChart();
         drawProvidersCountBarChart();
+        drawOccupancyAndMoneyByPeriodLineChart();
     });
 
     function drawProvidersSumBarChart(){
@@ -227,22 +256,6 @@
         }
 
         return dataset;
-        /*{
-                label: 'Kaspi',
-                data: [100, 150, 130, 120, 160, 190, 160],
-                backgroundColor: 'rgb(255, 99, 132)',
-            },
-            {
-                label: 'Yurta',
-                data: [10, 20, 30, 40, 20, 10, 30],
-                backgroundColor: 'rgb(54, 162, 235)',
-            },
-            {
-                label: 'Halyk',
-                data: [40, 50, 60, 70, 80, 50, 40],
-                backgroundColor: 'rgb(75, 192, 192)',
-            },
-        */
     }
 
     function getMonthLabels(months){
@@ -283,6 +296,141 @@
         } else {
             drawProvidersSumBarChart();
             drawProvidersCountBarChart();
+        }
+    }
+
+    let leftTypes = {
+        paymentRecords:'Left by payment',
+        abonementRecords: 'Left by subscriptions',
+        autoClosedRecords: 'Closed by system',
+        debtRecords: 'Left by debt',
+        freeMinuteRecords: 'Left by free minutes',
+        fromBalanceRecords: 'Left by balance',
+        thirdPartyRecords: 'Left by third Mega Family application',
+        whitelistRecords: 'Left by free permit'
+    }
+
+    function drawOccupancyAndMoneyByPeriodLineChart(){
+        let form = new FormData();
+        form.append("type", typeProvider);
+        form.append("from", $("#providerFromDate").val());
+        form.append("to", $("#providerToDate").val());
+
+        let settings = {
+            "url": "/rest/dashboard/count/occupancyAndMoneyByPeriod",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (result) {
+            console.log(result);
+
+            const labels = [];
+
+            let colorsCounter = 0;
+            let datasetContainer = {};
+            for(let i = 0; i < result.length; i++){
+                if(result[i][1] !== 'records' && result[i][1] !== 'thirdPartyRecords'){
+                    if(labels.indexOf(result[i][0]) === -1){
+                        labels.push(result[i][0]);
+                    }
+                    if(!datasetContainer[result[i][1]]){
+                        datasetContainer[result[i][1]] = {
+                            label: leftTypes[result[i][1]],
+                            data: [result[i][2]],
+                            yAxisID: 'y',
+                            borderColor: colors[colorsCounter++]
+                        }
+                    } else {
+                        datasetContainer[result[i][1]].data.push([result[i][2]]);
+                    }
+                    if(colorsCounter === 8){
+                        colorsCounter = 0;
+                    }
+                }
+            }
+            const datasets = [];
+
+            for(let key in datasetContainer){
+                datasets.push(datasetContainer[key]);
+            }
+
+            const data = {
+                labels: labels,
+                datasets: datasets
+            };
+
+            const config = {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    stacked: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Occupancy and Money'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+
+                            // grid line settings
+                            grid: {
+                                drawOnChartArea: false, // only want the grid lines for one axis to show up
+                            },
+                            min: 0
+                        },
+                    }
+                },
+            };
+
+            if(occupancyAndMoneyByPeriodLineChart){
+                occupancyAndMoneyByPeriodLineChart.destroy();
+            }
+
+            occupancyAndMoneyByPeriodLineChart = new Chart(
+                document.getElementById('occupancyAndMoneyByPeriodLineChart'),
+                config
+            );
+        });
+    }
+
+    function setProviderType(val){
+        $('#'+typeProvider + 'Provider').removeClass("btn-primary");
+        $('#'+typeProvider + 'Provider').addClass("btn-secondary");
+        typeProvider = val;
+        $('#'+val + 'Provider').addClass("btn-primary");
+        $('#'+val + 'Provider').removeClass("btn-secondary");
+        if(typeProvider == 'period'){
+            $("#providerFromDateBlock").show();
+            $("#providerToDateBlock").show();
+            if($("#providerFromDate").val() && $("#providerToDate").val()){
+                drawOccupancyAndMoneyByPeriodLineChart();
+            }
+        } else {
+            $("#providerFromDateBlock").hide();
+            $("#providerToDateBlock").hide();
+            drawOccupancyAndMoneyByPeriodLineChart();
+        }
+    }
+
+    function providerDateChanged(){
+        if(typeProvider == 'period'){
+            if($("#providerFromDate").val() && $("#providerToDate").val()){
+                drawOccupancyAndMoneyByPeriodLineChart();
+            }
+        } else {
+            drawOccupancyAndMoneyByPeriodLineChart();
         }
     }
 </script>

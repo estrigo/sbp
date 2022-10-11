@@ -2,7 +2,6 @@ package kz.spt.app.rest;
 
 import kz.spt.lib.model.dto.dashboard.DashboardOccupancyDto;
 import kz.spt.lib.service.DashboardService;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,7 +48,7 @@ public class DashboardRestController {
     }
 
     @RequestMapping(value = "/count/occupancyAndMoneyByPeriod", method = RequestMethod.POST, consumes = "multipart/form-data")
-    public Map occupancyAndMoneyByPeriod(@RequestParam("type") String type, @RequestParam("from") String from, @RequestParam("to") String to) {
+    public List occupancyAndMoneyByPeriod(@RequestParam("type") String type, @RequestParam("from") String from, @RequestParam("to") String to) {
         return dashboardService.occupancyAndMoneyByPeriod(type, from, to);
     }
 
