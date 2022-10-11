@@ -9,7 +9,6 @@ import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.repository.EventLogRepository;
-import kz.spt.app.service.GateService;
 import kz.spt.app.utils.StringExtensions;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
@@ -71,15 +70,12 @@ public class EventLogServiceImpl implements EventLogService {
 
     private PluginManager pluginManager;
 
-    private GateService gateService;
-
     @Value("${telegram.bot.external.enabled}")
     Boolean telegramBotExternalEnabled;
 
-    public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager, GateService gateService) {
+    public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager) {
         this.eventLogRepository = eventLogRepository;
         this.pluginManager = pluginManager;
-        this.gateService = gateService;
     }
 
     @Override
@@ -120,8 +116,6 @@ public class EventLogServiceImpl implements EventLogService {
         eventLog.setEventType(eventType);
         eventLogRepository.save(eventLog);
     }
-
-
 
     public void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long id, String plateNumber, String message, String messageEng) {
 
