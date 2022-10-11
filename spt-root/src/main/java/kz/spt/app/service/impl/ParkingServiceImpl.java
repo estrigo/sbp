@@ -140,8 +140,8 @@ public class ParkingServiceImpl implements ParkingService {
 
         List<ParkingCarsDTO> carsInParkings = new ArrayList<>(parkings.size());
 
-        List<Cars> resultCars = new ArrayList<>(parkings.size());
         for (Parking parking : parkings) {
+            List<Cars> resultCars = new ArrayList<>(parkings.size());
             ParkingCarsDTO parkingCarsDTO = new ParkingCarsDTO();
             parkingCarsDTO.setParking(parking);
             for (CarState carState : carStates) {

@@ -127,7 +127,9 @@ public class RateController {
     public String addIntervalRate(@ModelAttribute(value="intervalRate") IntervalRate intervalRate) {
         IntervalRate newInterval = new IntervalRate();
         newInterval.setParkingRate(intervalRate.getParkingRate());
-        newInterval.setRateConditions(null);
+        if (newInterval.getRateConditions()!=null) {
+            newInterval.getRateConditions().clear();
+        }
         newInterval.setDatetimeTo(intervalRate.getDatetimeTo());
         newInterval.setDatetimeFrom(intervalRate.getDatetimeFrom());
         rateService.saveIntervalRate(newInterval);
