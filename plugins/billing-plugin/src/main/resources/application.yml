@@ -50,6 +50,8 @@ save:
   removed:
     debt:
       balance: false
+discountPayments:
+  show: false
 parking:
   remove:
     all:

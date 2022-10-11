@@ -9,6 +9,7 @@ import kz.spt.billingplugin.service.RootServicesGetterService;
 import kz.spt.lib.model.PaymentCheckLog;
 import kz.spt.lib.model.dto.SelectOption;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
@@ -30,6 +31,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/billing/payments")
 public class PaymentController {
 
+
+    @Value("${discountPayments.show}")
+    Boolean discountShow;
+
     private PaymentService paymentService;
     private PaymentProviderService paymentProviderService;
     private RootServicesGetterService rootServicesGetterService;
@@ -45,6 +50,7 @@ public class PaymentController {
     @GetMapping("/list")
     public String showAllPayments(Model model) {
         model.addAttribute("paymentProviders", paymentProviderService.getSelectOption());
+        model.addAttribute("showDiscount", discountShow);
         return "/billing/payments/list";
     }
 

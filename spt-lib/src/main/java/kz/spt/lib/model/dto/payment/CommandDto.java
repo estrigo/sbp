@@ -1,6 +1,5 @@
 package kz.spt.lib.model.dto.payment;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -14,4 +13,6 @@ public class CommandDto {
     public Boolean prepaid = false;
     public String clientId;
     public Integer service_id;
+    public BigDecimal discount;
+    public BigDecimal discountedSum;
 }

@@ -77,5 +77,9 @@ public class Payment {
     private boolean canceled;
 
     private String cancelReason;
-    
+
+    private BigDecimal discount;
+
+    private BigDecimal discountedSum;
+
 }
