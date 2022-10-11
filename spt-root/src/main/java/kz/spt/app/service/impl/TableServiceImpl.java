@@ -4,7 +4,10 @@ import kz.spt.app.repository.CarStateRepository;
 import kz.spt.app.repository.GateRepository;
 import kz.spt.lib.model.Gate;
 import kz.spt.lib.service.TabloService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,19 +15,34 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.logging.Level;
 
 @Log
 @Service
+@RequiredArgsConstructor
 @Transactional(noRollbackFor = Exception.class)
 public class TableServiceImpl implements TabloService {
 
     private final GateRepository gateRepository;
     private final CarStateRepository carStateRepository;
 
-    public TableServiceImpl(GateRepository gateRepository, CarStateRepository carStateRepository) {
-        this.gateRepository = gateRepository;
-        this.carStateRepository = carStateRepository;
+    @Value("${tablo.connected}")
+    Boolean tabloConnected;
+
+    @Bean
+    public void updateTablo(){
+        if(tabloConnected){
+            Iterable<Gate> inGatesWithTabloIp = gateRepository.findByGateTypeAndTabloIpIsNotNull(Gate.GateType.IN);
+            for(Gate gate: inGatesWithTabloIp){
+                updateOnIn(gate);
+            }
+
+            Iterable<Gate> outGatesWithTabloIp = gateRepository.findByGateTypeAndTabloIpIsNotNull(Gate.GateType.OUT);
+            for(Gate gate: outGatesWithTabloIp){
+                updateOnOut(gate);
+            }
+        }
     }
 
     @Override
