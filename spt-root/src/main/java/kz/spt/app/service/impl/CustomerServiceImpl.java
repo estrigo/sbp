@@ -125,7 +125,8 @@ public class CustomerServiceImpl implements CustomerService {
 
         return customers -> (customers.getFirstName() != null && customers.getFirstName().toLowerCase().contains(value.toLowerCase()))
                 || (customers.getLastName() != null && customers.getLastName().toLowerCase().contains(value.toLowerCase()))
-                || (customers.getPhoneNumber() != null && customers.getPhoneNumber().toLowerCase().contains(value.toLowerCase()));
+                || (customers.getPhoneNumber() != null && customers.getPhoneNumber().toLowerCase().contains(value.toLowerCase()))
+                || (!customers.getCars().isEmpty() && customers.getCars().stream().anyMatch(cars -> cars.getPlatenumber().contains(value.toUpperCase())));
     }
 
     private Comparator<Customer> sortCustomers(PagingRequest pagingRequest) {
