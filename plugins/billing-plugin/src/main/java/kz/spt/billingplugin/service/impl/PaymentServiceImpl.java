@@ -313,6 +313,7 @@ public class PaymentServiceImpl implements PaymentService {
         filterPaymentDTO.setDateTo(Date.from(endOfDay.atZone(ZoneId.systemDefault()).toInstant()));
         List<PaymentLogDTO> paymentList = getPaymentDtoExcelList(filterPaymentDTO);
         XSSFWorkbook book = new XSSFWorkbook();
+        String subjectName = "Реестр платежей";
         try (book) {
             XSSFSheet main = book.createSheet("Payments_" + localDate.minusDays(1));
             int rowNum = 0;
@@ -332,7 +333,7 @@ public class PaymentServiceImpl implements PaymentService {
             byte[] excelFileAsBytes = bos.toByteArray();
             ByteArrayResource resource = new ByteArrayResource(excelFileAsBytes);
             rootServicesGetterService.getMailService().sendEmailWithFile(
-                    "Payments_" + localDate.minusDays(1) + ".xlsx", resource);
+                    "Payments_" + localDate.minusDays(1) + ".xlsx", subjectName, resource);
         } catch (IOException e) {
             log.error("[Error] while sending scheduled payment list");
         }
