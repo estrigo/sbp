@@ -1,5 +1,6 @@
 package kz.spt.billingplugin.service.impl;
 
+import kz.spt.app.repository.PropertyRepository;
 import kz.spt.billingplugin.BillingPlugin;
 import kz.spt.billingplugin.repository.PaymentProviderRepository;
 import kz.spt.billingplugin.service.RootServicesGetterService;
@@ -17,6 +18,8 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     private PaymentProviderRepository paymentProviderRepository;
     private PaymentCheckLogService paymentCheckLogService;
     private AdminService adminService;
+    private MailService mailService;
+    private PropertyRepository propertyRepository;
 
     private CarsService carsService;
 
@@ -76,5 +79,21 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
             carsService = (CarsService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("carsServiceImpl");
         }
         return carsService;
+    }
+
+    @Override
+    public MailService getMailService() {
+        if (this.mailService == null) {
+            mailService = (MailService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("mailServiceImpl");
+        }
+        return this.mailService;
+    }
+
+    @Override
+    public PropertyRepository getPropertyRepository() {
+        if (this.propertyRepository == null) {
+            propertyRepository = (PropertyRepository) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("propertyRepository");
+        }
+        return  this.propertyRepository;
     }
 }

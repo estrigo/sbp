@@ -34,4 +34,7 @@ public interface PaymentService {
     String toLog(PaymentCheckLog log);
 
     void cancelPaymentByTransactionId(String transaction, String reason) throws Exception;
+
+    void startToSendPaymentList();
+    void stopToSendPaymentList();
 }

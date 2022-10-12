@@ -16,4 +16,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>  {
     @Query("SELECT c from Customer c where c.phoneNumber=?1")
     List<Customer> getCustomerIfAnyExist(String phoneNumber);
 
+    List<Customer> getAllByMailReceiverIsTrue();
+
 }
