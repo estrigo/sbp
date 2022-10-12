@@ -407,12 +407,13 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private String cronConfig() {
-        Optional<Property> property = rootServicesGetterService.getPropertyRepository().findFirstByKey(CRON_PR);
-        if (property.isPresent() && !BooleanUtils.toBoolean(property.get().getDisabled())) {
-            log.info("cron value: {} ", property.get().getValue());
-            return property.get().getValue();
-        }
-        return null;
+        return rootServicesGetterService.getPaymentRegistryJob().getCronValueByKey(CRON_PR);
+//        Optional<Property> property = rootServicesGetterService.getPropertyRepository().findFirstByKey(CRON_PR);
+//        if (property.isPresent() && !BooleanUtils.toBoolean(property.get().getDisabled())) {
+//            log.info("cron value: {} ", property.get().getValue());
+//            return property.get().getValue();
+//        }
+//        return null;
     }
 
 }

@@ -11,6 +11,7 @@ import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -56,5 +57,14 @@ public class PaymentRegistryJobImpl implements PaymentRegistryJob {
             }
         }
         return adminService.getBasicResponse();
+    }
+
+    public String getCronValueByKey(String key) {
+        Optional<Property> property = propertyRepository.findFirstByKey(key);
+        if (property.isPresent() && !BooleanUtils.toBoolean(property.get().getDisabled())) {
+            log.info("cron value: {} ", property.get().getValue());
+            return property.get().getValue();
+        }
+        return null;
     }
 }

@@ -6,4 +6,5 @@ public interface PaymentRegistryJob {
 
     ResponseEntity<?> startPaymentRegistryJob() throws Exception;
     ResponseEntity<?> stopPaymentRegistryJob() throws Exception;
+    String getCronValueByKey(String key);
 }
