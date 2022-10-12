@@ -38,6 +38,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BarrierServiceImpl implements BarrierService {
 
     public static Map<String, ModbusMaster> modbusMasterMap = new ConcurrentHashMap<>();
+
+    public static Map<String, SNMPManager> snmpManagerMap = new ConcurrentHashMap<>();
     private final BarrierRepository barrierRepository;
     private final EventLogService eventLogService;
     private final String BARRIER_ON = "1";
@@ -75,8 +77,7 @@ public class BarrierServiceImpl implements BarrierService {
         if (!disableOpen && (sensor.gateNotControlBarrier == null || !sensor.gateNotControlBarrier)) {
             if (Barrier.BarrierType.SNMP.equals(sensor.type)) {
                 if (sensor.oid != null && sensor.password != null && sensor.ip != null && sensor.snmpVersion != null) {
-                    SNMPManager client = new SNMPManager("udp:" + sensor.ip + "/161", sensor.password, sensor.snmpVersion);
-                    client.start();
+                    SNMPManager client = getConnectedSNMPManagerInstance(sensor.ip, sensor.password, sensor.snmpVersion);
                     String carDetectedString = client.getCurrentValue(sensor.oid);
                     int carDetected = -1;
                     if (carDetectedString != null) {
@@ -86,7 +87,6 @@ public class BarrierServiceImpl implements BarrierService {
                             carDetected = Integer.valueOf(carDetectedString) == 0 ? 1 : 0; // бывает фотоэлементы которые работают наоборот вместе 0 выдают 1, а вместе 1 выдают 0;
                         }
                     }
-                    client.close();
                     return carDetected;
                 } else {
                     return -1;
@@ -132,7 +132,6 @@ public class BarrierServiceImpl implements BarrierService {
                 }
             } else if (Barrier.BarrierType.JETSON.equals(sensor.type)) {
                 var response = new RestTemplateBuilder().build().getForObject("http://" + sensor.ip + ":9001" + "/sensor_status?pin=" + sensor.oid, JetsonResponse.class);
-                log.info(response.toString());
                 return response.getState() == 0 ? 1 : 0;
             } else {
                 return -1;
@@ -277,8 +276,7 @@ public class BarrierServiceImpl implements BarrierService {
     private Boolean snmpChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException, ParseException {
         Boolean result = true;
 
-        SNMPManager barrierClient = new SNMPManager("udp:" + barrier.ip + "/161", barrier.password, barrier.snmpVersion);
-        barrierClient.start();
+        SNMPManager barrierClient = getConnectedSNMPManagerInstance(barrier.ip, barrier.password, barrier.snmpVersion);
 
         if (Command.Close.equals(command) && Barrier.SensorsType.MANUAL.equals(barrier.sensorsType)) {
             String openValue = barrierClient.getCurrentValue(barrier.openOid);
@@ -341,16 +339,14 @@ public class BarrierServiceImpl implements BarrierService {
                 }
             }
         }
-        barrierClient.close();
 
         return result;
     }
 
-    private Boolean snmpChangeValueImpulse(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException, ParseException {
+    private Boolean snmpChangeValueImpulse(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException {
         Boolean result = true;
 
-        SNMPManager barrierClient = new SNMPManager("udp:" + barrier.ip + "/161", barrier.password, barrier.snmpVersion);
-        barrierClient.start();
+        SNMPManager barrierClient = getConnectedSNMPManagerInstance(barrier.ip, barrier.password, barrier.snmpVersion);
 
         String oid = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
         String currentValue = barrierClient.getCurrentValue(oid);
@@ -398,7 +394,6 @@ public class BarrierServiceImpl implements BarrierService {
                 }
             }
         }
-        barrierClient.close();
 
         return result;
     }
@@ -479,8 +474,7 @@ public class BarrierServiceImpl implements BarrierService {
 
     private Boolean snmpGetValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException {
 
-        SNMPManager barrierClient = new SNMPManager("udp:" + barrier.ip + "/161", barrier.password, barrier.snmpVersion);
-        barrierClient.start();
+        SNMPManager barrierClient = getConnectedSNMPManagerInstance(barrier.ip, barrier.password, barrier.snmpVersion);
 
         String openValue = barrierClient.getCurrentValue(barrier.openOid);
 
@@ -522,6 +516,24 @@ public class BarrierServiceImpl implements BarrierService {
             }
         }
         return m;
+    }
+
+    private SNMPManager getConnectedSNMPManagerInstance(String ip, String password, Integer version){
+        SNMPManager snmpManager;
+        if(snmpManagerMap.containsKey(ip)){
+            snmpManager = snmpManagerMap.get(ip);
+        } else {
+            snmpManager = new SNMPManager("udp:" + ip + "/161", password, version);
+            snmpManagerMap.put(ip, snmpManager);
+        }
+
+        try {
+            snmpManager.close();
+            snmpManager.start();
+        } catch (IOException | ParseException e) {
+            throw new RuntimeException(e);
+        }
+        return snmpManager;
     }
 
     private Boolean modbusRetryWrite(ModbusMaster m, int slaveId, int offset, boolean value) {
