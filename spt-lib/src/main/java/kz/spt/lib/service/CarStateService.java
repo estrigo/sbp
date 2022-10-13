@@ -65,4 +65,6 @@ public interface CarStateService {
     List<String> getCarsInParking();
 
     List<String> getCarsInParkingAndNotPaid();
+
+    CarStateDto getCarState(Long gateId) throws Exception;
 }

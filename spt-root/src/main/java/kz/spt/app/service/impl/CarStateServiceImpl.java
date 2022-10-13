@@ -16,6 +16,7 @@ import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.utils.Utils;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -520,5 +521,22 @@ public class CarStateServiceImpl implements CarStateService {
     @Override
     public List<String> getCarsInParkingAndNotPaid(){
         return carStateRepository.getPlateNumbersByOutTimestampIsNullAndNotPaid();
+    }
+
+    public CarStateDto getCarState(Long gateId) throws Exception {
+        String plateNumber = eventLogService.findLastNotEnoughFunds(gateId);
+        CarState carState = getLastNotLeft(plateNumber);
+        CarStateDto carStateDto = CarStateDto.fromCarState(carState);
+
+        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
+        carStateDto.setOutTimestamp(DateUtils.round(new Date(), Calendar.MINUTE));
+
+        BigDecimal rateResult = calculateRate(carStateDto.inTimestamp, carStateDto.outTimestamp, carState, format);
+        carStateDto.setRateAmount(rateResult);
+
+        long duration = carStateDto.outTimestamp.getTime() - carStateDto.inTimestamp.getTime();
+        carStateDto.setDuration(String.valueOf(TimeUnit.MILLISECONDS.toMinutes(duration)));
+
+        return carStateDto;
     }
 }
