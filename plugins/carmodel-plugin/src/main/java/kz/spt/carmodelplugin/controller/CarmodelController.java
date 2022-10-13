@@ -75,7 +75,7 @@ public class CarmodelController {
         carmodelService.deleteCarModel(id);
         model.addAttribute("carModels", carmodelService.findAll());
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
-        return "carmodel/configure";
+        return "redirect:/carmodel/configure/car";
     }
 
     @PostMapping("/list")

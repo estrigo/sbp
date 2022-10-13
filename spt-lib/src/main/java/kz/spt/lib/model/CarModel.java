@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.checkerframework.common.aliasing.qual.Unique;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -26,7 +27,7 @@ public class CarModel {
     @Unique
     private String model;
     private Integer type; //types: 1 - passenger car	1, gazelle	2, truck 3
-
+    @DateTimeFormat
     private String updatedBy;
     private LocalDateTime updatedTime;
 }
