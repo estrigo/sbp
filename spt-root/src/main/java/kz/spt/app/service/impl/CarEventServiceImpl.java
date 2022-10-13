@@ -493,7 +493,7 @@ public class CarEventServiceImpl implements CarEventService {
                     camera = cameraService.getCameraById(eventDto.cameraId);
                 } else {
                     List<Camera> cameraList = cameraService.findCameraByIp(cameraStatusDto.ip);
-                    if (Gate.GateType.OUT.equals(gate.gateType)) {
+                    if (Gate.GateType.OUT.equals(gate.gateType)) {  /*#ans tut polu4aetsya out nachinaetsya*/
                         if (cameraList.size() > 1) {
                             CarState carStateForCheckGateType = carStateService.getLastNotLeft(eventDto.car_number);
                             if (carStateForCheckGateType != null) { // Check Last not left parking

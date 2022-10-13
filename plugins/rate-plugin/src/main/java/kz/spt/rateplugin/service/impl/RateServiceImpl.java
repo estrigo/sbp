@@ -178,6 +178,7 @@ public class RateServiceImpl implements RateService {
             double inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY) + (double) inCalendar.get(Calendar.MINUTE) / 60;
             IntervalRate current = getSatisfiedIntervalRate(inCalendarHour, parkingRate);
             if (current == null) current = jsonIntervalParser(parkingRate, inCalendarHour);
+            //tut askhat predlojil razdelit
             Iterator<RateCondition> conditionIterator = rateConditionRepository.findAllByIntervalRateId(
                     current.getId()).iterator();
             String[] hourMin = current.getDatetimeFrom().split(":");
