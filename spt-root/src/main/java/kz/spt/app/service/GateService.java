@@ -1,6 +1,9 @@
 package kz.spt.app.service;
 
 import kz.spt.lib.model.Gate;
+import kz.spt.lib.model.dto.GateDto;
+
+import java.util.List;
 
 public interface GateService {
 
@@ -15,4 +18,6 @@ public interface GateService {
     void deleteGate(Gate gate);
 
     Iterable<Gate> listAllGatesWithDependents();
+
+    List<GateDto> getGateByParkingId(Long id);
 }
