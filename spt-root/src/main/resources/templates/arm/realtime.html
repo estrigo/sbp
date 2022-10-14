@@ -436,7 +436,6 @@
         var form = new FormData();
         form.append("cameraId", reasonCameraId);
         form.append("reason", reason);
-        form.append("snapshot", cameras[reasonCameraId] && cameras[reasonCameraId].snapshot ? cameras[reasonCameraId].snapshot : null);
 
         var settings = {
             "url": "/rest/arm/open/barrier",
@@ -505,6 +504,21 @@
                 canvas.width = image.width + 1;
                 canvas.height = image.height + 1;
                 context.drawImage(image, 0, 0, image.width, image.height);
+                image = null;
+            };
+        } else if (messageBody.eventType == 'SNAPSHOT') {
+            $(fancyImage).attr("data-src", '/files/pictures' + messageBody.message);
+
+            let image = new Image();
+            image.src = '/files/pictures' + messageBody.message;
+
+            image.onload = function () {
+                canvas.width = image.width + 1;
+                canvas.height = image.height + 1;
+                context.drawImage(image, 0, 0, image.width, image.height);
+                image = null;
+            };
+            image.onerror = function () {
                 image = null;
             };
         } else if (messageBody.eventType == 'CarEvent') {
@@ -724,7 +738,6 @@
             var form = new FormData();
             form.append("cameraId", cameraId);
             form.append("platenumber", plateNumber);
-            form.append("snapshot", cameras[cameraId] && cameras[cameraId].snapshot ? cameras[cameraId].snapshot : null);
 
             var settings = {
                 "url": "/rest/arm/pass",
@@ -1202,7 +1215,6 @@
             var form = new FormData();
             form.append("cameraId", reasonCameraId);
             form.append("reason", reason);
-            form.append("snapshot", cameras[reasonCameraId] && cameras[reasonCameraId].snapshot ? cameras[reasonCameraId].snapshot : null);
 
             var settings = {
                 "url": "/rest/arm/open/barrier",

@@ -23,7 +23,8 @@ public interface EventLogService {
         Photo,
         Picture,
         CarEvent,
-        Lp
+        Lp,
+        SNAPSHOT
     }
 
     void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, Map<String, Object> messageValues, String key);

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.job.SensorStatusCheckJob;
 import kz.spt.app.job.StatusCheckJob;
-import kz.spt.app.model.dto.CameraStatusDto;
+import kz.spt.lib.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.Period;
 import kz.spt.app.model.strategy.barrier.open.AbstractOpenStrategy;
@@ -145,7 +145,7 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     @Override
-    public boolean passCar(Long cameraId, String platenumber, String snapshot) throws Exception {
+    public boolean passCar(Long cameraId, String platenumber) throws Exception {
         Boolean barrierResult = false;
         if (platenumber != null) {
             Camera camera = cameraService.getCameraById(cameraId);
@@ -176,8 +176,20 @@ public class CarEventServiceImpl implements CarEventService {
                 eventDto.manualOpen = true;
                 eventDto.cameraId = cameraId;
 
-                if (snapshot != null && !"".equals(snapshot) && !"undefined".equals(snapshot) && !"null".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
-                    eventDto.car_picture = snapshot;
+                String newSnapShot;
+                String carImageUrl;
+                try {
+                    CameraStatusDto cameraStatusDtoById = StatusCheckJob.findCameraStatusDtoById(cameraId);
+                    byte[] bytes = carImageService.manualSnapShot(cameraStatusDtoById);
+                    newSnapShot = "data:image/jpg;base64," + carImageService.encodeBase64StringWithSize(bytes);
+                    carImageUrl = carImageService.saveImage(newSnapShot, new Date(), null);
+                } catch (Throwable e) {
+                    log.warning("ERROR carImageUrl " + e.getMessage());
+                    throw new RuntimeException(e);
+                }
+
+                if (newSnapShot != null && !"".equals(newSnapShot) && !"undefined".equals(newSnapShot) && !"null".equals(newSnapShot) && !"data:image/jpg;base64,null".equals(newSnapShot)) {
+                    eventDto.car_picture = newSnapShot;
                 } else {
                     eventDto.car_picture = null;
                 }
@@ -193,10 +205,10 @@ public class CarEventServiceImpl implements CarEventService {
                 properties.put("gateType", camera.getGate().getGateType().toString());
                 properties.put("type", EventLog.StatusType.Allow);
 
-                if (eventDto.car_picture != null && !"null".equals(snapshot) && !"".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
-                    String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_date_time, eventDto.car_number);
-                    properties.put(StaticValues.carImagePropertyName, carImageUrl);
-                    properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
+                if (eventDto.car_picture != null && !"null".equals(newSnapShot) && !"".equals(newSnapShot) && !"undefined".equals(newSnapShot) && !"data:image/jpg;base64,null".equals(newSnapShot)) {
+                    String imageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_date_time, eventDto.car_number);
+                    properties.put(StaticValues.carImagePropertyName, imageUrl);
+                    properties.put(StaticValues.carSmallImagePropertyName, imageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
                 }
 
                 Map<String, Object> messageValues = new HashMap<>();

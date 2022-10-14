@@ -1,6 +1,6 @@
 package kz.spt.app.job;
 
-import kz.spt.app.model.dto.CameraStatusDto;
+import kz.spt.lib.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.lib.model.dto.carmen.CarmenImage;
 import kz.spt.lib.service.CarEventService;
