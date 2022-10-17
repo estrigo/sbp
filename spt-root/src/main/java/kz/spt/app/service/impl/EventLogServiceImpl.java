@@ -5,19 +5,19 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
-import kz.spt.lib.model.dto.EventLogExcelDto;
+import kz.spt.app.repository.EventLogRepository;
 import kz.spt.app.service.GateService;
+import kz.spt.app.utils.StringExtensions;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.EventLogSpecification;
 import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.dto.EventFilterDto;
+import kz.spt.lib.model.dto.EventLogExcelDto;
 import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.EventLogService;
-import kz.spt.app.repository.EventLogRepository;
 import kz.spt.lib.utils.StaticValues;
-import kz.spt.app.utils.StringExtensions;
 import kz.spt.lib.utils.Utils;
 import lombok.extern.java.Log;
 import org.pf4j.PluginManager;
@@ -373,6 +373,19 @@ public class EventLogServiceImpl implements EventLogService {
     @Override
     public void sendSocketMessage(String topic, String message) {
         messagingTemplate.convertAndSend("/"+topic, message);
+    }
+
+    @Override
+    public String findLast(Long gateId) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE, -3);
+
+        List<EventLog> eventLogs = eventLogRepository.getEventsFromDate(calendar.getTime(), Gate.class.getSimpleName(), gateId);
+        if(eventLogs != null && eventLogs.size()>0){
+            EventLog eventLog = eventLogs.get(0);
+            return eventLog.getPlateNumber();
+        }
+        return null;
     }
 
     private Page<EventsDto> getPage(long count, List<EventsDto> events, PagingRequest pagingRequest) {
