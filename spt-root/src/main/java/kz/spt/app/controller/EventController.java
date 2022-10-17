@@ -45,7 +45,7 @@ public class EventController {
             Date dateTo = calendar.getTime();
             eventFilterDto.dateToString = format.format(dateTo);
 
-            calendar.add(Calendar.MONTH, -1);
+            calendar.add(Calendar.WEEK_OF_YEAR, -1);
             Date dateFrom = calendar.getTime();
             eventFilterDto.dateFromString = format.format(dateFrom);
             model.addAttribute("eventFilterDto", eventFilterDto);
