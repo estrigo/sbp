@@ -3,15 +3,21 @@ package kz.spt.app.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.app.repository.CarStateRepository;
 import kz.spt.app.service.BarrierService;
+import kz.spt.app.service.GateService;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.model.dto.CarStateExcelDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
-import kz.spt.lib.service.*;
-import kz.spt.app.repository.CarStateRepository;
+import kz.spt.lib.model.dto.GateDto;
+import kz.spt.lib.model.dto.temp.CarStateCurrencyDto;
+import kz.spt.lib.service.CarStateService;
+import kz.spt.lib.service.CarsService;
+import kz.spt.lib.service.EventLogService;
+import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.utils.Utils;
 import lombok.SneakyThrows;
@@ -45,16 +51,19 @@ public class CarStateServiceImpl implements CarStateService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private BarrierService barrierService;
 
+    private final GateService gateService;
+
     private static final Comparator<CarStateDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
 
     public CarStateServiceImpl(CarStateRepository carStateRepository, EventLogService eventLogService,
-                               CarsService carsService, PluginService pluginService, BarrierService barrierService) {
+                               CarsService carsService, PluginService pluginService, BarrierService barrierService, GateService gateService) {
         this.carStateRepository = carStateRepository;
         this.eventLogService = eventLogService;
         this.carsService = carsService;
         this.pluginService = pluginService;
         this.barrierService = barrierService;
+        this.gateService = gateService;
     }
 
     @Override
@@ -523,20 +532,51 @@ public class CarStateServiceImpl implements CarStateService {
         return carStateRepository.getPlateNumbersByOutTimestampIsNullAndNotPaid();
     }
 
-    public CarStateDto getCarState(Long gateId) throws Exception {
-        String plateNumber = eventLogService.findLastNotEnoughFunds(gateId);
-        CarState carState = getLastNotLeft(plateNumber);
-        CarStateDto carStateDto = CarStateDto.fromCarState(carState);
+    public CarStateCurrencyDto getCarState(Long gateId) throws Exception {
+        CarStateDto carStateDto = new CarStateDto();
+        CarStateCurrencyDto carStateCurrencyDto = new CarStateCurrencyDto();
+        String currency = "";
 
-        SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
-        carStateDto.setOutTimestamp(DateUtils.round(new Date(), Calendar.MINUTE));
+        String plateNumber = eventLogService.findLast(gateId);
 
-        BigDecimal rateResult = calculateRate(carStateDto.inTimestamp, carStateDto.outTimestamp, carState, format);
-        carStateDto.setRateAmount(rateResult);
+        if(plateNumber!=null){
+            CarState carState = getLastNotLeft(plateNumber);
+            carStateDto = CarStateDto.fromCarState(carState);
 
-        long duration = carStateDto.outTimestamp.getTime() - carStateDto.inTimestamp.getTime();
-        carStateDto.setDuration(String.valueOf(TimeUnit.MILLISECONDS.toMinutes(duration)));
+            SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
+            carStateDto.setOutTimestamp(DateUtils.round(new Date(), Calendar.MINUTE));
 
-        return carStateDto;
+            BigDecimal rateResult = calculateRate(carStateDto.inTimestamp, carStateDto.outTimestamp, carState, format);
+            carStateDto.setRateAmount(rateResult);
+
+            long duration = carStateDto.outTimestamp.getTime() - carStateDto.inTimestamp.getTime() + (60*1000);
+            carStateDto.setDuration(String.valueOf(TimeUnit.MILLISECONDS.toMinutes(duration)));
+
+            GateDto gate = GateDto.fromGate(gateService.getById(gateId));
+            currency = getCurrency(gate.getParkingId());
+
+        }
+
+        carStateCurrencyDto.setCarState(carStateDto);
+        carStateCurrencyDto.setCurrency(currency);
+
+        return carStateCurrencyDto;
     }
+
+    private String getCurrency(Long parkingId) throws Exception {
+        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
+        String currency = "";
+
+        if (ratePluginRegister != null) {
+            ObjectNode command = objectMapper.createObjectNode();
+            command.put("command", "getCurrency");
+            command.put("parkingId", parkingId);
+            JsonNode rateResult = ratePluginRegister.execute(command);
+
+            currency = rateResult.get("currency").textValue();
+        }
+
+        return currency;
+    }
+
 }
