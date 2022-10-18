@@ -566,7 +566,6 @@ public class CarStateServiceImpl implements CarStateService {
             carStateDto.setOutTimestamp(DateUtils.round(new Date(), Calendar.MINUTE));
 
             BigDecimal rateResult = calculateRate(carStateDto.inTimestamp, carStateDto.outTimestamp, carState, format);
-            carStateDto.setRateAmount(rateResult);
 
             long duration = carStateDto.outTimestamp.getTime() - carStateDto.inTimestamp.getTime() + (60*1000);
             carStateDto.setDuration(String.valueOf(TimeUnit.MILLISECONDS.toMinutes(duration)));
@@ -574,6 +573,10 @@ public class CarStateServiceImpl implements CarStateService {
             GateDto gate = GateDto.fromGate(gateService.getById(gateId));
             currency = getCurrency(gate.getParkingId());
 
+            BigDecimal balance = pluginService.checkBalance(plateNumber);
+            if(balance.compareTo(BigDecimal.ZERO) < 0) rateResult = rateResult.add(balance.abs());
+
+            carStateDto.setRateAmount(rateResult);
         }
 
         carStateCurrencyDto.setCarState(carStateDto);
