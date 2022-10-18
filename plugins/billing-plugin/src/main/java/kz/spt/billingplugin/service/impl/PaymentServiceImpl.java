@@ -1,5 +1,6 @@
 package kz.spt.billingplugin.service.impl;
 
+import com.fasterxml.uuid.Generators;
 import kz.spt.billingplugin.dto.FilterPaymentDTO;
 import kz.spt.billingplugin.dto.HeaderDto;
 import kz.spt.billingplugin.dto.PaymentLogDTO;
@@ -11,11 +12,9 @@ import kz.spt.billingplugin.service.BalanceService;
 import kz.spt.billingplugin.service.PaymentService;
 import kz.spt.billingplugin.service.RootServicesGetterService;
 import kz.spt.lib.bootstrap.datatable.*;
-import kz.spt.lib.model.Property;
-import lombok.RequiredArgsConstructor;
+import kz.spt.lib.enums.SyslogTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import kz.spt.lib.model.PaymentCheckLog;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.context.annotation.Bean;
@@ -304,7 +303,11 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     public void sendingListOfPayment() {
-        log.info("Payment_registry started !!!");
+        UUID uuid = Generators.timeBasedGenerator().generate();
+        rootServicesGetterService.getSyslogService().createSyslog(uuid.toString(), new Date(),
+                "Начинается процесс отправки реестра платежей",
+                "Starting process of sending payment registry",
+                SyslogTypeEnum.PAYMENT_REGISTRY, "OK");
         FilterPaymentDTO filterPaymentDTO = new FilterPaymentDTO();
         LocalDate localDate = LocalDate.now();
         LocalDateTime startOfDay = localDate.minusDays(1).atStartOfDay();
@@ -333,9 +336,16 @@ public class PaymentServiceImpl implements PaymentService {
             byte[] excelFileAsBytes = bos.toByteArray();
             ByteArrayResource resource = new ByteArrayResource(excelFileAsBytes);
             rootServicesGetterService.getMailService().sendEmailWithFile(
-                    "Payments_" + localDate.minusDays(1) + ".xlsx", subjectName, resource);
+                    "Payments_" + localDate.minusDays(1) + ".xlsx", subjectName, resource, uuid);
+            rootServicesGetterService.getSyslogService().createSyslog(uuid.toString(), new Date(),
+                    "Конец процесса отправки реестра платежей",
+                    "End of payment register sending process",
+                    SyslogTypeEnum.PAYMENT_REGISTRY, "OK");
         } catch (IOException e) {
-            log.error("[Error] while sending scheduled payment list");
+            rootServicesGetterService.getSyslogService().createSyslog(uuid.toString(), new Date(),
+                    "[Ошибка] при запланированной отправке списка платежей",
+                    "[Error] while scheduled sending payment list",
+                    SyslogTypeEnum.PAYMENT_REGISTRY, e.getMessage());
         }
     }
 
@@ -408,12 +418,6 @@ public class PaymentServiceImpl implements PaymentService {
 
     private String cronConfig() {
         return rootServicesGetterService.getPaymentRegistryJob().getCronValueByKey(CRON_PR);
-//        Optional<Property> property = rootServicesGetterService.getPropertyRepository().findFirstByKey(CRON_PR);
-//        if (property.isPresent() && !BooleanUtils.toBoolean(property.get().getDisabled())) {
-//            log.info("cron value: {} ", property.get().getValue());
-//            return property.get().getValue();
-//        }
-//        return null;
     }
 
 }

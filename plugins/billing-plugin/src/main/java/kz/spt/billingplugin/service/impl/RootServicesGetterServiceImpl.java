@@ -19,6 +19,7 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     private AdminService adminService;
     private MailService mailService;
     private PaymentRegistryJob paymentRegistryJob;
+    private SyslogService syslogService;
 
     private CarsService carsService;
 
@@ -93,6 +94,15 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
         if (this.paymentRegistryJob == null) {
             paymentRegistryJob = (PaymentRegistryJob) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("paymentRegistryJobImpl");
         }
-        return  this.paymentRegistryJob;
+        return this.paymentRegistryJob;
     }
+
+    @Override
+    public SyslogService getSyslogService() {
+        if (this.syslogService == null) {
+            syslogService = (SyslogService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("syslogServiceImpl");
+        }
+        return this.syslogService;
+    }
+
 }
