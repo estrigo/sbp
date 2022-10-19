@@ -29,6 +29,7 @@ public class Syslog {
 
     private String UUID;
 
+    @Column(name = "message", columnDefinition = "text")
     private String message;
 
 }
