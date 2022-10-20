@@ -28,6 +28,11 @@
                                onclick="support(this)"></a>
                         </div>
                     </span-->
+                    <button sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN', 'ROLE_MANAGER')"
+                            type="button" class="btn btn-primary" th:text="#{arm.reasons}"
+                            th:onclick="openReasons()">
+                        Reasons
+                    </button>
                     <button type="button" class="btn btn-primary" th:text="#{arm.restart}"
                             th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart
                     </button>
@@ -160,6 +165,44 @@
     </div>
 </div>
 
+<div class="modal fade" id="addReason" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <form th:action="@{/arm/deleteReason}" method="post" enctype="multipart/form-data">
+                                <select name="selectedReasonId" class="form-control">
+                                    <option th:each="reason, ind : ${reasons}"
+                                            th:text="${reason.reasonRu}"
+                                            th:value="${reason.id}"></option>
+                                </select>
+                                <br>
+                                <button type="submit" class="btn btn-warning waves-effect"
+                                        th:text="#{arm.deleteReason}"></button>
+                            </form>
+                            <hr>
+                            <form th:action="@{/arm/addReason}" method="post" enctype="multipart/form-data">
+                                <input class="form-control" name="newReason" type="text">
+                                <br>
+                                <button type="submit" class="btn btn-success waves-effect"
+                                        th:text="#{arm.addReason}"></button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal"
+                                th:text="#{crm.close}"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="openGate" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -173,8 +216,10 @@
                             <label class="form-label" th:text="#{arm.openReason}"></label>
                             <select id="openReason" class="form-control" onchange="selectOpenReason()">
                                 <option value="" th:text="#{arm.chooseReason}"></option>
-                                <option value="emergencyServices" th:text="#{arm.emergencyReason}"></option>
-                                <option value="invalidPerson" th:text="#{arm.handicappedReason}"></option>
+<!--                                <option value="emergencyServices" th:text="#{arm.emergencyReason}"></option>-->
+<!--                                <option value="invalidPerson" th:text="#{arm.handicappedReason}"></option>-->
+                                <option th:each="reason : ${reasons}" th:text="${reason.reasonRu}"
+                                        th:value="${reason.reasonRu}"></option>
                                 <option value="other" th:text="#{arm.otherReason}"></option>
                             </select>
                             <strong id="openReasonAlert" style="width: 40%"></strong>
@@ -545,7 +590,6 @@
     function enableSnapshot() {
         $(".item").each(function () {
             const $input = $(this);
-            console.log("Enable snapshot",$(this).data("id"));
             const $id = $input.data("id");
             const $url = $input.data("url");
             const $ip = $input.data("ip");
@@ -687,6 +731,7 @@
     const timeUnavailable = [[#{camera.intervalTimeUnavailable}]];
 
     const crmDelete = [[#{crm.delete}]];
+
 
     function configure() {
         tabs = [];
@@ -854,19 +899,25 @@
         }
     }
 
+    function openReasons() {
+        showReasonsModal();
+    }
+    function showReasonsModal() {
+        $("#addReason").modal('show');
+    }
+
     function sendOpenArm() {
         let reasonCameraId = $('#reasonCameraId').val();
         let openReason = $('#openReason').val();
+        console.log("Reason : " + openReason);
         $('#openReasonAlert').text('');
         $('#otherReasonAlert').text('');
 
         if (openReason) {
             let reason = undefined;
 
-            if (openReason == "emergencyServices") {
-                reason = [[#{arm.emergencyReason}]];
-            } else if (openReason == "invalidPerson") {
-                reason = [[#{arm.handicappedReason}]];
+            if (openReason !== "other") {
+                reason = openReason;
             } else {
                 let otherReason = $('#otherReason').val();
                 if (otherReason && otherReason.length >= 3) {
