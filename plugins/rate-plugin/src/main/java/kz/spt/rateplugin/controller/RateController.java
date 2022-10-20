@@ -130,6 +130,20 @@ public class RateController {
         return "/rate/interval-edit";
     }
 
+    @GetMapping("/dimensionsByInterval-settings/{parkingId}")
+    public String settingsOfDimensionsByIntervalRate(Model model, @PathVariable Long parkingId) {
+        ParkingRate parkingRate = rateService.getByParkingId(parkingId);
+        if(parkingRate == null){
+            parkingRate = new ParkingRate();
+            Parking parking = rateService.getParkingById(parkingId);
+            parkingRate.setParking(parking);
+        }
+        model.addAttribute("parkingRate", parkingRate);
+        model.addAttribute("IntervalType", RateCondition.IntervalType.values());
+        model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
+        return "/rate/interval-settings";
+    }
+
 
     @PostMapping("/interval-delete")
     public String deleteIntervalRate(@ModelAttribute(value="intervalRate") IntervalRate intervalRate) {
@@ -168,6 +182,4 @@ public class RateController {
         rateService.saveRateCondition(rateCondition);
         return "redirect:interval-edit/"+parkingRate.getParking().getId();
     }
-
-
 }

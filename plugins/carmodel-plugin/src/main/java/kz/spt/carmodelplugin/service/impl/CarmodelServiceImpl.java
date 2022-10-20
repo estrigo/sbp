@@ -1,6 +1,7 @@
 package kz.spt.carmodelplugin.service.impl;
 
 import kz.spt.carmodelplugin.bootstrap.datatable.CarmodelComparators;
+
 import kz.spt.carmodelplugin.repository.CarmodelRepository;
 import kz.spt.carmodelplugin.repository.CarmodelRepository2;
 import kz.spt.carmodelplugin.service.CarmodelService;
@@ -10,10 +11,7 @@ import kz.spt.lib.bootstrap.datatable.Column;
 import kz.spt.lib.bootstrap.datatable.Order;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
-import kz.spt.lib.model.CarModel;
-import kz.spt.lib.model.Cars;
-import kz.spt.lib.model.CurrentUser;
-import kz.spt.lib.model.EventLog;
+import kz.spt.lib.model.*;
 import lombok.extern.java.Log;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -37,7 +35,11 @@ public class CarmodelServiceImpl implements CarmodelService {
     private RootServicesGetterService rootServicesGetterService;
 
     private CarmodelRepository2 carmodelRepository2;
-    public CarmodelServiceImpl(CarmodelRepository carmodelRepository, RootServicesGetterService rootServicesGetterService, CarmodelRepository2 carmodelRepository2) {
+
+
+    public CarmodelServiceImpl(CarmodelRepository carmodelRepository,
+                               RootServicesGetterService rootServicesGetterService,
+                               CarmodelRepository2 carmodelRepository2) {
         this.carmodelRepository = carmodelRepository;
         this.rootServicesGetterService = rootServicesGetterService;
         this.carmodelRepository2 = carmodelRepository2;
@@ -222,20 +224,16 @@ public class CarmodelServiceImpl implements CarmodelService {
     public void updateCarModel(int id, CarModel updateCarModel, UserDetails currentUser) {
         CarModel carModel = getCarModelById(id);
         carModel.setModel(updateCarModel.getModel());
-        carModel.setType(updateCarModel.getType());
         carModel.setUpdatedBy(currentUser.getUsername());
+        carModel.setDimensions(updateCarModel.getDimensions());
         LocalDateTime localDateTime = LocalDateTime.now();
         carModel.setUpdatedTime(localDateTime);
 
         try {
             carmodelRepository2.save(carModel);
-            CarModel carModel1 = carModel;
-            System.out.println("s");
-
         } catch (Exception e) {
-            System.out.println("SS");
-            log.warning(": " + carModel.getModel());
-
+          log.warning("Update error CarModel: " + carModel.getModel());
         }
     }
+
 }

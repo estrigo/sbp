@@ -923,11 +923,11 @@ public class CarEventServiceImpl implements CarEventService {
                 carModel = carModelRepository.getByModel(eventDto.car_model);
             }
             String dimension;
-            if (carModel != null && carModel.getType() == 1) {
+            if (carModel != null && carModel.getDimensions().getId() == 1) {
                 dimension = "легковой";
-            } else if (carModel != null && carModel.getType() == 2) {
+            } else if (carModel != null && carModel.getDimensions().getId() == 2) {
                 dimension = "микро автобус";
-            } else if (carModel != null && carModel.getType() == 3) {
+            } else if (carModel != null && carModel.getDimensions().getId() == 3) {
                 dimension = "грузовик";
             } else {
                 dimension = "не распознан";
@@ -1796,7 +1796,7 @@ public class CarEventServiceImpl implements CarEventService {
             Cars cars = carsService.findByPlatenumber(carState.getCarNumber());
             CarModel carModel = carModelService.getByModel(cars.getModel());
             if (carModel != null)
-                ratePluginNode.put("carType", carModel.getType());
+                ratePluginNode.put("carType", carModel.getDimensions().getId());
             JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
             return ratePluginResult.get("rateResult").decimalValue().setScale(2);
         } else {

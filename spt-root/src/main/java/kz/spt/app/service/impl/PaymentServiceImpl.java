@@ -600,7 +600,7 @@ public class PaymentServiceImpl implements PaymentService {
                     ratePluginNode.put("carModel", cars.getModel());
                     if (carModelService.getByModel(cars.getModel()) != null) {
                         CarModel carModel = carModelService.getByModel(cars.getModel());
-                        ratePluginNode.put("carType", carModel.getType());
+                        ratePluginNode.put("carType", carModel.getDimensions().getId());
                     } else {
                         log.info("This model doesn't exist in db - " + cars.getModel());
                     }
@@ -718,7 +718,7 @@ public class PaymentServiceImpl implements PaymentService {
                 node.put("carModel", cars.getModel());
                 if (carModelService.getByModel(cars.getModel()) != null) {
                     CarModel carModel = carModelService.getByModel(cars.getModel());
-                    node.put("carType", carModel.getType());
+                    node.put("carType", carModel.getDimensions().getId());
                 } else {
                     log.info("This model doesn't exist in db - " + cars.getModel());
                 }

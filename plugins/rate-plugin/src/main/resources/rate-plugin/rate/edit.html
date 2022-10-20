@@ -46,7 +46,7 @@
                                             <option th:value="PREPAID" th:text="#{'rate.Type.PREPAID'}"></option>
                                             <option th:value="FREE" th:text="#{'rate.Type.FREE'}"></option>
                                             <option th:value="DIMENSIONS_BY_INTERVAL" th:text="#{'rate.Type.DIMENSIONS_BY_INTERVAL'}"></option>
-<!--                                            <option th:value="INTERVAL_OLD" th:text="#{'rate.Type.INTERVAL_OLD'}"></option>-->
+                                            <!--                                            <option th:value="INTERVAL_OLD" th:text="#{'rate.Type.INTERVAL_OLD'}"></option>-->
                                         </select>
                                     </div>
                                 </div>
@@ -177,19 +177,19 @@
                                             <tbody id="intervalContainer">
                                             </tbody>
                                             <tbody id="intervalInputs">
-                                                <tr>
-                                                    <td>
-                                                        <select id="intervalFrom">
-                                                        </select>
-                                                    </td>
-                                                    <td>
-                                                        <select id="intervalTo">
-                                                        </select>
-                                                    </td>
-                                                    <td>
-                                                        <button type="button" class="btn btn-secondary waves-effect" th:text="#{crm.add}" onclick="saveInterval()"></button>
-                                                    </td>
-                                                </tr>
+                                            <tr>
+                                                <td>
+                                                    <select id="intervalFrom">
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select id="intervalTo">
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-secondary waves-effect" th:text="#{crm.add}" onclick="saveInterval()"></button>
+                                                </td>
+                                            </tr>
                                             </tbody>
                                         </table>
                                     </div>

@@ -1,8 +1,10 @@
 package kz.spt.carmodelplugin.controller;
 
+import kz.spt.carmodelplugin.service.CarDimensionsService;
 import kz.spt.carmodelplugin.service.CarmodelService;
 import kz.spt.carmodelplugin.viewmodel.CarmodelDto;
 import kz.spt.lib.model.CarModel;
+import kz.spt.lib.model.Dimensions;
 import lombok.extern.java.Log;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Pageable;
@@ -27,11 +29,15 @@ import java.util.*;
 public class CarmodelController {
 
     private CarmodelService carmodelService;
+    private CarDimensionsService carDimensionsService;
 
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
 
-    public CarmodelController(CarmodelService carmodelService) {
+    public CarmodelController(CarmodelService carmodelService,
+                              CarDimensionsService carDimensionsService)
+    {
         this.carmodelService = carmodelService;
+        this.carDimensionsService = carDimensionsService;
     }
 
     @GetMapping("/list")
@@ -66,12 +72,13 @@ public class CarmodelController {
 
     @GetMapping("/configure/car/edit/{carModelId}")
     public String editCarModel(Model model, @PathVariable Integer carModelId, @AuthenticationPrincipal UserDetails currentUser) {
-        model.addAttribute("carModelOne", carmodelService.getCarModelById(carModelId));
+        model.addAttribute("carModel", carmodelService.getCarModelById(carModelId));
+        model.addAttribute("dimensions", carDimensionsService.listDimensions());
         return "/carmodel/editByOne";
     }
 
     @GetMapping("/configure/car/delete/{id}")
-    public String deleteUser(Model model, @PathVariable("id") int id, @AuthenticationPrincipal UserDetails currentUser) {
+    public String deleteCarModel(Model model, @PathVariable("id") int id, @AuthenticationPrincipal UserDetails currentUser) {
         carmodelService.deleteCarModel(id);
         model.addAttribute("carModels", carmodelService.findAll());
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
@@ -118,7 +125,7 @@ public class CarmodelController {
                 bindingResult.addError(error);
             }
         }
-        if (StringUtils.isEmpty(String.valueOf(carModel.getType()))) {
+        if (StringUtils.isEmpty(String.valueOf(carModel.getDimensions().getId()))) {
             ObjectError error = new ObjectError("typeIsNull", bundle.getString("carmodel.typeIsNull"));
             bindingResult.addError(error);
         }
@@ -133,7 +140,30 @@ public class CarmodelController {
     @GetMapping("/configure/car/add")
     public String addCarModel(Model model, @AuthenticationPrincipal UserDetails currentUser) {
         model.addAttribute("carModel", new CarModel());
+        model.addAttribute("dimensions", carDimensionsService.listDimensions());
         return "/carmodel/create";
+    }
+
+    @GetMapping("/configure/carDimensions/add")
+    public String addCarDimensions(Model model, @AuthenticationPrincipal UserDetails currentUser) {
+        model.addAttribute("dimensions", new Dimensions());
+        model.addAttribute("dimensionslist", carDimensionsService.listDimensions());
+        return "/carmodel/createDimensions";
+    }
+    @PostMapping("/configure/car/dimensions/create")
+    public String createCarDimensions(@ModelAttribute("dimensions") @Valid Dimensions dimensions,
+                                 Model model,
+                                 BindingResult bindingResult,
+                                 @AuthenticationPrincipal UserDetails currentUser) {
+//        Locale locale = LocaleContextHolder.getLocale();
+//        String language = "en";
+//        if (locale.toString().equals("ru")) {
+//            language = "ru-RU";
+//        }
+//        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
+        carDimensionsService.saveCarDimensions(dimensions, currentUser);
+
+        return "redirect:/carmodel/configure/carDimensions/add";
     }
 
     @PostMapping("/configure/car/update/{id}")
@@ -141,6 +171,8 @@ public class CarmodelController {
                              @ModelAttribute("carModel") @Valid CarModel carModel,
                                  Model model,
                                  @AuthenticationPrincipal UserDetails currentUser) {
+        Dimensions dimensions = carDimensionsService.getById(carModel.getDimensions().getId());
+        carModel.setDimensions(dimensions);
         carmodelService.updateCarModel(id, carModel, currentUser);
 
         return "redirect:/carmodel/configure/car";
