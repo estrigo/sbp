@@ -1,8 +1,7 @@
 package kz.spt.app.controller;
 
-import kz.spt.app.service.BlacklistService;
+import kz.spt.lib.service.BlacklistService;
 import kz.spt.app.service.GateService;
-import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.dto.BlacklistDto;

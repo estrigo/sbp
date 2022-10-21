@@ -101,7 +101,7 @@ public class EventLogServiceImpl implements EventLogService {
     public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, EventLog.EventType eventType) {
         EventLog eventLog = new EventLog();
 
-        if(objectClass.equals("Camera"))
+        if(objectClass != null && objectClass.equals("Camera"))
             checkDuplicateAndSetGateName(objectId, properties);
 
         eventLog.setObjectClass(objectClass);
