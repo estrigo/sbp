@@ -49,12 +49,14 @@ spring:
       auto-commit: false #Автоматически отправлять соединение, возвращаемое из пула
                         #Значение конструктора по умолчанию: TRUE	Значение конфигурации по умолчанию после проверки: TRUE
   jpa:
+    show-sql: true
     open-in-view: false
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.MySQL55Dialect
     properties:
       hibernate:
+        format_sql: true
         enable_lazy_load_no_trans: true
         dialect: org.hibernate.dialect.MySQL55Dialect
         jdbc:

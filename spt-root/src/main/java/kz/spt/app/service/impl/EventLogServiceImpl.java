@@ -8,23 +8,28 @@ import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
+import kz.spt.app.repository.CarsRepository;
 import kz.spt.app.repository.EventLogRepository;
 import kz.spt.app.utils.StringExtensions;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
+import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.EventLogSpecification;
 import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.model.dto.EventLogExcelDto;
 import kz.spt.lib.model.dto.EventsDto;
+import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.utils.Utils;
 import lombok.extern.java.Log;
+import org.apache.poi.util.StringUtil;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
+import org.pf4j.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -68,21 +73,24 @@ public class EventLogServiceImpl implements EventLogService {
 
     private EventLogRepository eventLogRepository;
 
+    private CarsRepository carsRepository;
+
     private PluginManager pluginManager;
 
     @Value("${telegram.bot.external.enabled}")
     Boolean telegramBotExternalEnabled;
 
-    public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager) {
+    public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager, CarsRepository carsRepository) {
         this.eventLogRepository = eventLogRepository;
         this.pluginManager = pluginManager;
+        this.carsRepository = carsRepository;
     }
 
     @Override
     public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn) {
         EventLog eventLog = new EventLog();
 
-        if(objectClass.equals("Camera"))
+        if(objectClass != null && objectClass.equals("Camera"))
             checkDuplicateAndSetGateName(objectId, properties);
 
         eventLog.setObjectClass(objectClass);
@@ -94,6 +102,11 @@ public class EventLogServiceImpl implements EventLogService {
         eventLog.setDescriptionEn(descriptionEn);
         eventLog.setCreated(new Date());
         eventLog.setProperties(properties != null ? properties : new HashMap<>());
+
+        if(StringUtils.isNotNullOrEmpty(eventLog.getPlateNumber())){
+            eventLog.setCar(carsRepository.findCarsByPlatenumberIgnoreCase(eventLog.getPlateNumber()));
+        }
+
         eventLogRepository.save(eventLog);
     }
 
@@ -101,7 +114,7 @@ public class EventLogServiceImpl implements EventLogService {
     public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, EventLog.EventType eventType) {
         EventLog eventLog = new EventLog();
 
-        if(objectClass.equals("Camera"))
+        if(objectClass != null && objectClass.equals("Camera"))
             checkDuplicateAndSetGateName(objectId, properties);
 
         eventLog.setObjectClass(objectClass);
@@ -114,6 +127,10 @@ public class EventLogServiceImpl implements EventLogService {
         eventLog.setCreated(new Date());
         eventLog.setProperties(properties != null ? properties : new HashMap<>());
         eventLog.setEventType(eventType);
+
+        if(StringUtils.isNotNullOrEmpty(eventLog.getPlateNumber())){
+            eventLog.setCar(carsRepository.findCarsByPlatenumberIgnoreCase(eventLog.getPlateNumber()));
+        }
         eventLogRepository.save(eventLog);
     }
 
@@ -392,17 +409,6 @@ public class EventLogServiceImpl implements EventLogService {
         page.setDraw(pagingRequest.getDraw());
 
         return page;
-    }
-
-    private PluginRegister getPluginRegister(String pluginId) {
-        PluginWrapper pluginWrapper = pluginManager.getPlugin(pluginId);
-        if (pluginWrapper != null && pluginWrapper.getPluginState().equals(PluginState.STARTED)) {
-            List<PluginRegister> pluginRegisters = pluginManager.getExtensions(PluginRegister.class, pluginWrapper.getPluginId());
-            if (pluginRegisters.size() > 0) {
-                return pluginRegisters.get(0);
-            }
-        }
-        return null;
     }
 
     private void checkDuplicateAndSetGateName(Long cameraId, Map<String, Object> properties){
