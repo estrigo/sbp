@@ -8,12 +8,9 @@ import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
-import kz.spt.app.repository.CarsRepository;
 import kz.spt.app.repository.EventLogRepository;
 import kz.spt.app.utils.StringExtensions;
 import kz.spt.lib.bootstrap.datatable.*;
-import kz.spt.lib.extension.PluginRegister;
-import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.EventLogSpecification;
 import kz.spt.lib.model.Gate;
@@ -25,10 +22,7 @@ import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.utils.Utils;
 import lombok.extern.java.Log;
-import org.apache.poi.util.StringUtil;
 import org.pf4j.PluginManager;
-import org.pf4j.PluginState;
-import org.pf4j.PluginWrapper;
 import org.pf4j.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -73,17 +67,17 @@ public class EventLogServiceImpl implements EventLogService {
 
     private EventLogRepository eventLogRepository;
 
-    private CarsRepository carsRepository;
+    private CarsService carsService;
 
     private PluginManager pluginManager;
 
     @Value("${telegram.bot.external.enabled}")
     Boolean telegramBotExternalEnabled;
 
-    public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager, CarsRepository carsRepository) {
+    public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager, CarsService carsService) {
         this.eventLogRepository = eventLogRepository;
         this.pluginManager = pluginManager;
-        this.carsRepository = carsRepository;
+        this.carsService = carsService;
     }
 
     @Override
@@ -94,18 +88,18 @@ public class EventLogServiceImpl implements EventLogService {
             checkDuplicateAndSetGateName(objectId, properties);
 
         eventLog.setObjectClass(objectClass);
-        eventLog.setObjectId(objectId);
+
         eventLog.setPlateNumber((properties != null && properties.containsKey("carNumber")) ? (String) properties.get("carNumber") : "");
+        if(StringUtils.isNotNullOrEmpty(eventLog.getPlateNumber())){
+            eventLog.setCar(carsService.createCar(eventLog.getPlateNumber()));
+        }
+        eventLog.setObjectId(objectId);
         eventLog.setStatusType((properties != null && properties.containsKey("type")) ? EventLog.StatusType.valueOf(properties.get("type").toString()) : null);
         eventLog.setEventType((properties != null && properties.containsKey("event")) ? EventLog.EventType.valueOf(properties.get("event").toString()) : null);
         eventLog.setDescription(description);
         eventLog.setDescriptionEn(descriptionEn);
         eventLog.setCreated(new Date());
         eventLog.setProperties(properties != null ? properties : new HashMap<>());
-
-        if(StringUtils.isNotNullOrEmpty(eventLog.getPlateNumber())){
-            eventLog.setCar(carsRepository.findCarsByPlatenumberIgnoreCase(eventLog.getPlateNumber()));
-        }
 
         eventLogRepository.save(eventLog);
     }
@@ -117,9 +111,12 @@ public class EventLogServiceImpl implements EventLogService {
         if(objectClass != null && objectClass.equals("Camera"))
             checkDuplicateAndSetGateName(objectId, properties);
 
+        eventLog.setPlateNumber((properties != null && properties.containsKey("carNumber")) ? (String) properties.get("carNumber") : "");
+        if(StringUtils.isNotNullOrEmpty(eventLog.getPlateNumber())){
+            eventLog.setCar(carsService.createCar(eventLog.getPlateNumber()));
+        }
         eventLog.setObjectClass(objectClass);
         eventLog.setObjectId(objectId);
-        eventLog.setPlateNumber((properties != null && properties.containsKey("carNumber")) ? (String) properties.get("carNumber") : "");
         eventLog.setStatusType((properties != null && properties.containsKey("type")) ? EventLog.StatusType.valueOf(properties.get("type").toString()) : null);
         eventLog.setEventType((properties != null && properties.containsKey("event")) ? EventLog.EventType.valueOf(properties.get("event").toString()) : null);
         eventLog.setDescription(description);
@@ -127,10 +124,6 @@ public class EventLogServiceImpl implements EventLogService {
         eventLog.setCreated(new Date());
         eventLog.setProperties(properties != null ? properties : new HashMap<>());
         eventLog.setEventType(eventType);
-
-        if(StringUtils.isNotNullOrEmpty(eventLog.getPlateNumber())){
-            eventLog.setCar(carsRepository.findCarsByPlatenumberIgnoreCase(eventLog.getPlateNumber()));
-        }
         eventLogRepository.save(eventLog);
     }
 
