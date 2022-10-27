@@ -79,7 +79,7 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
-    public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn) {
+    public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, String descriptionDe) {
         EventLog eventLog = new EventLog();
 
         if(objectClass.equals("Camera"))
@@ -92,13 +92,14 @@ public class EventLogServiceImpl implements EventLogService {
         eventLog.setEventType((properties != null && properties.containsKey("event")) ? EventLog.EventType.valueOf(properties.get("event").toString()) : null);
         eventLog.setDescription(description);
         eventLog.setDescriptionEn(descriptionEn);
+        eventLog.setDescriptionDe(descriptionDe);
         eventLog.setCreated(new Date());
         eventLog.setProperties(properties != null ? properties : new HashMap<>());
         eventLogRepository.save(eventLog);
     }
 
     @Override
-    public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, EventLog.EventType eventType) {
+    public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, String descriptionDe, EventLog.EventType eventType) {
         EventLog eventLog = new EventLog();
 
         if(objectClass.equals("Camera"))
@@ -111,13 +112,14 @@ public class EventLogServiceImpl implements EventLogService {
         eventLog.setEventType((properties != null && properties.containsKey("event")) ? EventLog.EventType.valueOf(properties.get("event").toString()) : null);
         eventLog.setDescription(description);
         eventLog.setDescriptionEn(descriptionEn);
+        eventLog.setDescriptionDe(descriptionDe);
         eventLog.setCreated(new Date());
         eventLog.setProperties(properties != null ? properties : new HashMap<>());
         eventLog.setEventType(eventType);
         eventLogRepository.save(eventLog);
     }
 
-    public void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long id, String plateNumber, String message, String messageEng) {
+    public void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long id, String plateNumber, String message, String messageEng, String messageDe) {
 
         CameraStatusDto cameraStatusDto = StatusCheckJob.findCameraStatusDtoById(id);
         CameraStatusDto cameraStatusDtoByIp = StatusCheckJob.findCameraStatusDtoByIp(cameraStatusDto.ip);
@@ -130,6 +132,7 @@ public class EventLogServiceImpl implements EventLogService {
         node.put("datetime", format.format(new Date()));
         node.put("message", message);
         node.put("messageEng", messageEng);
+        node.put("messageDe", messageDe);
         node.put("plateNumber", plateNumber);
         node.put("id", cameraStatusDtoByIp.id);
         node.put("eventType", eventType.toString());
@@ -287,6 +290,7 @@ public class EventLogServiceImpl implements EventLogService {
                             .plateNumber((m.getProperties().containsKey("region") ? Utils.convertRegion(m.getProperties().get("region").toString()) + " " : "") + m.getNullSafePlateNumber() + (m.getProperties().containsKey("vecihleType") ? " [" + m.getProperties().get("vecihleType").toString() + "]" : ""))
                             .description(m.getNullSafeDescription())
                             .descriptionEn(m.getNullSafeDescriptionEn())
+                            .descriptionDe(m.getNullSafeDescriptionDe())
                             .eventType(type)
                             .gate(gate)
                             .smallImgUrl(m.getProperties().containsKey("carSmallImageUrl") && m.getProperties().get("carSmallImageUrl") != null ? (String) m.getProperties().get("carSmallImageUrl") : "")

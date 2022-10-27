@@ -57,6 +57,8 @@ public class EventLog {
 
     private String descriptionEn;
 
+    private String descriptionDe;
+
     private String plateNumber;
 
     @Enumerated(EnumType.STRING)
@@ -85,6 +87,9 @@ public class EventLog {
 
     public String getNullSafeDescriptionEn() {
         return getDescriptionEn() != null ? this.descriptionEn : "";
+    }
+    public String getNullSafeDescriptionDe() {
+        return getDescriptionDe() != null ? this.descriptionDe : "";
     }
 
 }

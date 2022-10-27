@@ -151,6 +151,7 @@ public class CarStateServiceImpl implements CarStateService {
                     null,
                     properties,
                     "Журнал.Ручное изменение номера, новое значение:" + carState.getCarNumber() + ", старое значение:" + m.getCarNumber() + ", пользователь:" + username,
+                    "Journal.Manual edit number, new value:" + carState.getCarNumber() + ", old value:" + m.getCarNumber() + ", user:" + username,
                     "Journal.Manual edit number, new value:" + carState.getCarNumber() + ", old value:" + m.getCarNumber() + ", user:" + username);
 
             m.setCarNumber(carState.getCarNumber());
@@ -481,7 +482,8 @@ public class CarStateServiceImpl implements CarStateService {
         carState.setRateAmount(rateResult);
         String messageRu = "Ручной выезд Авто с гос. номером " + carState.getCarNumber() + ". Пользователь " + username + " инициировал ручной запуск с парковки " + carState.getParking().getName() + ". Списано с баланса клиента: " + rateResult + ".";
         String messageEn = "Manual pass. Car with license plate " + carState.getCarNumber() + ". User " + username + " initiated manual open gate from parking " + carState.getParking().getName() + ". Deducted from the client's balance: " + rateResult + ".";
-        eventLogService.createEventLog("Rate", null, properties, messageRu, messageEn);
+        String messageDe = "Manual pass. Car with license plate " + carState.getCarNumber() + ". User " + username + " initiated manual open gate from parking " + carState.getParking().getName() + ". Deducted from the client's balance: " + rateResult + ".";
+        eventLogService.createEventLog("Rate", null, properties, messageRu, messageEn, messageDe);
         return carState;
     }
 
