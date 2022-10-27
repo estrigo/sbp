@@ -16,7 +16,7 @@ public class EventLogSpecification {
     }
 
     public static Specification<EventLog> likePlateNumber(String plateNumber) {
-        return (root, query, builder) -> builder.like(root.get(EventLog_.plateNumber), "%" + plateNumber + "%");
+        return (root, query, builder) -> builder.like(root.get(EventLog_.CAR).get(Cars_.PLATENUMBER), "%" + plateNumber + "%");
     }
 
     public static Specification<EventLog> equalGateId(Long gateId){
