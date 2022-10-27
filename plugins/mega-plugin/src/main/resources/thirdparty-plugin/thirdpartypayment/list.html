@@ -37,11 +37,12 @@
 
 <script type="text/javascript">
     //Buttons examples
+    var locale = [[${#locale}]];
     var table = $('#datatable-buttons').DataTable({
         lengthChange: false,
         buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
-            url: '/plugins/datatables/json/ru.json'
+            url: locale==="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json',
         }
     });
 

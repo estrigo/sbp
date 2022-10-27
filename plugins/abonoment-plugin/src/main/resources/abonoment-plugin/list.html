@@ -266,7 +266,7 @@
 
 <script type="text/javascript" th:inline="javascript">
     var locale = [[${#locale}]];
-    var address = '/plugins/datatables/json/ru.json';
+    var address = locale==="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json';
     var paidStatus = [[#{abonoment.paid}]];
     var notPaidStatus = [[#{abonoment.notPaid}]];
     let canEdit = [[${canEdit}]];
