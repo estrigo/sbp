@@ -56,6 +56,8 @@ public class RateController {
         String language = "en";
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
+        } else if (locale.toString().equals("de")) {
+            language = "de";
         }
 
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));

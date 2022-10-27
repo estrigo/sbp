@@ -32,7 +32,7 @@ public class WhitelistPlugin extends SpringBootPlugin implements CustomPlugin {
     @Override
     public List<Map<String, Object>> getLinks(){
         Locale locale = LocaleContextHolder.getLocale();
-        String language = "en";
+        String language = locale.toString().equals("de") ? "de" : "en";
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
         }
