@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
 
-    @Query("from Transaction t where t.plateNumber = ?1 and t.date >= ?2")
+    @Query("from Transaction t where t.car.platenumber = ?1 and t.date >= ?2")
     List<Transaction> findAllByPlateNumberAndDateAfter(String plateNumber, Date date);
 
 }

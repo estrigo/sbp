@@ -1,5 +1,6 @@
 package kz.spt.billingplugin.model;
 
+import kz.spt.lib.model.Cars;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,11 +17,13 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
-@Table(name = "transaction")
+@Table(name = "transaction", indexes = {
+        @Index(name = "date_idx", columnList = "date")
+})
 public class Transaction {
 
     public Transaction(String plateNumber, BigDecimal amount, Long carStateId, String description, String descriptionRu,
-                       String provider, BigDecimal remainder){
+                       String provider, BigDecimal remainder, Cars car){
         this.plateNumber = plateNumber;
         this.amount = amount;
         this.carStateId = carStateId;
@@ -29,6 +32,7 @@ public class Transaction {
         this.date = new Date();
         this.provider = provider;
         this.remainder = remainder;
+        this.car = car;
     }
 
     @Id
@@ -38,6 +42,10 @@ public class Transaction {
 
     @Column(name = "plate_number")
     String plateNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "car")
+    private Cars car;
 
     @Column ( name="AMOUNT", precision = 8, scale = 2 )
     private BigDecimal amount;

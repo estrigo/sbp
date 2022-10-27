@@ -1,5 +1,6 @@
 package kz.spt.billingplugin.model;
 
+import kz.spt.lib.model.Cars_;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
@@ -16,7 +17,7 @@ public class TransactionSpecification {
     }
 
     public static Specification<Transaction> likePlateNumber(String plateNumber) {
-        return (root, query, builder) -> builder.like(root.get(Transaction_.plateNumber), "%" + plateNumber + "%");
+        return (root, query, builder) -> builder.like(root.get(Transaction_.CAR).get(Cars_.PLATENUMBER), "%" + plateNumber + "%");
     }
 
     public static Specification<Transaction> equalAmount(Integer amount) {

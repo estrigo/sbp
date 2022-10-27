@@ -12,4 +12,5 @@ public interface RootServicesGetterService {
     PaymentProviderRepository getPaymentProviderRepository();
     PaymentCheckLogService getPaymentCheckLogService();
     AdminService getAdminService();
+    CarsService getCarService();
 }
