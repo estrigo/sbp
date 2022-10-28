@@ -1,23 +1,25 @@
 package kz.spt.app.controller;
 
 import kz.spt.app.service.GateService;
-import kz.spt.lib.model.Gate;
+import kz.spt.lib.service.AdminService;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.model.dto.EventFilterDto;
+import kz.spt.reportplugin.controller.ReportNameEnum;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/events")
@@ -27,10 +29,12 @@ public class EventController {
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
     private EventLogService eventLogService;
     private GateService gateService;
+    private AdminService adminService;
 
-    public EventController(EventLogService eventLogService, GateService gateService){
+    public EventController(EventLogService eventLogService, GateService gateService, AdminService adminService){
         this.eventLogService = eventLogService;
         this.gateService = gateService;
+        this.adminService = adminService;
     }
 
     @GetMapping("/list")
@@ -58,11 +62,34 @@ public class EventController {
     }
 
     @PostMapping("/list")
-    public String processRequestSearch(Model model, @Valid @ModelAttribute("eventFilterDto") EventFilterDto eventFilterDto, BindingResult bindingResult) throws ParseException {
+    public String processRequestSearch(Model model, @Valid @ModelAttribute("eventFilterDto") EventFilterDto eventFilterDto,
+                                       BindingResult bindingResult) throws Exception {
         if (!bindingResult.hasErrors()) {
             model.addAttribute("eventFilterDto", eventFilterDto);
         }
         model.addAttribute("allGates", gateService.listAllGates());
         return "events/list";
     }
+
+    @PostMapping("/excel")
+    public void downloadEventsFile(@Valid @ModelAttribute("eventFilterDto") EventFilterDto eventFilterDto,
+                                   HttpServletResponse response) throws Exception {
+        byte[] bytes;
+        ReportNameEnum name = ReportNameEnum.EVENTS;
+        String format = "XLSX";
+
+        List<?> list = eventLogService.getEventExcel(eventFilterDto);
+
+        bytes = adminService.report(list, name.name(), format);
+
+        response.setContentType("application/octet-stream");
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename = "
+                .concat(UUID.randomUUID().toString()).concat(".").concat(format.toLowerCase());
+        response.setHeader(headerKey, headerValue);
+        ServletOutputStream outputStream = response.getOutputStream();
+        outputStream.write(bytes);
+        outputStream.close();
+    }
+
 }

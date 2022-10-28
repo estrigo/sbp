@@ -75,7 +75,7 @@ public class ThirdPartyPaymentServiceImpl implements ThirdPartyPaymentService {
             } else {
                 thirdPartyPayment.setSent(false);
             }
-            thirdPartyPaymentRepository.save(thirdPartyPayment);
+            thirdPartyPaymentRepository.saveAndFlush(thirdPartyPayment);
         }
     }
 
