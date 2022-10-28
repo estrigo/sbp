@@ -4,6 +4,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "dimensions")
@@ -31,6 +32,18 @@ public class Dimensions {
         this.updatedTime = updatedTime;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Dimensions that = (Dimensions) o;
+        return Objects.equals(id, that.id) && Objects.equals(carClassification, that.carClassification) && Objects.equals(updatedBy, that.updatedBy) && Objects.equals(updatedTime, that.updatedTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, carClassification, updatedBy, updatedTime);
+    }
 
     public Long getId() {
         return id;

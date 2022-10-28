@@ -1,9 +1,12 @@
 package kz.spt.rateplugin.model;
 
-import lombok.*;
+import kz.spt.lib.model.Dimensions;
+import lombok.Data;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -14,8 +17,10 @@ public class IntervalRate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column
     private String datetimeFrom;
 
+    @Column
     private String datetimeTo;
 
     @OneToMany(mappedBy = "intervalRate", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -23,4 +28,12 @@ public class IntervalRate {
 
     @ManyToOne(fetch = FetchType.EAGER)
     private ParkingRate parkingRate;
+
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "intervalRate_Dimensions",
+            joinColumns = @JoinColumn(name = "interval_rate_id"),
+            inverseJoinColumns = @JoinColumn(name = "dimensions_id")
+    )
+    private Set<Dimensions> dimensionSet = new HashSet<>();
 }

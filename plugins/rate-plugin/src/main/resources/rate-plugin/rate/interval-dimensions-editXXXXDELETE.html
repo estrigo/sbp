@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+</head>
+<body>
+
+<div layout:fragment="content">
+  <form action="#" class="form-horizontal"
+        th:action="@{/rate-dimensions/interval-add}"
+        th:object="${intervalRate}"
+        method="post">
+    <fieldset>
+                		<span class="pull-right">
+						    <input type="submit" id="submitButton" class="btn btn-danger" th:value="Сохранить">
+					</span>
+      <br/>
+      <br/>
+
+      <div class="input-group mb-3 w-50">
+        <select class="form-select" multiple aria-label="multiple select example" th:field="*{dimensionSet}">
+          <option value="">-</option>
+          <option th:each="d : ${dimensions}"
+                  th:value="${d.id}"
+                  th:utext="${d.carClassification}">
+          </option>
+        </select>
+      </div>
+    </fieldset>
+  </form>
+</div>
+</body>
+</html>

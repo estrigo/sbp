@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<meta name="viewport" content="width=device-width"/>
+<div class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header"><b th:text="#{rate.intervalConfiguration}"></b></div>
+          <div class="card-body">
+            <div id="interval" class="row">
+              <div class="form-group">
+                <th:block th:each="intervalRate, ind : ${intervalRates}">
+                  <div class="card">
+                    <div class="card-header" id="headingTwo">
+                      <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                th:attr="data-target='#accordion_'+${ind.index}"
+                                aria-expanded="false" aria-controls="collapseTwo">
+                          <table class="table table-hover w-auto">
+                            <thead>
+                            <tr>
+                              <th></th>
+                              <th th:text="'#'"></th>
+                              <th th:text="#{rate.intervalFrom}"></th>
+                              <th th:text="#{rate.intervalUntil}"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                              <td><i class="fa fa-plus-square"></i></td>
+                              <td><a th:text="${ind.index} + 1"></a></td>
+                              <td><label>
+                                <input th:readonly="1==1" type="time" th:value="${intervalRate.getDatetimeFrom()}"/>
+                              </label></td>
+                              <td><label style="width: 100px">
+                                <input th:readonly="1==1" type="time" th:value="${intervalRate.getDatetimeTo()}"/>
+                              </label></td>
+                              <td>
+                                <form th:action="@{/rate-dimensions/interval-delete}" th:object="${intervalRate}" method="post">
+                                  <input type="hidden" name="id" th:value="${intervalRate.getId()}">
+                                  <button type="submit" class="btn btn-warning waves-effect">Удалить</button>
+                                </form>
+                              </td>
+                            </tr>
+                            </tbody>
+                          </table>
+                        </button>
+                      </h5>
+                    </div>
+                    <div th:id="'accordion_'+${ind.index}" class="collapse" aria-labelledby="headingTwo"
+                         data-parent="#interval">
+                      <div class="card-body">
+                        <table class="table table-hover w-auto">
+                          <thead>
+                          <tr>
+                            <th th:text="#{rate.accrualType}"></th>
+                            <th th:text="#{rate.sumOnline}"></th>
+                            <th th:text="#{rate.sumParkomat}"></th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                          <div th:each="rateCondition, mindex : ${intervalRate.getRateConditions()}">
+                            <tr>
+                              <td>
+                                <input th:if="(${rateCondition.getIntervalType().name()}!='allNext'
+                                                                        and ${rateCondition.getIntervalType().name()}!='entrance')"
+                                       type="number" style="width: auto;"
+                                       th:disabled="1==1"
+                                       th:value="${rateCondition.getStanding()}"/>
+                                <select th:disabled="1==1">
+                                  <option th:text="${rateCondition.getIntervalType()}"></option>
+                                </select>
+                              </td>
+                              <td><input disabled
+                                         th:value="${rateCondition.getOnlineRate()}"/></td>
+                              <td><input th:disabled="1==1"
+                                         th:value="${rateCondition.getParkomatRate()}"/></td>
+                              <form th:action="@{/rate/rateCon-delete}" th:object="${rateCondition}" method="post">
+                                <td th:if="${intervalRate.getRateConditions().size()}==(${mindex.index}+1)">
+                                  <input type="hidden" name="id" th:value="${rateCondition.getId()}">
+                                  <input type="submit" th:value="'Удалить'">
+                                </td>
+                                <input type="hidden" name="intervalRate.parkingRate.id" th:value="${parkingRate.getId()}">
+                              </form>
+                              <td>
+                                <input type="hidden" id="check22" th:value="'true'"/>
+                              </td>
+                              <td>
+                                <input type="hidden" th:name="|list(${mindex.index}).id|" th:value="${rateCondition.getId()}"/>
+                              </td>
+                            </tr>
+                            <tr th:if="(${intervalRate.getRateConditions().size()}==(${mindex.index}+1) or
+                                                        ${rateCondition.getStanding()}==null or
+                                                        ${intervalRate.getRateConditions()}==null) and
+                                                        ${rateCondition.getIntervalType().name()}!='allNext' and
+                                                        ${rateCondition.getIntervalType().name()}!='entrance'">
+                              <form th:action="@{/rate/rateCon-add}" th:object="${rateCondition}" method="post">
+                                <input type="hidden" name="intervalRate.id" th:value="${intervalRate.getId()}">
+                                <td>
+                                  <input type="number" name="standing">
+                                  <select name="intervalType">
+                                    <option th:each="intervalType : ${IntervalType}"
+                                            th:value="${intervalType}" th:text="${intervalType}">
+                                    </option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <input type="number" name="onlineRate">
+                                </td>
+                                <td>
+                                  <input type="number" name="parkomatRate">
+                                </td>
+                                <td>
+                                  <input type="submit" th:value="'Добавить'">
+                                </td>
+                              </form>
+                            </tr>
+                          </div>
+                          <tr th:if="${intervalRate.getRateConditions().size()}<1">
+                            <form th:action="@{/rate/rateCon-add}" th:object="${rateCondition}" method="post">
+                              <input type="hidden" name="intervalRate.id" th:value="${intervalRate.getId()}">
+                              <td>
+                                <input type="number" name="standing">
+                                <select name="intervalType">
+                                  <option th:each="intervalType : ${IntervalType}"
+                                          th:value="${intervalType}" th:text="${intervalType}">
+                                  </option>
+                                </select>
+                              </td>
+                              <td>
+                                <input type="number" name="onlineRate">
+                              </td>
+                              <td>
+                                <input type="number" name="parkomatRate">
+                              </td>
+                              <td>
+                                <input type="submit" th:value="'Добавить'">
+                              </td>
+                            </form>
+                          </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </th:block>
+                <form th:action="@{/rate-dimensions/interval-add}" th:object="${intervalRate}" method="post">
+                  <div class="form-group row">
+                    <input type="hidden" name="parkingRate.id" th:value="${parkingRate.getId()}">
+                    <td>
+                      <label class="col-form-label" th:text="#{camera.startTime}">
+                      </label>
+                      <div class="col-10">
+                        <input type="time" th:field="${intervalRate.datetimeFrom}" th:value="${intervalRate.datetimeFrom}"/>
+                      </div>
+                    </td>
+                    <td>
+                      <label class="col-form-label" th:text="#{camera.endTime}">
+                      </label>
+                      <div class="col-10">
+                        <input type="time" th:field="${intervalRate.datetimeTo}" th:value="${intervalRate.datetimeTo}"/>
+                      </div>
+                    </td>
+                  </div>
+                  <select class="form-control" th:field="*{dimensionSet}" multiple="multiple">
+                    <option th:each="d : ${dimensions}"
+                            th:field="*{dimensionSet}"
+                            th:value="${d.id}"
+                            th:text="${d.carClassification}">Part name</option>
+                  </select>
+<!--                  <div class="form-group row">
+                    <label class="col-3 col-form-label" th:text="#{carmodel.type}"></label>
+                    <select class="form-select" multiple aria-label="multiple select example" th:field="*{dimensionSet}">
+                      <option value="" th:text="#{rate.Type.Select.DIMENSIONS}" ></option>
+                      <option th:each="r : ${dimensions}"
+                              th:value="${r.id}"
+                              th:text="${r.carClassification}">
+                      </option>
+                    </select>
+                  </div>-->
+                  <button type="submit" class="btn btn-primary waves-effect">Добавить</button>
+                </form>
+              </div>
+            </div>
+            <input id="parkingId" type="hidden" th:field="*{parkingRate.parking.id}" th:value="*{parkingRate.parking.id}">
+            <form th:action="@{|/rate-dimensions/edit/${parkingRate.parking.id}|}" th:object="${parkingRate}" method="get">
+              <button type="submit" class="btn btn-info waves-effect waves-light" th:text="#{rate.backToSettings}"></button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+
+  $('tr').on('shown.bs.collapse', function(){
+    $(this).prev('i').find(".fa-plus-square").removeClass("fa-plus-square").addClass("fa-minus-square");
+  }).on('hidden.bs.collapse', function(){
+    $(this).prev('i').find(".fa-minus-square").removeClass("fa-minus-square").addClass("fa-plus-square");
+  });
+
+  $(".accordion-toggle").on("click", function () {
+    if($(this).find(".fa").hasClass("fa-plus-square")) {
+      $(this).find(".fa").removeClass("fa-plus-square").addClass("fa-minus-square");
+    } else {
+      $(this).find(".fa").removeClass("fa-minus-square").addClass("fa-plus-square");
+    }
+  });
+
+</script>
