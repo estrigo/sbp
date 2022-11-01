@@ -795,7 +795,7 @@ public class CarEventServiceImpl implements CarEventService {
                                     hasAccess = checkWhiteList(eventDto, camera, properties, whitelistCheckResults, true);
                                 }
                             } else {
-                                hasAccess = checkWhiteList(eventDto, camera, properties, whitelistCheckResults, true);
+                                hasAccess = false;
                             }
                         } else {
                             hasAccess = true;

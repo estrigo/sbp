@@ -66,7 +66,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/customer/edit/**", "/users/**", "/cars/edit/**","/parking/edit/**","/parking/details/**").hasAnyRole( "ADMIN", "MANAGER")
                 .antMatchers("/parking/**").hasAnyRole("ADMIN", "OPERATOR_NO_REVENUE_SHARE", "READ")
                 .antMatchers("/rest/external/**").fullyAuthenticated()
-                .antMatchers("/admin-place/**").fullyAuthenticated();
+                .antMatchers("/admin-place/**").fullyAuthenticated()
+                .antMatchers("/blacklist/**").fullyAuthenticated();
 
         List<PluginWrapper> plugins = pluginManager.getPlugins();
 
