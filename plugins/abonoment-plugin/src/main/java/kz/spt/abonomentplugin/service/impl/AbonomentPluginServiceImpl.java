@@ -399,7 +399,20 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             newAbonement.setMonths(expiring.getMonths());
             newAbonement.setPaidType(expiring.getPaidType());
             newAbonement.setPrice(expiring.getPrice());
-            newAbonement.setPaid(false);
+
+            try {
+                BigDecimal balance = rootServicesGetterService.getBalance(expiring.getCar().getPlatenumber());
+                if(balance.compareTo(expiring.getPrice()) >= 0){
+                    rootServicesGetterService.decreaseBalance(expiring.getCar().getPlatenumber(), expiring.getPrice(), expiring.getParking().getName());
+                    newAbonement.setPaid(true);
+                }
+            } catch (Exception e){
+                log.warning("Ошибка проверки баланса");
+                newAbonement.setPaid(false);
+            }
+
+
+
             newAbonement.setBegin(begin.getTime());
             begin.add(Calendar.DATE, expiring.getMonths());
             newAbonement.setEnd(begin.getTime());
