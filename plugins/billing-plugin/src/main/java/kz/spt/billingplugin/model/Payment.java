@@ -1,5 +1,6 @@
 package kz.spt.billingplugin.model;
 
+import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.Customer;
 import kz.spt.lib.model.Parking;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,9 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
-@Table(name = "payments")
+@Table(name = "payments", indexes = {
+        @Index(name = "created_idx", columnList = "created")
+})
 public class Payment {
 
     @Id
@@ -41,6 +44,10 @@ public class Payment {
     @ManyToOne
     @JoinColumn(name = "parking_id")
     private Parking parking;
+
+    @ManyToOne
+    @JoinColumn(name = "car")
+    private Cars car;
 
     @ManyToOne
     @JoinColumn(name = "customer_id")

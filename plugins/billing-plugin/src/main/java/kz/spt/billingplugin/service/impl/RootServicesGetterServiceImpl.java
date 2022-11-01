@@ -18,6 +18,8 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     private PaymentCheckLogService paymentCheckLogService;
     private AdminService adminService;
 
+    private CarsService carsService;
+
     @Override
     public ParkingService getParkingService() {
         if(this.parkingService == null){
@@ -66,5 +68,13 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
             adminService = (AdminService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("adminServiceImpl");
         }
         return this.adminService;
+    }
+
+    @Override
+    public CarsService getCarService() {
+        if(this.carsService == null){
+            carsService = (CarsService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("carsServiceImpl");
+        }
+        return carsService;
     }
 }

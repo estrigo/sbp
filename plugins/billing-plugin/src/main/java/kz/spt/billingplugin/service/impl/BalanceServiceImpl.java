@@ -68,11 +68,10 @@ public class BalanceServiceImpl implements BalanceService {
             balance.setPlateNumber(plateNumber);
             balance.setBalance(value);
         }
-        ;
         Balance savedBalance = balanceRepository.save(balance);
 
         Transaction transaction = new Transaction(plateNumber, value, carStateId, description, descriptionRu,
-                provider, getBalance(plateNumber));
+                provider, getBalance(plateNumber), rootServicesGetterService.getCarService().findByPlatenumber(plateNumber));
         transactionRepository.save(transaction);
 
         return savedBalance.getBalance();
