@@ -4,7 +4,6 @@ import kz.spt.app.service.GateService;
 import kz.spt.lib.service.AdminService;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.model.dto.EventFilterDto;
-import kz.spt.reportplugin.controller.ReportNameEnum;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -75,12 +74,11 @@ public class EventController {
     public void downloadEventsFile(@Valid @ModelAttribute("eventFilterDto") EventFilterDto eventFilterDto,
                                    HttpServletResponse response) throws Exception {
         byte[] bytes;
-        ReportNameEnum name = ReportNameEnum.EVENTS;
         String format = "XLSX";
 
         List<?> list = eventLogService.getEventExcel(eventFilterDto);
 
-        bytes = adminService.report(list, name.name(), format);
+        bytes = adminService.report(list, "EVENTS", format);
 
         response.setContentType("application/octet-stream");
         String headerKey = "Content-Disposition";
