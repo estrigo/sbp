@@ -48,6 +48,8 @@ public class RateController {
         }
         model.addAttribute("parkingRate", parkingRate);
         model.addAttribute("currencyTypes", ParkingRate.CurrencyType.values());
+        model.addAttribute("dimensionsList", dimensionsService.findAll()); //dlya testov
+        model.addAttribute("intervalRate", new IntervalRate()); //dlya testov
         model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
         return "/rate/edit";
     }
