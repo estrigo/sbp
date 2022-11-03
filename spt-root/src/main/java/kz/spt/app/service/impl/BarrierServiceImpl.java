@@ -526,12 +526,15 @@ public class BarrierServiceImpl implements BarrierService {
             snmpManager = new SNMPManager("udp:" + ip + "/161", password, version);
             snmpManagerMap.put(ip, snmpManager);
         }
-
         try {
-            snmpManager.close();
             snmpManager.start();
-        } catch (IOException | ParseException e) {
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            try {
+                snmpManager.close();
+                snmpManager.start();
+            } catch (IOException | ParseException e1) {
+                throw new RuntimeException(e1);
+            }
         }
         return snmpManager;
     }
