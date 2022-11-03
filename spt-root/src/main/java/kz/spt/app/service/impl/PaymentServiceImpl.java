@@ -570,6 +570,7 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("inDate", format.format(rateQueryDto.inDate));
             node.put("outDate", format.format(rateQueryDto.outDate));
             node.put("cashlessPayment", rateQueryDto.cashlessPayment);
+            node.put("carType", rateQueryDto.dimensionId); //ans dobavil
             JsonNode result = ratePluginRegister.execute(node);
             return result.get("rateResult").decimalValue().setScale(2);
         }

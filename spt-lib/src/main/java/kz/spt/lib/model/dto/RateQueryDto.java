@@ -15,4 +15,6 @@ public class RateQueryDto {
     public Date outDate;
 
     public Boolean cashlessPayment;
+
+    public Long dimensionId;
 }

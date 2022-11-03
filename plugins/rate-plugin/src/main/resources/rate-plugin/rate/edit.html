@@ -297,6 +297,7 @@
                                                                 <th th:text="'#'"></th>
                                                                 <th th:text="#{rate.intervalFrom}"></th>
                                                                 <th th:text="#{rate.intervalUntil}"></th>
+                                                                <th th:text="#{rate.typeOfDimension}"></th>
                                                             </tr>
                                                             </thead>
                                                             <tbody>
@@ -305,6 +306,9 @@
                                                                 <td><a th:text="${ind.index} + 1"></a></td>
                                                                 <td><a th:text="${intervalRate.getDatetimeFrom()}"></a></td>
                                                                 <td><a th:text="${intervalRate.getDatetimeTo()}"></a></td>
+                                                                <td><a th:each="intRateDim : ${intervalRate.getDimensionSet()}"
+                                                                       th:text="${intRateDim.carClassification}"
+                                                                       th:value="${intRateDim.id}"></a></td>
                                                             </tr>
                                                             </tbody>
                                                         </table>
@@ -462,11 +466,11 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <div th:each="d : ${dimensionsList}">
-                                        <input type="checkbox"
-                                               th:value="${d.id}" />
-                                        <label th:text="${d.carClassification}">example</label>
-                                    </div>
+                                    <select id="dimensionId"  class="form-control">
+                                        <option th:each="d : ${dimensionsList}"
+                                                th:text="${d.carClassification}"
+                                                th:value="${d.id}"></option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -704,12 +708,16 @@
         let inDate = $('#inDate').val();
         let outDate = $('#outDate').val();
         let cashlessPayment = $('#cashlessPayment').is(":checked");
+        // console.log(dimensionCheck + " there are dimension");
+        // console.log($('#dimensionCheck').val() + " there are dimension2");
+        // console.log(dimensionCheck.val() + " there are dimension3");
         if(inDate && outDate){
             let body = {
                 'inDate': inDate,
                 'outDate': outDate,
                 'cashlessPayment': cashlessPayment,
-                'parkingId': $('#parkingId').val()
+                'parkingId': $('#parkingId').val(),
+                'dimensionId': $('#dimensionId').val()
             }
 
             console.log(body)

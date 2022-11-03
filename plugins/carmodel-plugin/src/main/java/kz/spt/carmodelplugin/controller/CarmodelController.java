@@ -1,6 +1,7 @@
 package kz.spt.carmodelplugin.controller;
 
 import kz.spt.carmodelplugin.service.CarDimensionsService;
+//import kz.spt.carmodelplugin.service.CarModelFileServices;
 import kz.spt.carmodelplugin.service.CarmodelService;
 import kz.spt.carmodelplugin.viewmodel.CarmodelDto;
 import kz.spt.lib.model.CarModel;
@@ -16,6 +17,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.util.StringUtils;
 
 import javax.validation.Valid;
@@ -30,14 +33,16 @@ public class CarmodelController {
 
     private CarmodelService carmodelService;
     private CarDimensionsService carDimensionsService;
-
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
+//    private CarModelFileServices carModelFileServices;
 
     public CarmodelController(CarmodelService carmodelService,
-                              CarDimensionsService carDimensionsService)
+                              CarDimensionsService carDimensionsService/*,
+                              CarModelFileServices carModelFileServices*/)
     {
         this.carmodelService = carmodelService;
         this.carDimensionsService = carDimensionsService;
+//        this.carModelFileServices = carModelFileServices;
     }
 
     @GetMapping("/list")
@@ -59,13 +64,48 @@ public class CarmodelController {
         return "carmodel/list";
     }
 
+    @PostMapping("/configure/list")
+    public String uploadMultipartFile(@RequestParam("uploadfile") MultipartFile file,
+                                      Model model, RedirectAttributes redirectAttributes,
+                                      @Valid Dimensions selectedDimension,
+                                      @AuthenticationPrincipal UserDetails currentUser) {
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        if (locale.toString().equals("ru")) {
+            language = "ru-RU";
+        }
 
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
+        try {
+//            carModelFileServices.store(file, selectedDimension, currentUser);
+            redirectAttributes.addAttribute("fileUploadResult", bundle.getString("whitelist.uploadSuccess"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addAttribute("fileUploadResult", bundle.getString("whitelist.uploadFail") + " " + file.getOriginalFilename());
+        }
+
+        return "redirect:/whitelist/list";
+    }
+
+    /*@PostMapping("/configure/list")
+    public String uploadMultipartFile(
+            @RequestParam("uploadfile") MultipartFile file,
+            Model model,
+            @Valid Dimensions selectedDimension,
+            BindingResult bindingResult,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        Locale locale = LocaleContextHolder.getLocale();
+        String language = "en";
+        return "carmodel/list";
+    }*/
     @GetMapping("/configure/car")
     public String configureOfCarModel(Model model, @AuthenticationPrincipal UserDetails currentUser,
                                       @PageableDefault(size = 10,
                                               sort = {"model", "type"}) Pageable pageable) {
         model.addAttribute("carModels", carmodelService.findAllUsersPageable(pageable));
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
+        model.addAttribute("dimensionList", carDimensionsService.listDimensions());
+        model.addAttribute("dimensions", new Dimensions());
         return "carmodel/configure";
     }
 

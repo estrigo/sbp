@@ -31,7 +31,7 @@ public class IntervalRate {
 
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(
-            name = "intervalRate_Dimensions",
+            name = "interval_rate_dimensions",
             joinColumns = @JoinColumn(name = "interval_rate_id"),
             inverseJoinColumns = @JoinColumn(name = "dimensions_id")
     )

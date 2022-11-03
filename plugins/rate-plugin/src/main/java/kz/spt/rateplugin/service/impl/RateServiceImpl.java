@@ -251,7 +251,6 @@ public class RateServiceImpl implements RateService {
             double inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY) + (double) inCalendar.get(Calendar.MINUTE) / 60;
             IntervalRate current = getSatisfiedIntervalRate(inCalendarHour, parkingRate);
             if (current == null) current = jsonIntervalParser(parkingRate, inCalendarHour, isDimensions, Long.valueOf(carType));
-            //tut askhat predlojil razdelit
             Iterator<RateCondition> conditionIterator = rateConditionRepository.findAllByIntervalRateId(
                     current.getId()).iterator();
             String[] hourMin = current.getDatetimeFrom().split(":");
@@ -306,7 +305,6 @@ public class RateServiceImpl implements RateService {
                 }
                 if (cashlessPayment) {
                     result = result.add(BigDecimal.valueOf(intervalOnlineHours));
-                    System.out.println(result);
                 } else {
                     result = result.add(BigDecimal.valueOf(intervalParkomatHours));
                 }
@@ -550,7 +548,6 @@ public class RateServiceImpl implements RateService {
 }
 
     private IntervalRate getCountRate(IntervalRate ir, double inCalendarHour, IntervalRate returnRate) {
-        System.out.println(ir.getId() + " getId" + ir.getDimensionSet().size());
         String[] hourMinFrom = ir.getDatetimeFrom().split(":");
         int hour = Integer.parseInt(hourMinFrom[0]);
         int mins = 0;

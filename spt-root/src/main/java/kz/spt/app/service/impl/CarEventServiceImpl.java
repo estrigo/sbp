@@ -923,15 +923,12 @@ public class CarEventServiceImpl implements CarEventService {
                 carModel = carModelRepository.getByModel(eventDto.car_model);
             }
             String dimension;
-            if (carModel != null && carModel.getDimensions().getId() == 1) {
-                dimension = "легковой";
-            } else if (carModel != null && carModel.getDimensions().getId() == 2) {
-                dimension = "микро автобус";
-            } else if (carModel != null && carModel.getDimensions().getId() == 3) {
-                dimension = "грузовик";
+            if(carModel != null && carModel.getDimensions().getId() != null) {
+                dimension = carModel.getDimensions().getCarClassification();
             } else {
                 dimension = "не распознан";
             }
+
             eventWithDimensionRu = ", габарит: " + dimension;
             eventWithDimensionEn = ", dimension: " + dimension;
         }

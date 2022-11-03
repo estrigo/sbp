@@ -16,6 +16,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,12 +61,10 @@ public class RateDimensionsController {
         Object rejectedValue = ((FieldError) objectError).getRejectedValue();
         String s = rejectedValue.toString();
         String[] output = s.split(",");
-        System.out.println(output.length);       // 3
         Set<Dimensions> dimensionsSet = new HashSet<>();
         for (String s1 : output) {
             Dimensions byId = dimensionsService.findById(s1);
             dimensionsSet.add(byId);
-            System.out.println(dimensionsSet);
         }
         newInterval.setDimensionSet(dimensionsSet);
         rateService.saveIntervalRate(newInterval);
@@ -95,7 +94,7 @@ public class RateDimensionsController {
             parkingRate.setParking(parking);
         }
         model.addAttribute("parkingRate", parkingRate);
-        model.addAttribute("intervalRate", new IntervalRate());
+        m odel.addAttribute("intervalRate", new IntervalRate());
         model.addAttribute("IntervalType", RateCondition.IntervalType.values());
         model.addAttribute("dimensions", dimensionsService.findAll());
         model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
