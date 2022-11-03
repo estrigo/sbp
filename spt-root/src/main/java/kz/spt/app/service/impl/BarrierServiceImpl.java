@@ -168,7 +168,7 @@ public class BarrierServiceImpl implements BarrierService {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null,
                         "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + ((String) properties.get("carNumber") != null ? " для номер авто " + (String) properties.get("carNumber") : ""),
                         "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""),
-                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " to open" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""));
+                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " zu öffnen" + ((String) properties.get("carNumber") != null ? " für Kennzeichen " + (String) properties.get("carNumber") : ""));
                 result = false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
                 if (barrier.isImpulseSignal()) {
@@ -197,7 +197,7 @@ public class BarrierServiceImpl implements BarrierService {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null,
                         "Для принятия сигнала с шлагбаума нужно настроит тип (SNMP, MODBUS, JETSON) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + ((String) properties.get("carNumber") != null ? " для номер авто " + (String) properties.get("carNumber") : ""),
                         "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""),
-                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " to open" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""));
+                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " zu öffnen" + ((String) properties.get("carNumber") != null ? " für Kennzeichen " + (String) properties.get("carNumber") : ""));
                 return false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
                 return snmpGetValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
@@ -221,7 +221,7 @@ public class BarrierServiceImpl implements BarrierService {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null,
                         "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы закрыть" + ((String) properties.get("carNumber") != null ? " для номер авто " + (String) properties.get("carNumber") : ""),
                         "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to close" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""),
-                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " to open" + ((String) properties.get("carNumber") != null ? " for car number " + (String) properties.get("carNumber") : ""));
+                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " zu öffnen" + ((String) properties.get("carNumber") != null ? " für Kennzeichen " + (String) properties.get("carNumber") : ""));
                 return false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
                 if (barrier.isImpulseSignal()) {
@@ -246,7 +246,7 @@ public class BarrierServiceImpl implements BarrierService {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null,
                         "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""),
                         "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open" + (carNumber != null ? " for car number " + carNumber : ""),
-                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " to open" + (carNumber != null ? " for car number " + carNumber : ""));
+                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " zu öffnen" + (carNumber != null ? " für Kennzeichen " + carNumber : ""));
                 result = false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.type)) {
                 if (barrier.impulseSignal) {
@@ -271,7 +271,7 @@ public class BarrierServiceImpl implements BarrierService {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null,
                         "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы закрыть" + (carNumber != null ? " для номер авто " + carNumber : ""),
                         "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to close" + (carNumber != null ? " for car number " + carNumber : ""),
-                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " to open" + (carNumber != null ? " for car number " + carNumber : ""));
+                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " to close" + (carNumber != null ? " für Kennzeichen " + carNumber : ""));
                 return false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.type)) {
                 if (barrier.impulseSignal) {
@@ -328,7 +328,7 @@ public class BarrierServiceImpl implements BarrierService {
                     eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null,
                             "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 1 чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""),
                             "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""),
-                            "Schrankensteuerung" + (Gate.GateType.IN.equals(gate.gateType) ? "eintrag" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
+                            "Schrankensteuerung" + (Gate.GateType.IN.equals(gate.gateType) ? "eintrag" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " konnte nicht auf 1 für Eröffnung ändern " + (carNumber != null ? " für Kennzeichen " + carNumber : ""));
                 }
             }
             if ((Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType)) && isOpenValueChanged) {
@@ -386,7 +386,7 @@ public class BarrierServiceImpl implements BarrierService {
                     eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null,
                             "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 1 чтобы открыть" + (carNumber != null ? " для номер авто " + carNumber : ""),
                             "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""),
-                            "Schrankensteuerung" + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1 for opening " + (carNumber != null ? " for car number " + carNumber : ""));
+                            "Schrankensteuerung" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " konnte nicht auf 1 für Eröffnung ändern " + (carNumber != null ? " für Kennzeichen " + carNumber : ""));
                 }
             }
             if (isOpenValueChanged) {

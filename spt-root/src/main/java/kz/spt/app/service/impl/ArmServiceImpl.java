@@ -126,7 +126,7 @@ public class ArmServiceImpl implements ArmService {
                     }
                     String descriptionRu = "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
                     String descriptionEn = "Manual opening gate: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
-                    String descriptionDe = "Manuelles Öffnen des Tores: Benutzer"+ username + " geöffnetes Tor für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
+                    String descriptionDe = "Manuelles Öffnen des Tores: Benutzer"+ username + " geöffnetes Tor für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "einfahrt" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName();
                     eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", descriptionRu, descriptionEn, descriptionDe);
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, descriptionDe);
                 }
@@ -229,7 +229,7 @@ public class ArmServiceImpl implements ArmService {
 
                         String description = "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName() + " Причина: " + reason;
                         String descriptionEn = "Manual opening gate: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName() + " Reason: " + reason;
-                        String descriptionDe = "Manuelles Öffnen des Tores: Benutzer"+ username + " geöffnetes Tor für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
+                        String descriptionDe = "Manuelles Öffnen des Tores: Benutzer"+ username + " geöffnetes Tor für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "einfahrt" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName() + " Reason: " + reason;
                         eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), debtPlatenumber, description, descriptionEn, descriptionDe);
                         eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, descriptionDe);
 
@@ -299,7 +299,7 @@ public class ArmServiceImpl implements ArmService {
                     }
                     String descriptionRu = "Ручное закрытие шлагбаума: Пользователь " + username + " закрыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
                     String descriptionEn = "Manual closing gate: User " + username + " closed gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
-                    String descriptionDe = "Manual closing gate: User " + username + " closed gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
+                    String descriptionDe = "Manuelles Schließen des Tores: Benutzer " + username + " schloss die Barriere für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "einfahrt" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName();
 
                     eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", descriptionRu, descriptionEn, descriptionDe);
                     eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, descriptionDe);
@@ -416,7 +416,7 @@ public class ArmServiceImpl implements ArmService {
     @Override
     public JsonNode getTabsWithCameraList() {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = "en";
+        String language = locale.toString().equals("ede") ? "de" : "en";
         if (locale.toString().equals("ru")) {
             language = "ru";
         }

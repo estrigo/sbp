@@ -97,7 +97,7 @@ public class CarsServiceImpl implements CarsService {
             eventLogService.createEventLog(Cars.class.getSimpleName(), car.getId(), properties,
                     "Новый номер авто " + car.getPlatenumber() + " сохранен в системе ",
                     "New car number " + car.getPlatenumber() + " added to the system ",
-                    "New car number " + car.getPlatenumber() + " added to the system ",
+                    "Neue Autonummer " + car.getPlatenumber() + " dem System hinzugefügt ",
                     EventLog.EventType.NEW_CAR_DETECTED);
         }
         if(region != null){
