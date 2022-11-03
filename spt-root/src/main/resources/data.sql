@@ -1,14 +1,14 @@
-insert into role (role_id, role, plugin, name_en, name_ru) values (1, 'ROLE_ADMIN', null ,'Administrator','Администратор');
-insert into role (role_id, role, plugin, name_en, name_ru) values (2, 'ROLE_USER', null,'User','Пользователь');
-insert into role (role_id, role, plugin, name_en, name_ru) values (3, 'ROLE_MANAGER', null,'Manager','Менеджер');
-insert into role (role_id, role, plugin, name_en, name_ru) values (4, 'ROLE_OWNER', null,'Owner','Владелец');
-insert into role (role_id, role, plugin, name_en, name_ru) values (5, 'PLUGIN_ROLE_TEST', 'test-plugin','Test user','Тестовая роль');
-insert into role (role_id, role, plugin, name_en, name_ru) values (6, 'ROLE_OPERATOR', null, 'Operator', 'Оператор');
-insert into role (role_id, role, plugin, name_en, name_ru) values (7, 'ROLE_OPERATOR_NO_REVENUE_SHARE', null,'Operator NO REVENUE SHARE','Оператор для контрактов без долевого участия');
-insert into role (role_id, role, plugin, name_en, name_ru) values (9, 'ROLE_READ', null,'read','read');
-insert into role (role_id, role, plugin, name_en, name_ru) values (30, 'ROLE_BAQORDA', null,'read','read');
-insert into role (role_id, role, plugin, name_en, name_ru) values (31, 'ROLE_ACCOUNTANT', null,'Accountant','Бугхалтер');
-insert into role (role, plugin, name_en, name_ru) values ('ROLE_OPERATOR_PARQOUR', null, 'Operator Parqour', 'Оператор Parqour');
+insert into role (role_id, role, plugin, name_en, name_ru, name_de) values (1, 'ROLE_ADMIN', null ,'Administrator','Администратор', 'Administrator');
+insert into role (role_id, role, plugin, name_en, name_ru, name_de) values (2, 'ROLE_USER', null,'User','Пользователь', 'Benutzer');
+insert into role (role_id, role, plugin, name_en, name_ru, name_de) values (3, 'ROLE_MANAGER', null,'Manager','Менеджер', 'Manager');
+insert into role (role_id, role, plugin, name_en, name_ru, name_de) values (4, 'ROLE_OWNER', null,'Owner','Владелец', 'Eigentümer');
+insert into role (role_id, role, plugin, name_en, name_ru, name_de) values (5, 'PLUGIN_ROLE_TEST', 'test-plugin','Test user','Тестовая роль', 'Test-Benutzer');
+insert into role (role_id, role, plugin, name_en, name_ru, name_de) values (6, 'ROLE_OPERATOR', null, 'Operator', 'Оператор', 'Operator');
+insert into role (role_id, role, plugin, name_en, name_ru, name_de) values (7, 'ROLE_OPERATOR_NO_REVENUE_SHARE', null,'Operator NO REVENUE SHARE','Оператор для контрактов без долевого участия', 'Operator KEINE EINNAHMENBETEILIGUNG');
+insert into role (role_id, role, plugin, name_en, name_ru, name_de) values (9, 'ROLE_READ', null,'read','read', 'lesen');
+insert into role (role_id, role, plugin, name_en, name_ru, name_de) values (30, 'ROLE_BAQORDA', null,'read','read', 'lesen');
+insert into role (role_id, role, plugin, name_en, name_ru, name_de) values (31, 'ROLE_ACCOUNTANT', null,'Accountant','Бугхалтер', 'Buchhalter');
+insert into role (role, plugin, name_en, name_ru, name_de) values ('ROLE_OPERATOR_PARQOUR', null, 'Operator Parqour', 'Оператор Parqour', 'Operator Parqour');
 
 
 INSERT INTO users (id, email, enabled, first_name, last_name, password, username)
