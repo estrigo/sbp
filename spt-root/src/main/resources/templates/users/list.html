@@ -70,7 +70,7 @@
     var locale = [[${#locale}]];
     console.log("locale", locale)
     var address = '/plugins/datatables/json/ru.json';
-    var roleNames = locale == "en" ? "name_en" : "name_ru";
+    var roleNames = locale == "en" ? "name_en" : (locale == "ru" ? "name_ru": "name_de");
     if (locale == "en") {
         address = "";
         edit = "Edit";
