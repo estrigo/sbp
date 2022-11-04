@@ -23,6 +23,11 @@ public class BarrierStatusDto {
     public boolean impulseSignal;
     public Integer impulseDelay;
 
+    public String openStatusOid;
+    public Integer openStatusDefault;
+    public String closeStatusOid;
+    public Integer closeStatusDefault;
+
     public static BarrierStatusDto fromBarrier(Barrier barrier) {
         BarrierStatusDto barrierStatusDto = new BarrierStatusDto();
         barrierStatusDto.id = barrier.getId();
@@ -43,6 +48,11 @@ public class BarrierStatusDto {
         barrierStatusDto.statusCheck = barrier.isStatusCheck();
         barrierStatusDto.impulseSignal = barrier.isImpulseSignal();
         barrierStatusDto.impulseDelay = barrier.getImpulseDelay();
+        barrierStatusDto.openStatusOid = barrier.getOpenStatusOid();
+        barrierStatusDto.openStatusDefault = barrier.getOpenStatusDefault();
+        barrierStatusDto.closeStatusOid = barrier.getCloseStatusOid();
+        barrierStatusDto.closeStatusDefault = barrier.getCloseStatusDefault();
+
         return barrierStatusDto;
     }
 }
