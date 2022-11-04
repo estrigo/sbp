@@ -4,7 +4,7 @@ import kz.spt.carmodelplugin.bootstrap.datatable.CarmodelComparators;
 
 import kz.spt.carmodelplugin.repository.CarmodelRepository;
 import kz.spt.carmodelplugin.repository.CarmodelRepository2;
-import kz.spt.carmodelplugin.service.CarmodelService;
+import kz.spt.carmodelplugin.service.CarModelServicePl;
 import kz.spt.carmodelplugin.service.RootServicesGetterService;
 import kz.spt.carmodelplugin.viewmodel.CarmodelDto;
 import kz.spt.lib.bootstrap.datatable.Column;
@@ -29,7 +29,7 @@ import java.util.function.Predicate;
 @Log
 @Service
 @Transactional(noRollbackFor = Exception.class)
-public class CarmodelServiceImpl implements CarmodelService {
+public class CarModelServicePlImpl implements CarModelServicePl {
 
     private CarmodelRepository carmodelRepository;
     private RootServicesGetterService rootServicesGetterService;
@@ -37,9 +37,9 @@ public class CarmodelServiceImpl implements CarmodelService {
     private CarmodelRepository2 carmodelRepository2;
 
 
-    public CarmodelServiceImpl(CarmodelRepository carmodelRepository,
-                               RootServicesGetterService rootServicesGetterService,
-                               CarmodelRepository2 carmodelRepository2) {
+    public CarModelServicePlImpl(CarmodelRepository carmodelRepository,
+                                 RootServicesGetterService rootServicesGetterService,
+                                 CarmodelRepository2 carmodelRepository2) {
         this.carmodelRepository = carmodelRepository;
         this.rootServicesGetterService = rootServicesGetterService;
         this.carmodelRepository2 = carmodelRepository2;

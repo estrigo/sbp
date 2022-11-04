@@ -1,8 +1,8 @@
 package kz.spt.carmodelplugin.controller;
 
 import kz.spt.carmodelplugin.service.CarDimensionsService;
-//import kz.spt.carmodelplugin.service.CarModelFileServices;
-import kz.spt.carmodelplugin.service.CarmodelService;
+import kz.spt.carmodelplugin.service.CarModelFileServices;
+import kz.spt.carmodelplugin.service.CarModelServicePl;
 import kz.spt.carmodelplugin.viewmodel.CarmodelDto;
 import kz.spt.lib.model.CarModel;
 import kz.spt.lib.model.Dimensions;
@@ -31,18 +31,18 @@ import java.util.*;
 @RequestMapping("/carmodel")
 public class CarmodelController {
 
-    private CarmodelService carmodelService;
+    private CarModelServicePl carModelServicePl;
     private CarDimensionsService carDimensionsService;
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
-//    private CarModelFileServices carModelFileServices;
+    private  CarModelFileServices carModelFileServices;
 
-    public CarmodelController(CarmodelService carmodelService,
-                              CarDimensionsService carDimensionsService/*,
-                              CarModelFileServices carModelFileServices*/)
+    public CarmodelController(CarModelServicePl carModelServicePl,
+                              CarDimensionsService carDimensionsService,
+                              CarModelFileServices carModelFileServices)
     {
-        this.carmodelService = carmodelService;
+        this.carModelServicePl = carModelServicePl;
         this.carDimensionsService = carDimensionsService;
-//        this.carModelFileServices = carModelFileServices;
+        this.carModelFileServices = carModelFileServices;
     }
 
     @GetMapping("/list")
@@ -74,17 +74,18 @@ public class CarmodelController {
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
         }
-
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
         try {
-//            carModelFileServices.store(file, selectedDimension, currentUser);
-            redirectAttributes.addAttribute("fileUploadResult", bundle.getString("whitelist.uploadSuccess"));
+            carModelFileServices.store(file, selectedDimension, currentUser);
+//            model.addAttribute("carModels", carModelServicePl.findAllUsersPageable(pageable));
+//            model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
+//            model.addAttribute("dimensionList", carDimensionsService.listDimensions());
+//            model.addAttribute("dimensions", new Dimensions());
+            return "redirect:/carmodel/configure/car";
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addAttribute("fileUploadResult", bundle.getString("whitelist.uploadFail") + " " + file.getOriginalFilename());
+            return "redirect:/carmodel/configure/car";
         }
-
-        return "redirect:/whitelist/list";
     }
 
     /*@PostMapping("/configure/list")
@@ -102,7 +103,7 @@ public class CarmodelController {
     public String configureOfCarModel(Model model, @AuthenticationPrincipal UserDetails currentUser,
                                       @PageableDefault(size = 10,
                                               sort = {"model", "type"}) Pageable pageable) {
-        model.addAttribute("carModels", carmodelService.findAllUsersPageable(pageable));
+        model.addAttribute("carModels", carModelServicePl.findAllUsersPageable(pageable));
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
         model.addAttribute("dimensionList", carDimensionsService.listDimensions());
         model.addAttribute("dimensions", new Dimensions());
@@ -112,15 +113,15 @@ public class CarmodelController {
 
     @GetMapping("/configure/car/edit/{carModelId}")
     public String editCarModel(Model model, @PathVariable Integer carModelId, @AuthenticationPrincipal UserDetails currentUser) {
-        model.addAttribute("carModel", carmodelService.getCarModelById(carModelId));
+        model.addAttribute("carModel", carModelServicePl.getCarModelById(carModelId));
         model.addAttribute("dimensions", carDimensionsService.listDimensions());
         return "/carmodel/editByOne";
     }
 
     @GetMapping("/configure/car/delete/{id}")
     public String deleteCarModel(Model model, @PathVariable("id") int id, @AuthenticationPrincipal UserDetails currentUser) {
-        carmodelService.deleteCarModel(id);
-        model.addAttribute("carModels", carmodelService.findAll());
+        carModelServicePl.deleteCarModel(id);
+        model.addAttribute("carModels", carModelServicePl.findAll());
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
         return "redirect:/carmodel/configure/car";
     }
@@ -138,7 +139,7 @@ public class CarmodelController {
     @PostMapping("/editType")
     public String editPlateNumber(@RequestParam String plateNumber, @RequestParam String dimension){
         log.info("editPlateNumber started, plateNumber: " + plateNumber + ", dimensoin: " + dimension);
-        carmodelService.editDimensionOfCar(plateNumber, dimension);
+        carModelServicePl.editDimensionOfCar(plateNumber, dimension);
         return "redirect:/carmodel/list";
     }
 
@@ -159,7 +160,7 @@ public class CarmodelController {
             ObjectError error = new ObjectError("modelIsNull", bundle.getString("carmodel.modelIsNull"));
             bindingResult.addError(error);
         } else {
-            CarModel carModel1FromDB = carmodelService.findByModel(carModel.getModel());
+            CarModel carModel1FromDB = carModelServicePl.findByModel(carModel.getModel());
             if (carModel1FromDB != null) {
                 ObjectError error = new ObjectError("alreadyRegisteredMessage", bundle.getString("carmodel.alreadyRegisteredMessage"));
                 bindingResult.addError(error);
@@ -172,7 +173,7 @@ public class CarmodelController {
         if (bindingResult.hasErrors()) {
             return "redirect:/carmodel/configure/car/add";}
         else {
-            carmodelService.saveCarModel(carModel, currentUser);
+            carModelServicePl.saveCarModel(carModel, currentUser);
             return "redirect:/carmodel/configure/car";
         }
     }
@@ -213,7 +214,7 @@ public class CarmodelController {
                                  @AuthenticationPrincipal UserDetails currentUser) {
         Dimensions dimensions = carDimensionsService.getById(carModel.getDimensions().getId());
         carModel.setDimensions(dimensions);
-        carmodelService.updateCarModel(id, carModel, currentUser);
+        carModelServicePl.updateCarModel(id, carModel, currentUser);
 
         return "redirect:/carmodel/configure/car";
     }

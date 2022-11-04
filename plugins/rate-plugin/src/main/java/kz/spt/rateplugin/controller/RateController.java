@@ -1,42 +1,33 @@
 package kz.spt.rateplugin.controller;
 
-import kz.spt.lib.model.Dimensions;
 import kz.spt.lib.model.Parking;
 import kz.spt.rateplugin.model.IntervalRate;
 import kz.spt.rateplugin.model.ParkingRate;
 import kz.spt.rateplugin.model.RateCondition;
 import kz.spt.rateplugin.service.DimensionsService;
 import kz.spt.rateplugin.service.RateService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 @Slf4j
 @Controller
 @RequestMapping("/rate")
+@RequiredArgsConstructor
 public class RateController {
 
-    private RateService rateService;
-    private DimensionsService dimensionsService;
+    private final RateService rateService;
+    private final DimensionsService dimensionsService;
 
-    public RateController(RateService rateService, DimensionsService dimensionsService)
-    {
-        this.rateService = rateService;
-        this.dimensionsService = dimensionsService;
-    }
 
     @GetMapping("/list")
     public String showAllWhitelist(Model model) {
@@ -55,8 +46,8 @@ public class RateController {
         }
         model.addAttribute("parkingRate", parkingRate);
         model.addAttribute("currencyTypes", ParkingRate.CurrencyType.values());
-        model.addAttribute("dimensionsList", dimensionsService.findAll()); //dlya testov
-        model.addAttribute("intervalRate", new IntervalRate()); //dlya testov
+        model.addAttribute("dimensionsList", dimensionsService.findAll());
+        model.addAttribute("intervalRate", new IntervalRate());
         model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
         return "/rate/edit";
     }
@@ -125,21 +116,6 @@ public class RateController {
         model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
         return "/rate/interval-edit";
     }
-
-
-//    @GetMapping("/dimensionsByInterval-settings/{parkingId}")
-//    public String settingsOfDimensionsByIntervalRate(Model model, @PathVariable Long parkingId) {
-//        ParkingRate parkingRate = rateService.getByParkingId(parkingId);
-//        if(parkingRate == null){
-//            parkingRate = new ParkingRate();
-//            Parking parking = rateService.getParkingById(parkingId);
-//            parkingRate.setParking(parking);
-//        }
-//        model.addAttribute("parkingRate", parkingRate);
-//        model.addAttribute("IntervalType", RateCondition.IntervalType.values());
-//        model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
-//        return "/rate/interval-settings";
-//    }
 
 
     @PostMapping("/interval-delete")

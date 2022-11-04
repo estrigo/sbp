@@ -16,8 +16,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -29,22 +29,6 @@ public class RateDimensionsController {
 
     private final RateService rateService;
     private final DimensionsService dimensionsService;
-
-    /*@PostMapping("/interval-add")
-    public String addIntervalRate(@ModelAttribute(value="intervalRate") IntervalRate intervalRate,
-                                  BindingResult bindingResult,
-                                  Model model) {
-        IntervalRate newInterval = new IntervalRate();
-        newInterval.setParkingRate(intervalRate.getParkingRate());
-        if (newInterval.getRateConditions()!=null) {
-            newInterval.getRateConditions().clear();
-        }
-        newInterval.setDatetimeTo(intervalRate.getDatetimeTo());
-        newInterval.setDatetimeFrom(intervalRate.getDatetimeFrom());
-        rateService.saveIntervalRate(newInterval);
-        ParkingRate parkingRate = rateService.getById(newInterval.getParkingRate().getId());
-        return "redirect:interval-dimensions-edit/"+parkingRate.getParking().getId();
-    }*/
 
     @PostMapping("/interval-add")
     public String addIntervalRate(@ModelAttribute(value="intervalRate") IntervalRate intervalRate,
@@ -79,27 +63,14 @@ public class RateDimensionsController {
             Parking parking = rateService.getParkingById(parkingId);
             parkingRate.setParking(parking);
         }
+        List<Dimensions> dimensionList = dimensionsService.findAll();
         model.addAttribute("parkingRate", parkingRate);
+        model.addAttribute("intervalRate", new IntervalRate());
         model.addAttribute("IntervalType", RateCondition.IntervalType.values());
-        model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
-        return "/rate/interval-edit";
-    }
-
-    /*@GetMapping("/interval-by-dimensions-edit/{parkingId}")
-    public String editingDimensionsByIntervalRate(Model model, @PathVariable Long parkingId) {
-        ParkingRate parkingRate = rateService.getByParkingId(parkingId);
-        if(parkingRate == null){
-            parkingRate = new ParkingRate();
-            Parking parking = rateService.getParkingById(parkingId);
-            parkingRate.setParking(parking);
-        }
-        model.addAttribute("parkingRate", parkingRate);
-        m odel.addAttribute("intervalRate", new IntervalRate());
-        model.addAttribute("IntervalType", RateCondition.IntervalType.values());
-        model.addAttribute("dimensions", dimensionsService.findAll());
+        model.addAttribute("dimensions", dimensionList);
         model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
         return "/rate/interval-dimensions-edit";
-    }*/
+    }
 
     @GetMapping("/interval-by-dimensions-edit/{parkingId}")
     public String editingDimensionsByIntervalRate(Model model, @PathVariable Long parkingId) {
@@ -109,33 +80,15 @@ public class RateDimensionsController {
             Parking parking = rateService.getParkingById(parkingId);
             parkingRate.setParking(parking);
         }
+        List<Dimensions> dimensionList = dimensionsService.findAll();
         model.addAttribute("parkingRate", parkingRate);
         model.addAttribute("intervalRate", new IntervalRate());
         model.addAttribute("IntervalType", RateCondition.IntervalType.values());
-        model.addAttribute("dimensions", dimensionsService.findAll());
+        model.addAttribute("dimensionList", dimensionList);
+        model.addAttribute("dimensions", dimensionList);
         model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
-        return "/rate/interval-dimensions-editXXXX";
+        return "/rate/interval-dimensions-edit";
     }
-
-    //#ans NACHAL TUT TESTIT
-   /* @GetMapping("/interval-by-dimensions-edit/{parkingId}")
-    public String editingDimensionsByIntervalRate(Model model, @PathVariable Long parkingId) {
-        ParkingRate parkingRate = rateService.getByParkingId(parkingId);
-        model.addAttribute("intervalRateDto", new IntervalRateDto());
-        model.addAttribute("dimensions", dimensionsService.findAll());
-        return "/rate/interval-dimensions-editDDDDDDDDD";
-    }*/
-
-   /* @PostMapping("/create")
-    public String createCarModel(@ModelAttribute("intervalRateDto") @Valid IntervalRateDto intervalRateDto,
-                                 Model model,
-                                 BindingResult bindingResult,
-                                 @AuthenticationPrincipal UserDetails currentUser) {
-    return null;
-    }*/
-
-
-//TUT KONEC TESTA
 
     @PostMapping("/interval-delete")
     public String deleteIntervalRate(@ModelAttribute(value="intervalRate") IntervalRate intervalRate) {
@@ -143,5 +96,21 @@ public class RateDimensionsController {
         Long id = intervalRateById.getParkingRate().getParking().getId();
         rateService.deleteIntervalRate(intervalRateById);
         return "redirect:interval-dimensions-edit/"+id;
+    }
+
+    @PostMapping("/rateCon-add")
+    public String addRateCondition(@ModelAttribute(value="rateCondition") RateCondition rateCondition) {
+        IntervalRate intervalRate = rateService.getIntervalRateById(rateCondition.getIntervalRate().getId());
+        rateCondition.setIntervalRate(intervalRate);
+        ParkingRate parkingRate = rateService.getById(intervalRate.getParkingRate().getId());
+        rateService.saveRateCondition(rateCondition);
+        return "redirect:interval-dimensions-edit/"+parkingRate.getParking().getId();
+    }
+
+    @PostMapping("/rateCon-delete")
+    public String delRateCondition(@ModelAttribute(value="rateCondition") RateCondition rateCondition) {
+        ParkingRate parkingRate = rateService.getById(rateCondition.getIntervalRate().getParkingRate().getId());
+        rateService.deleteRateConditionById(rateCondition.getId());
+        return "redirect:interval-dimensions-edit/"+parkingRate.getParking().getId();
     }
 }

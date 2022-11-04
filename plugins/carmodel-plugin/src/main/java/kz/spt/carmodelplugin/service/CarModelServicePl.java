@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
-public interface CarmodelService {
+public interface CarModelServicePl {
 
     Page<CarmodelDto> listCarsBy(PagingRequest pagingRequest, CarmodelDto filter);
 

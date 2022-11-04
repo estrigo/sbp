@@ -28,6 +28,7 @@
                               <th th:text="'#'"></th>
                               <th th:text="#{rate.intervalFrom}"></th>
                               <th th:text="#{rate.intervalUntil}"></th>
+                              <th th:text="#{rate.typeOfDimension}"></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -40,6 +41,9 @@
                               <td><label style="width: 100px">
                                 <input th:readonly="1==1" type="time" th:value="${intervalRate.getDatetimeTo()}"/>
                               </label></td>
+                              <td><a th:each="intRateDim : ${intervalRate.getDimensionSet()}"
+                                     th:text="${intRateDim.carClassification}"
+                                     th:value="${intRateDim.id}"></a></td>
                               <td>
                                 <form th:action="@{/rate-dimensions/interval-delete}" th:object="${intervalRate}" method="post">
                                   <input type="hidden" name="id" th:value="${intervalRate.getId()}">
@@ -80,7 +84,7 @@
                                          th:value="${rateCondition.getOnlineRate()}"/></td>
                               <td><input th:disabled="1==1"
                                          th:value="${rateCondition.getParkomatRate()}"/></td>
-                              <form th:action="@{/rate/rateCon-delete}" th:object="${rateCondition}" method="post">
+                              <form th:action="@{/rate-dimensions/rateCon-delete}" th:object="${rateCondition}" method="post">
                                 <td th:if="${intervalRate.getRateConditions().size()}==(${mindex.index}+1)">
                                   <input type="hidden" name="id" th:value="${rateCondition.getId()}">
                                   <input type="submit" th:value="'Удалить'">
@@ -99,7 +103,7 @@
                                                         ${intervalRate.getRateConditions()}==null) and
                                                         ${rateCondition.getIntervalType().name()}!='allNext' and
                                                         ${rateCondition.getIntervalType().name()}!='entrance'">
-                              <form th:action="@{/rate/rateCon-add}" th:object="${rateCondition}" method="post">
+                              <form th:action="@{/rate-dimensions/rateCon-add}" th:object="${rateCondition}" method="post">
                                 <input type="hidden" name="intervalRate.id" th:value="${intervalRate.getId()}">
                                 <td>
                                   <input type="number" name="standing">
@@ -122,7 +126,7 @@
                             </tr>
                           </div>
                           <tr th:if="${intervalRate.getRateConditions().size()}<1">
-                            <form th:action="@{/rate/rateCon-add}" th:object="${rateCondition}" method="post">
+                            <form th:action="@{/rate-dimensions/rateCon-add}" th:object="${rateCondition}" method="post">
                               <input type="hidden" name="intervalRate.id" th:value="${intervalRate.getId()}">
                               <td>
                                 <input type="number" name="standing">
@@ -155,34 +159,30 @@
                     <td>
                       <label class="col-form-label" th:text="#{camera.startTime}">
                       </label>
-                      <div class="col-10">
+                      <div class="col-4">
                         <input type="time" th:field="${intervalRate.datetimeFrom}" th:value="${intervalRate.datetimeFrom}"/>
                       </div>
                     </td>
                     <td>
                       <label class="col-form-label" th:text="#{camera.endTime}">
                       </label>
-                      <div class="col-10">
+                      <div class="col-4">
                         <input type="time" th:field="${intervalRate.datetimeTo}" th:value="${intervalRate.datetimeTo}"/>
                       </div>
                     </td>
                   </div>
-                  <div class="form-group row">
-                    <label class="col-3 col-form-label" th:text="#{carmodel.type}"></label>
-                    <select class="form-select" multiple aria-label="multiple select example" th:field="*{dimensionSet}">
-                      <option value="" th:text="#{rate.Type.Select.DIMENSIONS}" ></option>
-                      <option th:each="r : ${dimensions}"
-                              th:value="${r.id}"
-                              th:text="${r.carClassification}">
-                      </option>
-                    </select>
-                  </div>
-                  <button type="submit" class="btn btn-primary waves-effect">Добавить</button>
+                  <select class="form-control" th:field="*{dimensionSet}" multiple="multiple">
+                    <option th:each="d : ${dimensions}"
+                            th:field="*{dimensionSet}"
+                            th:value="${d.id}"
+                            th:text="${d.carClassification}">Part name</option>
+                  </select>
+                  <button type="submit" class="btn btn-primary waves-effect" th:text="#{rate.add}"></button>
                 </form>
               </div>
             </div>
             <input id="parkingId" type="hidden" th:field="*{parkingRate.parking.id}" th:value="*{parkingRate.parking.id}">
-            <form th:action="@{|/rate-dimensions/edit/${parkingRate.parking.id}|}" th:object="${parkingRate}" method="get">
+            <form th:action="@{|/rate/edit/${parkingRate.parking.id}|}" th:object="${parkingRate}" method="get">
               <button type="submit" class="btn btn-info waves-effect waves-light" th:text="#{rate.backToSettings}"></button>
             </form>
           </div>

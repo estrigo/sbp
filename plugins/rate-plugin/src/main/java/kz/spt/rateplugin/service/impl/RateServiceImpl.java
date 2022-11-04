@@ -175,7 +175,6 @@ public class RateServiceImpl implements RateService {
             }
             return result;
         }
-//ans
         else if (parkingRate != null && ParkingRate.RateType.DIMENSIONS_BY_INTERVAL.equals(parkingRate.getRateType()) &&
                 parkingRate.getIntervalJson()!=null) {
             Boolean isDimensions = true;

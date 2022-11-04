@@ -1,28 +1,23 @@
 package kz.spt.carmodelplugin.controller;
 
-import kz.spt.carmodelplugin.service.CarmodelService;
+import kz.spt.carmodelplugin.service.CarModelServicePl;
 import kz.spt.carmodelplugin.viewmodel.CarmodelDto;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
-import kz.spt.lib.model.Cars;
-import kz.spt.lib.service.CarsService;
 import lombok.extern.java.Log;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 @Log
 @RestController
 @RequestMapping(value = "/rest")
 public class CarmodelRestController {
 
-    private CarmodelService carmodelService;
+    private CarModelServicePl carModelServicePl;
 
-    public CarmodelRestController(CarmodelService carmodelService) {
-        this.carmodelService = carmodelService;
+    public CarmodelRestController(CarModelServicePl carModelServicePl) {
+        this.carModelServicePl = carModelServicePl;
     }
 
     @PostMapping
@@ -41,7 +36,7 @@ public class CarmodelRestController {
         filter.setPlateNumber(plateNumber);
         filter.setDateFromString(dateFromString);
         Page<CarmodelDto> resultList;
-        resultList = carmodelService.listCarsBy(pagingRequest, filter);
+        resultList = carModelServicePl.listCarsBy(pagingRequest, filter);
         return resultList;
     }
 
