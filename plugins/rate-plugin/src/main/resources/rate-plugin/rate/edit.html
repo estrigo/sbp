@@ -295,7 +295,6 @@
                                                                 <th th:text="'#'"></th>
                                                                 <th th:text="#{rate.intervalFrom}"></th>
                                                                 <th th:text="#{rate.intervalUntil}"></th>
-                                                                <th th:text="#{rate.typeOfDimension}"></th>
                                                             </tr>
                                                             </thead>
                                                             <tbody>
@@ -304,9 +303,24 @@
                                                                 <td><a th:text="${ind.index} + 1"></a></td>
                                                                 <td><a th:text="${intervalRate.getDatetimeFrom()}"></a></td>
                                                                 <td><a th:text="${intervalRate.getDatetimeTo()}"></a></td>
-                                                                <td><a th:each="intRateDim : ${intervalRate.getDimensionSet()}"
-                                                                       th:text="${intRateDim.carClassification}"
-                                                                       th:value="${intRateDim.id}"></a></td>
+                                                            </tr>
+                                                                <tr>
+                                                                    <th th:text="#{rate.typeOfDimension}"></th>
+                                                                </tr>
+                                                            <tr>
+                                                                <th:block>
+                                                                    <div>
+                                                                <a th:each="intRateDim : ${intervalRate.getDimensionSet()}">
+                                                                    <td>
+                                                                        <div>
+                                                                            <a th:text="${intRateDim.carClassification}"
+                                                                               th:value="${intRateDim.id}">
+                                                                            </a>
+                                                                        </div>
+                                                                    </td>
+                                                                </a>
+                                                                    </div>
+                                                                </th:block>
                                                             </tr>
                                                             </tbody>
                                                         </table>

@@ -9,6 +9,5 @@ import java.util.List;
 @Repository
 public interface DimensionsRepository extends JpaRepository<Dimensions, Long> {
     List<Dimensions> findAll();
-
     Dimensions getOne(Long aLong);
 }

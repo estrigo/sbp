@@ -10,6 +10,5 @@ import java.util.List;
 public interface IntervalRateRepository extends JpaRepository<IntervalRate, Long> {
 
     List<IntervalRate> findAllByParkingRateId(Long parkingRateId);
-
     List<IntervalRate> findAllByDimensionSetId(Long dimensionsId);
 }

@@ -25,7 +25,6 @@ public class DimensionsServiceImpl implements DimensionsService {
         return dimensionsRepository.findAll();
     }
 
-
     @Override
     public Dimensions findById(String id) {
         Optional<Dimensions> byId = dimensionsRepository.findById(Long.valueOf(id));
