@@ -4,6 +4,7 @@ import kz.spt.lib.model.Parking;
 import kz.spt.rateplugin.model.IntervalRate;
 import kz.spt.rateplugin.model.ParkingRate;
 import kz.spt.rateplugin.model.RateCondition;
+import kz.spt.rateplugin.model.dto.IntervalRateDto;
 import kz.spt.rateplugin.service.DimensionsService;
 import kz.spt.rateplugin.service.RateService;
 import lombok.RequiredArgsConstructor;
@@ -155,4 +156,6 @@ public class RateController {
         rateService.saveRateCondition(rateCondition);
         return "redirect:interval-edit/"+parkingRate.getParking().getId();
     }
+
+
 }

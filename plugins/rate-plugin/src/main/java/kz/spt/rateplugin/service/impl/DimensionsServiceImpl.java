@@ -1,5 +1,7 @@
+
 package kz.spt.rateplugin.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kz.spt.lib.model.Dimensions;
 import kz.spt.rateplugin.repository.DimensionsRepository;
 import kz.spt.rateplugin.service.DimensionsService;
@@ -17,11 +19,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DimensionsServiceImpl implements DimensionsService {
     private final DimensionsRepository dimensionsRepository;
-
+    private ObjectMapper objectMapper = new ObjectMapper();
     @Override
     public List<Dimensions> findAll() {
         return dimensionsRepository.findAll();
     }
+
 
     @Override
     public Dimensions findById(String id) {
@@ -30,5 +33,9 @@ public class DimensionsServiceImpl implements DimensionsService {
         return dimensions;
     }
 
+    @Override
+    public void deleteDimensionsById(Long id) {
+        dimensionsRepository.deleteById(id);
+    }
 
 }

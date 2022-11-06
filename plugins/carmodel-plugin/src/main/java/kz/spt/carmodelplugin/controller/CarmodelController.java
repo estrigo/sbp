@@ -88,17 +88,6 @@ public class CarmodelController {
         }
     }
 
-    /*@PostMapping("/configure/list")
-    public String uploadMultipartFile(
-            @RequestParam("uploadfile") MultipartFile file,
-            Model model,
-            @Valid Dimensions selectedDimension,
-            BindingResult bindingResult,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        Locale locale = LocaleContextHolder.getLocale();
-        String language = "en";
-        return "carmodel/list";
-    }*/
     @GetMapping("/configure/car")
     public String configureOfCarModel(Model model, @AuthenticationPrincipal UserDetails currentUser,
                                       @PageableDefault(size = 10,
@@ -128,7 +117,7 @@ public class CarmodelController {
 
     @PostMapping("/list")
     public String postCarmodelList(Model model, @Valid @ModelAttribute("CarmodelDto")CarmodelDto carmodelDto,
-                         @AuthenticationPrincipal UserDetails currentUser) throws ParseException {
+                                   @AuthenticationPrincipal UserDetails currentUser) throws ParseException {
         if(carmodelDto != null) {
             model.addAttribute("carmodelDto", carmodelDto);
         }
@@ -193,15 +182,9 @@ public class CarmodelController {
     }
     @PostMapping("/configure/car/dimensions/create")
     public String createCarDimensions(@ModelAttribute("dimensions") @Valid Dimensions dimensions,
-                                 Model model,
-                                 BindingResult bindingResult,
-                                 @AuthenticationPrincipal UserDetails currentUser) {
-//        Locale locale = LocaleContextHolder.getLocale();
-//        String language = "en";
-//        if (locale.toString().equals("ru")) {
-//            language = "ru-RU";
-//        }
-//        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
+                                      Model model,
+                                      BindingResult bindingResult,
+                                      @AuthenticationPrincipal UserDetails currentUser) {
         carDimensionsService.saveCarDimensions(dimensions, currentUser);
 
         return "redirect:/carmodel/configure/carDimensions/add";
@@ -209,7 +192,7 @@ public class CarmodelController {
 
     @PostMapping("/configure/car/update/{id}")
     public String updateCarModel(@PathVariable("id") int id,
-                             @ModelAttribute("carModel") @Valid CarModel carModel,
+                                 @ModelAttribute("carModel") @Valid CarModel carModel,
                                  Model model,
                                  @AuthenticationPrincipal UserDetails currentUser) {
         Dimensions dimensions = carDimensionsService.getById(carModel.getDimensions().getId());
@@ -218,6 +201,4 @@ public class CarmodelController {
 
         return "redirect:/carmodel/configure/car";
     }
-
-
 }

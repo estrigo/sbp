@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
 
@@ -28,7 +30,7 @@
                               <th th:text="'#'"></th>
                               <th th:text="#{rate.intervalFrom}"></th>
                               <th th:text="#{rate.intervalUntil}"></th>
-                              <th th:text="#{rate.typeOfDimension}"></th>
+                              <!-- <th th:text="#{rate.typeOfDimension}"></th>-->
                             </tr>
                             </thead>
                             <tbody>
@@ -41,15 +43,79 @@
                               <td><label style="width: 100px">
                                 <input th:readonly="1==1" type="time" th:value="${intervalRate.getDatetimeTo()}"/>
                               </label></td>
-                              <td><a th:each="intRateDim : ${intervalRate.getDimensionSet()}"
-                                     th:text="${intRateDim.carClassification}"
-                                     th:value="${intRateDim.id}"></a></td>
+                              <!-- <td><a th:each="intRateDim : ${intervalRate.getDimensionSet()}"
+                                      th:text="${intRateDim.carClassification}"
+                                      th:value="${intRateDim.id}"></a></td>-->
                               <td>
                                 <form th:action="@{/rate-dimensions/interval-delete}" th:object="${intervalRate}" method="post">
                                   <input type="hidden" name="id" th:value="${intervalRate.getId()}">
                                   <button type="submit" class="btn btn-warning waves-effect">Удалить</button>
                                 </form>
                               </td>
+                            </tr>
+                            <tr>
+                              <form th:action="@{/rate-dimensions/carmodel-add}" th:object="${intervalRateDto}" method="post">
+                                <input type="hidden" name="intervalRate.id" th:value="${intervalRate.getId()}">
+                                <div class="form-group row">
+                                  <td>
+                                    <label th:text="#{carmodel.type}"></label>
+                                  </td>
+                                  <td>
+                                    <select th:field="*{dimensionSet.id}">
+                                      <option value="" th:text="#{rate.Type.Select.DIMENSIONS}" selected disabled></option>
+                                      <option th:each="r : ${dimensions}"
+                                              th:value="${r.id}"
+                                              th:text="${r.carClassification}">
+                                      </option>
+                                    </select>
+                                  </td>
+                                  <td>
+                                    <button class="btn btn-success btn-custom waves-effect waves-light w-md" type="submit" th:text="#{rate.carmodel.add}"></button>
+                                  </td>
+                                </div>
+                              </form>
+                              </td>
+                            </tr>
+                            <th:block th:each="interval, in : ${intervalRate.getDimensionSet()}">
+                              <th:block th:each="intRateDim : ${interval}">
+                                <input type="hidden" name="interval.id" th:value="${intRateDim.getId()}">
+                                <form th:action="@{/rate-dimensions/carmodel-delete/{id}(id=${intRateDim.getId()})}" th:object="${intervalRateDto}" method="post">
+                                  <input type="hidden" name="intervalRate.id" th:value="${intervalRate.getId()}">
+                                  <tr>
+                                    <td>
+                                      <input type="hidden" th:value="${interval.getId()}"/>
+                                      <div th:field="*{dimensionSet.id}">
+                                        <a th:text="${intRateDim.carClassification}"
+                                           th:value="${intRateDim.id}">
+                                        </a>
+                                      </div>
+                                    </td>
+                                    <td>
+                                      <button class="btn btn-danger btn-custom waves-effect waves-light w-md" type="submit" th:text="#{rate.carmodel.delete}"></button>
+                                    </td>
+                                  </tr>
+                                </form>
+                              </th:block>
+                            </th:block>
+                            <!--                            <th:block th:each="interval, in : ${intervalRate.getDimensionSet()}">-->
+                            <!--                              <form th:action="@{/rate-dimensions/carmodel-delete}" th:object="${intervalRateDto}" method="post">-->
+                            <!--                                <input type="hidden" name="intervalRate.id" th:value="${intervalRate.getId()}">-->
+                            <!--<tr>
+                              <td>
+                                <input type="hidden" th:value="${interval.getId()}"/>
+                                <div th:field="*{dimensionSet.id}">
+                                <a th:each="intRateDim : ${interval}"
+                                   th:text="${intRateDim.carClassification}"
+                                   th:value="${intRateDim.id}">
+                                </a>
+                                </div>
+                              </td>
+                              <td>
+                                <button class="btn btn-danger btn-custom waves-effect waves-light w-md" type="submit" th:text="#{rate.carmodel.delete}"></button>
+                              </td>
+                            </tr>-->
+                            <!--                              </form>-->
+                            <!--                            </th:block>-->
                             </tr>
                             </tbody>
                           </table>
@@ -171,12 +237,12 @@
                       </div>
                     </td>
                   </div>
-                  <select class="form-control" th:field="*{dimensionSet}" multiple="multiple">
+                 <!-- <select class="form-control" th:field="*{dimensionSet}" multiple="multiple">
                     <option th:each="d : ${dimensions}"
                             th:field="*{dimensionSet}"
                             th:value="${d.id}"
                             th:text="${d.carClassification}">Part name</option>
-                  </select>
+                  </select>-->
                   <button type="submit" class="btn btn-primary waves-effect" th:text="#{rate.add}"></button>
                 </form>
               </div>

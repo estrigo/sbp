@@ -5,10 +5,16 @@ import kz.spt.lib.model.Parking;
 import kz.spt.rateplugin.model.IntervalRate;
 import kz.spt.rateplugin.model.ParkingRate;
 import kz.spt.rateplugin.model.RateCondition;
+import kz.spt.rateplugin.model.dto.IntervalRateDto;
 import kz.spt.rateplugin.service.DimensionsService;
+import kz.spt.rateplugin.service.IntervalRateService;
 import kz.spt.rateplugin.service.RateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,6 +22,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +37,7 @@ public class RateDimensionsController {
 
     private final RateService rateService;
     private final DimensionsService dimensionsService;
-
+    private final IntervalRateService intervalRateService;
     @PostMapping("/interval-add")
     public String addIntervalRate(@ModelAttribute(value="intervalRate") IntervalRate intervalRate,
                                   BindingResult bindingResult,
@@ -41,7 +49,7 @@ public class RateDimensionsController {
         }
         newInterval.setDatetimeTo(intervalRate.getDatetimeTo());
         newInterval.setDatetimeFrom(intervalRate.getDatetimeFrom());
-        ObjectError objectError = bindingResult.getAllErrors().get(0);
+        /*ObjectError objectError = bindingResult.getAllErrors().get(0);
         Object rejectedValue = ((FieldError) objectError).getRejectedValue();
         String s = rejectedValue.toString();
         String[] output = s.split(",");
@@ -50,7 +58,7 @@ public class RateDimensionsController {
             Dimensions byId = dimensionsService.findById(s1);
             dimensionsSet.add(byId);
         }
-        newInterval.setDimensionSet(dimensionsSet);
+        newInterval.setDimensionSet(dimensionsSet);*/
         rateService.saveIntervalRate(newInterval);
         ParkingRate parkingRate = rateService.getById(newInterval.getParkingRate().getId());
         return "redirect:interval-dimensions-edit/"+parkingRate.getParking().getId();
@@ -67,6 +75,7 @@ public class RateDimensionsController {
         model.addAttribute("parkingRate", parkingRate);
         model.addAttribute("intervalRate", new IntervalRate());
         model.addAttribute("IntervalType", RateCondition.IntervalType.values());
+        model.addAttribute("intervalRateDto", new IntervalRateDto());
         model.addAttribute("dimensions", dimensionList);
         model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
         return "/rate/interval-dimensions-edit";
@@ -84,7 +93,8 @@ public class RateDimensionsController {
         model.addAttribute("parkingRate", parkingRate);
         model.addAttribute("intervalRate", new IntervalRate());
         model.addAttribute("IntervalType", RateCondition.IntervalType.values());
-        model.addAttribute("dimensionList", dimensionList);
+        model.addAttribute("intervalRateDto", new IntervalRateDto());
+//        model.addAttribute("dimensionList", dimensionList);
         model.addAttribute("dimensions", dimensionList);
         model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
         return "/rate/interval-dimensions-edit";
@@ -113,4 +123,42 @@ public class RateDimensionsController {
         rateService.deleteRateConditionById(rateCondition.getId());
         return "redirect:interval-dimensions-edit/"+parkingRate.getParking().getId();
     }
+
+    @PostMapping("/carmodel-add")
+    public String createCarModel(@ModelAttribute("intervalRateDto") @Valid IntervalRateDto intervalRateDto,
+                                 Model model,
+                                 BindingResult bindingResult,
+                                 @AuthenticationPrincipal UserDetails currentUser) {
+        IntervalRate newInterval = intervalRateService.findById(intervalRateDto.getIntervalRate().getId());
+        Dimensions dimension = dimensionsService.findById(String.valueOf(intervalRateDto.getDimensionSet().getId()));
+        newInterval.getDimensionSet().add(dimension);
+        intervalRateService.saveIntervalRate(newInterval);
+        ParkingRate parkingRate = rateService.getById(newInterval.getParkingRate().getId());
+        return "redirect:interval-dimensions-edit/"+parkingRate.getParking().getId();
+    }
+    @PostMapping("/carmodel-delete/{dimensionId}")
+    public String getEditingRateId(@ModelAttribute(value="intervalRateDto")
+                                   @Valid IntervalRateDto intervalRateDto,
+                                   Model model,
+                                   @PathVariable Long dimensionId) {
+        IntervalRate newInterval = intervalRateService.findById(intervalRateDto.getIntervalRate().getId());
+        Dimensions dimension = dimensionsService.findById(String.valueOf(dimensionId));
+        newInterval.getDimensionSet().remove(dimension);
+        intervalRateService.saveIntervalRate(newInterval);
+        ParkingRate parkingRate = rateService.getByParkingId(newInterval.getParkingRate().getParking().getId());
+        if(parkingRate == null){
+            parkingRate = new ParkingRate();
+            Parking parking = rateService.getParkingById(newInterval.getParkingRate().getParking().getId());
+            parkingRate.setParking(parking);
+        }
+        List<Dimensions> dimensionList = dimensionsService.findAll();
+        model.addAttribute("parkingRate", parkingRate);
+        model.addAttribute("intervalRate", new IntervalRate());
+        model.addAttribute("IntervalType", RateCondition.IntervalType.values());
+        model.addAttribute("intervalRateDto", new IntervalRateDto());
+        model.addAttribute("dimensions", dimensionList);
+        model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
+        return "/rate/interval-dimensions-edit";
+    }
+
 }
