@@ -58,8 +58,14 @@ public class CarOutEventStrategy extends AbstractOpenStrategy {
             carEventService.saveCarOutState(eventDto, camera, carState, properties, balance, rateResult, zeroTouchValue, format, carOutBy, abonements, whitelist);
         } else if (leftFromThisSecondsBefore) {
             properties.put("type", EventLog.StatusType.Allow);
-            eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, "Выпускаем авто: Авто с гос. номером " + eventDto.car_number, "Releasing: Car with license plate " + eventDto.car_number);
+            eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.car_number,
+                    "Выпускаем авто: Авто с гос. номером " + eventDto.car_number,
+                    "Releasing: Car with license plate " + eventDto.car_number,
+                    "Freigeben: Auto mit Kennzeichen" + eventDto.car_number);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties,
+                    "Выпускаем авто: Авто с гос. номером " + eventDto.car_number,
+                    "Releasing: Car with license plate " + eventDto.car_number,
+                    "Freigeben: Auto mit Kennzeichen" + eventDto.car_number);
         }
     }
 
@@ -68,8 +74,9 @@ public class CarOutEventStrategy extends AbstractOpenStrategy {
         EventLogService eventLogService = SpringContext.getBean(EventLogService.class);
         String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
         String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
-        eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn);
-        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ERROR);
+        String descriptionDe = "Fehler beim Öffnen der Schranke: Wert für offene Schranke für Auto kann nicht zugewiesen werden" + eventDto.car_number + " bei der " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "passieren" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "eusfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName();
+        eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn, descriptionDe);
+        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.ERROR);
     }
 
     @Override

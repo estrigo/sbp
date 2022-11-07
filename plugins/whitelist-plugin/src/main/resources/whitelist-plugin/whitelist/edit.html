@@ -159,7 +159,7 @@
             "data": form
         };
         $.ajax(settings).done(function (response) {
-            let html = '<option value="">' + (locale === "ru" ? 'Не выбрано' : 'Not selected') + '</option>';
+            let html = '<option value="">' + (locale === "ru" ? 'Не выбрано' : (locale === "en" ? 'Not selected': 'Nicht gewählt')) + '</option>';
             let firstLoadedGroupIdsLength = firstLoadedGroupIds.length;
             for(let i=0; i < response.length; i++){
                 html = html + '<option value="' + response[i].id + '">' + response[i].name + '</option>';

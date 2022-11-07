@@ -28,6 +28,9 @@ public class Role implements Comparable<Role>{
     @Column(name = "name_en")
     private String name_en;
 
+    @Column(name = "name_de")
+    private String name_de;
+
     @Column(name = "plugin")
     private String plugin;
 

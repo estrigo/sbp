@@ -172,7 +172,7 @@
             "data": form
         };
         $.ajax(settings).done(function (response) {
-            let html = '<option value="">' + (locale === "ru" ? 'Не выбрано' : 'Not selected') + '</option>';
+            let html = '<option value="">' + (locale === "ru" ? 'Не выбрано' : (locale === "en" ? 'Not selected': 'Nicht gewählt')) + '</option>';
             for(let i=0; i < response.length; i++){
                 html = html + '<option value="' + response[i].id + '">' + response[i].name + '</option>';
             }
@@ -214,16 +214,32 @@
         if (asciiCounter>1000){
             hasCyrullic = true;
         }
+
+        let textIncorrectPlatenumber = "";
+        let textFillPlatenumber = "";
+        if(locale === "ru"){
+            textIncorrectPlatenumber = 'Введите правильный номер машины';
+            textFillPlatenumber = 'Заполните поле для ГРНЗ';
+        }
+        else if (locale === "en"){
+            textIncorrectPlatenumber = 'Enter correct plate number';
+            textFillPlatenumber = 'Fill plate number field';
+        }
+        else if(locale === "de"){
+            textIncorrectPlatenumber === 'Bitte geben Sie das richtige Kennzeichen ein';
+            textFillPlatenumber = 'Füllen Sie das Feld für das Kennzeichen aus';
+        }
+
         if(/[^A-Za-z0-9]+$/.test(plateNumber)||(hasCyrullic)){
             // alert([[#{crm.onlyLatinAndNumbersAllowed}]]);
-            $('#alertText').text(locale === "ru" ? 'Введите правильный номер машины' : 'Enter correct plate number');
+            $('#alertText').text(textIncorrectPlatenumber);
             $('#alertText').css("background-color", "#ef5350");
             $('#alertText').css("color", "white");
             $('#submitButton').prop('disabled', true);
             $('#submitButton').css("color", "gray");
         }
         else if (/\s/.test(plateNumber) || plateNumber === ""){
-            $('#alertText').text(locale === "ru" ? 'Заполните поле для ГРНЗ' : 'Fill plate number field');
+            $('#alertText').text(textFillPlatenumber);
             $('#alertText').css("background-color", "inherit");
             $('#alertText').css("color", "Black");
             $('#submitButton').prop('disabled', true);
@@ -251,13 +267,13 @@
         const options = {
             // custom days names (it's default values)
             days: {
-                0: locale === "ru" ? 'Понедельник' : 'Monday',
-                1: locale === "ru" ? 'Вторник' : 'Tuesday',
-                2: locale === "ru" ? 'Среда' : 'Wednesday',
-                3: locale === "ru" ? 'Четверг' : 'Thursday',
-                4: locale === "ru" ? 'Пятница' : 'Friday',
-                5: locale === "ru" ? 'Суббота' : 'Saturday',
-                6: locale === "ru" ? 'Воскресенье' : 'Sunday',
+                0: locale === "ru" ? 'Понедельник' : (locale === "en" ? 'Monday' : 'Montag'),
+                1: locale === "ru" ? 'Вторник' : (locale === "en" ? 'Tuesday' : 'Dienstag'),
+                2: locale === "ru" ? 'Среда' : (locale === "en" ? 'Wednesday' : 'Mittwoch'),
+                3: locale === "ru" ? 'Четверг' : (locale === "en" ? 'Thursday' : 'Donnerstag'),
+                4: locale === "ru" ? 'Пятница' : (locale === "en" ? 'Friday' : 'Freitag'),
+                5: locale === "ru" ? 'Суббота' : (locale === "en" ? 'Saturday' : 'Samstag'),
+                6: locale === "ru" ? 'Воскресенье' : (locale === "en" ? 'Sunday' : 'Sonntag'),
             },
 
             // custom class names for dom elements (it's default values)

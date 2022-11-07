@@ -314,14 +314,16 @@ public class AbonomentServiceImpl implements AbonomentService {
                 if("expired".equals(result.get("expirationResult").textValue())){
                     String descriptionRu = "Срок абонемента просрочен. Авто с гос. номером " + plateNumber;
                     String descriptionEn = "Paid permit is expired. Car with number " + plateNumber;
-                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Warning, cameraId, plateNumber, descriptionRu, descriptionEn);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), cameraId, properties, descriptionRu, descriptionEn, EventLog.EventType.ABONEMENT);
+                    String descriptionDe = "Bezahlte Genehmigung ist abgelaufen. Auto mit Nummer " + plateNumber;
+                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Warning, cameraId, plateNumber, descriptionRu, descriptionEn, descriptionDe);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), cameraId, properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.ABONEMENT);
                 }
                 if("closeToExire".equals(result.get("expirationResult").textValue())){
                     String descriptionRu = "Осталось менее 24 часа срока истечения абонемента. Авто с гос. номером " + plateNumber;
                     String descriptionEn = "Less than 24 hours left to paid permit expire. Car with number " + plateNumber;
-                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Warning, cameraId, plateNumber, descriptionRu, descriptionEn);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), cameraId, properties, descriptionRu, descriptionEn, EventLog.EventType.ABONEMENT);
+                    String descriptionDe = "Es bleiben weniger als 24 Stunden bis zum Ablauf der bezahlten Genehmigung. Auto mit Nummer " + plateNumber;
+                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Warning, cameraId, plateNumber, descriptionRu, descriptionEn,descriptionDe);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), cameraId, properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.ABONEMENT);
                 }
             }
         }

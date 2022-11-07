@@ -182,7 +182,8 @@ public class CarModelServicePlImpl implements CarModelServicePl {
                 null,
                 properties,
                 "Ручное изменение габарита автомибиля, новое значение:" + dimension + ", новая модель: " + cars.getModel() + ", старая модель:" + oldModel + ", пользователь:" + username,
-                "Manual edit dimension of car, new value:" + dimension + ", new model: " + cars.getModel() + ", old model:" + oldModel + ", user:" + username);
+                "Manual edit dimension of car, new value:" + dimension + ", new model: " + cars.getModel() + ", old model:" + oldModel + ", user:" + username,
+                "Dimension des Autos manuell bearbeiten, neuer Wert:" + dimension + ", neues Modell: " + cars.getModel() + ", altes Modell:" + oldModel + ", Benutzer:" + username);
 
 
     }

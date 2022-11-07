@@ -349,7 +349,7 @@
         const canvas = cameras[messageBody.id].canvas;
         const context = canvas.getContext('2d');
 
-        let logMessage = locale === "en" ? messageBody.messageEng : messageBody.message;
+        let logMessage = locale === "en" ? messageBody.messageEng : (locale === "ru" ? messageBody.message : messageBody.messageDe);
         if (messageBody.eventType == 'Photo') {
             cameras[messageBody.id].snapshot = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
             $(fancyImage).attr("data-src", cameras[messageBody.id].snapshot);
