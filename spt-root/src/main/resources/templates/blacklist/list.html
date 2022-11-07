@@ -20,19 +20,9 @@
                             <tr>
                                 <th><a th:text="#{car.platenumber}"></a></th>
                                 <th><a th:text="#{blacklist.type}"></a></th>
-                                <th sec:authorize="hasRole('ROLE_ADMIN')"></th>
+                                <th sec:authorize="hasRole('ROLE_ADMIN')" id="deleteTH"></th>
                             </tr>
                             </thead>
-                            <tbody>
-                            <tr th:each="item : ${blacklists}">
-                                <td th:text="${item.plateNumber}"></td>
-                                <td th:text="${item.type}"></td>
-                                <td sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')">
-                                    <a th:text="#{crm.delete}"
-                                       th:href="@{/blacklist/delete(id=${item.id})}"></a>
-                                </td>
-                            </tr>
-                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -91,15 +81,46 @@
     }
 
     const table = $('#blacklistTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "/rest/blacklist/",
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+                d.customFilters = {
+                    "plateNumber": ""
+                };
+                return JSON.stringify(d);
+            }
+        },
         "order": [ //[[ in thymeleaf is inline script
             [0, "desc"]
         ],
-        pageLength: 100,
+        pageLength: 20,
         buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: address
         },
-        searching: true
+        searching: true,
+        columnDefs: [{
+            "defaultContent": "",
+            "targets": "_all"
+        }],
+        "columns": [
+            {"data": "plateNumber"},
+            {"data": "type"},
+            {"data": function (blacklist) {
+                    if($('#deleteTH').length > 0){
+                        return '<a href="/blacklist/delete?id=' + blacklist.id + '">' + del + '</a>';
+                    } else {
+                        return '';
+                    }
+
+                }
+            }
+        ]
     });
 
     var interval = null;

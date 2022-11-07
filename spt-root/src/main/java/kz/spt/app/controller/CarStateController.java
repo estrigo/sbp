@@ -1,14 +1,14 @@
 package kz.spt.app.controller;
 
-import kz.spt.app.service.BlacklistService;
+import kz.spt.lib.service.BlacklistService;
 import kz.spt.app.service.GateService;
-import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Gate;
 import kz.spt.lib.model.dto.BlacklistDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.service.CarStateService;
 import lombok.extern.java.Log;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -20,10 +20,7 @@ import javax.validation.Valid;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Controller
 @RequestMapping("/journal")
@@ -61,18 +58,30 @@ public class CarStateController {
                     .build());
         }
 
-        List<Gate> allReverseGates = (List<Gate>) gateService.listGatesByType(Gate.GateType.REVERSE);
-        List<Gate> allInGates = (List<Gate>) gateService.listGatesByType(Gate.GateType.IN);
-        List<Gate> allOutGates = (List<Gate>) gateService.listGatesByType(Gate.GateType.OUT);
-        if (allReverseGates.size() > 0) {
-            allInGates.addAll(allReverseGates);
-            allOutGates.addAll(allReverseGates);
+
+        List<Gate> allGates = (List<Gate>) gateService.listAllGates();
+
+        List<Gate> allInGates = new ArrayList<>();
+        List<Gate> allOutGates = new ArrayList<>();
+
+        for(Gate gate: allGates){
+            if(Gate.GateType.IN.equals(gate.getGateType())){
+                allInGates.add(gate);
+            } else if(Gate.GateType.OUT.equals(gate.getGateType())){
+                allOutGates.add(gate);
+            } else if(Gate.GateType.REVERSE.equals(gate.getGateType())){
+                allInGates.add(gate);
+                allOutGates.add(gate);
+            }
         }
         model.addAttribute("allInGates", allInGates);
         model.addAttribute("allOutGates", allOutGates);
-        model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
-        model.addAttribute("canRemove", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR_NO_REVENUE_SHARE", "ROLE_MANAGER").contains(m.getAuthority())));
-        model.addAttribute("canKick", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR").contains(m.getAuthority())));
+
+        Collection<? extends GrantedAuthority> authorities = currentUser.getAuthorities();
+
+        model.addAttribute("canEdit", authorities.stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
+        model.addAttribute("canRemove", authorities.stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR_NO_REVENUE_SHARE", "ROLE_MANAGER").contains(m.getAuthority())));
+        model.addAttribute("canKick", authorities.stream().anyMatch(m-> Arrays.asList("ROLE_OPERATOR").contains(m.getAuthority())));
 
         return "journal/list";
     }

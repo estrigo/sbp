@@ -59,6 +59,10 @@ public class EventLog {
 
     private String plateNumber;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "car")
+    private Cars car;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "event_type")
     private EventLog.EventType eventType;

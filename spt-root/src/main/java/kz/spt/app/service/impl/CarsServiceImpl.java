@@ -25,11 +25,9 @@ import java.util.stream.Collectors;
 public class CarsServiceImpl implements CarsService {
 
     private CarsRepository carsRepository;
-    private EventLogService eventLogService;
 
-    public CarsServiceImpl(CarsRepository carsRepository, EventLogService eventLogService){
+    public CarsServiceImpl(CarsRepository carsRepository){
         this.carsRepository = carsRepository;
-        this.eventLogService = eventLogService;
     }
 
     private static final Comparator<Cars> EMPTY_COMPARATOR = (e1, e2) -> 0;
@@ -94,7 +92,6 @@ public class CarsServiceImpl implements CarsService {
             properties.put("carNumber", platenumber);
 
             properties.put("type", EventLog.StatusType.Success);
-            eventLogService.createEventLog(Cars.class.getSimpleName(), car.getId(), properties, "Новый номер авто " + car.getPlatenumber() + " сохранен в системе ", "New car number " + car.getPlatenumber() + " added to the system ", EventLog.EventType.NEW_CAR_DETECTED);
         }
         if(region != null){
             car.setRegion(region);

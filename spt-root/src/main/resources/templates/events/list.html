@@ -12,7 +12,7 @@
                 <div class="card table-responsive">
                     <div class="card-header" th:text="#{events.events}"></div>
                     <div class="card-body">
-                        <form th:action="@{|/events/list|}" th:object="${eventFilterDto}" method="post" id="search">
+                        <form th:action="@{|/events/excel|}" th:object="${eventFilterDto}" method="post" id="search">
                             <div class="row">
                                 <div class="col-4">
                                     <label th:text="#{events.dateFrom}"></label>
@@ -23,13 +23,15 @@
                                 </div>
                                 <div class="col-4">
                                     <label th:text="#{events.dateTo}"></label>
-                                    <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control filter" th:field="*{dateToString}"
+                                    <input type="datetime-local" min="2018-01-01T00:00" max="2028-01-01T00:00" class="form-control filter"
+                                           th:field="*{dateToString}"
                                            th:value="*{dateToString}"
                                            placeholder="#{events.dateTo}">
                                 </div>
                                 <div class="col-4">
                                     <label style="width: 100%">&nbsp;</label>
-                                    <button type="button" class="btn btn-success waves-effect waves-light" onclick="excelForEventCar(this)" th:text="#{events.downloadEvents}"></button>
+                                    <button  type="submit" name="action" value="excel" class="btn btn-success mr-1"
+                                             th:text="#{events.downloadEvents}"></button>
                                 </div>
                             </div>
                             <div class="row mt-1">
