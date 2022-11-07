@@ -36,7 +36,7 @@ public class AuthController {
     public String processRegistrationForm(Model model, @Valid ChangePasswordDto user, BindingResult bindingResult, Authentication authentication) {
         var userDetails = (UserDetails) authentication.getPrincipal();
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de" : "en";
+        String language = "en";
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
         }

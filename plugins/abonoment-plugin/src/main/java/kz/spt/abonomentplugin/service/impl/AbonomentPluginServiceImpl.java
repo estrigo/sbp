@@ -81,7 +81,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
 
         String custom = customJson;
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de": "en";
+        String language = "en";
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
         } else {
@@ -128,10 +128,8 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         else {
             if (locale.toString().equals("ru")) {
                 abonomentTypes.setCustomJson("Все дни недели");
-            }else if(locale.toString().equals("en")){
+            }else {
                 abonomentTypes.setCustomJson("All days of the week");
-            } else if (locale.toString().equals("de")) {
-                abonomentTypes.setCustomJson("Alle Tage der Woche");
             }
         }
 
@@ -172,10 +170,8 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
                 if(abonomentType.getType().equals("CUSTOM")) {
                     if (locale.toString().equals("ru")) {
                         abonomentType.setDescription("На " + abonomentType.getPeriod() + " дней, " + abonomentType.getPrice() + " в местной валюте" + "(выборочные дни)");
-                    } else if(locale.toString().equals("en")){
+                    } else {
                         abonomentType.setDescription("For " + abonomentType.getPeriod() + " days, " + abonomentType.getPrice() + " in local currency" + "(custom days)");
-                    } else if(locale.toString().equals("de")){
-
                     }
                 }
                 else {

@@ -55,7 +55,7 @@ public class WhitelistController {
     @PostMapping("/list")
     public String uploadMultipartFile(@RequestParam("uploadfile") MultipartFile file, Model model, RedirectAttributes redirectAttributes, @RequestParam Parking selectedParking, @AuthenticationPrincipal UserDetails currentUser) {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de" : "en";
+        String language = "en";
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
         }
@@ -95,7 +95,7 @@ public class WhitelistController {
     @PostMapping("/add")
     public String processRequestAddWhitelist(Model model, @Valid Whitelist whitelist, BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de" : "en";
+        String language = "en";
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
         }
@@ -138,7 +138,7 @@ public class WhitelistController {
     @PostMapping("/groups/add")
     public String processRequestAddGroup(Model model, @Valid WhitelistGroups whitelistGroups, BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de" : "en";
+        String language = "en";
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
         }
@@ -211,7 +211,7 @@ public class WhitelistController {
     public String processRequestEditWhitelist(Model model, @PathVariable Long id, @Valid Whitelist whitelist,
                                         BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de" : "en";
+        String language = "en";
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
         }
@@ -267,7 +267,7 @@ public class WhitelistController {
     public String processRequestEditWhitelist(Model model, @PathVariable Long id, @Valid WhitelistGroups whitelistGroups,
                                               BindingResult bindingResult, @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de" : "en";
+        String language = "en";
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
         }

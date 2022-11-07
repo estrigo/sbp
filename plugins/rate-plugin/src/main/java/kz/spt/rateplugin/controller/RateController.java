@@ -53,7 +53,7 @@ public class RateController {
     @PostMapping("/add/parking/{parkingId}")
     public String rateEdit(Model model, @PathVariable Long parkingId, @Valid ParkingRate rate, BindingResult bindingResult){
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de": "en";
+        String language = "en";
         if (locale.toString().equals("ru")) {
             language = "ru-RU";
         } else if (locale.toString().equals("de")) {
