@@ -77,10 +77,6 @@ public class CarmodelController {
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
         try {
             carModelFileServices.store(file, selectedDimension, currentUser);
-//            model.addAttribute("carModels", carModelServicePl.findAllUsersPageable(pageable));
-//            model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
-//            model.addAttribute("dimensionList", carDimensionsService.listDimensions());
-//            model.addAttribute("dimensions", new Dimensions());
             return "redirect:/carmodel/configure/car";
         } catch (Exception e) {
             e.printStackTrace();
