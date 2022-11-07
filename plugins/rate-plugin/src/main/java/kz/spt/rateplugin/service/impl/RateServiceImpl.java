@@ -179,6 +179,9 @@ public class RateServiceImpl implements RateService {
                 parkingRate.getIntervalJson()!=null) {
             Boolean isDimensions = true;
             double inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY) + (double) inCalendar.get(Calendar.MINUTE) / 60;
+            if (carType=="") {
+                carType = "1";
+            }
             IntervalRate current = getSatisfiedIntervalRate(inCalendarHour, parkingRate, isDimensions, Long.valueOf(carType));
             if (current == null) current = jsonIntervalParser(parkingRate, inCalendarHour, isDimensions, Long.valueOf(carType));
             Iterator<RateCondition> conditionIterator = rateConditionRepository.findAllByIntervalRateId(

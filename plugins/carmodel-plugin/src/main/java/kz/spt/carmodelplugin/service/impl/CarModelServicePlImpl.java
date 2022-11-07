@@ -217,6 +217,7 @@ public class CarModelServicePlImpl implements CarModelServicePl {
         LocalDateTime localDateTime = LocalDateTime.now();
         carModel.setUpdatedTime(localDateTime);
         carModel.setUpdatedBy(currentUser.getUsername());
+        carModel.setType(Math.toIntExact(carModel.getDimensions().getId()));
         carmodelRepository2.save(carModel);
     }
 
@@ -226,6 +227,7 @@ public class CarModelServicePlImpl implements CarModelServicePl {
         carModel.setModel(updateCarModel.getModel());
         carModel.setUpdatedBy(currentUser.getUsername());
         carModel.setDimensions(updateCarModel.getDimensions());
+        carModel.setType(Math.toIntExact(updateCarModel.getDimensions().getId()));
         LocalDateTime localDateTime = LocalDateTime.now();
         carModel.setUpdatedTime(localDateTime);
 
