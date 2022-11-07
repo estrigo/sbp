@@ -134,7 +134,7 @@ public class CameraServiceImpl implements CameraService {
 
     public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
-        return t -> seen.add(keyExtractor.apply(t));
+        return t-> keyExtractor.apply(t) == null ||  seen.add(keyExtractor.apply(t));
     }
 
     @Override

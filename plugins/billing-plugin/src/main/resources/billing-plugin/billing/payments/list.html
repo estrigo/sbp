@@ -113,8 +113,8 @@
 <script th:src="@{/assets/js/xlsx.js}"></script>
 
 <script th:inline="javascript">
-    var localizationAddress = '/plugins/datatables/json/ru.json';
     var locale = [[${#locale}]];
+    var localizationAddress = locale==="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json';
     if (locale == "en") {
         localizationAddress = "";
     }

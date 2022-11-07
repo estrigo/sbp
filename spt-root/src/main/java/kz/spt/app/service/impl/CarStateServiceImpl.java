@@ -151,7 +151,8 @@ public class CarStateServiceImpl implements CarStateService {
                     null,
                     properties,
                     "Журнал.Ручное изменение номера, новое значение:" + carState.getCarNumber() + ", старое значение:" + m.getCarNumber() + ", пользователь:" + username,
-                    "Journal.Manual edit number, new value:" + carState.getCarNumber() + ", old value:" + m.getCarNumber() + ", user:" + username);
+                    "Journal.Manual edit number, new value:" + carState.getCarNumber() + ", old value:" + m.getCarNumber() + ", user:" + username,
+                    "Journal. Nummer manuell bearbeiten, neuer Wert:" + carState.getCarNumber() + ", alter Wert:" + m.getCarNumber() + ", Benutzer:" + username);
 
             m.setCarNumber(carState.getCarNumber());
             carStateRepository.save(m);
@@ -481,7 +482,8 @@ public class CarStateServiceImpl implements CarStateService {
         carState.setRateAmount(rateResult);
         String messageRu = "Ручной выезд Авто с гос. номером " + carState.getCarNumber() + ". Пользователь " + username + " инициировал ручной запуск с парковки " + carState.getParking().getName() + ". Списано с баланса клиента: " + rateResult + ".";
         String messageEn = "Manual pass. Car with license plate " + carState.getCarNumber() + ". User " + username + " initiated manual open gate from parking " + carState.getParking().getName() + ". Deducted from the client's balance: " + rateResult + ".";
-        eventLogService.createEventLog("Rate", null, properties, messageRu, messageEn);
+        String messageDe = "Manueller Durchgang. Auto mit Kennzeichen " + carState.getCarNumber() + ". Benutzer " + username + " initiiert manuelles Öffnen des Tores vom Parkplatz " + carState.getParking().getName() + ". Wird vom Guthaben des Kunden abgezogen: " + rateResult + ".";
+        eventLogService.createEventLog("Rate", null, properties, messageRu, messageEn, messageDe);
         return carState;
     }
 
