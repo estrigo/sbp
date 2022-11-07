@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -63,7 +64,7 @@ public class BookingServiceImpl implements BookingService {
 
                 ObjectNode halaparkPostNode = objectMapper.createObjectNode();
                 halaparkPostNode.put("medium", "Plate Number"); //medium : Plate Number (As default for Parquor)
-                halaparkPostNode.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));
+                halaparkPostNode.put("timestamp", String.valueOf(Instant.now().getEpochSecond()));
                 halaparkPostNode.put("lane_id", "1");
                 halaparkPostNode.put("site_id", "2010"); // Reference id for building its unique and for concord its 2010
                 halaparkPostNode.put("identifier", desiredFormat); //  Plate Number (Emirate Code - Plate Code - Plate No)

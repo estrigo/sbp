@@ -821,41 +821,15 @@ public class CarEventServiceImpl implements CarEventService {
                     log.info("Simple whitelist check");
                     hasAccess = checkSimpleWhiteList(eventDto, camera, properties, whitelistCheckResults, true);
                 } else {
-                    log.info("Complex whitelist check");
-                    if (carState == null) {
-                        log.info("not last entered not left");
-                        if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
-                            hasAccess = false;
-                            if (whitelistCheckResults == null) {
-                                if (abonements != null && abonements.isArray() && abonements.size() > 0) {
-                                    hasAccess = true;
-                                } else {
-                                    hasAccess = checkWhiteList(eventDto, camera, properties, whitelistCheckResults, true);
-                                }
-                            } else {
-                                hasAccess = checkWhiteList(eventDto, camera, properties, whitelistCheckResults, true);
-                            }
-                        } else {
+                    log.info("not last entered not left");
+                    if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
+                        if (abonements != null && abonements.isArray() && abonements.size() > 0) {
                             hasAccess = true;
+                        } else {
+                            hasAccess = checkWhiteList(eventDto, camera, properties, whitelistCheckResults, true);
                         }
                     } else {
-                        log.info("last entered not left");
-                        if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
-                            hasAccess = checkWhiteList(eventDto, camera, properties, whitelistCheckResults, true);
-                        } else {
-                            properties.put("type", EventLog.StatusType.Debt);
-                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Debt, camera.getId(), eventDto.getCarNumberWithRegion(),
-                                    "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность",
-                                    "Not allowed to enter: Car " + eventDto.car_number + " is in debt",
-                                    "Betreten nicht erlaubt: Auto " + eventDto.car_number + " ist verschuldet");
-                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties,
-                                    "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность",
-                                    "Not allowed to enter: Car " + eventDto.car_number + " is in debt",
-                                    "Betreten nicht erlaubt: Auto " + eventDto.car_number + " ist verschuldet",
-                                    EventLog.EventType.DEBT);
-
-                            hasAccess = false;
-                        }
+                        hasAccess = true;
                     }
                 }
             }
@@ -1369,30 +1343,37 @@ public class CarEventServiceImpl implements CarEventService {
                                 carOutBy = StaticValues.CarOutBy.WHITELIST;
                             } else {
                                 properties.put("type", EventLog.StatusType.Deny);
-                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(),
-                                        "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Выезд не разрешен.",
-                                        "Entering record not found. Car with license plate " + eventDto.car_number + ". Exit is not allowed",
-                                        "Eingehender Datensatz nicht gefunden. Auto mit speziellen Kennzeichen " + eventDto.car_number + ". Ausfahrt ist nicht erlaubt");
+                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.NotFound, camera.getId(), eventDto.getCarNumberWithRegion(),
+                                 "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Выезд запрещен.",
+                                  "Entering record not found. Car with license plate " + eventDto.car_number + ". Exit is prohibited",
+                                  "Eingehender Datensatz nicht gefunden. Auto mit speziellen Kennzeichen " + eventDto.car_number + ". Ausfahrt ist nicht erlaubt");
                                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties,
-                                        "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Выезд не разрешен.",
-                                        "Entering record not found. Car with license plate " + eventDto.car_number + ". Exit is not allowed",
-                                        "Eingehender Datensatz nicht gefunden. Auto mit speziellen Kennzeichen " + eventDto.car_number + ". Ausfahrt ist nicht erlaubt",
-                                        EventLog.EventType.NOT_PASS);
+                                 "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Выезд запрещен.",
+                                  "Entering record not found. Car with license plate " + eventDto.car_number + ". Exit is prohibited",
+                                  "Eingehender Datensatz nicht gefunden. Auto mit speziellen Kennzeichen " + eventDto.car_number + ". Ausfahrt ist nicht erlaubt",
+                                EventLog.EventType.NOT_PASS);
                             }
                         } else {
-                            properties.put("type", EventLog.StatusType.Allow);
-                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(),
-                                    "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.",
-                                    "Entering record not found. Car with license plate " + eventDto.car_number + ". For free permits exit is allowed",
-                                    "Eingehender Datensatz nicht gefunden. Auto mit speziellen Kennzeichen " + eventDto.car_number + ". Bei freien Genehmigungen ist die Ausfahrt erlaubt");
-                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties,
-                                    "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого списка выезд разрешен.",
-                                    "Entering record not found. Car with license plate " + eventDto.car_number + ". For free permits exit is allowed",
-                                    "Eingehender Datensatz nicht gefunden. Auto mit speziellen Kennzeichen " + eventDto.car_number + ". Bei freien Genehmigungen ist die Ausfahrt erlaubt",
-                                    EventLog.EventType.WHITELIST_OUT);
-                            carOutBy = StaticValues.CarOutBy.WHITELIST;
-                            hasAccess = true;
+                            ArrayNode whitelistCheckResultArray = (ArrayNode) getWhiteLists(camera.getGate().getParking().getId(), eventDto.getCarNumberWithRegion().trim(), new Date(), format, properties);
+                            if (whitelistCheckResultArray != null && whitelistCheckResultArray.size() > 0) {
+                                properties.put("type", EventLog.StatusType.Allow);
+                                String description = "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого листа выезд разрешен.";
+                                String descriptionEn = "No record found about entering. Car with license number " + eventDto.car_number + ". For free permits exit is allowed";
+                                String descriptionDe = "Eingehender Datensatz nicht gefunden. Auto mit speziellen Kennzeichen " + eventDto.car_number + ". Bei freien Genehmigungen ist die Ausfahrt erlaubt";
+                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(), description, descriptionEn, descriptionDe);
+                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, descriptionDe, EventLog.EventType.WHITELIST_OUT);
+                                hasAccess = true;
+                            } else {
+                                properties.put("type", EventLog.StatusType.NotFound);
+                                String description = "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Выезд запрещен.";
+                                String descriptionEn = "Entering record not found. Car with license plate " + eventDto.car_number + ". Exit is prohibited";
+                                String descriptionDe = "Eingehender Datensatz nicht gefunden. Auto mit speziellen Kennzeichen " + eventDto.car_number + ". Bei freien Genehmigungen ist die Ausfahrt erlaubt";
+                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.NotFound, camera.getId(), eventDto.getCarNumberWithRegion(), description, descriptionEn, descriptionDe);
+                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn,descriptionDe, EventLog.EventType.NOT_PASS);
+                                hasAccess = false;
+                            }
                         }
+
                     } else if (Parking.ParkingType.PREPAID.equals(camera.getGate().getParking().getParkingType())) {
                         properties.put("type", EventLog.StatusType.Allow);
                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(),
@@ -1422,29 +1403,17 @@ public class CarEventServiceImpl implements CarEventService {
                                 EventLog.EventType.PASS);
                         hasAccess = true;
                     } else {
-                        ArrayNode whitelistCheckResultArray = (ArrayNode) getWhiteLists(camera.getGate().getParking().getId(), eventDto.getCarNumberWithRegion(), new Date(), format, properties);
-                        if (whitelistCheckResultArray != null && whitelistCheckResultArray.size() > 0) {
-                            properties.put("type", EventLog.StatusType.Allow);
-                            String description = "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого листа выезд разрешен.";
-                            String descriptionEn = "No record found about entering. Car with license number " + eventDto.car_number + ". For free permits exit is allowed";
-                            String descriptionDe = "Kein Datensatz über die Einfahrt eines Fahrzeugs mit speziellen Kennzeichen gefunden " + eventDto.car_number + ". Bei freien Genehmigungen ist die Ausfahrt erlaubt";
-                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(), description, descriptionEn, descriptionDe);
-                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, descriptionDe, EventLog.EventType.WHITELIST_OUT);
-                            carOutBy = StaticValues.CarOutBy.WHITELIST;
-                            hasAccess = true;
-                        } else {
-                            properties.put("type", EventLog.StatusType.Deny);
-                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.NotFound, camera.getId(), eventDto.getCarNumberWithRegion(),
-                                    "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.",
-                                    "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited",
-                                    "Kein Datensatz über die Einfahrt eines Fahrzeugs mit speziellen Kennzeichen gefunden " + eventDto.car_number + ". Für gebührenpflichtige Parkplätze ist die Ausfahrt verboten");
-                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties,
-                                    "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.",
-                                    "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited",
-                                    "Kein Datensatz über die Einfahrt eines Fahrzeugs mit speziellen Kennzeichen gefunden " + eventDto.car_number + ". Für gebührenpflichtige Parkplätze ist die Ausfahrt verboten",
-                                    EventLog.EventType.NOT_PASS);
-                            hasAccess = false;
-                        }
+                        properties.put("type", EventLog.StatusType.Deny);
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.NotFound, camera.getId(), eventDto.getCarNumberWithRegion(),
+                         "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.",
+                          "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited",
+                          "Kein Datensatz über die Einfahrt eines Fahrzeugs mit speziellen Kennzeichen gefunden " + eventDto.car_number + ". Für gebührenpflichtige Parkplätze ist die Ausfahrt verboten");
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties,
+                        "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.",
+                        "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited",
+                        "Kein Datensatz über die Einfahrt eines Fahrzeugs mit speziellen Kennzeichen gefunden " + eventDto.car_number + ". Für gebührenpflichtige Parkplätze ist die Ausfahrt verboten",
+                        EventLog.EventType.NOT_PASS);
+                        hasAccess = false;
                     }
                 }
             } else {

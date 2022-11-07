@@ -178,10 +178,10 @@ management:
   health:
     mail:
       enabled: false
-#  endpoints:
-#    web:
-#      exposure:
-#        include: health,prometheus
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
   metrics:
     export:
       prometheus:

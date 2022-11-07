@@ -113,6 +113,7 @@ public class CommandExecutor implements PluginRegister {
                 payment.setCarStateId(command.has("carStateId") ? command.get("carStateId").longValue() : null);
 
                 payment.setIkkm(command.has("paymentType") && command.get("paymentType").intValue() == 1);
+                payment.setCar(getRootServicesGetterService().getCarService().findByPlatenumber(payment.getCarNumber()));
 
                 Payment savedPayment = getPaymentService().savePayment(payment);
                 node.put("paymentId", savedPayment.getId());
@@ -151,6 +152,7 @@ public class CommandExecutor implements PluginRegister {
                 payment.setPrice(command.get("rateResult").decimalValue());
                 payment.setProvider(paymentProvider);
                 payment.setParking(carState.getParking());
+                payment.setCar(getRootServicesGetterService().getCarService().findByPlatenumber(payment.getCarNumber()));
                 getPaymentRepository().save(payment);
             } else if ("getCurrentBalance".equals(commandName)) {
                 if (command.has("plateNumber")) {

@@ -46,7 +46,7 @@
             <div id="sidebar-menu">
                 <ul sec:authorize="isAuthenticated()">
                     <li class="menu-title" th:text="#{crm.main}">
-                    <li th:if="${@dashboardServiceImpl.dashboardEnabled()}" sec:authorize="hasRole('ROLE_ADMIN')" class="has_sub">
+                    <li th:if="${@dashboardServiceImpl.dashboardEnabled()}" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_STATS')" class="has_sub">
                         <a href="javascript:void(0);" class="waves-effect waves-primary">
                             <i class="ti ti-pie-chart"></i><span>Dashboards</span><span class="menu-arrow"></span>
                         </a>
@@ -67,7 +67,7 @@
                         <a th:href="@{|/customers/list|}" class="waves-effect waves-primary"><i
                                 class="ti-home"></i><span th:text=" #{customer.customers}"></span></a>
                     </li>
-                    <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_OPERATOR', 'ROLE_RTA')">
+                    <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_OPERATOR')">
                         <th:block th:if="${@cameraServiceImpl.cameraTabList().size() > 0}">
                             <a href="javascript:void(0);" class="waves-effect waves-primary">
                                 <i class="ti-desktop"></i><span th:text=" #{crm.arm} "></span><span class="menu-arrow"></span>
@@ -91,7 +91,7 @@
                         <a th:href="@{|/events/list|}" class="waves-effect waves-primary"><i
                                 class="ti-files"></i><span th:text=" #{events.events} "></span></a>
                     </li>
-                    <th:block sec:authorize="!hasRole('ROLE_RTA')">
+                    <th:block>
                         <li sec:authorize="!hasRole('ROLE_ACCOUNTANT')">
                             <a th:href="@{|/journal/list|}" class="waves-effect waves-primary"><i
                                     class="ti-receipt"></i><span th:text=" #{carstate.journal} "></span></a>
@@ -130,20 +130,6 @@
                         <li sec:authorize="hasRole('ROLE_ACCOUNTANT') && !hasRole('ROLE_BAQORDA')">
                             <a class="waves-effect waves-primary" onclick="javascript:$('#helpModal').modal('show')">
                                 <i class="ti-heart"></i><span th:text=" #{crm.help} "></span></a>
-                        </li>
-                    </th:block>
-                    <th:block sec:authorize="hasRole('ROLE_RTA') && !hasRole('ROLE_ACCOUNTANT')">
-                        <li>
-                            <a th:href="@{|/rta/journal|}" class="waves-effect waves-primary"><i
-                                    class="ti-receipt"></i><span th:text=" #{rta.journal} "></span></a>
-                        </li>
-                        <li>
-                            <a th:href="@{|/rta/entries|}" class="waves-effect waves-primary"><i
-                                    class="mdi mdi-login-variant"></i><span th:text=" #{rta.entries} "></span></a>
-                        </li>
-                        <li>
-                            <a th:href="@{|/rta/exits|}" class="waves-effect waves-primary"><i
-                                    class="mdi mdi-logout-variant"></i><span th:text=" #{rta.exits} "></span></a>
                         </li>
                     </th:block>
                 </ul>
