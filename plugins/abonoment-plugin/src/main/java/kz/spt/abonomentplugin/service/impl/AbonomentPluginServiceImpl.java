@@ -172,15 +172,17 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
                 if(abonomentType.getType().equals("CUSTOM")) {
                     if (locale.toString().equals("ru")) {
                         abonomentType.setDescription("На " + abonomentType.getPeriod() + " дней, " + abonomentType.getPrice() + " в местной валюте" + "(выборочные дни)");
-                    } else if(locale.toString().equals("en")){
-                        abonomentType.setDescription("For " + abonomentType.getPeriod() + " days, " + abonomentType.getPrice() + " in local currency" + "(custom days)");
                     } else if(locale.toString().equals("de")){
-
+                        abonomentType.setDescription("Für " + abonomentType.getPeriod() + " Tage, " + abonomentType.getPrice() + " in Landeswährung" + "(benutzerdefinierte Tage)");
+                    } else{
+                        abonomentType.setDescription("For " + abonomentType.getPeriod() + " days, " + abonomentType.getPrice() + " in local currency" + "(custom days)");
                     }
                 }
                 else {
                     if (locale.toString().equals("ru")) {
                         abonomentType.setDescription("На " + abonomentType.getPeriod() + " дней, " + abonomentType.getPrice() + " в местной валюте");
+                    } else if(locale.toString().equals("de")){
+                        abonomentType.setDescription("Für " + abonomentType.getPeriod() + " Tage, " + abonomentType.getPrice() + " in Landeswährung");
                     } else {
                         abonomentType.setDescription("For " + abonomentType.getPeriod() + " days, " + abonomentType.getPrice() + " in local currency");
                     }
@@ -189,7 +191,10 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             else {
                 if (locale.toString().equals("ru")) {
                     abonomentType.setDescription("На " + abonomentType.getPeriod() + " дней, " + abonomentType.getPrice() + " в местной валюте");
-                } else {
+                }else if(locale.toString().equals("de")){
+                    abonomentType.setDescription("Für " + abonomentType.getPeriod() + " Tage, " + abonomentType.getPrice() + " in Landeswährung");
+                }
+                else {
                     abonomentType.setDescription("For " + abonomentType.getPeriod() + " days, " + abonomentType.getPrice() + " in local currency");
                 }
             }
