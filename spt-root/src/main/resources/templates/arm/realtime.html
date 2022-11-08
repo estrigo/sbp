@@ -897,7 +897,9 @@
                 console.log(response);
             });
         } else {
-            $('#openReasonAlert').text('Необходимо выбрать причину!');
+            let alertText = 'Необходимо выбрать причину!'
+            let alertTextDe = 'Es muss ein Grund gewählt werden!'
+            $('#openReasonAlert').text(locale=="de" ? alertTextDe: alertText);
             $('#openReasonAlert').css("background-color", "#ef5350");
             $('#openReasonAlert').css("color", "white");
         }

@@ -173,13 +173,16 @@
         const selectedTool = $tool.data('tool');
         const selectedTitle = $tool.data('title');
 
+        let alertText = ['Ошибка загрузки изображения.', 'Обновите снимок с камеры.']
+        let alertTextDe = ['Fehler beim Laden des Bildes.', 'Aktualisieren Sie das Bild von der Kamera.']
+
         $('#toolDropdown').removeClass('btn-secondary').addClass('btn-info').html(selectedTitle);
         if (currentCanvasTool) {
             currentCanvasTool.release();
         } else {
             if (image == null) {
                 if (!checkImageExists(selectedTool)) {
-                    alert(['Ошибка загрузки изображения.', 'Обновите снимок с камеры.']);
+                    alert(locale == "de"? alertTextDe: alertText);
                     return;
                 }
             }
@@ -228,7 +231,7 @@
                 isLoading(false);
                 setState(data);
                 setStartState(data);
-                alert("Saved");
+                alert(locale=="de"? "Gesichert":"Saved");
             },
             error: function (jqXHR, exception){
                 isLoading(false);
@@ -253,7 +256,7 @@
         });
     }
     function hi(){
-        alert("Submitted");
+        alert(locale=="de"? "Eingereicht": "Submitted");
     }
     const onToolChange = function (payload) {
         currentTool = payload;
