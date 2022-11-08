@@ -101,7 +101,7 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
             }
 
             Locale locale = LocaleContextHolder.getLocale();
-            String language = "en";
+            String language = locale.toString().equals("de") ? "de" : "en";
             if (locale.toString().equals("ru")) {
                 language = "ru";
             }
