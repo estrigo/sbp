@@ -121,7 +121,7 @@ public class CommandExecutor implements PluginRegister {
 
                 String carNumber = command.get("carNumber").textValue();
                 Long carStateId = command.has("carStateId") ? command.get("carStateId").longValue() : null;
-                getBalanceService().addBalance(carNumber, payment.getPrice(), carStateId, "Received payment from " + payment.getProvider().getName(), "Получен платеж от " + payment.getProvider().getName(), payment.getProvider().getName());
+                getBalanceService().addBalance(carNumber, payment.getPrice(), carStateId, "Received payment from " + payment.getProvider().getName(), "Получен платеж от " + payment.getProvider().getName(), "Zahlung erhalten von" + payment.getProvider().getName(), payment.getProvider().getName() );
 
                 if (savedPayment.getCarStateId() != null) {
                     List<Payment> carStatePayments = getPaymentService().getPaymentsByCarStateId(savedPayment.getCarStateId());
@@ -162,23 +162,25 @@ public class CommandExecutor implements PluginRegister {
                 }
             } else if ("decreaseCurrentBalance".equals(commandName)) {
                 if (command.has("plateNumber") && command.has("amount") && command.has("reason")
-                        && command.has("reasonEn") && command.has("provider")) {
+                        && command.has("reasonEn") && command.has("reasonLocal") && command.has("provider")) {
                     String reason = command.get("reason").textValue();
                     String reasonEn = command.get("reasonEn").textValue();
+                    String reasonLocal = command.get("reasonLocal").textValue();
                     String provider = command.get("provider").textValue();
-                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), command.has("carStateId") ? command.get("carStateId").longValue() : null, reasonEn, reason, provider));
+                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), command.has("carStateId") ? command.get("carStateId").longValue() : null, reasonEn, reason, reasonLocal, provider));
                 } else {
                     throw new RuntimeException("Not all decreaseCurrentBalance parameters set");
                 }
             } else if ("increaseCurrentBalance".equals(commandName)) {
                 if (command.has("plateNumber") && command.has("amount") && command.has("reason")
-                        && command.has("reasonEn") && command.has("provider")) {
+                        && command.has("reasonEn") && command.has("reasonLocal") && command.has("provider")) {
                     String plateNumber = command.get("plateNumber").textValue();
                     BigDecimal amount = command.get("amount").decimalValue();
                     String reason = command.get("reason").textValue();
                     String reasonEn = command.get("reasonEn").textValue();
+                    String reasonLocal = command.get("reasonLocal").textValue();
                     String provider = command.get("provider").textValue();
-                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reason, reasonEn, provider));
+                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reason, reasonEn, reasonLocal,provider));
                 } else {
                     throw new RuntimeException("Not all increaseCurrentBalance parameters set");
                 }

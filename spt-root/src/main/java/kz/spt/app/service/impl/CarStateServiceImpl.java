@@ -320,6 +320,7 @@ public class CarStateServiceImpl implements CarStateService {
                 billingSubtractNode.put("amount", balance.multiply(BigDecimal.valueOf(-1L)));
                 billingSubtractNode.put("reason", "Списание долга");
                 billingSubtractNode.put("reasonEn", "Debt cancellation");
+                billingSubtractNode.put("reasonLocal", "Löschung von Schulden");
                 billingSubtractNode.put("provider", "Manual change");
                 billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
                 result = true;
@@ -461,6 +462,7 @@ public class CarStateServiceImpl implements CarStateService {
             billingNode.put("command", "decreaseCurrentBalance");
             billingNode.put("reason", "");
             billingNode.put("reasonEn", "");
+            billingNode.put("reasonLocal", "");
             billingNode.put("amount", rateResult != null ? rateResult : new BigDecimal(0));
             billingNode.put("plateNumber", carState.getCarNumber());
             billingNode.put("carStateId", carState.getId());

@@ -312,6 +312,7 @@ public class PaymentServiceImpl implements PaymentService {
                 billingSubtractNode.put("plateNumber", commandDto.account);
                 billingSubtractNode.put("reason", "Оплата абономента паркинга " + abonomentResultNode.get("parkingName").textValue());
                 billingSubtractNode.put("reasonEn", "Payment for paid permit of parking " + abonomentResultNode.get("parkingName").textValue());
+                billingSubtractNode.put("reasonLocal", "Zahlung für bezahlten Parkausweis " + abonomentResultNode.get("parkingName").textValue());
                 billingSubtractNode.put("provider", commandDto.clientId);
                 billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
             }
@@ -621,6 +622,7 @@ public class PaymentServiceImpl implements PaymentService {
                     billingSubtractNode.put("parkingName", carState.getParking().getName());
                     billingSubtractNode.put("reason", "Оплата паркинга " + carState.getParking().getName());
                     billingSubtractNode.put("reasonEn", "Payment for parking " + carState.getParking().getName());
+                    billingSubtractNode.put("reasonLocal", "Bezahlung für das Parken " + carState.getParking().getName());
                     billingSubtractNode.put("carStateId", carState.getId());
                     billingSubtractNode.put("provider", "Parking fee");
                     billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
