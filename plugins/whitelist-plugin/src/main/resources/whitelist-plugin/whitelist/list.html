@@ -352,7 +352,9 @@
                 $(element).removeAttr('disabled');
             });
         } else {
-            alert("Выберите группу для этого!");
+            let alertText = "Выберите группу для этого!"
+            let alertTextDe = "Wählen Sie dazu eine Gruppe aus!"
+            alert(locale=="de" ? alertTextDe:alertText);
             $(element).html('Excel');
             $(element).removeAttr('disabled');
         }
