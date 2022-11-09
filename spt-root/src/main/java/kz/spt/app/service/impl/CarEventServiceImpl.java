@@ -1421,8 +1421,9 @@ public class CarEventServiceImpl implements CarEventService {
                                 properties.put("type", EventLog.StatusType.Debt);
                                 String descriptionRu = "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность " + balance;
                                 String descriptionEn = "Not allowed to enter: Car " + eventDto.car_number + " is in debt " + balance;
-                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Debt, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn);
-                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.DEBT);
+                                String descriptionDe = "Betreten nicht erlaubt: Auto " + eventDto.car_number + " ist verschuldet " + balance;
+                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Debt, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn, descriptionDe);
+                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.DEBT);
                             } else {
                                 carOutBy = StaticValues.CarOutBy.ABONOMENT_WO_ENTRY;
                                 carState = carStateService.createCarStateOutWhenNoEntryRecord(eventDto.car_number, eventDto.event_date_time, camera, true,
@@ -1945,8 +1946,9 @@ public class CarEventServiceImpl implements CarEventService {
             properties.put("type", EventLog.StatusType.Success);
             String descriptionRu = "Пропускаем авто: Найден действующий абонемент на номер авто " + eventDto.car_number;
             String descriptionEn = "Allowed: Found valid paid permit for car late number " + eventDto.car_number;
-            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Success, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, EventLog.EventType.ABONEMENT_PASS);
+            String descriptionDe = "Erlaubt: Gültige bezahlte Genehmigung für das Kennzeichen gefunden " + eventDto.car_number;
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Skip, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn, descriptionDe);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.ABONEMENT_PASS);
         } else if (StaticValues.CarOutBy.REGISTER.equals(carOutBy)) {
             if (carState != null) {
                 carState.setCarOutType(CarState.CarOutType.REGISTER_PASS);
