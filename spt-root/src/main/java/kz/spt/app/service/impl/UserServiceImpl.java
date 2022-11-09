@@ -183,7 +183,13 @@ public class UserServiceImpl implements UserService {
     private String valueFromBundle(String name_en){
         Locale locale = LocaleContextHolder.getLocale();
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag("de"));
-        return bundle.getString(name_en);
+        String bundleValue = "";
+        try {
+            bundleValue = bundle.getString(name_en);
+        } catch (Exception e) {
+            bundleValue = name_en;
+        }
+        return bundleValue;
     }
 
 
