@@ -1944,9 +1944,9 @@ public class CarEventServiceImpl implements CarEventService {
             }
         } else if (StaticValues.CarOutBy.ABONOMENT_WO_ENTRY.equals(carOutBy)) {
             properties.put("type", EventLog.StatusType.Success);
-            String descriptionRu = "Пропускаем авто: Найден действующий абонемент на номер авто " + eventDto.car_number;
-            String descriptionEn = "Allowed: Found valid paid permit for car late number " + eventDto.car_number;
-            String descriptionDe = "Erlaubt: Gültige bezahlte Genehmigung für das Kennzeichen gefunden " + eventDto.car_number;
+            String descriptionRu = "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Выезд разрешен по абонементу.";
+            String descriptionEn = "No record found about entering. Car with license number  " + eventDto.car_number + ". Exit is permitted for pass parking";
+            String descriptionDe = "No record found about entering. Car with license number  " + eventDto.car_number + ". Exit is permitted for pass parking";
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Skip, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn, descriptionDe);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.ABONEMENT_PASS);
         } else if (StaticValues.CarOutBy.REGISTER.equals(carOutBy)) {
