@@ -398,7 +398,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
                     newAbonement.setPaid(true);
                 }
             } catch (Exception e){
-                log.warning("Ошибка проверки баланса");
+                log.warning("Ошибка работы с балансом: " + expiring.getCar().getPlatenumber() + " ошибка: " + e.getMessage());
                 newAbonement.setPaid(false);
             }
 
