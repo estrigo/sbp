@@ -75,6 +75,7 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
             billingSubtractNode.put("plateNumber", plateNumber);
             billingSubtractNode.put("reason", "Оплата абономента паркинга " + parkingName);
             billingSubtractNode.put("reasonEn", "Payment for paid permit of parking " + parkingName);
+            billingSubtractNode.put("reasonLocal", "Zahlung für bezahlten Parkausweis " + parkingName);
             billingSubtractNode.put("provider", "Subscription fee");
             billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
         }
