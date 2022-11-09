@@ -3,6 +3,7 @@ package kz.spt.app.rest;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.User;
+import kz.spt.lib.model.dto.UserDto;
 import kz.spt.lib.service.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,7 @@ public class UserRestController {
     }
 
     @PostMapping
-    public Page<User> list(@RequestBody PagingRequest pagingRequest) {
+    public Page<UserDto> list(@RequestBody PagingRequest pagingRequest) {
         return userService.getUsers(pagingRequest);
     }
 

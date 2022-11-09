@@ -1,24 +1,21 @@
 package kz.spt.app.service.impl;
 
+import kz.spt.lib.model.dto.UserDto;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.model.Role;
 import kz.spt.lib.model.User;
 import kz.spt.app.repository.RoleRepository;
 import kz.spt.app.repository.UserRepository;
-import kz.spt.app.service.SpringDataUserDetailsService;
 import kz.spt.lib.service.UserService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -110,12 +107,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<User> getUsers(PagingRequest pagingRequest) {
+    public Page<UserDto> getUsers(PagingRequest pagingRequest) {
         List<User> users = userRepository.findAll();
         return getPage(users, pagingRequest);
     }
 
-    private Page<User> getPage(List<User> users, PagingRequest pagingRequest) {
+    private Page<UserDto> getPage(List<User> users, PagingRequest pagingRequest) {
         List<User> filtered = users.stream()
                 .sorted(sortUsers(pagingRequest))
                 .filter(filterUsers(pagingRequest))
@@ -127,7 +124,8 @@ public class UserServiceImpl implements UserService {
                 .filter(filterUsers(pagingRequest))
                 .count();
 
-        Page<User> page = new Page<>(filtered);
+        List<UserDto> userDtos = getUserDtos(filtered);
+        Page<UserDto> page = new Page<>(userDtos);
         page.setRecordsFiltered((int) count);
         page.setRecordsTotal((int) count);
         page.setDraw(pagingRequest.getDraw());
@@ -170,6 +168,24 @@ public class UserServiceImpl implements UserService {
 
         return EMPTY_COMPARATOR;
     }
+
+    private List<UserDto> getUserDtos(List<User> users){
+        List<UserDto> userDtos = new ArrayList<>();
+        for (User user: users){
+            UserDto userDto = UserDto.userToUserDto(user);
+            userDto.getRoles()
+                    .forEach(roleDto -> roleDto.setName_de(valueFromBundle(roleDto.getName_en())));
+            userDtos.add(userDto);
+        }
+        return userDtos;
+    }
+
+    private String valueFromBundle(String name_en){
+        Locale locale = LocaleContextHolder.getLocale();
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag("de"));
+        return bundle.getString(name_en);
+    }
+
 
 
 }
