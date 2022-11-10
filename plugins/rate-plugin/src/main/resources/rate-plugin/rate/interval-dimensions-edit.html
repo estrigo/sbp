@@ -43,14 +43,14 @@
                                 <input th:readonly="1==1" type="time" th:value="${intervalRate.getDatetimeTo()}"/>
                               </label></td>
                               <td>
-                                <form th:action="@{/rate-dimensions/interval-delete}" th:object="${intervalRate}" method="post">
+                                <form th:action="@{/rate/dimensions/interval-delete}" th:object="${intervalRate}" method="post">
                                   <input type="hidden" name="id" th:value="${intervalRate.getId()}">
                                   <button type="submit" class="btn btn-warning waves-effect">Удалить</button>
                                 </form>
                               </td>
                             </tr>
                             <tr>
-                              <form th:action="@{/rate-dimensions/carmodel-add}" th:object="${intervalRateDto}" method="post">
+                              <form th:action="@{/rate/dimensions/carmodel-add}" th:object="${intervalRateDto}" method="post">
                                 <input type="hidden" name="intervalRate.id" th:value="${intervalRate.getId()}">
                                 <div class="form-group row">
                                   <td>
@@ -75,7 +75,7 @@
                             <th:block th:each="interval, in : ${intervalRate.getDimensionSet()}">
                               <th:block th:each="intRateDim : ${interval}">
                                 <input type="hidden" name="interval.id" th:value="${intRateDim.getId()}">
-                                <form th:action="@{/rate-dimensions/carmodel-delete/{id}(id=${intRateDim.getId()})}" th:object="${intervalRateDto}" method="post">
+                                <form th:action="@{/rate/dimensions/carmodel-delete/{id}(id=${intRateDim.getId()})}" th:object="${intervalRateDto}" method="post">
                                   <input type="hidden" name="intervalRate.id" th:value="${intervalRate.getId()}">
                                   <tr>
                                     <td>
@@ -129,7 +129,7 @@
                                          th:value="${rateCondition.getOnlineRate()}"/></td>
                               <td><input th:disabled="1==1"
                                          th:value="${rateCondition.getParkomatRate()}"/></td>
-                              <form th:action="@{/rate-dimensions/rateCon-delete}" th:object="${rateCondition}" method="post">
+                              <form th:action="@{/rate/dimensions/rateCon-delete}" th:object="${rateCondition}" method="post">
                                 <td th:if="${intervalRate.getRateConditions().size()}==(${mindex.index}+1)">
                                   <input type="hidden" name="id" th:value="${rateCondition.getId()}">
                                   <input type="submit" th:value="'Удалить'">
@@ -148,7 +148,7 @@
                                                         ${intervalRate.getRateConditions()}==null) and
                                                         ${rateCondition.getIntervalType().name()}!='allNext' and
                                                         ${rateCondition.getIntervalType().name()}!='entrance'">
-                              <form th:action="@{/rate-dimensions/rateCon-add}" th:object="${rateCondition}" method="post">
+                              <form th:action="@{/rate/dimensions/rateCon-add}" th:object="${rateCondition}" method="post">
                                 <input type="hidden" name="intervalRate.id" th:value="${intervalRate.getId()}">
                                 <td>
                                   <input type="number" name="standing">
@@ -171,7 +171,7 @@
                             </tr>
                           </div>
                           <tr th:if="${intervalRate.getRateConditions().size()}<1">
-                            <form th:action="@{/rate-dimensions/rateCon-add}" th:object="${rateCondition}" method="post">
+                            <form th:action="@{/rate/dimensions/rateCon-add}" th:object="${rateCondition}" method="post">
                               <input type="hidden" name="intervalRate.id" th:value="${intervalRate.getId()}">
                               <td>
                                 <input type="number" name="standing">
@@ -198,7 +198,7 @@
                     </div>
                   </div>
                 </th:block>
-                <form th:action="@{/rate-dimensions/interval-add}" th:object="${intervalRate}" method="post">
+                <form th:action="@{/rate/dimensions/interval-add}" th:object="${intervalRate}" method="post">
                   <div class="form-group row">
                     <input type="hidden" name="parkingRate.id" th:value="${parkingRate.getId()}">
                     <td>

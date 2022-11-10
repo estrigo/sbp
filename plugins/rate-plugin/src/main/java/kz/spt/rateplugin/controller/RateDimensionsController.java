@@ -11,27 +11,20 @@ import kz.spt.rateplugin.service.IntervalRateService;
 import kz.spt.rateplugin.service.RateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 @Slf4j
 @Controller
-@RequestMapping("/rate-dimensions")
+@RequestMapping("/rate/dimensions")
 @RequiredArgsConstructor
 public class RateDimensionsController {
 

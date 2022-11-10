@@ -276,7 +276,7 @@
                                     <label class="control-label" th:text="#{rate.Type.DIMENSIONS_BY_INTERVAL}"></label>
                                     <hr>
                                     <a sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')"
-                                       th:href="@{|/rate-dimensions/interval-by-dimensions-edit/${parkingRate.parking.id}||}">
+                                       th:href="@{|/rate/dimensions/interval-by-dimensions-edit/${parkingRate.parking.id}||}">
                                         <button id="rateEdit" type="button" class="btn btn-primary waves-effect"
                                                 th:text="#{rate.edit}"></button>
                                     </a>
