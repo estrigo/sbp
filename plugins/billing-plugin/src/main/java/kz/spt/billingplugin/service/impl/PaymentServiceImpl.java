@@ -1,6 +1,8 @@
 package kz.spt.billingplugin.service.impl;
 
+import com.fasterxml.uuid.Generators;
 import kz.spt.billingplugin.dto.FilterPaymentDTO;
+import kz.spt.billingplugin.dto.HeaderDto;
 import kz.spt.billingplugin.dto.PaymentLogDTO;
 import kz.spt.billingplugin.model.Payment;
 import kz.spt.billingplugin.model.PaymentProvider;
@@ -8,33 +10,61 @@ import kz.spt.billingplugin.model.PaymentSpecification;
 import kz.spt.billingplugin.repository.PaymentRepository;
 import kz.spt.billingplugin.service.BalanceService;
 import kz.spt.billingplugin.service.PaymentService;
+import kz.spt.billingplugin.service.RootServicesGetterService;
 import kz.spt.lib.bootstrap.datatable.*;
-import lombok.RequiredArgsConstructor;
+import kz.spt.lib.enums.SyslogTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import kz.spt.lib.model.PaymentCheckLog;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.xssf.usermodel.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.util.ObjectUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.ScheduledFuture;
 
 @Slf4j
 @Service("paymentService")
-@RequiredArgsConstructor
 @Transactional(noRollbackFor = Exception.class)
+@EnableScheduling
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final BalanceService balanceService;
+    private final RootServicesGetterService rootServicesGetterService;
+    private final TaskScheduler scheduler;
+    private ScheduledFuture future;
+
+    private final static String CRON_PR = "payment_register";
+
+    public PaymentServiceImpl(PaymentRepository paymentRepository, BalanceService balanceService,
+                              RootServicesGetterService rootServicesGetterService,
+                              TaskScheduler scheduler) {
+        this.paymentRepository = paymentRepository;
+        this.balanceService = balanceService;
+        this.rootServicesGetterService = rootServicesGetterService;
+        this.scheduler = scheduler;
+    }
 
     @Override
     public Iterable<Payment> listAllPayments() {
@@ -271,4 +301,123 @@ public class PaymentServiceImpl implements PaymentService {
     private <T> Object checkField(T s) {
         return ObjectUtils.isEmpty(s) ? "" : s;
     }
+
+    public void sendingListOfPayment() {
+        UUID uuid = Generators.timeBasedGenerator().generate();
+        rootServicesGetterService.getSyslogService().createSyslog(uuid.toString(), new Date(),
+                "Начинается процесс отправки реестра платежей",
+                "Starting process of sending payment registry",
+                SyslogTypeEnum.PAYMENT_REGISTRY, "OK");
+        FilterPaymentDTO filterPaymentDTO = new FilterPaymentDTO();
+        LocalDate localDate = LocalDate.now();
+        LocalDateTime startOfDay = localDate.minusDays(1).atStartOfDay();
+        LocalDateTime endOfDay = localDate.atStartOfDay();
+        filterPaymentDTO.setDateFrom(Date.from(startOfDay.atZone(ZoneId.systemDefault()).toInstant()));
+        filterPaymentDTO.setDateTo(Date.from(endOfDay.atZone(ZoneId.systemDefault()).toInstant()));
+        List<PaymentLogDTO> paymentList = getPaymentDtoExcelList(filterPaymentDTO);
+        XSSFWorkbook book = new XSSFWorkbook();
+        String subjectName = "Реестр платежей";
+        try (book) {
+            XSSFSheet main = book.createSheet("Payments_" + localDate.minusDays(1));
+            int rowNum = 0;
+            int colNum = 0;
+            XSSFRow headerRow = main.createRow(rowNum++);
+            for (HeaderDto header : paymentHeader()) {
+                addCell(headerRow, header.getValue(), colNum++);
+            }
+            cellCreator(paymentList, rowNum,
+                    main, paymentHeader());
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            try {
+                book.write(bos);
+            } finally {
+                bos.close();
+            }
+            byte[] excelFileAsBytes = bos.toByteArray();
+            ByteArrayResource resource = new ByteArrayResource(excelFileAsBytes);
+            rootServicesGetterService.getMailService().sendEmailWithFile(
+                    "Payments_" + localDate.minusDays(1) + ".xlsx", subjectName, resource, uuid);
+            rootServicesGetterService.getSyslogService().createSyslog(uuid.toString(), new Date(),
+                    "Конец процесса отправки реестра платежей",
+                    "End of payment register sending process",
+                    SyslogTypeEnum.PAYMENT_REGISTRY, "OK");
+        } catch (IOException e) {
+            rootServicesGetterService.getSyslogService().createSyslog(uuid.toString(), new Date(),
+                    "[Ошибка] при запланированной отправке списка платежей",
+                    "[Error] while scheduled sending payment list",
+                    SyslogTypeEnum.PAYMENT_REGISTRY, e.getMessage());
+        }
+    }
+
+    private List<HeaderDto> paymentHeader() {
+        List<HeaderDto> list = new ArrayList<>();
+        list.add(new HeaderDto("id", "№"));
+        list.add(new HeaderDto("carNumber", "Номер авто"));
+        list.add(new HeaderDto("parking", "Паркинг"));
+        list.add(new HeaderDto("inDate", "Дата заезда"));
+        list.add(new HeaderDto("outDate", "Дата выезда"));
+        list.add(new HeaderDto("created", "Дата оплаты"));
+        list.add(new HeaderDto("rateDetails", "Тариф"));
+        list.add(new HeaderDto("price", "Сумма"));
+        list.add(new HeaderDto("provider", "Провайдер"));
+        list.add(new HeaderDto("transaction", "Транзакция"));
+        return list;
+    }
+
+    private void cellCreator(List<?> list, int rowNum, XSSFSheet main, List<HeaderDto> headerList) {
+        for (Object o : list) {
+            int colNum = 0;
+            XSSFRow row = main.createRow(rowNum++);
+            try {
+                for (HeaderDto headerDto : headerList) {
+                    Field privateField
+                            = list.get(0).getClass().getDeclaredField(headerDto.getKey());
+                    privateField.setAccessible(true);
+                    String value = String.valueOf(privateField.get(o));
+                    if (ObjectUtils.isEmpty(value) || value.equals("null")) {
+                        addCell(row, "", colNum++);
+                    } else {
+                        addCell(row, value, colNum++);
+                    }
+                }
+            } catch (Exception e) {
+                addCell(row, "", colNum++);
+            }
+        }
+    }
+
+    private void addCell(XSSFRow row, String value, int colNum) {
+        XSSFCell cell = row.createCell(colNum);
+        cell.setCellValue(value == null ? "" : value);
+    }
+
+    @Bean
+    public void doStart() {
+        startToSendPaymentList();
+    }
+
+    public void startToSendPaymentList() {
+        log.info("Scheduled dispatch of payment started!");
+        future = scheduler.schedule(this::sendingListOfPayment,
+                triggerContext -> {
+                    String cron = cronConfig();
+                    if (cron != null) {
+                        CronTrigger trigger = new CronTrigger(cron);
+                        return trigger.nextExecutionTime(triggerContext);
+                    }
+                    return null;
+                });
+    }
+
+    public void stopToSendPaymentList() {
+        if (future != null) {
+            future.cancel(false);
+        }
+        log.info("Scheduled dispatch of payment stopped!");
+    }
+
+    private String cronConfig() {
+        return rootServicesGetterService.getPaymentRegistryJob().getCronValueByKey(CRON_PR);
+    }
+
 }

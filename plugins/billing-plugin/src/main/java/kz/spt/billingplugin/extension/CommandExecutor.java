@@ -332,6 +332,10 @@ public class CommandExecutor implements PluginRegister {
                 getPaymentService().cancelPaymentByTransactionId(
                         command.get(TRANSACTION_ID).textValue(),
                         command.get("reason").textValue());
+            } else if ("startPaymentRegistryJob".equals(commandName)){
+                getPaymentService().startToSendPaymentList();
+            } else if ("stopPaymentRegistryJob".equals(commandName)){
+                getPaymentService().stopToSendPaymentList();
             } else {
                 throw new RuntimeException("Unknown command for billing operation");
             }
