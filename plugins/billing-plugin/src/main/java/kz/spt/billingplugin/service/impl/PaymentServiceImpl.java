@@ -100,7 +100,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Page<PaymentLogDTO> getPaymentDtoList(PagingRequest pagingRequest) {
-        FilterPaymentDTO filterPayment = pagingRequest.convertTo(FilterPaymentDTO.builder().build());
+        FilterPaymentDTO filterPayment = pagingRequest.convertToP(FilterPaymentDTO.builder().build());
         org.springframework.data.domain.Page<Payment> payments = listLimitedByFilters(filterPayment, pagingRequest);
         return getPage(payments.getTotalElements(), PaymentLogDTO.convertToDto(payments.getContent()), pagingRequest);
     }
