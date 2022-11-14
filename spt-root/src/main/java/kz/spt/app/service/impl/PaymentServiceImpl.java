@@ -542,7 +542,7 @@ public class PaymentServiceImpl implements PaymentService {
                 node.put("sum", commandDto.getSum());
                 node.put("change", commandDto.getChange());
                 node.put("txn_id", commandDto.getTxn_id());
-                node.put("operationName", "Оплата парковки");
+                node.put("operationName", "Оплата парковки, ГРНЗ: " + commandDto.getAccount());
                 node.put("paymentType", "ikkm_payment".equals(commandDto.getType()) ? 1 : 0);
                 JsonNode checkResult = billingPluginRegister.execute(node);
                 return checkResult;
