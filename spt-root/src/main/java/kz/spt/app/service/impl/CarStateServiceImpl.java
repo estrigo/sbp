@@ -523,4 +523,23 @@ public class CarStateServiceImpl implements CarStateService {
     public List<String> getCarsInParkingAndNotPaid(){
         return carStateRepository.getPlateNumbersByOutTimestampIsNullAndNotPaid();
     }
+
+    @Override
+    public CarState createCarStateOutWhenNoEntryRecord(String carNumber, Date timestamp,
+                                                    Camera camera, Boolean paid, String photoUrl) {
+        CarState carState = new CarState();
+        carState.setCarNumber(carNumber);
+        carState.setInTimestamp(timestamp);
+        carState.setOutTimestamp(timestamp);
+        carState.setType(camera.getGate().getParking().getParkingType());
+        carState.setOutChannelIp(camera.getIp());
+        carState.setParking(camera.getGate().getParking());
+        carState.setOutGate(camera.getGate());
+        carState.setOutBarrier(camera.getGate().getBarrier());
+        carState.setPaid(paid);
+        carState.setOutPhotoUrl(photoUrl);
+        carStateRepository.save(carState);
+        return carState;
+    }
+
 }
