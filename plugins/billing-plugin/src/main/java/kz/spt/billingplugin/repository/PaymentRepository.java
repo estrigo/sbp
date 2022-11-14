@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,4 +53,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
     void cancelPayment(
             @Param(value = "transactionId") String transactionId,
             @Param(value = "reason") String reason);
+
+    List<Payment> findAllByCreatedAfterAndProviderInAndCheckNumberIsNull(
+            Date date, List<PaymentProvider> providers);
+
 }
