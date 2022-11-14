@@ -114,4 +114,13 @@ public class StatusCheckJob {
         }
         return null;
     }
+
+    public static boolean checkIpExist(String barrierIp){
+        for(GateStatusDto gate: StatusCheckJob.globalGateDtos){
+            if(gate.barrier != null && gate.barrier.ip != null && gate.barrier.ip.equals(barrierIp)){
+                return true;
+            }
+        }
+        return false;
+    }
 }

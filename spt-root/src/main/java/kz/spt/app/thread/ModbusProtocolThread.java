@@ -12,7 +12,9 @@ import com.intelligt.modbus.jlibmodbus.tcp.TcpParameters;
 import com.intelligt.modbus.jlibmodbus.utils.ModbusSlaveTcpObserver;
 import com.intelligt.modbus.jlibmodbus.utils.TcpClientInfo;
 import kz.spt.app.job.CarSimulateJob;
+import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
+import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.service.impl.BarrierServiceImpl;
 import lombok.extern.java.Log;
 import org.snmp4j.log.LogLevel;
@@ -119,6 +121,11 @@ public class ModbusProtocolThread extends Thread  {
                     } catch (ModbusIOException mie) {
                         log.info(barrierStatusDto.ip + " disconnect/connect error. message: " + mie.getMessage());
                     }
+
+                    if(!StatusCheckJob.checkIpExist(barrierStatusDto.ip)){
+                        GateStatusDto.removeThread(barrierStatusDto.ip);
+                        break;
+                    }
                 }
 
                 try {
@@ -133,6 +140,11 @@ public class ModbusProtocolThread extends Thread  {
                     } catch (ModbusIOException mie) {
                         log.info(barrierStatusDto.ip + " disconnect/connect error. message: " + mie.getMessage());
                     }
+
+                    if(!StatusCheckJob.checkIpExist(barrierStatusDto.ip)){
+                        GateStatusDto.removeThread(barrierStatusDto.ip);
+                        break;
+                    }
                 }
             } else{
                 try {
@@ -140,6 +152,11 @@ public class ModbusProtocolThread extends Thread  {
                     modbusMaster.connect();
                 } catch (Exception e) {
                     log.info(barrierStatusDto.ip + " modbus connect error: " + e.getMessage());
+
+                    if(!StatusCheckJob.checkIpExist(barrierStatusDto.ip)){
+                        GateStatusDto.removeThread(barrierStatusDto.ip);
+                        break;
+                    }
                 }
             }
         }
