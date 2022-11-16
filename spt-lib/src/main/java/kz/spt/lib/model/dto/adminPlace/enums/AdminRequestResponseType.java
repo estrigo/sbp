@@ -13,7 +13,9 @@ public enum AdminRequestResponseType implements Serializable {
     START_WHITE_LIST_JOB,
     STOP_WHITE_LIST_JOB,
     UPLOAD_WHITELIST,
-    DELETED_WHITELIST;
+    DELETED_WHITELIST,
+    START_PAYMENT_REGISTRY_JOB,
+    STOP_PAYMENT_REGISTRY_JOB;
 
     public String getType() {
         return this.name();

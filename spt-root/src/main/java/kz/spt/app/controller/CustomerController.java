@@ -2,6 +2,7 @@ package kz.spt.app.controller;
 
 import kz.spt.lib.model.Customer;
 import kz.spt.lib.service.CustomerService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +17,7 @@ import javax.validation.Valid;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+@Slf4j
 @Controller
 @RequestMapping("/customers")
 public class CustomerController {

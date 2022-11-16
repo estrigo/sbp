@@ -13,4 +13,7 @@ public interface RootServicesGetterService {
     PaymentCheckLogService getPaymentCheckLogService();
     AdminService getAdminService();
     CarsService getCarService();
+    MailService getMailService();
+    PaymentRegistryJob getPaymentRegistryJob();
+    SyslogService getSyslogService();
 }

@@ -19,6 +19,7 @@
                                 <th><a th:text="#{customer.last.name}"></a></th>
                                 <th><a th:text="#{customer.phone}"></a></th>
                                 <th><a th:text="#{customer.cars}"></a></th>
+                                <th><a th:text="#{user.email}"></a></th>
                                 <th></th>
                                 <th></th>
                             </tr>
@@ -94,6 +95,7 @@
             {"data" : "cars" ,
               "render" : "[, ].platenumber"
             },
+            {"data": "email"},
             {"data": "id",
             "render" : function(id){
                 if($('#edit').length)

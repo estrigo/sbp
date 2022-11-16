@@ -288,4 +288,8 @@ public class GateStatusDto {
         modbusMasterThreadMap.put(barrierIp, thread);
         log.info("Adding barrier: " + barrierIp  + " to modbusMasterThreadMap");
     }
+
+    public static void removeThread(String barrierIp){
+        modbusMasterThreadMap.remove(barrierIp);
+    }
 }

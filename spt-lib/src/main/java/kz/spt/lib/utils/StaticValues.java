@@ -14,7 +14,8 @@ public class StaticValues {
         ABONOMENT, // выезд через абономент
         REGISTER, // только регистрировать выезды
         FREE, //  Бесплатный заездь
-        THIRD_PARTY_PAYMENT; // Оплата на стороннем приложении
+        THIRD_PARTY_PAYMENT, // Оплата на стороннем приложении
+        ABONOMENT_WO_ENTRY; // Выезд по абонементу без записи о въезде
     }
 
     public static final ObjectMapper objectMapper = new ObjectMapper();
