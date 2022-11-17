@@ -120,11 +120,33 @@ public class CarImageServiceImpl implements CarImageService {
                     if (!cameraStatusDto.snapshotEnabled) {
                         return;
                     }
+                    saveImageFromBase64ToPicture(carPictureFromRestDto);
                 }
-                saveImageFromBase64ToPicture(carPictureFromRestDto);
+            }
+            CameraStatusDto cameraStatusDto2 = gateStatusDto.backCamera;
+            if (cameraStatusDto2 != null &&
+                    cameraStatusDto2.getIp().equals(carPictureFromRestDto.getIp_address())) {
+                if (cameraStatusDto2.snapshotEnabled != null) {
+                    if (!cameraStatusDto2.snapshotEnabled) {
+                        return;
+                    }
+                    saveImageFromBase64ToPicture(carPictureFromRestDto);
+                }
+
+            }
+            CameraStatusDto cameraStatusDto3 = gateStatusDto.frontCamera2;
+            if (cameraStatusDto3 != null &&
+                    cameraStatusDto3.getIp().equals(carPictureFromRestDto.getIp_address())) {
+                if (cameraStatusDto3.snapshotEnabled != null) {
+                    if (!cameraStatusDto3.snapshotEnabled) {
+                        return;
+                    }
+                    saveImageFromBase64ToPicture(carPictureFromRestDto);
+                }
             }
         }
     }
+
 
     private void saveImageFromBase64ToPicture(CarPictureFromRestDto carPictureFromRestDto) throws IOException {
         try {
