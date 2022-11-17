@@ -1,50 +1,54 @@
 package kz.spt.carmodelplugin.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import kz.spt.carmodelplugin.bootstrap.datatable.CarmodelComparators;
+
 import kz.spt.carmodelplugin.repository.CarmodelRepository;
-import kz.spt.carmodelplugin.service.CarmodelService;
+import kz.spt.carmodelplugin.repository.CarmodelRepository2;
+import kz.spt.carmodelplugin.service.CarModelServicePl;
 import kz.spt.carmodelplugin.service.RootServicesGetterService;
 import kz.spt.carmodelplugin.viewmodel.CarmodelDto;
-import kz.spt.lib.bootstrap.datatable.*;
-import kz.spt.lib.model.CarState;
-import kz.spt.lib.model.Cars;
-import kz.spt.lib.model.CurrentUser;
-import kz.spt.lib.model.EventLog;
-import kz.spt.lib.utils.StaticValues;
+import kz.spt.lib.bootstrap.datatable.Column;
+import kz.spt.lib.bootstrap.datatable.Order;
+import kz.spt.lib.bootstrap.datatable.Page;
+import kz.spt.lib.bootstrap.datatable.PagingRequest;
+import kz.spt.lib.model.*;
 import lombok.extern.java.Log;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.util.StringUtils;
 
 import java.math.BigInteger;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Log
 @Service
 @Transactional(noRollbackFor = Exception.class)
-public class CarmodelServiceImpl implements CarmodelService {
+public class CarModelServicePlImpl implements CarModelServicePl {
 
     private CarmodelRepository carmodelRepository;
     private RootServicesGetterService rootServicesGetterService;
 
-    public CarmodelServiceImpl(CarmodelRepository carmodelRepository, RootServicesGetterService rootServicesGetterService) {
+    private CarmodelRepository2 carmodelRepository2;
+
+
+    public CarModelServicePlImpl(CarmodelRepository carmodelRepository,
+                                 RootServicesGetterService rootServicesGetterService,
+                                 CarmodelRepository2 carmodelRepository2) {
         this.carmodelRepository = carmodelRepository;
         this.rootServicesGetterService = rootServicesGetterService;
+        this.carmodelRepository2 = carmodelRepository2;
     }
 
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
 
     private static final Comparator<CarmodelDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public Page<CarmodelDto> listCarsBy(PagingRequest pagingRequest, CarmodelDto filter) {
         Long count = carmodelRepository.countCarsByFilter(filter);
@@ -184,6 +188,55 @@ public class CarmodelServiceImpl implements CarmodelService {
 
     }
 
+    @Override
+    public List<CarModel> findAll() {
+        return carmodelRepository2.findAll();
 
+    }
+    @Override
+    public CarModel getCarModelById(Integer id) {
+        return carmodelRepository2.getById(id);
+    }
+
+    @Override
+    public void deleteCarModel (Integer id) {
+        CarModel carmodel = carmodelRepository2.getById(id);
+        carmodelRepository2.delete(carmodel);
+    }
+
+    @Override
+    public org.springframework.data.domain.Page<CarModel> findAllUsersPageable (Pageable pageable) {
+        return carmodelRepository2.findAll(pageable);
+    }
+
+    @Override
+    public CarModel findByModel (String model) {
+        return carmodelRepository2.findByModel(model);
+    }
+    @Override
+    public void saveCarModel (CarModel carModel, UserDetails currentUser) {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        carModel.setUpdatedTime(localDateTime);
+        carModel.setUpdatedBy(currentUser.getUsername());
+        carModel.setType(Math.toIntExact(carModel.getDimensions().getId()));
+        carmodelRepository2.save(carModel);
+    }
+
+    @Override
+    public void updateCarModel(int id, CarModel updateCarModel, UserDetails currentUser) {
+        CarModel carModel = getCarModelById(id);
+        carModel.setModel(updateCarModel.getModel());
+        carModel.setUpdatedBy(currentUser.getUsername());
+        carModel.setDimensions(updateCarModel.getDimensions());
+        carModel.setType(Math.toIntExact(updateCarModel.getDimensions().getId()));
+        LocalDateTime localDateTime = LocalDateTime.now();
+        carModel.setUpdatedTime(localDateTime);
+
+        try {
+            carmodelRepository2.save(carModel);
+        } catch (Exception e) {
+          log.warning("Update error CarModel: " + carModel.getModel());
+        }
+    }
 
 }

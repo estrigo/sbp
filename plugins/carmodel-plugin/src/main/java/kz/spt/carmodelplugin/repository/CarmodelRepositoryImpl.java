@@ -25,11 +25,6 @@ public class CarmodelRepositoryImpl implements CarmodelRepository {
     @PersistenceContext
     private EntityManager em;
 
-    @Override
-    public List<Map<String, String>> getAll() {
-        return null;
-    }
-
     private Query getQuery(String queryHead, String platenumber, String dateFrom) {
 
         String query = queryHead + " from cars c " +

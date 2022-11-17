@@ -532,7 +532,7 @@ public class CarEventServiceImpl implements CarEventService {
                     camera = cameraService.getCameraById(eventDto.cameraId);
                 } else {
                     List<Camera> cameraList = cameraService.findCameraByIp(cameraStatusDto.ip);
-                    if (Gate.GateType.OUT.equals(gate.gateType)) {
+                    if (Gate.GateType.OUT.equals(gate.gateType)) {  /*#ans tut polu4aetsya out nachinaetsya*/
                         if (cameraList.size() > 1) {
                             CarState carStateForCheckGateType = carStateService.getLastNotLeft(eventDto.car_number);
                             if (carStateForCheckGateType != null) { // Check Last not left parking
@@ -960,15 +960,12 @@ public class CarEventServiceImpl implements CarEventService {
                 carModel = carModelRepository.getByModel(eventDto.car_model);
             }
             String dimension;
-            if (carModel != null && carModel.getType() == 1) {
-                dimension = "легковой";
-            } else if (carModel != null && carModel.getType() == 2) {
-                dimension = "микро автобус";
-            } else if (carModel != null && carModel.getType() == 3) {
-                dimension = "грузовик";
+            if(carModel != null && carModel.getDimensions().getId() != null) {
+                dimension = carModel.getDimensions().getCarClassification();
             } else {
                 dimension = "не распознан";
             }
+
             eventWithDimensionRu = ", габарит: " + dimension;
             eventWithDimensionEn = ", dimension: " + dimension;
             eventWithDimensionDe = ", Grösse: " + dimension;
@@ -2073,7 +2070,7 @@ public class CarEventServiceImpl implements CarEventService {
             Cars cars = carsService.findByPlatenumber(carState.getCarNumber());
             CarModel carModel = carModelService.getByModel(cars.getModel());
             if (carModel != null)
-                ratePluginNode.put("carType", carModel.getType());
+                ratePluginNode.put("carType", carModel.getDimensions().getId());
             JsonNode ratePluginResult = ratePluginRegister.execute(ratePluginNode);
             return ratePluginResult.get("rateResult").decimalValue().setScale(2);
         } else {

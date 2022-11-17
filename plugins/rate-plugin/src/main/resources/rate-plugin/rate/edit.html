@@ -45,7 +45,8 @@
                                             <option th:value="DIMENSIONS" th:text="#{'rate.Type.DIMENSIONS'}"></option>
                                             <option th:value="PREPAID" th:text="#{'rate.Type.PREPAID'}"></option>
                                             <option th:value="FREE" th:text="#{'rate.Type.FREE'}"></option>
-<!--                                            <option th:value="INTERVAL_OLD" th:text="#{'rate.Type.INTERVAL_OLD'}"></option>-->
+                                            <option th:value="DIMENSIONS_BY_INTERVAL" th:text="#{'rate.Type.DIMENSIONS_BY_INTERVAL'}"></option>
+                                            <!--                                            <option th:value="INTERVAL_OLD" th:text="#{'rate.Type.INTERVAL_OLD'}"></option>-->
                                         </select>
                                     </div>
                                 </div>
@@ -176,19 +177,19 @@
                                             <tbody id="intervalContainer">
                                             </tbody>
                                             <tbody id="intervalInputs">
-                                                <tr>
-                                                    <td>
-                                                        <select id="intervalFrom">
-                                                        </select>
-                                                    </td>
-                                                    <td>
-                                                        <select id="intervalTo">
-                                                        </select>
-                                                    </td>
-                                                    <td>
-                                                        <button type="button" class="btn btn-secondary waves-effect" th:text="#{crm.add}" onclick="saveInterval()"></button>
-                                                    </td>
-                                                </tr>
+                                            <tr>
+                                                <td>
+                                                    <select id="intervalFrom">
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select id="intervalTo">
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-secondary waves-effect" th:text="#{crm.add}" onclick="saveInterval()"></button>
+                                                </td>
+                                            </tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -269,8 +270,97 @@
 
                                 </div>
                             </div>
-
-                            <!------------------------------------------------->
+                            <!------------------------------------------------>
+                            <div id="dimensions_by_interval" class="row" style="display: none;">
+                                <div class="form-group">
+                                    <label class="control-label" th:text="#{rate.Type.DIMENSIONS_BY_INTERVAL}"></label>
+                                    <hr>
+                                    <a sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_ADMIN')"
+                                       th:href="@{|/rate/dimensions/interval-by-dimensions-edit/${parkingRate.parking.id}||}">
+                                        <button id="rateEdit" type="button" class="btn btn-primary waves-effect"
+                                                th:text="#{rate.edit}"></button>
+                                    </a>
+                                    <hr>
+                                    <th:block th:each="intervalRate, ind : ${intervalRates}">
+                                        <div class="card">
+                                            <div class="card-header" id="headingTwo">
+                                                <h5 class="mb-0">
+                                                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                                            th:attr="data-target='#accordion_'+${ind.index}"
+                                                            aria-expanded="false" aria-controls="collapseTwo">
+                                                        <table class="table table-hover w-auto">
+                                                            <thead>
+                                                            <tr>
+                                                                <th></th>
+                                                                <th th:text="'#'"></th>
+                                                                <th th:text="#{rate.intervalFrom}"></th>
+                                                                <th th:text="#{rate.intervalUntil}"></th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            <tr>
+                                                                <td><i class="fa fa-plus-square"></i></td>
+                                                                <td><a th:text="${ind.index} + 1"></a></td>
+                                                                <td><a th:text="${intervalRate.getDatetimeFrom()}"></a></td>
+                                                                <td><a th:text="${intervalRate.getDatetimeTo()}"></a></td>
+                                                            </tr>
+                                                                <tr>
+                                                                    <th th:text="#{rate.typeOfDimension}"></th>
+                                                                </tr>
+                                                            <tr>
+                                                                <th:block>
+                                                                    <div>
+                                                                <a th:each="intRateDim : ${intervalRate.getDimensionSet()}">
+                                                                    <td>
+                                                                        <div>
+                                                                            <a th:text="${intRateDim.carClassification}"
+                                                                               th:value="${intRateDim.id}">
+                                                                            </a>
+                                                                        </div>
+                                                                    </td>
+                                                                </a>
+                                                                    </div>
+                                                                </th:block>
+                                                            </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </button>
+                                                </h5>
+                                            </div>
+                                            <div th:id="'accordion_'+${ind.index}" class="collapse" aria-labelledby="headingTwo"
+                                                 data-parent="#interval">
+                                                <div class="card-body">
+                                                    <table class="table table-hover w-auto">
+                                                        <thead>
+                                                        <tr>
+                                                            <th th:text="#{rate.accrualType}"></th>
+                                                            <th th:text="#{rate.sumOnline}"></th>
+                                                            <th th:text="#{rate.sumParkomat}"></th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        <tr th:each="rateCondition, mindex : ${intervalRate.getRateConditions()}">
+                                                            <td>
+                                                                <span style="width: auto;"
+                                                                      th:text="${rateCondition.getStanding()}"></span>
+                                                                <span style="width: auto;"
+                                                                      th:text="${rateCondition.getIntervalType()}"></span>
+                                                            </td>
+                                                            <td><a th:text="${rateCondition.getOnlineRate()}"></a></td>
+                                                            <td><a th:text="${rateCondition.getParkomatRate()}"></a></td>
+                                                            <td>
+                                                                <input hidden th:name="|list(${mindex.index}).id|" th:value="${rateCondition.getId()}"/>
+                                                            </td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th:block>
+                                </div>
+                            </div>
+                            <!-------------------------------------------------->
                             <div id="dimensions" class="row" style="display: none;">
                                 <div class="col-md-6">
                                     <div class="form-group">
@@ -383,6 +473,15 @@
                                     <input type="checkbox" class="form-control" id="cashlessPayment">
                                 </div>
                             </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <select id="dimensionId"  class="form-control">
+                                        <option th:each="d : ${dimensionsList}"
+                                                th:text="${d.carClassification}"
+                                                th:value="${d.id}"></option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group row">
                             <div class="col-12">
@@ -434,6 +533,12 @@
             drawInterval();
         } else {
             $('#dimensions').hide();
+        }
+        if(val === 'DIMENSIONS_BY_INTERVAL'){
+            $('#dimensions_by_interval').show();
+            drawInterval();
+        } else {
+            $('#dimensions_by_interval').hide();
         }
         console.log(val);
         if(val === 'PREPAID'){
@@ -612,12 +717,16 @@
         let inDate = $('#inDate').val();
         let outDate = $('#outDate').val();
         let cashlessPayment = $('#cashlessPayment').is(":checked");
+        // console.log(dimensionCheck + " there are dimension");
+        // console.log($('#dimensionCheck').val() + " there are dimension2");
+        // console.log(dimensionCheck.val() + " there are dimension3");
         if(inDate && outDate){
             let body = {
                 'inDate': inDate,
                 'outDate': outDate,
                 'cashlessPayment': cashlessPayment,
-                'parkingId': $('#parkingId').val()
+                'parkingId': $('#parkingId').val(),
+                'dimensionId': $('#dimensionId').val()
             }
 
             console.log(body)
