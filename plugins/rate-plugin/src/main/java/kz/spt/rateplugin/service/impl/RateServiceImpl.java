@@ -22,6 +22,7 @@ import kz.spt.rateplugin.service.RateService;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
@@ -602,8 +603,12 @@ public class RateServiceImpl implements RateService {
                 rateConditionList.add(rateCondition);
                 rateCondition.setIntervalRate(intervalRate);
             }
-            intervalRate.getRateConditions().clear();
-            intervalRate.getRateConditions().addAll(rateConditionList);
+            if (CollectionUtils.isEmpty(intervalRate.getRateConditions())) {
+                intervalRate.setRateConditions(rateConditionList);
+            } else {
+                intervalRate.getRateConditions().clear();
+                intervalRate.getRateConditions().addAll(rateConditionList);
+            }
             intervalRateRepository.save(intervalRate);
         }
         if(isDimensions) {
