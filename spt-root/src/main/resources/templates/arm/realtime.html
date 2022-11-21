@@ -87,11 +87,12 @@
                         </div>
                     </div>
                     <th:block sec:authorize="!hasRole('ROLE_RTA')">
-                        <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100">
+                        <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100" >
                             <!--новая роль - оператор который может открыть без шлагбаум без причин и комментариев -->
                             <div class="p-1 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_OPERATOR_PARQOUR')">
                                 <button type="button" class="btn btn-outline-danger w-100"
+                                        th:id="${'button_handler_1' + camera.id}"
                                         th:cameraId="${camera.id}"
                                         th:onclick="openGateWOReason(this.getAttribute('cameraId'))"
                                         th:text="#{arm.open.parqour}"></button>
@@ -99,6 +100,7 @@
                             <div class="col-md-6 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-success w-100"
+                                        th:id="${'button_handler_2' + camera.id}"
                                         th:cameraId="${camera.id}"
                                         th:onclick="openGate(this.getAttribute('cameraId'))"
                                         th:text="#{arm.open}"></button>
@@ -106,15 +108,17 @@
                             <div class="col-md-6 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-warning w-100"
+                                        th:id="${'button_handler_3' + camera.id}"
                                         th:cameraId="${camera.id}"
                                         th:onclick="closeGate(this.getAttribute('cameraId'))"
                                         th:text="#{arm.close}"></button>
                             </div>
                         </div>
-                        <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100">
+                        <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100" >
                             <div class="p-1 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <input type="text" th:id="${'plateNumber' + camera.id}" th:cameraId="${camera.id}"
+
                                        th:placeholder="#{arm.licensePlate}"
                                        th:onkeydown="onTextEnter(this.getAttribute('cameraId'))"
                                        class="form-control w-100">
@@ -122,12 +126,14 @@
                             <div class="p-1 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
+                                        th:id="${'button_handler_4' + camera.id}"
                                         th:onclick="passCar(this.getAttribute('cameraId'))"
                                         th:text="#{crm.letIn}"></button>
                             </div>
                             <div class="p-1 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-primary w-100"
+                                        th:id="${'button_handler_5' + camera.id}"
                                         th:cameraId="${camera.id}"
                                         th:onclick="checkBalance(this.getAttribute('cameraId'))"
                                         th:text="#{crm.balance}"></button>
@@ -135,6 +141,7 @@
                             <div class="p-1 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-info w-100" th:cameraId="${camera.id}"
+                                        th:id="${'button_handler_6' + camera.id}"
                                         th:onclick="manualEnter(this.getAttribute('cameraId'))"
                                         th:text="#{crm.letInWoBarrier}"></button>
                             </div>
@@ -355,6 +362,25 @@
         console.log('##################');
     }
 
+    function buttonHandler(disable, reasonCameraId){
+        if(disable){
+            $('#button_handler_1' + reasonCameraId).attr('disabled', 'disabled')
+            $('#button_handler_2' + reasonCameraId).attr('disabled', 'disabled')
+            $('#button_handler_3' + reasonCameraId).attr('disabled', 'disabled')
+            $('#button_handler_4' + reasonCameraId).attr('disabled', 'disabled')
+            $('#button_handler_5' + reasonCameraId).attr('disabled', 'disabled')
+            $('#button_handler_6' + reasonCameraId).attr('disabled', 'disabled')
+
+        }else{
+            $('#button_handler_1' + reasonCameraId).removeAttr('disabled')
+            $('#button_handler_2' + reasonCameraId).removeAttr('disabled')
+            $('#button_handler_3' + reasonCameraId).removeAttr('disabled')
+            $('#button_handler_4' + reasonCameraId).removeAttr('disabled')
+            $('#button_handler_5' + reasonCameraId).removeAttr('disabled')
+            $('#button_handler_6' + reasonCameraId).removeAttr('disabled')
+        }
+    }
+
     /*функции для октрытия шлагбаума без причин и комментариев*/
     function sendOpenArmWOReason(){
         let reasonCameraId = $('#reasonCameraId').val();
@@ -372,8 +398,14 @@
             "contentType": false,
             "data": form
         };
+        console.log("HANDLER START")
+        buttonHandler(true, reasonCameraId);
+
+
+
         $.ajax(settings).done(function (response) {
             $('#openGateWOReason').modal('hide');
+            buttonHandler(false, reasonCameraId);
             console.log(response);
         });
     }
@@ -644,7 +676,9 @@
                 "contentType": false,
                 "data": form
             };
+            buttonHandler(true, cameraId);
             $.ajax(settings).done(function (response) {
+                buttonHandler(false, cameraId);
                 console.log(response);
             });
         } else {
@@ -665,8 +699,10 @@
                 "method": "POST",
                 "data": {'cameraId': cameraId, 'plateNumber': plateNumber}
             };
+            buttonHandler(true, cameraId);
             $.ajax(settings).done(function (response) {
                 console.log(response);
+                buttonHandler(false, cameraId);
             });
         } else {
             const logs = cameras[cameraId].logs;
@@ -681,9 +717,12 @@
             const logs = cameras[cameraId].logs;
             $(logs).prepend(content("Error", '[' + plateNumber + ']' + [[#{crm.onlyLatinAndNumbersAllowed}]]));
         } else if (plateNumber && plateNumber.length > 2 && plateNumber.length < 17) {
+            buttonHandler(true, cameraId);
             $.get("/rest/balance/check/" + plateNumber, function (data) {
                 const logs = cameras[cameraId].logs;
+
                 $(logs).prepend(content("Success", '[' + plateNumber + ']' + [[#{arm.balanceEqual}]] + data));
+                buttonHandler(false, cameraId);
             });
         } else {
             const logs = cameras[cameraId].logs;
@@ -947,8 +986,11 @@
                 "contentType": false,
                 "data": form
             };
+            buttonHandler(true, reasonCameraId);
+            $('#openGate').modal('hide');
             $.ajax(settings).done(function (response) {
-                $('#openGate').modal('hide');
+
+                buttonHandler(false, reasonCameraId);
                 console.log(response);
             });
         } else {
