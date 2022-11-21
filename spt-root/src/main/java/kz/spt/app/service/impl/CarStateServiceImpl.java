@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.service.BarrierService;
+import kz.spt.lib.service.MessageKey;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
@@ -147,12 +148,13 @@ public class CarStateServiceImpl implements CarStateService {
             properties.put("carNumber", carState.getCarNumber());
             properties.put("eventTime", format.format(new Date()));
             properties.put("type", EventLog.StatusType.Success);
-            eventLogService.createEventLog(CarState.class.getSimpleName(),
-                    null,
-                    properties,
-                    "Журнал.Ручное изменение номера, новое значение:" + carState.getCarNumber() + ", старое значение:" + m.getCarNumber() + ", пользователь:" + username,
-                    "Journal.Manual edit number, new value:" + carState.getCarNumber() + ", old value:" + m.getCarNumber() + ", user:" + username,
-                    "Journal. Nummer manuell bearbeiten, neuer Wert:" + carState.getCarNumber() + ", alter Wert:" + m.getCarNumber() + ", Benutzer:" + username);
+
+            Map<String, Object> messageValues = new HashMap<>();
+            messageValues.put("platenumber", carState.getCarNumber());
+            messageValues.put("oldPlatenumber", m.getCarNumber());
+            messageValues.put("username", username);
+
+            eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, messageValues, MessageKey.JOURNAL_MANUAL_EDIT_NUMBER);
 
             m.setCarNumber(carState.getCarNumber());
             carStateRepository.save(m);
@@ -482,10 +484,14 @@ public class CarStateServiceImpl implements CarStateService {
             }
         }
         carState.setRateAmount(rateResult);
-        String messageRu = "Ручной выезд Авто с гос. номером " + carState.getCarNumber() + ". Пользователь " + username + " инициировал ручной запуск с парковки " + carState.getParking().getName() + ". Списано с баланса клиента: " + rateResult + ".";
-        String messageEn = "Manual pass. Car with license plate " + carState.getCarNumber() + ". User " + username + " initiated manual open gate from parking " + carState.getParking().getName() + ". Deducted from the client's balance: " + rateResult + ".";
-        String messageDe = "Manueller Durchgang. Auto mit Kennzeichen " + carState.getCarNumber() + ". Benutzer " + username + " initiiert manuelles Öffnen des Tores vom Parkplatz " + carState.getParking().getName() + ". Wird vom Guthaben des Kunden abgezogen: " + rateResult + ".";
-        eventLogService.createEventLog("Rate", null, properties, messageRu, messageEn, messageDe);
+
+        Map<String, Object> messageValues = new HashMap<>();
+        messageValues.put("platenumber", carState.getCarNumber());
+        messageValues.put("username", username);
+        messageValues.put("rateResult", rateResult);
+        messageValues.put("parking", carState.getParking().getName());
+
+        eventLogService.createEventLog("Rate", null, properties, messageValues, MessageKey.MANUAL_PASS_WITH_DEBT);
         return carState;
     }
 

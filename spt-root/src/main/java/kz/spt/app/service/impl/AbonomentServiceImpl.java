@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.model.dto.Period;
+import kz.spt.lib.service.MessageKey;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.EventLog;
@@ -311,19 +312,16 @@ public class AbonomentServiceImpl implements AbonomentService {
             JsonNode result = abonomentPluginRegister.execute(node);
             log.info("result : " + result);
             if(result.has("expirationResult")){
+                Map<String, Object> messageValues = new HashMap<>();
+                messageValues.put("platenumber", plateNumber);
+
                 if("expired".equals(result.get("expirationResult").textValue())){
-                    String descriptionRu = "Срок абонемента просрочен. Авто с гос. номером " + plateNumber;
-                    String descriptionEn = "Paid permit is expired. Car with number " + plateNumber;
-                    String descriptionDe = "Bezahlte Genehmigung ist abgelaufen. Auto mit Nummer " + plateNumber;
-                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Warning, cameraId, plateNumber, descriptionRu, descriptionEn, descriptionDe);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), cameraId, properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.ABONEMENT);
+                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Warning, cameraId, plateNumber, messageValues, MessageKey.ABONNEMENT_EXPIRED);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), cameraId, properties, messageValues, MessageKey.ABONNEMENT_EXPIRED, EventLog.EventType.ABONEMENT);
                 }
                 if("closeToExire".equals(result.get("expirationResult").textValue())){
-                    String descriptionRu = "Осталось менее 24 часа срока истечения абонемента. Авто с гос. номером " + plateNumber;
-                    String descriptionEn = "Less than 24 hours left to paid permit expire. Car with number " + plateNumber;
-                    String descriptionDe = "Es bleiben weniger als 24 Stunden bis zum Ablauf der bezahlten Genehmigung. Auto mit Nummer " + plateNumber;
-                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Warning, cameraId, plateNumber, descriptionRu, descriptionEn,descriptionDe);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), cameraId, properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.ABONEMENT);
+                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Warning, cameraId, plateNumber, messageValues, MessageKey.WARNING_EXPIRATION);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), cameraId, properties, messageValues, MessageKey.WARNING_EXPIRATION, EventLog.EventType.ABONEMENT);
                 }
             }
         }
