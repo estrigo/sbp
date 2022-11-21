@@ -39,9 +39,7 @@ import org.thymeleaf.dialect.springdata.util.Strings;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -72,6 +70,8 @@ public class CarEventServiceImpl implements CarEventService {
     private final CarModelRepository carModelRepository;
     private final WhitelistRootService whitelistRootService;
     private final PaymentService paymentService;
+
+    private final ZoneId id = ZoneId.systemDefault();
 
     private final TabloService tabloService;
 
@@ -1819,29 +1819,28 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     private void sendNotification(CarState carState, Date dateOut, BigDecimal rate) {
-        ZoneId id = ZoneId.systemDefault();
-        String dt_start = String.valueOf(ZonedDateTime.ofInstant(carState.getInTimestamp().toInstant(), id).withFixedOffsetZone());
-        String dt_finish = String.valueOf(ZonedDateTime.ofInstant(dateOut.toInstant(), id).withFixedOffsetZone());
-
-        RestTemplate restTemplate = new RestTemplate();
-        String url = notificationUrl;
-        Map<String, Object> params = new HashMap<>();
-        params.put("plate_number", carState.getCarNumber());
-        params.put("parking_uid", parking_uid.toString());
-        params.put("sum", rate.intValue());
-        params.put("dt_start", dt_start);
-        params.put("dt_finish", dt_finish);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + magnumNotificationToken);
-        HttpEntity request = new HttpEntity<>(params, headers);
-
         try {
+            String dt_start = String.valueOf(ZonedDateTime.ofInstant(carState.getInTimestamp().toInstant(), id).withFixedOffsetZone());
+            String dt_finish = String.valueOf(ZonedDateTime.ofInstant(dateOut.toInstant(), id).withFixedOffsetZone());
+
+            RestTemplate restTemplate = new RestTemplate();
+            String url = notificationUrl;
+            Map<String, Object> params = new HashMap<>();
+            params.put("plate_number", carState.getCarNumber());
+            params.put("parking_uid", parking_uid.toString());
+            params.put("sum", rate.intValue());
+            params.put("dt_start", dt_start);
+            params.put("dt_finish", dt_finish);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + magnumNotificationToken);
+
+            HttpEntity request = new HttpEntity<>(params, headers);
+            log.info("[Magnum] request: " + params);
             ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, request, String.class);
-            log.info("Magnum notification response status: " + responseEntity.getStatusCode() + ", plate_number: " + carState.getCarNumber());
+            log.info("[Magnum] notification response status: " + responseEntity.getStatusCode() + ", plate_number: " + carState.getCarNumber());
         } catch (Exception e) {
-//            e.printStackTrace();
-            log.info("Magnum notification response error.");
+            log.info("[Magnum] notification response error:" + e.getMessage());
         }
 
     }
