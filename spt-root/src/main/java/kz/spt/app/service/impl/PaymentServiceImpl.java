@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.model.dto.Period;
+import kz.spt.app.service.LanguagePropertiesService;
+import kz.spt.lib.service.MessageKey;
 import kz.spt.app.service.WhitelistRootService;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
@@ -27,11 +29,7 @@ import org.springframework.util.ObjectUtils;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 
 @Log
 @Service
@@ -47,6 +45,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final AbonomentService abonomentService;
     private final WhitelistRootService whitelistRootService;
     private final QrPanelService qrPanelService;
+    private final LanguagePropertiesService languagePropertiesService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
@@ -54,7 +53,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService, ParkingService parkingService, EventLogService eventLogService,
                               CarModelService carModelService, AbonomentService abonomentService, WhitelistRootService whitelistRootService, QrPanelService qrPanelService,
-                              PaymentCheckLogService paymentCheckLogService) {
+                              LanguagePropertiesService languagePropertiesService, PaymentCheckLogService paymentCheckLogService) {
         this.pluginService = pluginService;
         this.carStateService = carStateService;
         this.carService = carService;
@@ -64,6 +63,7 @@ public class PaymentServiceImpl implements PaymentService {
         this.abonomentService = abonomentService;
         this.whitelistRootService = whitelistRootService;
         this.qrPanelService = qrPanelService;
+        this.languagePropertiesService = languagePropertiesService;
         this.paymentCheckLogService = paymentCheckLogService;
     }
 
@@ -84,7 +84,7 @@ public class PaymentServiceImpl implements PaymentService {
                         return successDto;
                     } else {
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
-                        dto.message = "Паркинг по предоплате не найден";
+                        dto.message = languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_PREPAID_NOT_FOUND);
                         dto.result = 1;
                         dto.sum = commandDto.sum;
                         dto.txn_id = commandDto.txn_id;
@@ -111,7 +111,7 @@ public class PaymentServiceImpl implements PaymentService {
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
                         dto.sum = BigDecimal.ZERO;
                         dto.txn_id = commandDto.txn_id;
-                        dto.message = "Некорректный номер авто свяжитесь с оператором.";
+                        dto.message = languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_ERROR_INCORRECT_PLATENUMBER);
                         dto.result = 1;
                         dto.currency = getCurrency();
                         savePaymentCheckLog(commandDto.account, dto.message, dto.sum, null, PaymentCheckLog.PaymentCheckType.NOT_FOUND, dto.current_balance, commandDto.getTxn_id(), commandDto.getClientId());
@@ -160,7 +160,7 @@ public class PaymentServiceImpl implements PaymentService {
             } else if ("pay".equals(commandDto.command)) {
                 if (commandDto.txn_id == null || "".equals(commandDto.txn_id)) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
-                    dto.message = "Пустое значение для поля txn_id";
+                    dto.message = languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_ERROR_NULL_TXN);
                     dto.result = 4;
                     dto.sum = commandDto.sum;
                     dto.txn_id = commandDto.txn_id;
@@ -168,7 +168,7 @@ public class PaymentServiceImpl implements PaymentService {
                 }
                 if (commandDto.sum == null || BigDecimal.ZERO.compareTo(commandDto.sum) > -1) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
-                    dto.message = "Некорректное значение для sum";
+                    dto.message = languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_ERROR_INCORRECT_SUM);
                     dto.result = 5;
                     dto.sum = commandDto.sum;
                     dto.txn_id = commandDto.txn_id;
@@ -176,7 +176,7 @@ public class PaymentServiceImpl implements PaymentService {
                 }
                 if (!checkProvider(commandDto.clientId)) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
-                    dto.message = "Вы не можете производить оплаты в этом объекте";
+                    dto.message = languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_NOT_ALLOWED_PAYMENT);
                     dto.result = 6;
                     dto.sum = commandDto.sum;
                     dto.txn_id = commandDto.txn_id;
@@ -217,7 +217,7 @@ public class PaymentServiceImpl implements PaymentService {
                             return successPayment(commandDto, paymentId);
                         }
                         BillingInfoErrorDto dto = new BillingInfoErrorDto();
-                        dto.message = "Некорректный номер авто свяжитесь с оператором.";
+                        dto.message = languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_ERROR_INCORRECT_PLATENUMBER);
                         dto.result = 1;
                         dto.sum = commandDto.sum;
                         dto.txn_id = commandDto.txn_id;
@@ -251,7 +251,7 @@ public class PaymentServiceImpl implements PaymentService {
         BillingInfoErrorDto dto = new BillingInfoErrorDto();
         dto.sum = BigDecimal.ZERO;
         dto.txn_id = commandDto.txn_id;
-        dto.message = "Некорректный номер авто свяжитесь с оператором.";
+        dto.message = languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_ERROR_INCORRECT_PLATENUMBER);
         dto.result = 1;
         return dto;
     }
@@ -396,7 +396,7 @@ public class PaymentServiceImpl implements PaymentService {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
                     dto.sum = BigDecimal.ZERO;
                     dto.txn_id = commandDto.getTxn_id();
-                    dto.message = "Некорректный номер авто свяжитесь с оператором.";
+                    dto.message = languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_ERROR_INCORRECT_PLATENUMBER);
                     dto.result = 1;
                     savePaymentCheckLog(commandDto.getAccount(), null, dto.sum, null, PaymentCheckLog.PaymentCheckType.NOT_FOUND, dto.current_balance, commandDto.getTxn_id(), clientId);
                     return dto;
@@ -442,7 +442,7 @@ public class PaymentServiceImpl implements PaymentService {
             } else if ("pay".equals(commandDto.getCommand())) {
                 if (commandDto.getTxn_id() == null || commandDto.getTxn_id().isEmpty()) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
-                    dto.message = "Пустое значение для поля txn_id";
+                    dto.message = languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_ERROR_NULL_TXN);
                     dto.result = 4;
                     dto.sum = commandDto.getSum();
                     dto.txn_id = commandDto.getTxn_id();
@@ -450,7 +450,7 @@ public class PaymentServiceImpl implements PaymentService {
                 }
                 if (commandDto.getSum() == null || BigDecimal.ZERO.compareTo(commandDto.getSum()) > -1) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
-                    dto.message = "Некорректное значение для sum";
+                    dto.message = languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_ERROR_INCORRECT_SUM);
                     dto.result = 5;
                     dto.sum = commandDto.getSum();
                     dto.txn_id = commandDto.getTxn_id();
@@ -463,7 +463,7 @@ public class PaymentServiceImpl implements PaymentService {
 
                 if (carState == null ) {
                     BillingInfoErrorDto dto = new BillingInfoErrorDto();
-                    dto.message = "Некорректный номер авто свяжитесь с оператором.";
+                    dto.message = languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_ERROR_INCORRECT_PLATENUMBER);
                     dto.result = 1;
                     dto.sum = commandDto.getSum();
                     dto.txn_id = commandDto.getTxn_id();
@@ -631,11 +631,12 @@ public class PaymentServiceImpl implements PaymentService {
             carState.setCarOutType(CarState.CarOutType.DEBT_OUT);
             carStateService.createOUTState(carNumber, new Date(), camera, carState, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
 
-            String descriptionRu = "Выпускаем авто: Авто с гос. номером " + carNumber + " с долгом -" + rateResult;
-            String descriptionEn = "Releasing: Car with license plate " + carNumber + " with debt -" + rateResult;
-            String descriptionDe = "Freigeben: Auto mit Kennzeichen" + carNumber + " mit Schulden -" + rateResult;
-            eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), carNumber, descriptionRu, descriptionEn, descriptionDe);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.DEBT_OUT);
+            Map<String, Object> messageValues = new HashMap<>();
+            messageValues.put("platenumber", carNumber);
+            messageValues.put("rateResult", rateResult);
+
+            eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), carNumber, messageValues, MessageKey.ALLOWED_WITH_DEBT);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, messageValues, MessageKey.ALLOWED_WITH_DEBT, EventLog.EventType.DEBT_OUT);
         }
     }
 
@@ -882,9 +883,9 @@ public class PaymentServiceImpl implements PaymentService {
             }
         } else {
             if (parkingType.equals(Parking.ParkingType.PREPAID)) {
-                return fillError(commandDto, "Паркинг по предоплате не найден", 4);
+                return fillError(commandDto, languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_PREPAID_NOT_FOUND), 4);
             }
-            return fillError(commandDto, "Паркинг не найден", 7);
+            return fillError(commandDto, languagePropertiesService.getMessageFromProperties(MessageKey.BILLING_NOT_FOUND_PARKING), 7);
         }
 
         node.put("clientId", getClientId(commandDto.clientId));
