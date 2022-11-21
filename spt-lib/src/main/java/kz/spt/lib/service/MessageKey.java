@@ -102,4 +102,5 @@ public interface MessageKey {
     public static final String BILLING_NOT_FOUND_PARKING = "billing.message.error.notFound.parking";
     public static final String BILLING_PAYMENT_PAID_PERMIT = "billing.message.payment.paidPermit";
     public static final String BILLING_PAYMENT_DEBT = "billing.message.payment.debt";
+    public static final String MANUAL_EDIT_DIMENSION = "events.message.manual.edit.dimension";
 }
