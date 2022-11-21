@@ -1431,17 +1431,25 @@ public class CarEventServiceImpl implements CarEventService {
                             }
                         }
                     } else {
-                        properties.put("type", EventLog.StatusType.Deny);
-                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.NotFound, camera.getId(), eventDto.getCarNumberWithRegion(),
-                         "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.",
-                          "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited",
-                          "Kein Datensatz über die Einfahrt eines Fahrzeugs mit speziellen Kennzeichen gefunden " + eventDto.car_number + ". Für gebührenpflichtige Parkplätze ist die Ausfahrt verboten");
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties,
-                        "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для платного паркинга выезд запрещен.",
-                        "No record found about entering. Car with license number " + eventDto.car_number + ". For paid parking, exit is prohibited",
-                        "Kein Datensatz über die Einfahrt eines Fahrzeugs mit speziellen Kennzeichen gefunden " + eventDto.car_number + ". Für gebührenpflichtige Parkplätze ist die Ausfahrt verboten",
-                        EventLog.EventType.NOT_PASS);
-                        hasAccess = false;
+                        ArrayNode whitelistCheckResultArray = (ArrayNode) getWhiteLists(camera.getGate().getParking().getId(), eventDto.getCarNumberWithRegion().trim(), new Date(), format, properties);
+                        if (whitelistCheckResultArray != null && whitelistCheckResultArray.size() > 0) {
+                            properties.put("type", EventLog.StatusType.Allow);
+                            String description = "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого листа выезд разрешен.";
+                            String descriptionEn = "No record found about entering. Car with license number " + eventDto.car_number + ". For free permits exit is allowed";
+                            String descriptionDe = "Eingehender Datensatz nicht gefunden. Auto mit speziellen Kennzeichen " + eventDto.car_number + ". Bei freien Genehmigungen ist die Ausfahrt erlaubt";
+                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(), description, descriptionEn, descriptionDe);
+                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, descriptionDe, EventLog.EventType.WHITELIST_OUT);
+                            carOutBy = StaticValues.CarOutBy.WHITELIST;
+                            hasAccess = true;
+                        } else {
+                            properties.put("type", EventLog.StatusType.NotFound);
+                            String description = "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Выезд запрещен.";
+                            String descriptionEn = "Entering record not found. Car with license plate " + eventDto.car_number + ". Exit is prohibited";
+                            String descriptionDe = "Eingehender Datensatz nicht gefunden. Auto mit speziellen Kennzeichen " + eventDto.car_number + ". Bei freien Genehmigungen ist die Ausfahrt erlaubt";
+                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.NotFound, camera.getId(), eventDto.getCarNumberWithRegion(), description, descriptionEn, descriptionDe);
+                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn,descriptionDe, EventLog.EventType.NOT_PASS);
+                            hasAccess = false;
+                        }
                     }
                 }
             } else {
