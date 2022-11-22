@@ -26,6 +26,9 @@ import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Customer;
 import kz.spt.lib.model.Parking;
+import kz.spt.lib.service.Language;
+import kz.spt.lib.service.LanguagePropertiesService;
+import kz.spt.lib.service.MessageKey;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
@@ -34,9 +37,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Log
@@ -51,6 +52,7 @@ public class CommandExecutor implements PluginRegister {
     private WebKassaService reKassaService;
     private PaymentRepository paymentRepository;
     private PaymentProviderRepository paymentProviderRepository;
+    private LanguagePropertiesService languagePropertiesService;
 
     private static final String TRANSACTION_ID = "transactionId";
 
@@ -121,7 +123,12 @@ public class CommandExecutor implements PluginRegister {
 
                 String carNumber = command.get("carNumber").textValue();
                 Long carStateId = command.has("carStateId") ? command.get("carStateId").longValue() : null;
-                getBalanceService().addBalance(carNumber, payment.getPrice(), carStateId, "Received payment from " + payment.getProvider().getName(), "Получен платеж от " + payment.getProvider().getName(), "Zahlung erhalten von" + payment.getProvider().getName(), payment.getProvider().getName() );
+
+                Map<String, Object> messageValues = new HashMap<>();
+                messageValues.put("provider", payment.getProvider().getName());
+                Map<String, String> messages = languagePropertiesService.getWithDifferentLanguages(MessageKey.BILLING_DESCRIPTION_RECEIVED_FROM_PROVIDER);
+
+                getBalanceService().addBalance(carNumber, payment.getPrice(), carStateId, messages.get(Language.EN), messages.get(Language.RU), messages.get(Language.LOCAL), payment.getProvider().getName() );
 
                 if (savedPayment.getCarStateId() != null) {
                     List<Payment> carStatePayments = getPaymentService().getPaymentsByCarStateId(savedPayment.getCarStateId());

@@ -1176,21 +1176,25 @@ public class CarEventServiceImpl implements CarEventService {
 
     private JsonNode decreaseBalance(String carNumber, String parkingName, Long carStateId, BigDecimal amount, Map<String, Object> properties) throws Exception {
         ObjectNode node = this.objectMapper.createObjectNode();
+
+        Map<String, Object> messageValues =new HashMap<>();
+        messageValues.put("parking", parkingName);
+        messageValues.put("platenumber", carNumber);
+
+        Map<String, String> messages = languagePropertiesService.getWithDifferentLanguages(MessageKey.BILLING_REASON_PAYMENT_PARKING, messageValues);
+
         JsonNode decreaseBalanceResult = null;
         node.put("command", "decreaseCurrentBalance");
         node.put("amount", amount);
         node.put("plateNumber", carNumber);
         node.put("parkingName", parkingName);
-        node.put("reason", "Оплата паркинга " + parkingName);
-        node.put("reasonEn", "Payment for parking " + parkingName);
-        node.put("reasonLocal", "Bezahlung für das Parken " + parkingName);
+        node.put("reason", messages.get(Language.RU));
+        node.put("reasonEn", messages.get(Language.EN));
+        node.put("reasonLocal", messages.get(Language.LOCAL));
         node.put("provider", "Parking fee");
         if (carStateId != null) {
             node.put("carStateId", carStateId);
         }
-
-        Map<String, Object> messageValues = new HashMap<>();
-        messageValues.put("platenumber", carNumber);
 
         PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
         if (billingPluginRegister != null) {

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.model.dto.Period;
-import kz.spt.app.service.LanguagePropertiesService;
+import kz.spt.lib.service.LanguagePropertiesService;
 import kz.spt.lib.service.MessageKey;
 import kz.spt.app.service.WhitelistRootService;
 import kz.spt.lib.extension.PluginRegister;
@@ -307,12 +307,17 @@ public class PaymentServiceImpl implements PaymentService {
             PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
             if (billingPluginRegister != null) {
                 ObjectNode billingSubtractNode = this.objectMapper.createObjectNode();
+
+                Map<String, Object> messageValues = new HashMap<>();
+                messageValues.put("parking", abonomentResultNode.get("parkingName").textValue());
+                Map<String, String> messages = languagePropertiesService.getWithDifferentLanguages(MessageKey.BILLING_REASON_PAYMENT_PAID_PERMIT, messageValues);
+
                 billingSubtractNode.put("command", "decreaseCurrentBalance");
                 billingSubtractNode.put("amount", abonomentResultNode.get("price").decimalValue());
                 billingSubtractNode.put("plateNumber", commandDto.account);
-                billingSubtractNode.put("reason", "Оплата абономента паркинга " + abonomentResultNode.get("parkingName").textValue());
-                billingSubtractNode.put("reasonEn", "Payment for paid permit of parking " + abonomentResultNode.get("parkingName").textValue());
-                billingSubtractNode.put("reasonLocal", "Zahlung für bezahlten Parkausweis " + abonomentResultNode.get("parkingName").textValue());
+                billingSubtractNode.put("reason", messages.get(Language.RU));
+                billingSubtractNode.put("reasonEn", messages.get(Language.EN));
+                billingSubtractNode.put("reasonLocal", messages.get(Language.LOCAL));
                 billingSubtractNode.put("provider", commandDto.clientId);
                 billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
             }
@@ -616,13 +621,18 @@ public class PaymentServiceImpl implements PaymentService {
                 PluginRegister billingPluginRegister = pluginService.getPluginRegister(StaticValues.billingPlugin);
                 if (billingPluginRegister != null && BigDecimal.ZERO.compareTo(rateResult) != 0) {
                     ObjectNode billingSubtractNode = this.objectMapper.createObjectNode();
+
+                    Map<String, Object> messageValues =new HashMap<>();
+                    messageValues.put("parking", carState.getParking().getName());
+                    Map<String, String> messages = languagePropertiesService.getWithDifferentLanguages(MessageKey.BILLING_REASON_PAYMENT_PARKING, messageValues);
+
                     billingSubtractNode.put("command", "decreaseCurrentBalance");
                     billingSubtractNode.put("amount", rateResult);
                     billingSubtractNode.put("plateNumber", carState.getCarNumber());
                     billingSubtractNode.put("parkingName", carState.getParking().getName());
-                    billingSubtractNode.put("reason", "Оплата паркинга " + carState.getParking().getName());
-                    billingSubtractNode.put("reasonEn", "Payment for parking " + carState.getParking().getName());
-                    billingSubtractNode.put("reasonLocal", "Bezahlung für das Parken " + carState.getParking().getName());
+                    billingSubtractNode.put("reason", messages.get(Language.RU));
+                    billingSubtractNode.put("reasonEn", messages.get(Language.EN));
+                    billingSubtractNode.put("reasonLocal", messages.get(Language.LOCAL));
                     billingSubtractNode.put("carStateId", carState.getId());
                     billingSubtractNode.put("provider", "Parking fee");
                     billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
