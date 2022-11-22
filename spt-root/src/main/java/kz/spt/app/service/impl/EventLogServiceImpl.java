@@ -9,7 +9,7 @@ import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.repository.EventLogRepository;
-import kz.spt.app.service.LanguagePropertiesService;
+import kz.spt.lib.service.LanguagePropertiesService;
 import kz.spt.app.utils.StringExtensions;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.model.EventLog;

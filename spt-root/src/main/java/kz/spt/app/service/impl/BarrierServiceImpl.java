@@ -14,7 +14,7 @@ import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.SensorStatusDto;
 import kz.spt.app.repository.BarrierRepository;
 import kz.spt.app.service.BarrierService;
-import kz.spt.app.service.LanguagePropertiesService;
+import kz.spt.lib.service.LanguagePropertiesService;
 import kz.spt.lib.service.MessageKey;
 import kz.spt.app.snmp.SNMPManager;
 import kz.spt.lib.model.Barrier;
