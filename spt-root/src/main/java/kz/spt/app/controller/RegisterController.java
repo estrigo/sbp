@@ -37,10 +37,7 @@ public class RegisterController {
     @PostMapping("/register")
     public String processRegistrationForm(Model model, @Valid User user, BindingResult bindingResult) {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de" : "en";
-        if (locale.toString().equals("ru")) {
-            language = "ru-RU";
-        }
+        String language = locale.getLanguage();
 
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
 

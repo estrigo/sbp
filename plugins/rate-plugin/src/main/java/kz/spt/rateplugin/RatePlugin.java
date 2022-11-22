@@ -30,10 +30,7 @@ public class RatePlugin extends SpringBootPlugin implements CustomPlugin {
     @Override
     public List<Map<String, Object>> getLinks(){
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de" : "en";
-        if (locale.toString().equals("ru")) {
-            language = "ru-RU";
-        }
+        String language = locale.getLanguage();
 
         ResourceBundle bundle = ResourceBundle.getBundle("rate-plugin", Locale.forLanguageTag(language));
 

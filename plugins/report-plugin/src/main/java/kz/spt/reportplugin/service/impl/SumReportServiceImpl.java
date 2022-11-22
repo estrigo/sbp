@@ -101,10 +101,8 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
             }
 
             Locale locale = LocaleContextHolder.getLocale();
-            String language = locale.toString().equals("de") ? "de" : "en";
-            if (locale.toString().equals("ru")) {
-                language = "ru";
-            }
+            String language = locale.getLanguage();
+
             ResourceBundle bundle = ResourceBundle.getBundle("report-plugin", Locale.forLanguageTag(language));
 
             Map<String, String> fieldsMap = new HashMap<>(15);

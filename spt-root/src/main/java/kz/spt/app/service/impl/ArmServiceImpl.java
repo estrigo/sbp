@@ -444,10 +444,8 @@ public class ArmServiceImpl implements ArmService {
     @Override
     public JsonNode getTabsWithCameraList() {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de" : "en";
-        if (locale.toString().equals("ru")) {
-            language = "ru";
-        }
+        String language = locale.getLanguage();
+
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
 
         ArrayNode tabsWithCameras = objectMapper.createArrayNode();
