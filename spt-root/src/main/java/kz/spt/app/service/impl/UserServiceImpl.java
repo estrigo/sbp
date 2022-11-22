@@ -6,6 +6,7 @@ import kz.spt.lib.model.Role;
 import kz.spt.lib.model.User;
 import kz.spt.app.repository.RoleRepository;
 import kz.spt.app.repository.UserRepository;
+import kz.spt.lib.service.LanguagePropertiesService;
 import kz.spt.lib.service.UserService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ public class UserServiceImpl implements UserService {
 
     private UserRepository userRepository;
     private RoleRepository roleRepository;
+    private LanguagePropertiesService languagePropertiesService;
     private BCryptPasswordEncoder passwordEncoder;
 
     private static final Comparator<User> EMPTY_COMPARATOR = (e1, e2) -> 0;
@@ -43,6 +45,11 @@ public class UserServiceImpl implements UserService {
     @Autowired
     public void setPasswordEncoder(BCryptPasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
+    }
+
+    @Autowired
+    public void setLanguagePropertiesService(LanguagePropertiesService languagePropertiesService) {
+        this.languagePropertiesService = languagePropertiesService;
     }
 
     @Override
@@ -174,24 +181,10 @@ public class UserServiceImpl implements UserService {
         for (User user: users){
             UserDto userDto = UserDto.userToUserDto(user);
             userDto.getRoles()
-                    .forEach(roleDto -> roleDto.setName_de(valueFromBundle(roleDto.getName_en())));
+                    .forEach(roleDto -> roleDto.setName_local(languagePropertiesService.getMessageFromProperties(roleDto.getName_en())));
             userDtos.add(userDto);
         }
         return userDtos;
     }
-
-    private String valueFromBundle(String name_en){
-        Locale locale = LocaleContextHolder.getLocale();
-        ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag("de"));
-        String bundleValue = "";
-        try {
-            bundleValue = bundle.getString(name_en);
-        } catch (Exception e) {
-            bundleValue = name_en;
-        }
-        return bundleValue;
-    }
-
-
 
 }
