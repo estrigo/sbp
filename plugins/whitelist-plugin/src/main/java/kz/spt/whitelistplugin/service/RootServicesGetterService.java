@@ -11,4 +11,6 @@ public interface RootServicesGetterService {
     ParkingService getParkingService();
 
     AdminService getAdminService();
+
+    LanguagePropertiesService getLanguageService();
 }
