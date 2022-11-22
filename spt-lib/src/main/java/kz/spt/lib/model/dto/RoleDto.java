@@ -18,8 +18,9 @@ public class RoleDto {
     private String name;
     private String name_ru;
     private String name_en;
-    private String name_de;
+    private String name_local;
     private String plugin;
+
 
     public static List<RoleDto> roleDtos(List<Role> roles){
         List<RoleDto> roleDtos = new ArrayList<>();
