@@ -1,6 +1,7 @@
 package kz.spt.lib.service;
 
 public interface MessageKey {
+
     public static final String MANUAL_CLOSE_IN = "events.message.manual.close.IN";
     public static final String MANUAL_CLOSE_OUT = "events.message.manual.close.OUT";
     public static final String MANUAL_CLOSE = "events.message.manual.close";
@@ -103,4 +104,25 @@ public interface MessageKey {
     public static final String BILLING_PAYMENT_PAID_PERMIT = "billing.message.payment.paidPermit";
     public static final String BILLING_PAYMENT_DEBT = "billing.message.payment.debt";
     public static final String MANUAL_EDIT_DIMENSION = "events.message.manual.edit.dimension";
+    public static final String BILLING_REASON_PAYMENT_PAID_PERMIT = "billing.reason.payment.paidPermit";
+    public static final String BILLING_DESCRIPTION_RECEIVED_FROM_PROVIDER = "billing.description.payment.received.provider";
+    public static final String BILLING_REASON_PAYMENT_PARKING = "billing.reason.payment.payment.parking";
+    public static final String BILLING_REASON_DEBT_CANCEL = "billing.reason.debt.cancel";
+    public static final String BILLING_REASON_MANUAL_TOP_UP = "billing.reason.manual.topUp.byUser";
+    public static final String BILLING_REASON_MANUAL_WRITE_OFF = "billing.reason.manual.writeOff.byUser";
+    public static final String ABONNEMENT_ERROR_DATES_OVERLAP_PLATENUMBER = "abonoment.error.dates.overlap.platenumber";
+    public static final String SYMBOLS_DAY = "symbols.day";
+    public static final String SYMBOLS_HOUR = "symbols.hour";
+    public static final String SYMBOLS_MINUTE = "symbols.minute";
+    public static final String SYMBOLS_SECOND = "symbols.second";
+    public static final String ABONNEMENT_TYPE_ALL_DAYS = "abonnementType.allDays";
+    public static final String ABONNEMENT_TYPE_FOR_DAYS_CUSTOM = "abonnementType.forDays.custom";
+    public static final String ABONNEMENT_TYPE_FOR_DAYS = "abonnementType.forDays";
+    public static final String MONDAY = "day.monday";
+    public static final String TUESDAY = "day.tuesday";
+    public static final String WEDNESDAY = "day.wednesday";
+    public static final String THURSDAY = "day.thursday";
+    public static final String FRIDAY = "day.friday";
+    public static final String SATURDAY = "day.saturday";
+    public static final String SUNDAY = "day.sunday";
 }
