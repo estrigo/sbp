@@ -1359,7 +1359,7 @@ public class CarEventServiceImpl implements CarEventService {
                             }
                         } else {
                             ArrayNode whitelistCheckResultArray = (ArrayNode) getWhiteLists(camera.getGate().getParking().getId(), eventDto.getCarNumberWithRegion().trim(), new Date(), format, properties);
-                            if (whitelistCheckResultArray != null && whitelistCheckResultArray.size() > 0) {
+                            if (whitelistCheckResultArray != null && whitelistCheckResultArray.size() > 0 && !camera.getGate().getParking().getProhibitExit()) {
                                 properties.put("type", EventLog.StatusType.Allow);
                                 String description = "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого листа выезд разрешен.";
                                 String descriptionEn = "No record found about entering. Car with license number " + eventDto.car_number + ". For free permits exit is allowed";
@@ -1432,7 +1432,7 @@ public class CarEventServiceImpl implements CarEventService {
                         }
                     } else {
                         ArrayNode whitelistCheckResultArray = (ArrayNode) getWhiteLists(camera.getGate().getParking().getId(), eventDto.getCarNumberWithRegion().trim(), new Date(), format, properties);
-                        if (whitelistCheckResultArray != null && whitelistCheckResultArray.size() > 0) {
+                        if (whitelistCheckResultArray != null && whitelistCheckResultArray.size() > 0 && !camera.getGate().getParking().getProhibitExit()) {
                             properties.put("type", EventLog.StatusType.Allow);
                             String description = "Не найдена запись автомобиля о въезде с гос. номером " + eventDto.car_number + ". Для белого листа выезд разрешен.";
                             String descriptionEn = "No record found about entering. Car with license number " + eventDto.car_number + ". For free permits exit is allowed";
