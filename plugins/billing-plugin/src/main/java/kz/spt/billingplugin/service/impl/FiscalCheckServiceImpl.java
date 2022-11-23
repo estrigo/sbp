@@ -63,7 +63,7 @@ public class FiscalCheckServiceImpl implements FiscalCheckService {
                 node.put("change", 0);
                 node.put("txn_id", p.getTransaction());
                 node.put("operationName", "Оплата парковки, ГРНЗ: " + p.getCarNumber());
-                node.put("paymentType", p.isIkkm());
+                node.put("paymentType", p.isIkkm() ? 1 : 0);
                 OfdCheckData ofdCheckData = registerCheck(p.getProvider(), node);
                 log.info("[WebKassa] Response ofdCheckData: " + ofdCheckData.toString());
                 if (ofdCheckData.getCheckNumber() != null) {
