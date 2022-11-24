@@ -82,6 +82,7 @@
                                 <th th:text="#{payments.total}"></th>
                                 <th th:text="#{payments.provider}"></th>
                                 <th th:text="#{payments.transaction}"></th>
+                                <th th:text="#{payments.checkNumber}"></th>
                             </tr>
                             </thead>
 
@@ -167,6 +168,7 @@
             {"data": "price"},
             {"data": "provider"},
             {"data": "transaction"},
+            {"data": "checkNumber"},
         ],
         "order": [ //[[ in thymeleaf is inline script
             [5, "desc"]
