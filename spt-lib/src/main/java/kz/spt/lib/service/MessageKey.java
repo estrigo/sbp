@@ -48,6 +48,7 @@ public interface MessageKey {
     public static final String ALLOWED_PREPAID = "events.message.allowed.payment.prepaid";
     public static final String NOT_FOUND_RECORD_ALLOWED = "events.message.notFound.record.allowed";
     public static final String NOT_FOUND_RECORD_NOT_ALLOWED_PAID_PARKING = "events.message.notFound.record.notAllowed.paidParking";
+    public static final String NOT_FOUND_RECORD_ALLOWED_PAID_PERMIT = "events.message.notFound.record.allowed.paidPermit";
     public static final String NOT_ALLOWED_NO_ACCESS_EXIT = "events.message.notAllowed.noAccess.exit";
     public static final String NOT_ALLOWED_NOT_ENOUGH_BALANCE_NOT_IN_FREE_PERMIT = "events.message.notAllowed.notEnoughBalance.outsideOfFreePermits";
     public static final String NOT_ALLOWED_NOT_ENOUGH_BALANCE_NOT_IN_PAID_PERMIT = "events.message.notAllowed.notEnoughBalance.outsideOfPaidPermits";
