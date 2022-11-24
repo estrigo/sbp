@@ -27,7 +27,7 @@ public class ExcelUtils {
             if (sheet != null) {
                 Iterator<Row> rows = sheet.iterator();
 
-                List<Pair<Whitelist, String>> lstWhitelist= new ArrayList<>();
+                List<Pair<Whitelist, String>> lstWhitelist = new ArrayList<>();
 
                 int rowNumber = 0;
                 while (rows.hasNext()) {
@@ -52,19 +52,21 @@ public class ExcelUtils {
                             cars.setPlatenumber(formatter.formatCellValue(currentCell));
                             whitelist.setPlatenumber(cars.getPlatenumber());
                         }
-                        if(cellIndex==1) { // group name
-                            groupName = formatter.formatCellValue(currentCell);
-                        }
-                        if(cellIndex==2) { // full name
+                        if (cellIndex == 1) { // full name
                             whitelist.setFullName(formatter.formatCellValue(currentCell));
                         }
-                        if(cellIndex==3) { // address
+                        if (cellIndex == 2) { // address
                             whitelist.setAddress(formatter.formatCellValue(currentCell));
                         }
-                        if(cellIndex==3) { // parking Number
+                        if (cellIndex == 3) { // parking number
                             whitelist.setParkingNumber(formatter.formatCellValue(currentCell));
                         }
-
+                        if (cellIndex == 4) { // group name
+                            groupName = formatter.formatCellValue(currentCell);
+                        }
+                        if (cellIndex == 5) { // comments
+                            whitelist.setComment(formatter.formatCellValue(currentCell));
+                        }
                         cellIndex++;
                     }
 
