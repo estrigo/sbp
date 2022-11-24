@@ -89,10 +89,7 @@
 
 <script th:inline="javascript">
     var locale = [[${#locale}]];
-    var localizationAddress = locale =="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json';
-    if (locale == "en") {
-        localizationAddress = "";
-    }
+    var localizationAddress = locale==="en" ? '': '/plugins/datatables/json/'+locale+'.json';
 
     const table = $('#journalReport').DataTable({
         "processing": true,
