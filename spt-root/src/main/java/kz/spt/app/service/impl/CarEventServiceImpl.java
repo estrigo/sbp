@@ -695,10 +695,13 @@ public class CarEventServiceImpl implements CarEventService {
                 strategy.isWaitLoop = true;
                 SensorStatusCheckJob.add(strategy);
             } else {
-                boolean openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+                boolean openResult = false;
+                if (!eventDto.manualOpen) {
+                    openResult = true;
+                }else {
+                    openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+                }
                 if (openResult) {
-
-
                     gate.gateStatus = GateStatusDto.GateStatus.Open;
                     gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
                     gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
