@@ -1643,8 +1643,14 @@ public class CarEventServiceImpl implements CarEventService {
                     strategy.gateId = gate.gateId;
                     strategy.isWaitPhel = true;
                     SensorStatusCheckJob.add(strategy);
-                }else{
-                    openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+                }
+                else{
+                    if (!eventDto.manualOpen) {
+                        openResult = true;
+                    }
+                    else {
+                        openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+                    }
                     if (openResult) {
                         gate.gateStatus = GateStatusDto.GateStatus.Open;
                         gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
