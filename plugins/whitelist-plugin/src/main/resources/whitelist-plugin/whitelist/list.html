@@ -167,20 +167,10 @@
 <script th:src="@{/assets/js/xlsx.js}"></script>
 
 <script th:inline="javascript">
-    var edit = 'Редактировать';
-    var del = 'Удалить';
+    var edit = [[#{buttons.edit}]];
+    var del = [[#{buttons.delete}]];
     var locale = [[${#locale}]];
-    var address = locale==="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json';
-    if (locale == "en") {
-        address = "";
-        edit = "Edit";
-        del = "Delete";
-    }
-    else if(locale == "de"){
-        edit = "Bearbeiten";
-        del = "Löschen";
-    }
-
+    var address = locale==="en" ? '': '/plugins/datatables/json/'+locale+'.json';
 
     var table = $('#whitelist-table').DataTable({
         processing: true,
@@ -352,9 +342,8 @@
                 $(element).removeAttr('disabled');
             });
         } else {
-            let alertText = "Выберите группу для этого!"
-            let alertTextDe = "Wählen Sie dazu eine Gruppe aus!"
-            alert(locale=="de" ? alertTextDe:alertText);
+            let alertText = [[#{alert.choose.group}]]
+            alert(alertText);
             $(element).html('Excel');
             $(element).removeAttr('disabled');
         }

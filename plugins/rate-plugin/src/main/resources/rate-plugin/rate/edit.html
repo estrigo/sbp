@@ -508,11 +508,11 @@
 
     function optionsMap(id){
         if(id === 'allNext'){
-            return 'Каждый последующий час'
+            return [[#{rate.option.allNext}]]
         } else if(id === 'entrance'){
-            return 'За заезд'
+            return [[#{rate.option.entrance}]]
         } else if(id.length > 4 && !isNaN(id.replace('hour', ''))){
-            return 'За ' + id.replace('hour', '') + ' час';
+            return [[#{rate.option.for}]] + id.replace('hour', '') + [[#{rate.option.hour}]];
         }
     }
 

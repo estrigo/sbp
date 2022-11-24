@@ -872,7 +872,7 @@
                 if (otherReason && otherReason.length >= 3) {
                     reason = otherReason;
                 } else {
-                    $('#otherReasonAlert').text((locale === "ru" ? 'Необходимо написать причину!' : 'Open reason required!'));
+                    $('#otherReasonAlert').text([[#{alert.write.reason}]]);
                     $('#otherReasonAlert').css("background-color", "#ef5350");
                     $('#otherReasonAlert').css("color", "white");
                     return;
@@ -897,9 +897,7 @@
                 console.log(response);
             });
         } else {
-            let alertText = 'Необходимо выбрать причину!'
-            let alertTextDe = 'Es muss ein Grund gewählt werden!'
-            $('#openReasonAlert').text(locale=="de" ? alertTextDe: alertText);
+            $('#openReasonAlert').text([[#{alert.choose.reason}]]);
             $('#openReasonAlert').css("background-color", "#ef5350");
             $('#openReasonAlert').css("color", "white");
         }

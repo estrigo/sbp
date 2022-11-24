@@ -114,10 +114,7 @@
 
 <script th:inline="javascript">
     var locale = [[${#locale}]];
-    var localizationAddress = locale==="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json';
-    if (locale == "en") {
-        localizationAddress = "";
-    }
+    var localizationAddress = locale==="en" ? '': '/plugins/datatables/json/'+locale+'.json';
 
     const table = $('#payments').DataTable({
         "processing": true,
@@ -208,20 +205,30 @@
                         delete data[i]['nullSafeOutDate'];
                         delete data[i]['nullSafeInDate'];
                         var stringified = JSON.stringify(data[i]);
-                        stringified = stringified.replace("id", "№");
-                        stringified = stringified.replace("inDate", "Дата заезда");
-                        stringified = stringified.replace("outDate", "Дата выезда");
-                        stringified = stringified.replace("created", "Дата оплаты");
-                        stringified = stringified.replace("parking", "Паркинг");
-                        stringified = stringified.replace("transaction", "Транзакция");
-                        stringified = stringified.replace("price", "Сумма");
-                        stringified = stringified.replace("provider", "Провайдер");
-                        stringified = stringified.replace("carNumber", "Номер");
-                        stringified = stringified.replace("rateDetails", "Тариф");
+                        stringified = stringified.replace("id", [[#{excel.column.symbol.number}]]);
+                        stringified = stringified.replace("inDate", [[#{excel.column.date.enter}]]);
+                        stringified = stringified.replace("outDate", [[#{excel.column.date.exit}]]);
+                        stringified = stringified.replace("created", [[#{excel.column.date.payment}]]);
+                        stringified = stringified.replace("parking", [[#{excel.column.parking}]]);
+                        stringified = stringified.replace("transaction", [[#{excel.column.transaction}]]);
+                        stringified = stringified.replace("price", [[#{excel.column.sum}]]);
+                        stringified = stringified.replace("provider", [[#{excel.column.provider}]]);
+                        stringified = stringified.replace("carNumber", [[#{excel.column.platenumber}]]);
+                        stringified = stringified.replace("rateDetails", [[#{excel.column.rateDetails}]]);
                         data[i] = JSON.parse(stringified);
                         arr.push(data[i]);
                     }
-                    let ws = XLSX.utils.json_to_sheet(arr, {header: ["№", "Номер", "Паркинг", "Дата заезда", "Дата выезда", "Дата оплаты", "Тариф", "Сумма", "Провайдер", "Транзакция"]});
+                    let ws = XLSX.utils.json_to_sheet(arr, {header: [
+                            [[#{excel.column.symbol.number}]],
+                            [[#{excel.column.platenumber}]],
+                            [[#{excel.column.parking}]],
+                            [[#{excel.column.date.enter}]],
+                            [[#{excel.column.date.exit}]],
+                            [[#{excel.column.date.payment}]],
+                            [[#{excel.column.rateDetails}]],
+                            [[#{excel.column.sum}]],
+                            [[#{excel.column.provider}]],
+                            [[#{excel.column.transaction}]]]});
 
                     const wb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(wb, ws, 'Payments');

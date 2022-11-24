@@ -194,13 +194,13 @@
         const options = {
             // custom days names (it's default values)
             days: {
-                0: locale === "ru" ? 'Понедельник' : (locale == "de" ? 'Montag' :'Monday'),
-                1: locale === "ru" ? 'Вторник' : (locale == "de" ? 'Dienstag' :'Tuesday'),
-                2: locale === "ru" ? 'Среда' : (locale == "de" ? 'Mittwoch' :'Wednesday'),
-                3: locale === "ru" ? 'Четверг' : (locale == "de" ? 'Donnerstag' :'Thursday'),
-                4: locale === "ru" ? 'Пятница' : (locale == "de" ? 'Freitag' :'Friday'),
-                5: locale === "ru" ? 'Суббота' : (locale == "de" ? 'Samstag' :'Saturday'),
-                6: locale === "ru" ? 'Воскресенье' : (locale == "de" ? 'Sonntag' :'Sunday'),
+                0: [[#{day.monday}]],
+                1: [[#{day.tuesday}]],
+                2: [[#{day.wednesday}]],
+                3: [[#{day.thursday}]],
+                4: [[#{day.friday}]],
+                5: [[#{day.saturday}]],
+                6: [[#{day.sunday}]],
             },
 
             // custom class names for dom elements (it's default values)

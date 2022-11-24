@@ -74,18 +74,18 @@
     var locale = [[${#locale}]];
 
     const monthLabels  = {
-        '01': {'ru':'Январь','en':'January', 'de':'Januar'},
-        '02': {'ru':'Февраль','en':'February', 'de':'Februar'},
-        '03': {'ru':'Март','en':'March', 'de':'März'},
-        '04': {'ru':'Апрель','en':'April', 'de':'April'},
-        '05': {'ru':'Май','en':'May', 'de':'Mai'},
-        '06': {'ru':'Июнь','en':'June', 'de':'Juni'},
-        '07': {'ru':'Июль','en':'July', 'de':'Juli'},
-        '08': {'ru':'Август','en':'August', 'de':'August'},
-        '09': {'ru':'Сентябрь','en':'September', 'de':'September'},
-        '10': {'ru':'Октябрь','en':'October', 'de':'Oktober'},
-        '11': {'ru':'Декабрь','en':'November', 'de':'November'},
-        '12': {'ru':'Январь','en':'December', 'de':'Dezember'}
+        '01': [[#{months.jan}]],
+        '02': [[#{months.feb}]],
+        '03': [[#{months.mar}]],
+        '04': [[#{months.apr}]],
+        '05': [[#{months.may}]],
+        '06': [[#{months.jun}]],
+        '07': [[#{months.jul}]],
+        '08': [[#{months.aug}]],
+        '09': [[#{months.sep}]],
+        '10': [[#{months.oct}]],
+        '11': [[#{months.nov}]],
+        '12': [[#{months.dec}]]
     }
 
     const colors = [
@@ -137,7 +137,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: locale=="de" ? 'Einkommen nach Anbietern': 'Income by providers'
+                            text: [[#{title.income.byProviders}]]
                         },
                     },
                     responsive: true,
@@ -191,7 +191,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: locale=="de"? 'Anzahl der Transaktionen nach Anbietern':'Number of Transactions by Providers'
+                            text: [[#{title.transactions.byProviders}]]
                         },
                     },
                     responsive: true,
@@ -263,7 +263,7 @@
     function getMonthLabels(months){
         let monthLabelList = [];
         for (let i = 0; i < months.length; i++) {
-            monthLabelList.push(monthLabels[months[i]].en);
+            monthLabelList.push(monthLabels[months[i]]);
         }
         return monthLabelList;
     }
@@ -302,27 +302,15 @@
     }
 
     let leftTypes = {
-        paymentRecords:'Left by payment',
-        abonementRecords: 'Left by subscriptions',
-        autoClosedRecords: 'Closed by system',
-        debtRecords: 'Left by debt',
-        freeMinuteRecords: 'Left by free minutes',
-        fromBalanceRecords: 'Left by balance',
-        thirdPartyRecords: 'Left by third Mega Family application',
-        whitelistRecords: 'Left by free permit'
+        paymentRecords:[[#{label.left.byPayment}]],
+        abonementRecords: [[#{label.left.bySubscriptions}]],
+        autoClosedRecords: [[#{label.closed.bySystem}]],
+        debtRecords: [[#{label.left.byDebt}]],
+        freeMinuteRecords: [[#{label.left.byFreeMinutes}]],
+        fromBalanceRecords: [[#{label.left.byBalance}]],
+        thirdPartyRecords: [[#{label.left.byThirdParty}]],
+        whitelistRecords: [[#{label.left.byFreePermit}]]
     }
-    let leftTypesDe={
-        paymentRecords:'Verlassen durch Zahlung',
-        abonementRecords: 'Verlassen durch Abonnements',
-        autoClosedRecords: 'Geschlossen durch System',
-        debtRecords: 'Verlassen durch Schulden',
-        freeMinuteRecords: 'Verlassen durch Freiminuten',
-        fromBalanceRecords: 'Verlassen durch Saldo',
-        thirdPartyRecords: 'Verlassen durch dritte Mega Family Anwendung',
-        whitelistRecords: 'Verlassen durch freie Erlaubnis'
-    }
-    if(locale == "de")
-        leftTypes = leftTypesDe
 
     function drawOccupancyAndMoneyByPeriodLineChart(){
         let form = new FormData();
@@ -389,7 +377,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: locale=="de" ? 'Belegung und Geld' : 'Occupancy and Money'
+                            text: [[#{title.occupancy.money}]]
                         }
                     },
                     scales: {
