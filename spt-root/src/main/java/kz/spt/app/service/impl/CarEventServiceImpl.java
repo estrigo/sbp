@@ -407,6 +407,7 @@ public class CarEventServiceImpl implements CarEventService {
             eventDto.lp_picture = null;
             eventDto.manualEnter = true;
             eventDto.manualOpen = false;
+            eventDto.manualOpenWithoutBarrier = true;
             eventDto.cameraId = cameraId;
 
             SimpleDateFormat format = new SimpleDateFormat(dateFormat);
@@ -696,7 +697,7 @@ public class CarEventServiceImpl implements CarEventService {
                 SensorStatusCheckJob.add(strategy);
             } else {
                 boolean openResult = false;
-                if (!eventDto.manualOpen) {
+                if (eventDto.manualOpenWithoutBarrier) {
                     openResult = true;
                 }else {
                     openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
@@ -878,7 +879,7 @@ public class CarEventServiceImpl implements CarEventService {
                     strategy.isWaitLoop = true;
                     SensorStatusCheckJob.add(strategy);
                 }
-                if (!eventDto.manualOpen) {
+                if (eventDto.manualOpenWithoutBarrier) {
                     openResult = true;
                 }
                 else {
@@ -1648,7 +1649,7 @@ public class CarEventServiceImpl implements CarEventService {
                     SensorStatusCheckJob.add(strategy);
                 }
                 else{
-                    if (!eventDto.manualOpen) {
+                    if (eventDto.manualOpenWithoutBarrier) {
                         openResult = true;
                     }
                     else {
