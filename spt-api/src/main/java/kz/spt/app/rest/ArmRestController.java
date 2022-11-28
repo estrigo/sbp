@@ -81,7 +81,6 @@ public class ArmRestController {
 
     @RequestMapping(value = "/save/tab/camera", method = RequestMethod.POST, consumes = "multipart/form-data")
     public Boolean saveTabs(@RequestParam("json") String json) throws Exception {
-        log.info(json);
         return armService.configureArm(json);
     }
 
@@ -89,5 +88,22 @@ public class ArmRestController {
     @PostMapping(value = "/enter")
     public void manualEnter(@RequestParam("cameraId") Long cameraId, @RequestParam("plateNumber") String plateNumber) {
         armService.manualEnter(cameraId, plateNumber);
+    }
+
+    @GetMapping("/camera/list")
+    public JsonNode getCameraList() {
+        return armService.getCameraList();
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
+    @PostMapping(value = "/camera/permanent/open")
+    public Boolean setPermanentOpen(@RequestParam("cameraId") Long cameraId) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
+        return armService.openPermanentGate(cameraId);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
+    @PostMapping(value = "/camera/permanent/close")
+    public Boolean setPermanentClose(@RequestParam("cameraId") Long cameraId) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
+        return armService.closePermanentGate(cameraId);
     }
 }

@@ -33,6 +33,9 @@
                             th:onclick="openReasons()">
                         Reasons
                     </button>
+                    <button type="button" class="btn btn-primary" th:text="#{arm.holdBarrierOpen}" th:onclick="showCameraBarriers()">
+                        Фиксация открытия шлагбаума
+                    </button>
                     <button type="button" class="btn btn-primary" th:text="#{arm.restart}"
                             th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart
                     </button>
@@ -297,6 +300,36 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="save()" th:text="#{crm.save}">Save
                 </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" th:text="#{crm.close}">Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="camera-barriers-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <div class="modal-header">
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body" id="openPermanentBarrierBody">
+                <table id="cameraBarriersTable" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th th:text="#{crm.name}"></th>
+                            <th>Ip</th>
+                            <th th:text="#{parking.name}">></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" th:text="#{crm.close}">Close
                 </button>
             </div>
@@ -802,6 +835,66 @@
             }
         });
         $('#configure-modal').modal('show');
+    }
+
+    function showCameraBarriers(){
+        const settings = {
+            "url": "/rest/arm/camera/list",
+            "method": "GET",
+        };
+        $.ajax(settings).done(function (response) {
+            let html = '';
+            for (let i = 0; i < response.length; i++) {
+                html = html + '<tr><td>' + response[i].name + '</td><td>' + response[i].ip + '</td><td>' + response[i].parking + '</td><td><button class="btn btn-warning" id="permanentOpenCamera' + response[i].id + '" onclick="openPermanent(' + response[i].id + ')">Зафиксировать в открытом положении</button><div class="alert alert-warning" style="display: none;" id="permanentOpenStatus' + response[i].id + '">Зафиксирован в открытом положении</div></td><td><button class="btn btn-primary" onclick="closePermanent(' + response[i].id + ')">Закрыть</button></td></tr>';
+            }
+            $('#cameraBarriersTable > tbody').html(html);
+        });
+
+        $('#camera-barriers-modal').modal('show');
+    }
+
+    function openPermanent(id){
+        var form = new FormData();
+        form.append("cameraId", id);
+
+        const settings = {
+            "url": "/rest/arm/camera/permanent/open",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (response) {
+            if(response){
+                $('#permanentOpenCamera' + id).hide();
+                $('#permanentOpenStatus' + id).show();
+            } else {
+                console.log("error while permanent open");
+            }
+        });
+    }
+
+    function closePermanent(id){
+        var form = new FormData();
+        form.append("cameraId", id);
+
+        const settings = {
+            "url": "/rest/arm/camera/permanent/close",
+            "method": "POST",
+            "timeout": 0,
+            "processData": false,
+            "contentType": false,
+            "data": form
+        };
+        $.ajax(settings).done(function (response) {
+            if(response){
+                $('#permanentOpenStatus' + id).hide();
+                $('#permanentOpenCamera' + id).show();
+            } else {
+                console.log("error while permanent close");
+            }
+        });
     }
 
     function addNewTab() {
