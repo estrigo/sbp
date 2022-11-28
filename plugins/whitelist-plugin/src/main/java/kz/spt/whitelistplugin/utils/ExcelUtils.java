@@ -61,11 +61,11 @@ public class ExcelUtils {
                         if (cellIndex == 3) { // parking number
                             whitelist.setParkingNumber(formatter.formatCellValue(currentCell));
                         }
-                        if (cellIndex == 4) { // group name
-                            groupName = formatter.formatCellValue(currentCell);
-                        }
-                        if (cellIndex == 5) { // comments
+                        if (cellIndex == 4) { // comments
                             whitelist.setComment(formatter.formatCellValue(currentCell));
+                        }
+                        if (cellIndex == 5) { // group name
+                            groupName = formatter.formatCellValue(currentCell);
                         }
                         cellIndex++;
                     }
