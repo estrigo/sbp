@@ -3,13 +3,13 @@
     <div class="row">
         <div class="col-md-6">
             <div class="form-group">
-                <label for="provider" class="control-label">Провайдер</label>
+                <label for="provider" class="control-label" th:text="#{billing.edit.title.provider}"></label>
                 <input type="text" class="form-control" th:field="*{provider}" th:value="*{provider}" id="provider">
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                <label for="name" class="control-label">Название</label>
+                <label for="name" class="control-label" th:text="#{billing.edit.name}"></label>
                 <input type="text" class="form-control" id="name" th:field="*{name}" th:value="*{name}">
             </div>
         </div>
@@ -17,13 +17,13 @@
     <div class="row">
         <div class="col-md-6">
             <div class="form-group">
-                <label for="clientId" class="control-label">Id клиента</label>
+                <label for="clientId" class="control-label" th:text="#{billing.edit.clientId}"></label>
                 <input type="text" class="form-control" id="clientId" th:field="*{clientId}" th:value="*{clientId}">
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                <label for="password" class="control-label">Пароль</label>
+                <label for="password" class="control-label" th:text="#{billing.edit.password}"></label>
                 <input type="password" class="form-control" id="password" th:field="*{password}" th:value="*{password}">
             </div>
         </div>
@@ -41,20 +41,20 @@
                 </div>
                 <div class="form-check form-check-inline mr-5">
                     <input class="form-check-input" type="checkbox" th:field="*{isParkomat}" th:value="*{isParkomat}" id="isParkomat">
-                    <label class="form-check-label" for="isParkomat">Паркомат?</label>
+                    <label class="form-check-label" for="isParkomat" th:text="#{billing.edit.parkomat}"></label>
                 </div>
             </div>
 
             <div class="col-12">
-                <h5>Настройка паркомата</h5>
+                <h5 th:text="#{billing.edit}"></h5>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="webKassaID" class="control-label">Тип онлайн-кассы</label>
+                    <label for="webKassaID" class="control-label" th:text="#{billing.edit.type}"></label>
                     <div class="checkbox-primary">
                         <select class="form-control" th:field="*{ofdProviderType}">
-                            <option th:value="WebKassa">WebKassa</option>
-                            <option th:value="ReKassa">ReKassa</option>
+                            <option th:value="WebKassa" th:text="#{billing.edit.webKassa}"></option>
+                            <option th:value="ReKassa" th:text="#{billing.edit.reKassa}"></option>
                         </select>
                     </div>
                 </div>
@@ -62,7 +62,7 @@
 
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="webKassaID" class="control-label">ID кассы (WebKassa) / Номер кассы ReKassa</label>
+                    <label for="webKassaID" class="control-label" th:text="#{billing.edit.kassaId}"></label>
                     <div class="checkbox-primary">
                         <input id="webKassaID" type="text" class="form-control" th:field="*{webKassaID}" th:value="*{webKassaID}">
                     </div>
@@ -70,7 +70,7 @@
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="webKassaLogin" class="control-label">Логин (WebKassa) / API-key ReKassa</label>
+                    <label for="webKassaLogin" class="control-label" th:text="#{billing.edit.kassa.login}"></label>
                     <div class="checkbox-primary">
                         <input id="webKassaLogin" type="text" class="form-control" th:field="*{webKassaLogin}" th:value="*{webKassaLogin}">
                     </div>
@@ -78,7 +78,7 @@
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="webKassaPassword" class="control-label">Пароль (WebKassa) / Пароль (ReKassa)</label>
+                    <label for="webKassaPassword" class="control-label" th:text="#{billing.edit.password}"></label>
                     <div class="checkbox-primary">
                         <input id="webKassaPassword" type="text" class="form-control" th:field="*{webKassaPassword}" th:value="*{webKassaPassword}">
                     </div>
@@ -86,7 +86,7 @@
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="webKassaPassword" class="control-label">IP-адрес паркомата</label>
+                    <label for="webKassaPassword" class="control-label" th:text="#{billing.edit.parkomat.ip}"></label>
                     <div class="checkbox-primary">
                         <input id="parkomatIP" type="text" class="form-control" th:field="*{parkomatIP}" th:value="*{parkomatIP}">
                     </div>
