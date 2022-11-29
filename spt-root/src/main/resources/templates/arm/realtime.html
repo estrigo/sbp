@@ -7,6 +7,9 @@
         <th:block sec:authorize="!hasRole('ROLE_RTA')">
             <div class="row mb-1">
                 <div class="col-12 text-right">
+                    <button type="button" class="btn btn-primary" th:text="#{arm.holdBarrierOpen}" th:onclick="showCameraBarriers()">
+                        Фиксация открытия шлагбаума
+                    </button>
                     <div class="btn-group" role="group">
                         <button type="button" class="btn btn-secondary move-left" onclick="changeGrid(true)">
                             <span> <i class="mdi mdi-plus"></i></span>
@@ -32,9 +35,6 @@
                             type="button" class="btn btn-primary" th:text="#{arm.reasons}"
                             th:onclick="openReasons()">
                         Reasons
-                    </button>
-                    <button type="button" class="btn btn-primary" th:text="#{arm.holdBarrierOpen}" th:onclick="showCameraBarriers()">
-                        Фиксация открытия шлагбаума
                     </button>
                     <button type="button" class="btn btn-primary" th:text="#{arm.restart}"
                             th:unless="${#strings.isEmpty(ip)}" th:onclick="restart([[${ip}]])">Restart
@@ -99,14 +99,19 @@
                                         th:onclick="openGateWOReason(this.getAttribute('cameraId'))"
                                         th:text="#{arm.open.parqour}"></button>
                             </div>
-                            <div class="col-md-6 col-sm-12 col-xs-12"
+                            <div th:id="${'armPermanentOpenStatus' + camera.id}" style="display: none;" class="alert alert-warning">
+                                <div class="col-md-12 col-sm-12 col-xs-12">
+                                    Проезд находится в открытом положении
+                                </div>
+                            </div>
+                            <div th:id="${'openBarrier' + camera.id}" style="display: block;" class="col-md-6 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-success w-100"
                                         th:cameraId="${camera.id}"
                                         th:onclick="openGate(this.getAttribute('cameraId'))"
                                         th:text="#{arm.open}"></button>
                             </div>
-                            <div class="col-md-6 col-sm-12 col-xs-12"
+                            <div th:id="${'closeBarrier' + camera.id}" style="display: block;" class="col-md-6 col-sm-12 col-xs-12"
                                  sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR')">
                                 <button type="button" class="btn btn-outline-warning w-100"
                                         th:cameraId="${camera.id}"
@@ -845,7 +850,27 @@
         $.ajax(settings).done(function (response) {
             let html = '';
             for (let i = 0; i < response.length; i++) {
-                html = html + '<tr><td>' + response[i].name + '</td><td>' + response[i].ip + '</td><td>' + response[i].parking + '</td><td><button class="btn btn-warning" id="permanentOpenCamera' + response[i].id + '" onclick="openPermanent(' + response[i].id + ')">Зафиксировать в открытом положении</button><div class="alert alert-warning" style="display: none;" id="permanentOpenStatus' + response[i].id + '">Зафиксирован в открытом положении</div></td><td><button class="btn btn-primary" onclick="closePermanent(' + response[i].id + ')">Закрыть</button></td></tr>';
+                html = html + '<tr>' +
+                    '<td>' + response[i].name + '</td>' +
+                    '<td>' + response[i].ip + '</td>' +
+                    '<td>' + response[i].parking + '</td>' +
+                    '<td><button class="btn btn-warning" ' + (response[i].permanentlyOpen ? 'style="display: none"' : 'style="display: block"' ) + ' id="permanentOpenCamera' + response[i].id + '" onclick="openPermanent(' + response[i].id + ')">Зафиксировать в открытом положении</button><div class="alert alert-warning" ' + (response[i].permanentlyOpen ? 'style="display: block"' : 'style="display: none"' ) + ' id="permanentOpenStatus' + response[i].id + '">Зафиксирован в открытом положении</div></td>' +
+                    '<td><button class="btn btn-primary" onclick="closePermanent(' + response[i].id + ')">Закрыть</button></td>' +
+                    '</tr>';
+
+                if(response[i].permanentlyOpen){
+                    $('#permanentOpenCamera' + response[i].id).hide();
+                    $('#openBarrier' + response[i].id).hide();
+                    $('#closeBarrier' + response[i].id).hide();
+                    $('#permanentOpenStatus' + response[i].id).show();
+                    $('#armPermanentOpenStatus' + response[i].id).show();
+                } else {
+                    $('#permanentOpenCamera' + response[i].id).show();
+                    $('#openBarrier' + response[i].id).show();
+                    $('#closeBarrier' + response[i].id).show();
+                    $('#permanentOpenStatus' + response[i].id).hide();
+                    $('#armPermanentOpenStatus' + response[i].id).hide();
+                }
             }
             $('#cameraBarriersTable > tbody').html(html);
         });
@@ -866,9 +891,13 @@
             "data": form
         };
         $.ajax(settings).done(function (response) {
-            if(response){
+            console.log('response:', response);
+            if(response.result){
                 $('#permanentOpenCamera' + id).hide();
+                $('#openBarrier' + id).hide();
+                $('#closeBarrier' + id).hide();
                 $('#permanentOpenStatus' + id).show();
+                $('#armPermanentOpenStatus' + id).show();
             } else {
                 console.log("error while permanent open");
             }
@@ -888,9 +917,13 @@
             "data": form
         };
         $.ajax(settings).done(function (response) {
-            if(response){
+            console.log('response:', response);
+            if(response.result){
                 $('#permanentOpenStatus' + id).hide();
+                $('#armPermanentOpenStatus' + id).hide();
                 $('#permanentOpenCamera' + id).show();
+                $('#openBarrier' + id).show();
+                $('#closeBarrier' + id).show();
             } else {
                 console.log("error while permanent close");
             }

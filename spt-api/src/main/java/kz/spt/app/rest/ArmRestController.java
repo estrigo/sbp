@@ -97,13 +97,13 @@ public class ArmRestController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
     @PostMapping(value = "/camera/permanent/open")
-    public Boolean setPermanentOpen(@RequestParam("cameraId") Long cameraId) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
+    public JsonNode setPermanentOpen(@RequestParam("cameraId") Long cameraId) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
         return armService.openPermanentGate(cameraId);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
     @PostMapping(value = "/camera/permanent/close")
-    public Boolean setPermanentClose(@RequestParam("cameraId") Long cameraId) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
+    public JsonNode setPermanentClose(@RequestParam("cameraId") Long cameraId) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
         return armService.closePermanentGate(cameraId);
     }
 }

@@ -837,6 +837,23 @@ public class CarEventServiceImpl implements CarEventService {
             hasAccess = true;
         }
 
+        List<Long> barrierOpenCameraIds = barrierService.getBarrierOpenCameraIdsList();
+        if(barrierOpenCameraIds.contains(camera.getId())){
+
+            properties.put("type", EventLog.StatusType.Allow);
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(),
+                    "Запускаем авто: Авто с гос. номером " + eventDto.car_number,
+                    "Allow entrance: Car with license plate " + eventDto.car_number,
+                    "Einfahrt gestatt: Auto mit Kennzeichen " + eventDto.car_number);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties,
+                    "Запускаем авто: Авто с гос. номером " + eventDto.car_number,
+                    "Allow entrance: Car with license plate " + eventDto.car_number,
+                    "Einfahrt gestatt: Auto mit Kennzeichen " + eventDto.car_number,
+                    EventLog.EventType.PASS);
+
+            hasAccess = true;
+        }
+
         log.info("enteredFromThisSecondsBefore: " + enteredFromThisSecondsBefore);
         log.info("hasAccess: " + hasAccess);
 
@@ -1069,11 +1086,11 @@ public class CarEventServiceImpl implements CarEventService {
             } else if (checkBooking(eventDto.car_number, eventDto.lp_region, "1")) {
                 properties.put("type", EventLog.StatusType.Allow);
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(),
-                        "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.",
+                        "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется действующий пропуск.",
                         "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.",
                         "Einfahrt gestatt: Auto mit Kennzeichen " + eventDto.car_number + " hat eine gültige Reservierung.");
                 eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties,
-                        "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.",
+                        "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется действующий пропуск.",
                         "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.",
                         "Einfahrt gestatt: Auto mit Kennzeichen " + eventDto.car_number + " hat eine gültige Reservierung.",
                         EventLog.EventType.BOOKING_PASS);
@@ -1092,11 +1109,11 @@ public class CarEventServiceImpl implements CarEventService {
             log.info(eventDto.car_number + ": booking check booking return true");
             properties.put("type", EventLog.StatusType.Allow);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(),
-                    "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.",
+                    "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется действующий пропуск.",
                     "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.",
                     "Einfahrt gestatt: Auto mit Kennzeichen " + eventDto.car_number + " hat eine gültige Reservierung.");
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties,
-                    "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется валидный пропуск.",
+                    "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " имеется действующий пропуск.",
                     "Allow entrance: Car with plate number " + eventDto.car_number + " has valid booking.",
                     "Einfahrt gestatt: Auto mit Kennzeichen " + eventDto.car_number + " hat eine gültige Reservierung.",
                     EventLog.EventType.BOOKING_PASS);
@@ -1658,6 +1675,7 @@ public class CarEventServiceImpl implements CarEventService {
                 }
             }
         }
+
         String currentPlateNumber = eventDto.car_number;
         if (hasAccess) {
             if (barrierOutProcessingHashtable.containsKey(camera.getGate().getBarrier().getId()) && currentPlateNumber.equals(barrierOutProcessingHashtable.get(camera.getGate().getBarrier().getId()))) {
@@ -1805,7 +1823,8 @@ public class CarEventServiceImpl implements CarEventService {
             try {
                 barrierStatusResult = barrierService.getBarrierStatus(camera.getGate().getBarrier(), properties);
                 log.info("barrierStatusResult: " + barrierStatusResult);
-                if(barrierStatusResult){
+                List<Long> barrierOpenCameraIds = barrierService.getBarrierOpenCameraIdsList();
+                if(barrierOpenCameraIds.contains(camera.getId()) || barrierStatusResult){
                     paymentService.createDebtAndOUTState(eventDto.car_number, camera, properties);
                 }
             } catch (Exception e) {

@@ -13,6 +13,7 @@ import kz.spt.lib.model.Barrier;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
 
 public interface BarrierService {
@@ -39,5 +40,5 @@ public interface BarrierService {
 
     Boolean getBarrierStatus(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
 
-    //Map<String, Map<Integer, Boolean>> getModbusPermanentOpen();
+    List<Long> getBarrierOpenCameraIdsList();
 }

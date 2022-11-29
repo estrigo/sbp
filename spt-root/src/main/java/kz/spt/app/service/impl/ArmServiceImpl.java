@@ -264,7 +264,8 @@ public class ArmServiceImpl implements ArmService {
     }
 
     @Override
-    public Boolean openPermanentGate(Long cameraId) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
+    public JsonNode openPermanentGate(Long cameraId) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
+        ObjectNode objectNode = StaticValues.objectMapper.createObjectNode();
         Camera camera = cameraService.getCameraById(cameraId);
         if (camera != null && camera.getGate() != null && camera.getGate().getBarrier() != null) {
 
@@ -291,9 +292,12 @@ public class ArmServiceImpl implements ArmService {
             eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName(), "Manual opening gate: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName(), descriptionDe);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName(), "Manual gate opening: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName(), descriptionDe, EventLog.EventType.MANUAL_GATE_OPEN);
 
-            return barrierService.openPermanentBarrier(camera.getGate().getBarrier());
+            Boolean result = barrierService.openPermanentBarrier(camera.getGate().getBarrier());
+            objectNode.put("result", result);
+
+            objectNode.set("permanentOpenCameraIds", getBarrierOpenCameraIds());
         }
-        return null;
+        return objectNode;
     }
 
     @Override
@@ -346,7 +350,8 @@ public class ArmServiceImpl implements ArmService {
     }
 
     @Override
-    public Boolean closePermanentGate(Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
+    public JsonNode closePermanentGate(Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
+        ObjectNode objectNode = StaticValues.objectMapper.createObjectNode();
         Camera camera = cameraService.getCameraById(cameraId);
         if (camera != null && camera.getGate() != null && camera.getGate().getBarrier() != null) {
 
@@ -376,9 +381,28 @@ public class ArmServiceImpl implements ArmService {
             eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", descriptionRu, descriptionEn, descriptionDe);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.MANUAL_GATE_CLOSE);
 
-            return barrierService.closePermanentBarrier(camera.getGate().getBarrier(), properties);
+            Boolean result = barrierService.closePermanentBarrier(camera.getGate().getBarrier(), properties);
+
+            log.info("close result: " + result);
+
+            objectNode.put("result", result);
+            objectNode.set("permanentOpenCameraIds", getBarrierOpenCameraIds());
         }
-        return null;
+        return objectNode;
+    }
+
+
+
+    public JsonNode getBarrierOpenCameraIds(){
+
+        ArrayNode cameraIdArray = StaticValues.objectMapper.createArrayNode();
+
+        List<Long> openBarrierCameraIds = barrierService.getBarrierOpenCameraIdsList();
+        for(Long id : openBarrierCameraIds){
+            cameraIdArray.add(id);
+        }
+
+        return cameraIdArray;
     }
 
     @SneakyThrows
@@ -610,14 +634,17 @@ public class ArmServiceImpl implements ArmService {
     public JsonNode getCameraList() {
         List<Camera> cameraList = cameraService.cameraList();
 
+        List<Long> barrierOpenCameraIds = barrierService.getBarrierOpenCameraIdsList();
+
         ArrayNode cameras = objectMapper.createArrayNode();
         if (cameraList.size() > 0) {
             for (Camera camera : cameraList) {
                 ObjectNode cameraNode = objectMapper.createObjectNode();
                 cameraNode.put("id", camera.getId());
                 cameraNode.put("name", camera.getName());
-                cameraNode.put("ip", camera.getGate().getBarrier().getIp());
+                cameraNode.put("ip", camera.getIp());
                 cameraNode.put("parking", camera.getGate().getParking().getName());
+                cameraNode.put("permanentlyOpen", barrierOpenCameraIds.contains(camera.getId()));
                 cameras.add(cameraNode);
             }
         }

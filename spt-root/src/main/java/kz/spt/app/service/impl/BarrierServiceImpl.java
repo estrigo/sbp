@@ -29,7 +29,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -957,4 +959,41 @@ public class BarrierServiceImpl implements BarrierService {
         return connected;
     }
 
+    @Override
+    public List<Long> getBarrierOpenCameraIdsList(){
+        List<Long> openBarrierCameras = new ArrayList<>();
+        if(modbusLastCommandIsManual.size() > 0){
+            for (Map.Entry<String, Map<Integer, Boolean>> modbus : modbusLastCommandIsManual.entrySet()) {
+                if(modbus.getValue().size() > 0){
+                    for (Map.Entry<Integer, Boolean> pins : modbus.getValue().entrySet()) {
+                        List<Long> cameraIds = StatusCheckJob.getBarrierOpenCameraIds(modbus.getKey(), pins.getKey()+1, null);
+                        if(cameraIds.size() > 0){
+                            for (Long id: cameraIds) {
+                                openBarrierCameras.add(id);
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+        if(snmpLastCommandIsManual.size() > 0){
+            for (Map.Entry<String, Map<String, Boolean>> snmp : snmpLastCommandIsManual.entrySet()) {
+                if(snmp.getValue().size() > 0){
+                    for (Map.Entry<String, Boolean> oids : snmp.getValue().entrySet()) {
+                        List<Long> cameraIds = StatusCheckJob.getBarrierOpenCameraIds(snmp.getKey(), null, oids.getKey());
+                        if(cameraIds.size() > 0){
+                            for (Long id: cameraIds) {
+                                openBarrierCameras.add(id);
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+        return openBarrierCameras;
+    }
 }
