@@ -187,7 +187,7 @@ public class CommandExecutor implements PluginRegister {
                     String reasonEn = command.get("reasonEn").textValue();
                     String reasonLocal = command.get("reasonLocal").textValue();
                     String provider = command.get("provider").textValue();
-                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reason, reasonEn, reasonLocal,provider));
+                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reasonEn, reason, reasonLocal,provider));
                 } else {
                     throw new RuntimeException("Not all increaseCurrentBalance parameters set");
                 }
