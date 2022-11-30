@@ -839,18 +839,6 @@ public class CarEventServiceImpl implements CarEventService {
 
         List<Long> barrierOpenCameraIds = barrierService.getBarrierOpenCameraIdsList();
         if(barrierOpenCameraIds.contains(camera.getId())){
-
-            properties.put("type", EventLog.StatusType.Allow);
-            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(),
-                    "Запускаем авто: Авто с гос. номером " + eventDto.car_number,
-                    "Allow entrance: Car with license plate " + eventDto.car_number,
-                    "Einfahrt gestatt: Auto mit Kennzeichen " + eventDto.car_number);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties,
-                    "Запускаем авто: Авто с гос. номером " + eventDto.car_number,
-                    "Allow entrance: Car with license plate " + eventDto.car_number,
-                    "Einfahrt gestatt: Auto mit Kennzeichen " + eventDto.car_number,
-                    EventLog.EventType.PASS);
-
             hasAccess = true;
         }
 
