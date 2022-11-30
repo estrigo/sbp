@@ -391,8 +391,7 @@ public class ArmServiceImpl implements ArmService {
         return objectNode;
     }
 
-
-
+    @Override
     public JsonNode getBarrierOpenCameraIds(){
 
         ArrayNode cameraIdArray = StaticValues.objectMapper.createArrayNode();

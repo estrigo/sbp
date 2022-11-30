@@ -106,4 +106,9 @@ public class ArmRestController {
     public JsonNode setPermanentClose(@RequestParam("cameraId") Long cameraId) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
         return armService.closePermanentGate(cameraId);
     }
+
+    @GetMapping("/barrier/permanent/open/list")
+    public JsonNode getBarrierPermanentList() {
+        return armService.getBarrierOpenCameraIds();
+    }
 }

@@ -46,9 +46,6 @@ public class ScheduleWorks {
     @Value("${shiftClosing.parkomat:false}")
     Boolean parkomatShiftClosing;
 
-    @Value("${barrier.permanent.open.enabled:false}")
-    Boolean permanentOpenEnabled;
-
     private PosTerminalRepository posTerminalRepository;
 
     private PaymentService paymentService;
@@ -197,14 +194,6 @@ public class ScheduleWorks {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    @Scheduled(cron = "0 * * * * ?")
-    public void barrierPermanentOpenCheckSchedule() {
-        if(permanentOpenEnabled){
-
-//            eventLogService.
         }
     }
 }

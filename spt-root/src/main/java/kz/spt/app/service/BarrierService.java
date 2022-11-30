@@ -41,4 +41,6 @@ public interface BarrierService {
     Boolean getBarrierStatus(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
 
     List<Long> getBarrierOpenCameraIdsList();
+
+    Boolean getPermanentOpenEnabled();
 }

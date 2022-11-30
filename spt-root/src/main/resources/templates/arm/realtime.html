@@ -7,9 +7,7 @@
         <th:block sec:authorize="!hasRole('ROLE_RTA')">
             <div class="row mb-1">
                 <div class="col-12 text-right">
-                    <button type="button" class="btn btn-primary" th:text="#{arm.holdBarrierOpen}" th:onclick="showCameraBarriers()">
-                        Фиксация открытия шлагбаума
-                    </button>
+                    <button type="button" th:if="${permanentOpenEnabled}" class="btn btn-primary" th:text="#{arm.holdBarrierOpen}" th:onclick="showCameraBarriers()"></button>
                     <div class="btn-group" role="group">
                         <button type="button" class="btn btn-secondary move-left" onclick="changeGrid(true)">
                             <span> <i class="mdi mdi-plus"></i></span>
@@ -92,7 +90,7 @@
                     <th:block sec:authorize="!hasRole('ROLE_RTA')">
                         <div class="d-flex flex-md-row flex-sm-column flex-wrap w-100">
                             <!--новая роль - оператор который может открыть без шлагбаум без причин и комментариев -->
-                            <div class="p-1 col-sm-12 col-xs-12"
+                            <div class="p-1 col-sm-12 col-xs-12" th:id="${'openBarrierWOReason' + camera.id}"
                                  sec:authorize="hasAnyRole('ROLE_OPERATOR_PARQOUR')">
                                 <button type="button" class="btn btn-outline-danger w-100"
                                         th:cameraId="${camera.id}"
@@ -363,6 +361,7 @@
     })
 
     var recInterval = null;
+    var recBarrierOpenStatus = null;
     var socket = null;
 
     function connect() {
@@ -752,12 +751,57 @@
         });
     }
 
+
+
+    function updatePermanentOpenBarrierStatus(){
+        $.get("/rest/arm/barrier/permanent/open/list/", function (data) {
+            $(".item").each(function () {
+                const $input = $(this);
+                const id = $input.data("id");
+
+                
+                if(data.indexOf(id) !== -1){
+                    $('#permanentOpenCamera' + id).hide();
+                    $('#openBarrier' + id).hide();
+                    $('#closeBarrier' + id).hide();
+                    if($('#openBarrierWOReason' + id).length) {
+                        $('#openBarrierWOReason' + id).show();
+                    }
+                    $('#openBarrierWOReason' + id).hide();
+                    $('#permanentOpenStatus' + id).show();
+                    $('#armPermanentOpenStatus' + id).show();
+                } else {
+                    $('#permanentOpenCamera' + id).show();
+                    $('#openBarrier' + id).show();
+                    $('#closeBarrier' + id).show();
+                    if($('#openBarrierWOReason' + id).length) {
+                        $('#openBarrierWOReason' + id).show();
+                    }
+                    $('#permanentOpenStatus' + id).hide();
+                    $('#armPermanentOpenStatus' + id).hide();
+                }
+            });
+        });
+    }
+
+    function updatePermanentOpenBarrierStatusInterval(){
+        updatePermanentOpenBarrierStatus();
+
+        recBarrierOpenStatus = setInterval(function () {
+            updatePermanentOpenBarrierStatus();;
+        }, 5000);
+    }
+
     $(document).on('ready', function () {
         $(".item").each(function () {
             const $input = $(this);
             const id = $input.data("id");
             initCamera(id);
         });
+        const permanentOpenEnabled = [[${permanentOpenEnabled}]];
+        if(permanentOpenEnabled){
+            updatePermanentOpenBarrierStatusInterval();
+        }
     });
 
     let tabs = [];
@@ -779,6 +823,7 @@
         tabs = [];
         maxId = 0;
         const canEdit = [[${canEdit}]];
+        const permanentOpenEnabled = [[${permanentOpenEnabled}]];
         maxIdIncrement = 0;
         moveOptions = "<option value=''></option>";
         $.get("/rest/arm/tab/camera", function (data) {
@@ -862,12 +907,18 @@
                     $('#permanentOpenCamera' + response[i].id).hide();
                     $('#openBarrier' + response[i].id).hide();
                     $('#closeBarrier' + response[i].id).hide();
+                    if($('#openBarrierWOReason' + response[i].id).length){
+                        $('#openBarrierWOReason' + response[i].id).hide();
+                    }
                     $('#permanentOpenStatus' + response[i].id).show();
                     $('#armPermanentOpenStatus' + response[i].id).show();
                 } else {
                     $('#permanentOpenCamera' + response[i].id).show();
                     $('#openBarrier' + response[i].id).show();
                     $('#closeBarrier' + response[i].id).show();
+                    if($('#openBarrierWOReason' + response[i].id).length) {
+                        $('#openBarrierWOReason' + response[i].id).show();
+                    }
                     $('#permanentOpenStatus' + response[i].id).hide();
                     $('#armPermanentOpenStatus' + response[i].id).hide();
                 }
@@ -891,11 +942,13 @@
             "data": form
         };
         $.ajax(settings).done(function (response) {
-            console.log('response:', response);
             if(response.result){
                 $('#permanentOpenCamera' + id).hide();
                 $('#openBarrier' + id).hide();
                 $('#closeBarrier' + id).hide();
+                if($('#openBarrierWOReason' + id).length) {
+                    $('#openBarrierWOReason' + id).hide();
+                }
                 $('#permanentOpenStatus' + id).show();
                 $('#armPermanentOpenStatus' + id).show();
             } else {
@@ -924,6 +977,9 @@
                 $('#permanentOpenCamera' + id).show();
                 $('#openBarrier' + id).show();
                 $('#closeBarrier' + id).show();
+                if($('#openBarrierWOReason' + id).length) {
+                    $('#openBarrierWOReason' + id).show();
+                }
             } else {
                 console.log("error while permanent close");
             }

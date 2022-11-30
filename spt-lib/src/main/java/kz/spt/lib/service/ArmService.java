@@ -43,4 +43,6 @@ public interface ArmService {
     Boolean configureArm(String json) throws JsonProcessingException;
 
     JsonNode getCameraList();
+
+    JsonNode getBarrierOpenCameraIds();
 }

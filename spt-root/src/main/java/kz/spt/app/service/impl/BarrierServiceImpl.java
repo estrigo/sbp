@@ -55,6 +55,9 @@ public class BarrierServiceImpl implements BarrierService {
 
     private Boolean modbusIcpdasOldWay = false;
 
+    @Value("${barrier.permanent.open.enabled:false}")
+    Boolean permanentOpenEnabled;
+
     public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, @Value("${barrier.modbus.icpdas.old.way}") Boolean modbusIcpdasOldWay, BarrierRepository barrierRepository, EventLogService eventLogService) {
         this.disableOpen = disableOpen;
         this.barrierRepository = barrierRepository;
@@ -993,7 +996,11 @@ public class BarrierServiceImpl implements BarrierService {
                 }
             }
         }
-
         return openBarrierCameras;
+    }
+
+    @Override
+    public Boolean getPermanentOpenEnabled(){
+        return permanentOpenEnabled;
     }
 }
