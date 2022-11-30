@@ -208,7 +208,7 @@ public class ArmServiceImpl implements ArmService {
                         String descriptionEn = "Manual opening gate: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName() + " Reason: " + reason;
                         String descriptionDe = "Manuelles Öffnen des Tores: Benutzer"+ username + " geöffnetes Tor für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName() + " Grund: " + reason;
                         eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), debtPlatenumber, description, descriptionEn, descriptionDe);
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, descriptionDe);
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, descriptionDe, EventLog.EventType.MANUAL_GATE_OPEN);
 
                         if (debtPlatenumber != null) {
                             if (snapshot != null && !"".equals(snapshot) && !"null".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
@@ -231,7 +231,7 @@ public class ArmServiceImpl implements ArmService {
                         String descriptionEn = "Manual opening gate: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName() + " Reason: " + reason;
                         String descriptionDe = "Manuelles Öffnen des Tores: Benutzer"+ username + " geöffnetes Tor für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "einfahrt" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName() + " Grund: " + reason;
                         eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), debtPlatenumber, description, descriptionEn, descriptionDe);
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, descriptionDe);
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, descriptionDe, EventLog.EventType.MANUAL_GATE_OPEN);
 
                         if (debtPlatenumber != null) {
                             if (snapshot != null && !"".equals(snapshot) && !"null".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
@@ -261,6 +261,43 @@ public class ArmServiceImpl implements ArmService {
         }
 
         return null;
+    }
+
+    @Override
+    public JsonNode openPermanentGate(Long cameraId) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
+        ObjectNode objectNode = StaticValues.objectMapper.createObjectNode();
+        Camera camera = cameraService.getCameraById(cameraId);
+        if (camera != null && camera.getGate() != null && camera.getGate().getBarrier() != null) {
+
+            String username = "";
+            if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+                CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                if (currentUser != null) {
+                    username = currentUser.getUsername();
+                }
+            }
+
+            Map<String, Object> properties = new HashMap<>();
+            SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+            properties.put("eventTime", format.format(new Date()));
+            properties.put("cameraIp", camera.getIp());
+            properties.put("cameraId", cameraId);
+            properties.put("gateName", camera.getGate().getName());
+            properties.put("gateDescription", camera.getGate().getDescription());
+            properties.put("gateType", camera.getGate().getGateType().toString());
+            properties.put("type", EventLog.StatusType.Allow);
+            properties.put("event", EventLog.EventType.MANUAL_GATE_OPEN);
+
+            String descriptionDe = "Manuelles Öffnen des Tores: Benutzer"+ username + " geöffnetes Tor für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "einfahrt" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName();
+            eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName(), "Manual opening gate: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName(), descriptionDe);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName(), "Manual gate opening: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName(), descriptionDe, EventLog.EventType.MANUAL_GATE_OPEN);
+
+            Boolean result = barrierService.openPermanentBarrier(camera.getGate().getBarrier());
+            objectNode.put("result", result);
+
+            objectNode.set("permanentOpenCameraIds", getBarrierOpenCameraIds());
+        }
+        return objectNode;
     }
 
     @Override
@@ -310,6 +347,61 @@ public class ArmServiceImpl implements ArmService {
         }
 
         return false;
+    }
+
+    @Override
+    public JsonNode closePermanentGate(Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
+        ObjectNode objectNode = StaticValues.objectMapper.createObjectNode();
+        Camera camera = cameraService.getCameraById(cameraId);
+        if (camera != null && camera.getGate() != null && camera.getGate().getBarrier() != null) {
+
+            String username = "";
+            if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+                CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                if (currentUser != null) {
+                    username = currentUser.getUsername();
+                }
+            }
+
+            Map<String, Object> properties = new HashMap<>();
+            SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+            properties.put("eventTime", format.format(new Date()));
+            properties.put("cameraIp", camera.getIp());
+            properties.put("cameraId", cameraId);
+            properties.put("gateName", camera.getGate().getName());
+            properties.put("gateDescription", camera.getGate().getDescription());
+            properties.put("gateType", camera.getGate().getGateType().toString());
+            properties.put("type", EventLog.StatusType.Allow);
+            properties.put("event", EventLog.EventType.MANUAL_GATE_CLOSE);
+
+            String descriptionRu = "Ручное закрытие шлагбаума: Пользователь " + username + " закрыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
+            String descriptionEn = "Manual closing gate: User " + username + " closed gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
+            String descriptionDe = "Manuelles Schließen des Tores: Benutzer " + username + " schloss die Barriere für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "einfahrt" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName();
+
+            eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", descriptionRu, descriptionEn, descriptionDe);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.MANUAL_GATE_CLOSE);
+
+            Boolean result = barrierService.closePermanentBarrier(camera.getGate().getBarrier(), properties);
+
+            log.info("close result: " + result);
+
+            objectNode.put("result", result);
+            objectNode.set("permanentOpenCameraIds", getBarrierOpenCameraIds());
+        }
+        return objectNode;
+    }
+
+    @Override
+    public JsonNode getBarrierOpenCameraIds(){
+
+        ArrayNode cameraIdArray = StaticValues.objectMapper.createArrayNode();
+
+        List<Long> openBarrierCameraIds = barrierService.getBarrierOpenCameraIdsList();
+        for(Long id : openBarrierCameraIds){
+            cameraIdArray.add(id);
+        }
+
+        return cameraIdArray;
     }
 
     @SneakyThrows
@@ -535,6 +627,28 @@ public class ArmServiceImpl implements ArmService {
         }
 
         return null;
+    }
+
+    @Override
+    public JsonNode getCameraList() {
+        List<Camera> cameraList = cameraService.cameraList();
+
+        List<Long> barrierOpenCameraIds = barrierService.getBarrierOpenCameraIdsList();
+
+        ArrayNode cameras = objectMapper.createArrayNode();
+        if (cameraList.size() > 0) {
+            for (Camera camera : cameraList) {
+                ObjectNode cameraNode = objectMapper.createObjectNode();
+                cameraNode.put("id", camera.getId());
+                cameraNode.put("name", camera.getName());
+                cameraNode.put("ip", camera.getIp());
+                cameraNode.put("parking", camera.getGate().getParking().getName());
+                cameraNode.put("permanentlyOpen", barrierOpenCameraIds.contains(camera.getId()));
+                cameras.add(cameraNode);
+            }
+        }
+
+        return cameras;
     }
 
     private CredentialsProvider provider(String login, String password) {

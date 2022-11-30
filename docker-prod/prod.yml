@@ -128,6 +128,9 @@ barrier:
     icpdas:
       old:
         way: false
+  permanent:
+    open:
+      enabled: false
 car:
   movement:
     simulate: false
