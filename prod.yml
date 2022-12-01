@@ -101,7 +101,7 @@ barrier:
       connected: false
   permanent:
     open:
-      enabled: false
+      enabled: true
 car:
   movement:
     simulate: false
