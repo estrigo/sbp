@@ -127,6 +127,9 @@ barrier:
   modbus:
     keep:
       connected: false
+    icpdas:
+      old:
+        way: false
   permanent:
     open:
       enabled: true
