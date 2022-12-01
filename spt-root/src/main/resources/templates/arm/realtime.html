@@ -899,8 +899,15 @@
                     '<td>' + response[i].name + '</td>' +
                     '<td>' + response[i].ip + '</td>' +
                     '<td>' + response[i].parking + '</td>' +
-                    '<td><button class="btn btn-warning" ' + (response[i].permanentlyOpen ? 'style="display: none"' : 'style="display: block"' ) + ' id="permanentOpenCamera' + response[i].id + '" onclick="openPermanent(' + response[i].id + ')">Зафиксировать в открытом положении</button><div class="alert alert-warning" ' + (response[i].permanentlyOpen ? 'style="display: block"' : 'style="display: none"' ) + ' id="permanentOpenStatus' + response[i].id + '">Зафиксирован в открытом положении</div></td>' +
-                    '<td><button class="btn btn-primary" onclick="closePermanent(' + response[i].id + ')">Закрыть</button></td>' +
+                    '<td>' +
+                    '   <button class="btn btn-warning" ' + (response[i].permanentlyOpen ? 'style="display: none"' : 'style="display: block"' ) + ' id="permanentOpenCamera' + response[i].id + '" onclick="openPermanent(' + response[i].id + ')">Зафиксировать в открытом положении</button>' +
+                    '   <div style="display:none;" id="permanentOpenCameraStatus' + response[i].id + '"><span class="badge badge-warning">' + [[#{events.error}]] + '</span></div>' +
+                    '   <div style="display:none;" class="alert alert-warning" ' + (response[i].permanentlyOpen ? 'style="display: block"' : 'style="display: none"' ) + ' id="permanentOpenStatus' + response[i].id + '">Зафиксирован в открытом положении</div>' +
+                    '</td>' +
+                    '<td>' +
+                    '   <button class="btn btn-primary" onclick="closePermanent(' + response[i].id + ')">Закрыть</button>' +
+                    '   <div style="display:none;" id="permanentCloseCameraStatus' + response[i].id + '"><span class="badge badge-warning">' + [[#{events.error}]] + '</span></div>' +
+                    '</td>' +
                     '</tr>';
 
                 if(response[i].permanentlyOpen){
@@ -951,9 +958,14 @@
                 }
                 $('#permanentOpenStatus' + id).show();
                 $('#armPermanentOpenStatus' + id).show();
+                $('#permanentOpenCameraStatus' + id).hide();
             } else {
                 console.log("error while permanent open");
+                $('#permanentOpenCameraStatus' + id).show();
             }
+        }).fail(function (error){
+            console.log(error);
+            $('#permanentOpenCameraStatus' + id).show();
         });
     }
 
@@ -980,10 +992,17 @@
                 if($('#openBarrierWOReason' + id).length) {
                     $('#openBarrierWOReason' + id).show();
                 }
+                $('#permanentCloseCameraStatus' + id).hide();
             } else {
                 console.log("error while permanent close");
+                $('#permanentCloseCameraStatus' + id).show();
             }
-        });
+        }).fail(
+            function (error){
+                console.log(error);
+                $('#permanentCloseCameraStatus' + id).show();
+            }
+        );
     }
 
     function addNewTab() {
