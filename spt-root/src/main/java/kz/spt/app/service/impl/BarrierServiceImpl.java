@@ -442,20 +442,6 @@ public class BarrierServiceImpl implements BarrierService {
 
         String openOid = barrier.openOid;
 
-        if(Command.Open.equals(command)){
-            Map<String, Boolean> oids = snmpLastCommandIsManual.containsKey(barrier.ip) ? snmpLastCommandIsManual.get(barrier.ip) : new HashMap<>();
-            oids.put(openOid, true);
-            snmpLastCommandIsManual.put(barrier.ip, oids);
-        } else {
-            if(snmpLastCommandIsManual.containsKey(barrier.ip)){
-                Map<String, Boolean> oids = snmpLastCommandIsManual.get(barrier.ip);
-                if(oids.containsKey(openOid)){
-                    oids.remove(openOid);
-                    snmpLastCommandIsManual.put(barrier.ip, oids);
-                }
-            }
-        }
-
         SNMPManager barrierClient = getConnectedSNMPManagerInstance(barrier.ip, barrier.password, barrier.snmpVersion);
 
         if (Command.Close.equals(command)) {
@@ -521,6 +507,23 @@ public class BarrierServiceImpl implements BarrierService {
                 }
             }
         }
+
+        if(result){
+            if(Command.Open.equals(command)){
+                Map<String, Boolean> oids = snmpLastCommandIsManual.containsKey(barrier.ip) ? snmpLastCommandIsManual.get(barrier.ip) : new HashMap<>();
+                oids.put(openOid, true);
+                snmpLastCommandIsManual.put(barrier.ip, oids);
+            } else {
+                if(snmpLastCommandIsManual.containsKey(barrier.ip)){
+                    Map<String, Boolean> oids = snmpLastCommandIsManual.get(barrier.ip);
+                    if(oids.containsKey(openOid)){
+                        oids.remove(openOid);
+                        snmpLastCommandIsManual.put(barrier.ip, oids);
+                    }
+                }
+            }
+        }
+
         return result;
     }
 
@@ -594,20 +597,6 @@ public class BarrierServiceImpl implements BarrierService {
 
         String openOid = barrier.openOid;
 
-        if(Command.Open.equals(command)){
-            Map<String, Boolean> oids = snmpLastCommandIsManual.containsKey(barrier.ip) ? snmpLastCommandIsManual.get(barrier.ip) : new HashMap<>();
-            oids.put(openOid, true);
-            snmpLastCommandIsManual.put(barrier.ip, oids);
-        } else {
-            if(snmpLastCommandIsManual.containsKey(barrier.ip)){
-                Map<String, Boolean> oids = snmpLastCommandIsManual.get(barrier.ip);
-                if(oids.containsKey(openOid)){
-                    oids.remove(openOid);
-                    snmpLastCommandIsManual.put(barrier.ip, oids);
-                }
-            }
-        }
-
         SNMPManager barrierClient = getConnectedSNMPManagerInstance(barrier.ip, barrier.password, barrier.snmpVersion);
 
         String oid = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
@@ -652,6 +641,22 @@ public class BarrierServiceImpl implements BarrierService {
                     isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
                     if (isReturnValueChanged) {
                         break;
+                    }
+                }
+            }
+        }
+
+        if(result){
+            if(Command.Open.equals(command)){
+                Map<String, Boolean> oids = snmpLastCommandIsManual.containsKey(barrier.ip) ? snmpLastCommandIsManual.get(barrier.ip) : new HashMap<>();
+                oids.put(openOid, true);
+                snmpLastCommandIsManual.put(barrier.ip, oids);
+            } else {
+                if(snmpLastCommandIsManual.containsKey(barrier.ip)){
+                    Map<String, Boolean> oids = snmpLastCommandIsManual.get(barrier.ip);
+                    if(oids.containsKey(openOid)){
+                        oids.remove(openOid);
+                        snmpLastCommandIsManual.put(barrier.ip, oids);
                     }
                 }
             }
@@ -741,20 +746,6 @@ public class BarrierServiceImpl implements BarrierService {
         int openRegister = barrier.modbusOpenRegister - 1;
         int closeRegister = barrier.modbusCloseRegister - 1;
 
-        if(Command.Open.equals(command)){
-            Map<Integer, Boolean> pins = modbusLastCommandIsManual.containsKey(barrier.ip) ? modbusLastCommandIsManual.get(barrier.ip) : new HashMap<>();
-            pins.put(openRegister, true);
-            modbusLastCommandIsManual.put(barrier.ip, pins);
-        } else {
-            if(modbusLastCommandIsManual.containsKey(barrier.ip)){
-                Map<Integer, Boolean> pins = modbusLastCommandIsManual.get(barrier.ip);
-                if(pins.containsKey(openRegister)){
-                    pins.remove(openRegister);
-                    modbusLastCommandIsManual.put(barrier.ip, pins);
-                }
-            }
-        }
-
         if(!modbusIcpdasOldWay){
             if(Command.Open.equals(command)){
                 GateStatusDto.setModbusMasterWriteValue(barrier.ip, openRegister, true);
@@ -827,6 +818,23 @@ public class BarrierServiceImpl implements BarrierService {
                 m.disconnect();
             }
         }
+
+        if(result){
+            if(Command.Open.equals(command)){
+                Map<Integer, Boolean> pins = modbusLastCommandIsManual.containsKey(barrier.ip) ? modbusLastCommandIsManual.get(barrier.ip) : new HashMap<>();
+                pins.put(openRegister, true);
+                modbusLastCommandIsManual.put(barrier.ip, pins);
+            } else {
+                if(modbusLastCommandIsManual.containsKey(barrier.ip)){
+                    Map<Integer, Boolean> pins = modbusLastCommandIsManual.get(barrier.ip);
+                    if(pins.containsKey(openRegister)){
+                        pins.remove(openRegister);
+                        modbusLastCommandIsManual.put(barrier.ip, pins);
+                    }
+                }
+            }
+        }
+
         return result;
     }
 
@@ -842,6 +850,10 @@ public class BarrierServiceImpl implements BarrierService {
         String openPin = barrier.openOid;
         String closePin = barrier.closeOid;
 
+        String pin = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
+        var response = new RestTemplateBuilder().build().getForObject("http://" + barrier.ip + ":9001" + "/gate_action?pin=" + pin, JetsonResponse.class);
+        log.info(response.toString());
+
         if(Command.Open.equals(command)){
             Map<String, Boolean> pins = jetsonLastCommandIsManual.containsKey(barrier.ip) ? jetsonLastCommandIsManual.get(barrier.ip) : new HashMap<>();
             pins.put(openPin, true);
@@ -856,9 +868,6 @@ public class BarrierServiceImpl implements BarrierService {
             }
         }
 
-        String pin = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
-        var response = new RestTemplateBuilder().build().getForObject("http://" + barrier.ip + ":9001" + "/gate_action?pin=" + pin, JetsonResponse.class);
-        log.info(response.toString());
         return response.getSuccess();
     }
 
