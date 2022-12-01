@@ -45,8 +45,8 @@ booking:
     tokenUrl: http://halapark.calltekky.com/api/auth/getToken
     postUrl: https://parking.myesentai.kz/parking-session
   esentai:
-    check: true # включить проверку въезда/выезда в Есентай
+    check: false # включить проверку въезда/выезда в Есентай
     login: nurganat.maulsharif+spt@gmail.com
     password: 12345
     tokenUrl: https://auth-test.myesentai.kz/auth/staff-sign-in
-    postUrl: https://parking-test.myesentai.kz/parking-session
+    postUrl: https://parking-test.myesentai.kz/v2/parking-session

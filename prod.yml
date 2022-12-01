@@ -123,7 +123,7 @@ booking:
     login: nurganat.maulsharif+spt@gmail.com
     password: 12345
     tokenUrl: https://auth-test.myesentai.kz/auth/staff-sign-in
-    postUrl: https://parking-test.myesentai.kz/parking-session
+    postUrl: https://parking-test.myesentai.kz/v2/parking-session
 zero:
   touch:
     rahmet:
