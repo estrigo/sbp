@@ -59,6 +59,7 @@ public class ArmController {
         model.addAttribute("cameras", cameraService.cameraListByTabId(cameraTabId));
         model.addAttribute("ip", ip);
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN").contains(m.getAuthority())));
+        model.addAttribute("permanentOpenEnabled", barrierService.getPermanentOpenEnabled());
         return "arm/realtime";
     }
 
