@@ -63,7 +63,7 @@
 
 <script type="text/javascript" th:inline="javascript">
     var locale = [[${#locale}]];
-    var descriptionColumn = locale == "en" ? "descriptionEn" : (locale == "de" ? "descriptionDe" : "description");
+    var descriptionColumn = locale == "en" ? "descriptionEn" : (locale == "ru" ? "description" : "descriptionDe");
 
     const table = $('#eventTable').DataTable({
         "processing": true,

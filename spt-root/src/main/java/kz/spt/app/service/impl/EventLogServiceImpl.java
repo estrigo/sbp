@@ -361,7 +361,7 @@ public class EventLogServiceImpl implements EventLogService {
             EventLogExcelDto eventLogExcelDto = new EventLogExcelDto();
             eventLogExcelDto.plateNumber = eventLog.getPlateNumber();
             eventLogExcelDto.created = format.format(eventLog.getCreated());
-            eventLogExcelDto.description = eventLog.getDescription();
+            eventLogExcelDto.description = eventLog.getDescriptionDe()!=null ? eventLog.getDescriptionDe(): eventLog.getDescriptionEn();
             eventLogExcelDto.status = eventLog.getProperties().containsKey("type") && eventLog.getProperties().get("type") != null ? StringExtensions.locale("events.".concat(eventLog.getProperties().get("type").toString().toLowerCase())) : "";
             eventLogExcelDto.gate = eventLog.getProperties().containsKey("gateName") ? eventLog.getProperties().get("gateName").toString() : "";
             eventLogExcelDtos.add(eventLogExcelDto);
