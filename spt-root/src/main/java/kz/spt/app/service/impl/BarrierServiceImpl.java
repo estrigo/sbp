@@ -222,10 +222,13 @@ public class BarrierServiceImpl implements BarrierService {
             gate.gateName = barrier.getGate().getName();
 
             if (barrier.getBarrierType() == null) {
-                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null,
-                        "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть",
-                        "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open",
-                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " zu öffnen");
+                Map<String, Object> messageValues = new HashMap<>();
+                messageValues.put("gateName", gate.gateName);
+
+                String key = Gate.GateType.IN.equals(gate.gateType) ? MessageKey.BARRIER_SEND_SIGNAL_OPEN_IN :
+                        (Gate.GateType.OUT.equals(gate.gateType) ? MessageKey.BARRIER_SEND_SIGNAL_OPEN_OUT : MessageKey.BARRIER_SEND_SIGNAL_OPEN);
+
+                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, messageValues, key);
                 result = false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
                 if (barrier.isImpulseSignal()) {
@@ -320,10 +323,13 @@ public class BarrierServiceImpl implements BarrierService {
             gate.gateName = barrier.getGate().getName();
 
             if (barrier.getBarrierType() == null) {
-                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null,
-                        "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы закрыть",
-                        "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to close",
-                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " zu schließen");
+                Map<String, Object> messageValues = new HashMap<>();
+                messageValues.put("gateName", gate.gateName);
+
+                String key = Gate.GateType.IN.equals(gate.gateType) ? MessageKey.BARRIER_SEND_SIGNAL_EXIT_IN :
+                        (Gate.GateType.OUT.equals(gate.gateType) ? MessageKey.BARRIER_SEND_SIGNAL_EXIT_OUT : MessageKey.BARRIER_SEND_SIGNAL_EXIT);
+                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, messageValues, key);
+
                 return false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
                 if (barrier.isImpulseSignal()) {
@@ -533,7 +539,13 @@ public class BarrierServiceImpl implements BarrierService {
                 }
                 if (!isOpenValueChanged) {
                     result = false;
-                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 1", "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1", "");
+                    Map<String, Object> messageValues = new HashMap<>();
+                    String key = Gate.GateType.IN.equals(gate.gateType) ? MessageKey.BARRIER_COULD_NOT_CHANGE_IN :
+                            (Gate.GateType.OUT.equals(gate.gateType) ? MessageKey.BARRIER_COULD_NOT_CHANGE_OUT : MessageKey.BARRIER_COULD_NOT_CHANGE);
+
+                    messageValues.put("gateName", gate.gateName);
+                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, messageValues, key);
+                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, messageValues, key);
                 }
             }
             if (Command.Close.equals(command) && isOpenValueChanged) {
@@ -680,7 +692,12 @@ public class BarrierServiceImpl implements BarrierService {
                 }
                 if (!isOpenValueChanged) {
                     result = false;
-                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 1", "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1", "");
+                    Map<String, Object> messageValues = new HashMap<>();
+                    String key = Gate.GateType.IN.equals(gate.gateType) ? MessageKey.BARRIER_COULD_NOT_CHANGE_IN :
+                            (Gate.GateType.OUT.equals(gate.gateType) ? MessageKey.BARRIER_COULD_NOT_CHANGE_OUT : MessageKey.BARRIER_COULD_NOT_CHANGE);
+
+                    messageValues.put("gateName", gate.gateName);
+                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null,  messageValues, key);
                 }
             }
             if (Command.Close.equals(command) && isOpenValueChanged) {

@@ -1370,11 +1370,10 @@ public class CarEventServiceImpl implements CarEventService {
                             balance = billingResult.get("currentBalance").decimalValue().setScale(2);
                             if (balance.compareTo(BigDecimal.ZERO) < 0) {
                                 properties.put("type", EventLog.StatusType.Debt);
-                                String descriptionRu = "В проезде отказано: Авто " + eventDto.car_number + " имеет задолженность " + balance;
-                                String descriptionEn = "Not allowed to enter: Car " + eventDto.car_number + " is in debt " + balance;
-                                String descriptionDe = "Betreten nicht erlaubt: Auto " + eventDto.car_number + " ist verschuldet " + balance;
-                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Debt, camera.getId(), eventDto.getCarNumberWithRegion(), descriptionRu, descriptionEn, descriptionDe);
-                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.DEBT);
+                                messageValues.put("debt", balance);
+
+                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Debt, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, MessageKey.NOT_ALLOWED_DEBT);
+                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, MessageKey.NOT_ALLOWED_DEBT, EventLog.EventType.DEBT);
                             } else {
                                 carOutBy = StaticValues.CarOutBy.ABONOMENT_WO_ENTRY;
                                 carState = carStateService.createCarStateOutWhenNoEntryRecord(eventDto.car_number, eventDto.event_date_time, camera, true,
@@ -1394,8 +1393,8 @@ public class CarEventServiceImpl implements CarEventService {
                             hasAccess = true;
                         } else {
                             properties.put("type", EventLog.StatusType.NotFound);
-                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.NotFound, camera.getId(), eventDto.getCarNumberWithRegion(), description, descriptionEn, descriptionDe);
-                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn,descriptionDe, EventLog.EventType.NOT_PASS);
+                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.NotFound, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, MessageKey.NOT_FOUND_RECORD_ALLOWED);
+                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, MessageKey.NOT_FOUND_RECORD_ALLOWED, EventLog.EventType.NOT_PASS);
                             hasAccess = false;
                         }
                     }
