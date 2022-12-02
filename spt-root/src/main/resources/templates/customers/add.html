@@ -79,7 +79,7 @@
             $.get("/rest/customers/customerExist/" + phoneNumber, function (data) {
                 console.log("Result message: " + data);
                 if (data===1){
-                    $('#alertText').text(locale == "de" ? "Eine solche Telefonnummer ist bereits vorhanden": "Такой номер телефона уже добавлен");
+                    $('#alertText').text([[#{alert.exists.phoneNumber}]]);
                     $('#submitButton').children().prop('disabled',true);
                 }else {
                     $('#alertText').text("");
