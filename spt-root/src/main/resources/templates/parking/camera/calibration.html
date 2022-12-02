@@ -173,13 +173,15 @@
         const selectedTool = $tool.data('tool');
         const selectedTitle = $tool.data('title');
 
+        let alertText = [ [[#{alert.error.picture}]], [[#{alert.update.picture.fromCamera}]] ]
+
         $('#toolDropdown').removeClass('btn-secondary').addClass('btn-info').html(selectedTitle);
         if (currentCanvasTool) {
             currentCanvasTool.release();
         } else {
             if (image == null) {
                 if (!checkImageExists(selectedTool)) {
-                    alert(['Ошибка загрузки изображения.', 'Обновите снимок с камеры.']);
+                    alert(alertText);
                     return;
                 }
             }
@@ -228,32 +230,32 @@
                 isLoading(false);
                 setState(data);
                 setStartState(data);
-                alert("Saved");
+                alert([[#{alert.saved}]]);
             },
             error: function (jqXHR, exception){
                 isLoading(false);
                 var msg = '';
                 if (jqXHR.status === 0) {
-                    msg = 'Not connect.\n Verify Network.';
+                    msg = [[#{error.message.notConnect}]];
                 } else if (jqXHR.status == 404) {
-                    msg = 'Requested page not found. [404]';
+                    msg = [[#{error.message.notFound}]];
                 } else if (jqXHR.status == 500) {
-                    msg = 'Internal Server Error [500].';
+                    msg = [[#{error.message.internalServerError}]];
                 } else if (exception === 'parsererror') {
-                    msg = 'Requested JSON parse failed.';
+                    msg = [[#{error.message.jsonParseFailed}]];
                 } else if (exception === 'timeout') {
-                    msg = 'Time out error.';
+                    msg = [[#{error.message.timeOut}]];
                 } else if (exception === 'abort') {
-                    msg = 'Ajax request aborted.';
+                    msg = [[#{error.message.ajaxAborted}]];
                 } else {
-                    msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                    msg = [[#{error.message.uncaught}]] + jqXHR.responseText;
                 }
                 alert(msg);
             }
         });
     }
     function hi(){
-        alert("Submitted");
+        alert([[#{alert.submitted}]]);
     }
     const onToolChange = function (payload) {
         currentTool = payload;

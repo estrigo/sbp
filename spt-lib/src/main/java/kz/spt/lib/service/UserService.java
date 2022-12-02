@@ -3,6 +3,7 @@ package kz.spt.lib.service;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.User;
+import kz.spt.lib.model.dto.UserDto;
 
 public interface UserService {
 
@@ -18,7 +19,7 @@ public interface UserService {
 
     void deleteUser(User user);
 
-    Page<User> getUsers(PagingRequest pagingRequest);
+    Page<UserDto> getUsers(PagingRequest pagingRequest);
 
 
 

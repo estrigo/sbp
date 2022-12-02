@@ -25,11 +25,13 @@ public interface EventLogService {
         Lp
     }
 
-    void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, String descriptionDe);
+    void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, Map<String, Object> messageValues, String key);
 
-    void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, String descriptionDe, EventLog.EventType eventType);
+    void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, Map<String, Object> messageValues, String key, EventLog.EventType eventType);
 
-    void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long gateId, String plateNumber, String message, String messageEng, String messageDe);
+    void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long gateId, String plateNumber, Map<String, Object> messageValues, String key);
+
+    void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long gateId, String plateNumber, String snapshot);
 
     Iterable<EventLog> listByType(EventLog.EventType type);
 

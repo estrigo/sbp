@@ -8,6 +8,8 @@ import kz.spt.abonomentplugin.model.Abonement;
 import kz.spt.abonomentplugin.model.AbonomentTypes;
 import kz.spt.abonomentplugin.service.AbonomentPluginService;
 import kz.spt.lib.extension.PluginRegister;
+import kz.spt.lib.service.LanguagePropertiesService;
+import kz.spt.lib.service.MessageKey;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
@@ -20,6 +22,7 @@ import java.util.Date;
 public class CommandExecutor implements PluginRegister {
 
     private AbonomentPluginService abonomentPluginService;
+    private LanguagePropertiesService languagePropertiesService;
 
     @Override
     public JsonNode execute(JsonNode jsonCommand) throws Exception {
@@ -52,7 +55,7 @@ public class CommandExecutor implements PluginRegister {
                 Boolean checked = jsonCommand.get("checked").booleanValue();
                 if(getAbonomentPluginService().checkAbonomentIntersection(platenumber, parkingId, typeId, dateStart, checked)){
                     node.put("result", false);
-                    node.put("error", "Даты Абономента пересекаются с другим на этот номер авто");
+                    node.put("error", languagePropertiesService.getMessageFromProperties(MessageKey.ABONNEMENT_ERROR_DATES_OVERLAP_PLATENUMBER));
                 } else {
                     Abonement abonement = getAbonomentPluginService().createAbonoment(platenumber, parkingId, typeId, dateStart, checked);
                     node.put("result", true);

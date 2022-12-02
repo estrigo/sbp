@@ -39,7 +39,7 @@ public class CarStateExcelDto {
         StringBuilder durationBuilder = new StringBuilder("");
         if (carState.getInTimestamp() != null) {
             Locale locale = LocaleContextHolder.getLocale();
-            String language = locale.toString();
+            String language = locale.getLanguage();
 
             long time_difference = (carState.getOutTimestamp() == null ? (new Date()).getTime() : carState.getOutTimestamp().getTime()) - carState.getInTimestamp().getTime();
             long days_difference = TimeUnit.MILLISECONDS.toDays(time_difference) % 365;

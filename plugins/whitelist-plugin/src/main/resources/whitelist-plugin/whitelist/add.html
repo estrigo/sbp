@@ -172,7 +172,7 @@
             "data": form
         };
         $.ajax(settings).done(function (response) {
-            let html = '<option value="">' + (locale === "ru" ? 'Не выбрано' : (locale === "en" ? 'Not selected': 'Nicht gewählt')) + '</option>';
+            let html = '<option value="">' + [[#{option.notSelected}]] + '</option>';
             for(let i=0; i < response.length; i++){
                 html = html + '<option value="' + response[i].id + '">' + response[i].name + '</option>';
             }
@@ -215,20 +215,8 @@
             hasCyrullic = true;
         }
 
-        let textIncorrectPlatenumber = "";
-        let textFillPlatenumber = "";
-        if(locale === "ru"){
-            textIncorrectPlatenumber = 'Введите правильный номер машины';
-            textFillPlatenumber = 'Заполните поле для ГРНЗ';
-        }
-        else if (locale === "en"){
-            textIncorrectPlatenumber = 'Enter correct plate number';
-            textFillPlatenumber = 'Fill plate number field';
-        }
-        else if(locale === "de"){
-            textIncorrectPlatenumber === 'Bitte geben Sie das richtige Kennzeichen ein';
-            textFillPlatenumber = 'Füllen Sie das Feld für das Kennzeichen aus';
-        }
+        let textIncorrectPlatenumber = [[#{alert.incorrect.platenumber}]];
+        let textFillPlatenumber = [[#{alert.fill.platenumber}]];
 
         if(/[^A-Za-z0-9]+$/.test(plateNumber)||(hasCyrullic)){
             // alert([[#{crm.onlyLatinAndNumbersAllowed}]]);
@@ -267,13 +255,13 @@
         const options = {
             // custom days names (it's default values)
             days: {
-                0: locale === "ru" ? 'Понедельник' : (locale === "en" ? 'Monday' : 'Montag'),
-                1: locale === "ru" ? 'Вторник' : (locale === "en" ? 'Tuesday' : 'Dienstag'),
-                2: locale === "ru" ? 'Среда' : (locale === "en" ? 'Wednesday' : 'Mittwoch'),
-                3: locale === "ru" ? 'Четверг' : (locale === "en" ? 'Thursday' : 'Donnerstag'),
-                4: locale === "ru" ? 'Пятница' : (locale === "en" ? 'Friday' : 'Freitag'),
-                5: locale === "ru" ? 'Суббота' : (locale === "en" ? 'Saturday' : 'Samstag'),
-                6: locale === "ru" ? 'Воскресенье' : (locale === "en" ? 'Sunday' : 'Sonntag'),
+                0: [[#{day.monday}]],
+                1: [[#{day.tuesday}]],
+                2: [[#{day.wednesday}]],
+                3: [[#{day.thursday}]],
+                4: [[#{day.friday}]],
+                5: [[#{day.saturday}]],
+                6: [[#{day.sunday}]],
             },
 
             // custom class names for dom elements (it's default values)

@@ -8,6 +8,9 @@ import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CurrentUser;
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.plugin.CustomPlugin;
+import kz.spt.lib.service.Language;
+import kz.spt.lib.service.LanguagePropertiesService;
+import kz.spt.lib.service.MessageKey;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import org.pf4j.PluginManager;
@@ -19,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,9 +31,11 @@ import java.util.Map;
 public class PluginServiceImpl implements PluginService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final LanguagePropertiesService languagePropertiesService;
     private PluginManager pluginManager;
 
-    public PluginServiceImpl(PluginManager pluginManager) {
+    public PluginServiceImpl(LanguagePropertiesService languagePropertiesService, PluginManager pluginManager) {
+        this.languagePropertiesService = languagePropertiesService;
         this.pluginManager = pluginManager;
     }
 
@@ -124,13 +130,20 @@ public class PluginServiceImpl implements PluginService {
                 }
             }
 
+            Map<String, Object> messageValues = new HashMap<>();
+            messageValues.put("username", username);
+
             if (BigDecimal.ZERO.compareTo(value) == -1) {
-                node.put("reason", "Ручное пополнение пользователем " + username);
-                node.put("reasonEn", "Manual top up by user " + username);
+                Map<String, String> messages = languagePropertiesService.getWithDifferentLanguages(MessageKey.BILLING_REASON_MANUAL_TOP_UP, messageValues);
+                node.put("reason", messages.get(Language.RU));
+                node.put("reasonEn", messages.get(Language.EN));
+                node.put("reasonLocal", messages.get(Language.LOCAL));
                 node.put("provider", "Manual change");
             } else {
-                node.put("reason", "Ручное списание пользователем " + username);
-                node.put("reasonEn", "Manual write-off by user  " + username);
+                Map<String, String> messages = languagePropertiesService.getWithDifferentLanguages(MessageKey.BILLING_REASON_MANUAL_WRITE_OFF, messageValues);
+                node.put("reason", messages.get(Language.RU));
+                node.put("reasonEn", messages.get(Language.EN));
+                node.put("reasonLocal", messages.get(Language.LOCAL));
                 node.put("provider", "Manual change");
             }
             balanceCheckResult = billingPluginRegister.execute(node);

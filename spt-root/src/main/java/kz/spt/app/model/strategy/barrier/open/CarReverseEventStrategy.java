@@ -4,6 +4,7 @@ import kz.spt.app.component.SpringContext;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.service.BarrierService;
+import kz.spt.lib.service.MessageKey;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.Gate;
@@ -12,6 +13,7 @@ import kz.spt.lib.service.EventLogService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Builder
@@ -39,11 +41,16 @@ public class CarReverseEventStrategy extends AbstractOpenStrategy {
     @Override
     public void error() {
         EventLogService eventLogService = SpringContext.getBean(EventLogService.class);
-        String descriptionRu = "Ошибка открытия шлагбаума: На контроллер шлагбаума не удалось присвоит значение на открытие для авто " + eventDto.car_number + " на " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезд" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезд" : "въезд/выезд")) + " для " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
-        String descriptionEn = "Error while barrier open: Cannot assign value to open barrier for car " + eventDto.car_number + " to " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "pass" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
-        String descriptionDe = "Fehler beim Öffnen der Schranke: Wert für offene Schranke für Auto kann nicht zugewiesen werden" + eventDto.car_number + " an " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "passieren" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName();
-        eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, descriptionRu, descriptionEn, descriptionDe);
-        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.ERROR);
+        Map<String, Object> messageValues = new HashMap<>();
+        messageValues.put("platenumber", eventDto.car_number);
+        messageValues.put("description", camera.getGate().getDescription());
+        messageValues.put("parking", camera.getGate().getParking().getName());
+
+        String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.ERROR_BARRIER_CANNOT_ASSIGN_VALUE_IN :
+                (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.ERROR_BARRIER_CANNOT_ASSIGN_VALUE_OUT : MessageKey.ERROR_BARRIER_CANNOT_ASSIGN_VALUE);
+
+        eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.car_number, messageValues, key);
+        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getId(), properties, messageValues, key, EventLog.EventType.ERROR);
     }
 
     @Override

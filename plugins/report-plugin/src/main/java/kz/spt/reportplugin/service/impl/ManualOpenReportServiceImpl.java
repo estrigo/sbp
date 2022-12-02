@@ -72,6 +72,7 @@ public class ManualOpenReportServiceImpl implements ReportService<EventsDto> {
                                 .plateNumber(e.getNullSafePlateNumber())
                                 .description(e.getNullSafeDescription())
                                 .descriptionEn(e.getNullSafeDescriptionEn())
+                                .descriptionDe(e.getNullSafeDescriptionDe())
                                 .smallImgUrl(e.getProperties().get("carSmallImageUrl") != null ? (String) e.getProperties().get("carSmallImageUrl") : "")
                                 .bigImgUrl(e.getProperties().get("carImageUrl") != null ? (String) e.getProperties().get("carImageUrl") : "")
                                 .build()))

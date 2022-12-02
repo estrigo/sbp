@@ -63,7 +63,7 @@
 
 <script type="text/javascript" th:inline="javascript">
     var locale = [[${#locale}]];
-    var descriptionColumn = locale == "en" ? "descriptionEn" : "description";
+    var descriptionColumn = locale == "en" ? "descriptionEn" : (locale == "ru" ? "description" : "descriptionDe");
 
     const table = $('#eventTable').DataTable({
         "processing": true,
@@ -107,7 +107,7 @@
         ],
         buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
-            url: locale === "en" ? "" : "/plugins/datatables/json/ru.json"
+            url: locale==="en" ? '': '/plugins/datatables/json/'+locale+'.json'
         },
     });
 

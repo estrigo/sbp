@@ -1,5 +1,7 @@
 package kz.spt.carmodelplugin.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import kz.spt.lib.service.MessageKey;
 import kz.spt.carmodelplugin.bootstrap.datatable.CarmodelComparators;
 
 import kz.spt.carmodelplugin.repository.CarmodelRepository;
@@ -81,17 +83,17 @@ public class CarModelServicePlImpl implements CarModelServicePl {
             if (mp.get("car_model") != null) {
                 carmodelDto.setCarModel((String) mp.get("car_model"));
             }
-            String dimension="Нераспознанный";
+            String dimension=MessageKey.DIMENSION_NOT_RECOGNIZED;
             if (mp.get("dimension") != null) {
                 Integer type = (Integer) mp.get("dimension");
                 if (type==1) {
-                    dimension="Легковая";
+                    dimension = MessageKey.DIMENSION_PASSENGER_CAR;
                 } else if (type==2) {
-                    dimension="Газель";
+                    dimension=MessageKey.DIMENSION_GAZELLE;
                 } else if (type==3){
-                    dimension="Грузовик";
+                    dimension = MessageKey.DIMENSION_TRUCK;
                 } else {
-                    dimension="Нераспознанный";
+                    dimension = MessageKey.DIMENSION_NOT_RECOGNIZED;
                 }
             }
             carmodelDto.setDimension(dimension);
@@ -178,12 +180,16 @@ public class CarModelServicePlImpl implements CarModelServicePl {
         properties.put("eventTime", format.format(new Date()));
         properties.put("type", EventLog.StatusType.Success);
 
+        Map<String, Object> messageValues = new HashMap<>();
+        messageValues.put("dimension", dimension);
+        messageValues.put("newModel", cars.getModel());
+        messageValues.put("oldModel", oldModel);
+        messageValues.put("username", username);
+
         rootServicesGetterService.getEventLogService().createEventLog(Cars.class.getSimpleName(),
                 null,
                 properties,
-                "Ручное изменение габарита автомибиля, новое значение:" + dimension + ", новая модель: " + cars.getModel() + ", старая модель:" + oldModel + ", пользователь:" + username,
-                "Manual edit dimension of car, new value:" + dimension + ", new model: " + cars.getModel() + ", old model:" + oldModel + ", user:" + username,
-                "Dimension des Autos manuell bearbeiten, neuer Wert:" + dimension + ", neues Modell: " + cars.getModel() + ", altes Modell:" + oldModel + ", Benutzer:" + username);
+                messageValues, MessageKey.MANUAL_EDIT_DIMENSION);
 
 
     }

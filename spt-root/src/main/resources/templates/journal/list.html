@@ -104,7 +104,8 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="alert alert-warning">
-                                <strong>Внимание!</strong> Задолженность будет удалена за все предудыщие заезды.
+                                <strong th:text="#{journal.alert.warning}"></strong>
+                                <p th:text="#{journal.alert.warning.debt}"></p>
                             </div>
                         </div>
                         <div class="col-md-12">
@@ -239,10 +240,7 @@
     var edit = [[#{crm.edit}]];
     var del = [[#{crm.delete}]];
     var locale = [[${#locale}]];
-    var address = locale==="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json';
-    if (locale == "en") {
-        address = "";
-    }
+    var address = locale==="en" ? '': '/plugins/datatables/json/'+locale+'.json';
 
     const table = $('#carStateTable').DataTable({
         "processing": true,

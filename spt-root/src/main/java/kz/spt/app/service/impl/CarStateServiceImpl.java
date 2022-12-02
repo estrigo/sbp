@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.service.BarrierService;
+import kz.spt.lib.service.MessageKey;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
@@ -41,6 +42,7 @@ public class CarStateServiceImpl implements CarStateService {
     private final EventLogService eventLogService;
     private final CarsService carsService;
     private final PluginService pluginService;
+    private final LanguagePropertiesService languagePropertiesService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private BarrierService barrierService;
 
@@ -48,11 +50,12 @@ public class CarStateServiceImpl implements CarStateService {
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
 
     public CarStateServiceImpl(CarStateRepository carStateRepository, EventLogService eventLogService,
-                               CarsService carsService, PluginService pluginService, BarrierService barrierService) {
+                               CarsService carsService, PluginService pluginService, LanguagePropertiesService languagePropertiesService, BarrierService barrierService) {
         this.carStateRepository = carStateRepository;
         this.eventLogService = eventLogService;
         this.carsService = carsService;
         this.pluginService = pluginService;
+        this.languagePropertiesService = languagePropertiesService;
         this.barrierService = barrierService;
     }
 
@@ -147,12 +150,13 @@ public class CarStateServiceImpl implements CarStateService {
             properties.put("carNumber", carState.getCarNumber());
             properties.put("eventTime", format.format(new Date()));
             properties.put("type", EventLog.StatusType.Success);
-            eventLogService.createEventLog(CarState.class.getSimpleName(),
-                    null,
-                    properties,
-                    "Журнал.Ручное изменение номера, новое значение:" + carState.getCarNumber() + ", старое значение:" + m.getCarNumber() + ", пользователь:" + username,
-                    "Journal.Manual edit number, new value:" + carState.getCarNumber() + ", old value:" + m.getCarNumber() + ", user:" + username,
-                    "Journal. Nummer manuell bearbeiten, neuer Wert:" + carState.getCarNumber() + ", alter Wert:" + m.getCarNumber() + ", Benutzer:" + username);
+
+            Map<String, Object> messageValues = new HashMap<>();
+            messageValues.put("platenumber", carState.getCarNumber());
+            messageValues.put("oldPlatenumber", m.getCarNumber());
+            messageValues.put("username", username);
+
+            eventLogService.createEventLog(CarState.class.getSimpleName(), null, properties, messageValues, MessageKey.JOURNAL_MANUAL_EDIT_NUMBER);
 
             m.setCarNumber(carState.getCarNumber());
             carStateRepository.save(m);
@@ -315,11 +319,15 @@ public class CarStateServiceImpl implements CarStateService {
             BigDecimal balance = billingResult.get("currentBalance").decimalValue().setScale(2);
             if (balance.compareTo(BigDecimal.ZERO) == -1) {
                 ObjectNode billingSubtractNode = this.objectMapper.createObjectNode();
+
+                Map<String, String> messages = languagePropertiesService.getWithDifferentLanguages(MessageKey.BILLING_REASON_DEBT_CANCEL);
+
                 billingSubtractNode.put("command", "increaseCurrentBalance");
                 billingSubtractNode.put("plateNumber", carNumber);
                 billingSubtractNode.put("amount", balance.multiply(BigDecimal.valueOf(-1L)));
-                billingSubtractNode.put("reason", "Списание долга");
-                billingSubtractNode.put("reasonEn", "Debt cancellation");
+                billingSubtractNode.put("reason", messages.get(Language.RU));
+                billingSubtractNode.put("reasonEn", messages.get(Language.EN));
+                billingSubtractNode.put("reasonLocal", messages.get(Language.LOCAL));
                 billingSubtractNode.put("provider", "Manual change");
                 billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
                 result = true;
@@ -382,27 +390,27 @@ public class CarStateServiceImpl implements CarStateService {
             StringBuilder durationBuilder = new StringBuilder("");
             if (carStateDto.inTimestamp != null) {
                 Locale locale = LocaleContextHolder.getLocale();
-                String language = locale.toString();
+                String language = locale.getLanguage();
 
                 long time_difference = (carStateDto.outTimestamp == null ? (new Date()).getTime() : carStateDto.outTimestamp.getTime()) - carStateDto.inTimestamp.getTime();
                 long days_difference = TimeUnit.MILLISECONDS.toDays(time_difference) % 365;
                 if (days_difference > 0) {
-                    durationBuilder.append(days_difference + (language.equals("ru") ? "д " : "d "));
+                    durationBuilder.append(days_difference + (languagePropertiesService.getMessageFromProperties(MessageKey.SYMBOLS_DAY, language)));
                 }
 
                 long hours_difference = TimeUnit.MILLISECONDS.toHours(time_difference) % 24;
                 if (hours_difference > 0 || durationBuilder.length() > 0) {
-                    durationBuilder.append(hours_difference + (language.equals("ru") ? "ч " : "h "));
+                    durationBuilder.append(hours_difference + (languagePropertiesService.getMessageFromProperties(MessageKey.SYMBOLS_HOUR, language)));
                 }
 
                 long minutes_difference = TimeUnit.MILLISECONDS.toMinutes(time_difference) % 60;
                 if (minutes_difference > 0 || durationBuilder.length() > 0) {
-                    durationBuilder.append(minutes_difference + (language.equals("ru") ? "м " : "m "));
+                    durationBuilder.append(minutes_difference + (languagePropertiesService.getMessageFromProperties(MessageKey.SYMBOLS_MINUTE, language)));
                 }
 
                 long seconds_difference = TimeUnit.MILLISECONDS.toSeconds(time_difference) % 60;
                 if (seconds_difference > 0 || durationBuilder.length() > 0) {
-                    durationBuilder.append(seconds_difference + (language.equals("ru") ? "с " : "s "));
+                    durationBuilder.append(seconds_difference + (languagePropertiesService.getMessageFromProperties(MessageKey.SYMBOLS_SECOND, language)));
                 }
 
                 if (carStateDto.outTimestamp == null &&
@@ -461,6 +469,7 @@ public class CarStateServiceImpl implements CarStateService {
             billingNode.put("command", "decreaseCurrentBalance");
             billingNode.put("reason", "");
             billingNode.put("reasonEn", "");
+            billingNode.put("reasonLocal", "");
             billingNode.put("amount", rateResult != null ? rateResult : new BigDecimal(0));
             billingNode.put("plateNumber", carState.getCarNumber());
             billingNode.put("carStateId", carState.getId());
@@ -480,10 +489,14 @@ public class CarStateServiceImpl implements CarStateService {
             }
         }
         carState.setRateAmount(rateResult);
-        String messageRu = "Ручной выезд Авто с гос. номером " + carState.getCarNumber() + ". Пользователь " + username + " инициировал ручной запуск с парковки " + carState.getParking().getName() + ". Списано с баланса клиента: " + rateResult + ".";
-        String messageEn = "Manual pass. Car with license plate " + carState.getCarNumber() + ". User " + username + " initiated manual open gate from parking " + carState.getParking().getName() + ". Deducted from the client's balance: " + rateResult + ".";
-        String messageDe = "Manueller Durchgang. Auto mit Kennzeichen " + carState.getCarNumber() + ". Benutzer " + username + " initiiert manuelles Öffnen des Tores vom Parkplatz " + carState.getParking().getName() + ". Wird vom Guthaben des Kunden abgezogen: " + rateResult + ".";
-        eventLogService.createEventLog("Rate", null, properties, messageRu, messageEn, messageDe);
+
+        Map<String, Object> messageValues = new HashMap<>();
+        messageValues.put("platenumber", carState.getCarNumber());
+        messageValues.put("username", username);
+        messageValues.put("rateResult", rateResult);
+        messageValues.put("parking", carState.getParking().getName());
+
+        eventLogService.createEventLog("Rate", null, properties, messageValues, MessageKey.MANUAL_PASS_WITH_DEBT);
         return carState;
     }
 

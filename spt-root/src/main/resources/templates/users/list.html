@@ -65,23 +65,13 @@
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
 <script th:inline="javascript">
-    var edit = 'Редактировать';
-    var del = 'Удалить';
+    var edit = [[#{buttons.edit}]];
+    var del = [[#{buttons.delete}]];
     var locale = [[${#locale}]];
     console.log("locale", locale)
-    var address = '/plugins/datatables/json/ru.json';
-    var roleNames = locale == "en" ? "name_en" : (locale == "ru" ? "name_ru": "name_de");
-    if (locale == "en") {
-        address = "";
-        edit = "Edit";
-        del = "Delete";
-    }
-    else if(locale == "de") {
-        address ='/plugins/datatables/json/de.json';
-        edit = "Bearbeiten"
-        del = "Löschen"
-        console.log("The adress is : ", address)
-        }
+    var address = locale == "en" ? "" : '/plugins/datatables/json/' + locale + '.json';
+    var roleNames = locale == "en" ? "name_en" : (locale == "ru" ? "name_ru": "name_local");
+
     const table = $('#userTable').DataTable({
         "processing": true,
         "serverSide": true,

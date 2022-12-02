@@ -17,7 +17,7 @@
                             th:selected="${value==provider.value}"
                     ></option>
                 </select>
-                    <button type="submit" class="btn btn-primary mb-2">Показать логи</button>
+                    <button type="submit" class="btn btn-primary mb-2" th:text="#{log.showLogs}"></button>
                 </form>
             </div>
         </div>
@@ -57,10 +57,7 @@
 
 <script th:inline="javascript">
     var locale = [[${#locale}]];
-    var address = locale==="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json';
-    if (locale == "en") {
-        address = "";
-    }
+    var address = locale==="en" ? '': '/plugins/datatables/json/'+locale+'.json';
 
     let currentDate = [[${currentDate}]];
     let oneMonthEarly = [[${oneMonthEarly}]];

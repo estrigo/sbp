@@ -20,6 +20,8 @@ import kz.spt.abonomentplugin.service.RootServicesGetterService;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.Parking;
+import kz.spt.lib.service.LanguagePropertiesService;
+import kz.spt.lib.service.MessageKey;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -52,17 +54,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     private final CarsRepository carsRepository;
 
     private ObjectMapper objectMapper = new ObjectMapper();
-    private static final Map<String, String> dayValues = new HashMap<>() {{
-        put("0", "Понедельник");
-        put("1", "Вторник");
-        put("2", "Среда");
-        put("3", "Четверг");
-        put("4", "Пятница");
-        put("5", "Суббота");
-        put("6", "Воскресенье");
-    }};
-
-
+    private static final Map<String, String> dayValues = new HashMap<>();
     private static final Comparator<AbonomentTypeDTO> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     public AbonomentPluginServiceImpl(CarsRepository carsRepository,
@@ -81,18 +73,16 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
 
         String custom = customJson;
         Locale locale = LocaleContextHolder.getLocale();
-        String language = "en";
-        if (locale.toString().equals("ru")) {
-            language = "ru-RU";
-        } else {
-            dayValues.put("0", "Monday");
-            dayValues.put("1", "Tuesday");
-            dayValues.put("2", "Wednesday");
-            dayValues.put("3", "Thursday");
-            dayValues.put("4", "Friday");
-            dayValues.put("5", "Saturday");
-            dayValues.put("6", "Sunday");
-        }
+        String language = locale.getLanguage();
+
+            dayValues.put("0", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.MONDAY, language));
+            dayValues.put("1", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.TUESDAY, language));
+            dayValues.put("2", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.WEDNESDAY, language));
+            dayValues.put("3", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.THURSDAY, language));
+            dayValues.put("4", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.FRIDAY, language));
+            dayValues.put("5", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.SATURDAY, language));
+            dayValues.put("6", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.SUNDAY, language));
+
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
         if (type.equals("CUSTOM")) {
             if (custom != null) {
@@ -126,11 +116,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             abonomentTypes.setCustomJson(custom);
         }
         else {
-            if (locale.toString().equals("ru")) {
-                abonomentTypes.setCustomJson("Все дни недели");
-            }else {
-                abonomentTypes.setCustomJson("All days of the week");
-            }
+            abonomentTypes.setCustomJson(rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.ABONNEMENT_TYPE_ALL_DAYS, locale.toString()));
         }
 
         abonomentTypes.setPeriod(period);
@@ -166,28 +152,21 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
 
         List<AbonomentTypes> allAbonomentTypes = abonomentTypesRepository.findAll();
         for(AbonomentTypes abonomentType: allAbonomentTypes) {
+            Map<String, Object> messageValues = new HashMap<>();
+            messageValues.put("period", abonomentType.getPeriod());
+            messageValues.put("price", abonomentType.getPrice());
+
             if (abonomentType.getType()!= null) {
                 if(abonomentType.getType().equals("CUSTOM")) {
-                    if (locale.toString().equals("ru")) {
-                        abonomentType.setDescription("На " + abonomentType.getPeriod() + " дней, " + abonomentType.getPrice() + " в местной валюте" + "(выборочные дни)");
-                    } else {
-                        abonomentType.setDescription("For " + abonomentType.getPeriod() + " days, " + abonomentType.getPrice() + " in local currency" + "(custom days)");
-                    }
+                    abonomentType.setDescription(rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.ABONNEMENT_TYPE_FOR_DAYS_CUSTOM, locale.toString(), messageValues));
                 }
                 else {
-                    if (locale.toString().equals("ru")) {
-                        abonomentType.setDescription("На " + abonomentType.getPeriod() + " дней, " + abonomentType.getPrice() + " в местной валюте");
-                    } else {
-                        abonomentType.setDescription("For " + abonomentType.getPeriod() + " days, " + abonomentType.getPrice() + " in local currency");
-                    }
+                    abonomentType.setDescription(rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.ABONNEMENT_TYPE_FOR_DAYS, locale.toString(), messageValues));
                 }
             }
             else {
-                if (locale.toString().equals("ru")) {
-                    abonomentType.setDescription("На " + abonomentType.getPeriod() + " дней, " + abonomentType.getPrice() + " в местной валюте");
-                } else {
-                    abonomentType.setDescription("For " + abonomentType.getPeriod() + " days, " + abonomentType.getPrice() + " in local currency");
-                }
+                abonomentType.setDescription(rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.ABONNEMENT_TYPE_FOR_DAYS, locale.toString(), messageValues));
+
             }
         }
         return allAbonomentTypes;
