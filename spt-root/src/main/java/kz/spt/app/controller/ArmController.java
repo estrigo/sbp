@@ -60,6 +60,7 @@ public class ArmController {
         model.addAttribute("ip", ip);
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN").contains(m.getAuthority())));
         model.addAttribute("permanentOpenEnabled", barrierService.getPermanentOpenEnabled());
+        model.addAttribute("reasons", reasonsService.findAllReasons());
         return "arm/realtime";
     }
 
