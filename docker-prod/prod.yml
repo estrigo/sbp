@@ -147,6 +147,12 @@ booking:
     check: false # включить проверку booking для разных операторов.
     tokenUrl: http://halapark.calltekky.com/api/auth/getToken
     postUrl: http://halapark.calltekky.com/api/auth/getBookingByParquorcameras
+  esentai:
+    check: false # включить проверку въезда/выезда в Есентай
+    login: nurganat.maulsharif+spt@gmail.com
+    password: 12345
+    tokenUrl: https://auth-test.myesentai.kz/auth/staff-sign-in
+    postUrl: https://parking-test.myesentai.kz/v2/parking-session
 zero:
   touch:
     rahmet:
