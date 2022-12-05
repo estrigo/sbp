@@ -613,11 +613,11 @@
 
     function optionsMap(id){
         if(id === 'allNext'){
-            return [[#{rate.option.allNext}]]
+            return '[[#{rate.option.allNext}]]'
         } else if(id === 'entrance'){
-            return [[#{rate.option.entrance}]]
+            return '[[#{rate.option.entrance}]]'
         } else if(id.length > 4 && !isNaN(id.replace('hour', ''))){
-            return [[#{rate.option.for}]] + id.replace('hour', '') + [[#{rate.option.hour}]];
+            return '[[#{rate.option.for}]]' + id.replace('hour', '') + '[[#{rate.option.hour}]]';
         }
     }
 
