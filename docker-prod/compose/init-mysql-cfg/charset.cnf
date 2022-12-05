@@ -2,7 +2,6 @@
 init_connect='SET collation_connection = utf8_unicode_ci'
 character-set-server = utf8
 collation-server = utf8_unicode_ci
-max-allowed-packet = 700M
 sql_mode = STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
 
 [client]
@@ -10,3 +9,23 @@ default-character-set = utf8
 
 [mysql]
 default-character-set = utf8
+
+innodb-buffer-pool-size=4G
+max-connections=300
+max-allowed-packet=128M
+key-buffer-size=32M
+innodb-additional-mem-pool-size=32M
+innodb-log-buffer-size=32M
+innodb-log-file-size=32M
+query-cache-limit=64M
+slow-query-log=ON
+innodb-file-per-table=1
+tmp-table-size=128M
+max-heap-table-size=128M
+innodb-lock-wait-timeout=90
+query-cache-type=0
+query-cache-size=0
+thread-cache-size=40
+innodb_doublewrite=0
+innodb-flush-log-at-trx-commit=2
+innodb_flush_method=O_DSYNC
