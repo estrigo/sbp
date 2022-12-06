@@ -13,6 +13,7 @@ import kz.spt.lib.model.Barrier;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
 
 public interface BarrierService {
@@ -25,7 +26,11 @@ public interface BarrierService {
 
     Boolean openBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
 
+    Boolean openPermanentBarrier(Barrier barrier) throws ModbusProtocolException, IOException, ModbusNumberException, InterruptedException, ModbusIOException, ParseException;
+
     Boolean closeBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
+
+    Boolean closePermanentBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
 
     int getSensorStatus(SensorStatusDto sensor) throws IOException, ParseException, ModbusIOException, ModbusProtocolException, ModbusNumberException;
 
@@ -34,4 +39,8 @@ public interface BarrierService {
     Boolean closeBarrier(GateStatusDto gate, String carNumber, BarrierStatusDto barrier) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
 
     Boolean getBarrierStatus(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
+
+    List<Long> getBarrierOpenCameraIdsList();
+
+    Boolean getPermanentOpenEnabled();
 }

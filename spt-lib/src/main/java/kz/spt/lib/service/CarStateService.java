@@ -65,4 +65,7 @@ public interface CarStateService {
     List<String> getCarsInParking();
 
     List<String> getCarsInParkingAndNotPaid();
+
+    CarState createCarStateOutWhenNoEntryRecord(String carNumber, Date inTimestamp, Camera camera,
+                                                    Boolean paid, String photoUrl);
 }

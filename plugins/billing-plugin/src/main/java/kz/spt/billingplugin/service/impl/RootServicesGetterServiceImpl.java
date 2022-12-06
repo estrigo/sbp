@@ -17,6 +17,9 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     private PaymentProviderRepository paymentProviderRepository;
     private PaymentCheckLogService paymentCheckLogService;
     private AdminService adminService;
+    private MailService mailService;
+    private PaymentRegistryJob paymentRegistryJob;
+    private SyslogService syslogService;
 
     private CarsService carsService;
 
@@ -77,4 +80,29 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
         }
         return carsService;
     }
+
+    @Override
+    public MailService getMailService() {
+        if (this.mailService == null) {
+            mailService = (MailService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("mailServiceImpl");
+        }
+        return this.mailService;
+    }
+
+    @Override
+    public PaymentRegistryJob getPaymentRegistryJob() {
+        if (this.paymentRegistryJob == null) {
+            paymentRegistryJob = (PaymentRegistryJob) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("paymentRegistryJobImpl");
+        }
+        return this.paymentRegistryJob;
+    }
+
+    @Override
+    public SyslogService getSyslogService() {
+        if (this.syslogService == null) {
+            syslogService = (SyslogService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("syslogServiceImpl");
+        }
+        return this.syslogService;
+    }
+
 }

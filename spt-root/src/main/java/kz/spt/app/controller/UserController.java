@@ -1,7 +1,7 @@
 package kz.spt.app.controller;
 
-import kz.spt.lib.model.User;
 import kz.spt.app.service.RoleService;
+import kz.spt.lib.model.User;
 import kz.spt.lib.service.UserService;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

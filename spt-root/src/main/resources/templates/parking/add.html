@@ -45,6 +45,24 @@
                                         </div>
                                     </div>
                                     <div class="form-group row">
+                                        <div class="col-10">
+                                            <div class="form-check form-check-inline mr-5">
+                                                <input type="checkbox" name="mycheckbox" th:field="*{displayInTelegram}"
+                                                       th:value="*{displayInTelegram}"/>
+                                                <label style="margin-left: 25px;" class="form-check-label" th:text="#{parking.displayInTelegram}"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-10">
+                                            <div class="form-check form-check-inline mr-5">
+                                                <input type="checkbox" name="mycheckbox" th:field="*{prohibitExit}"
+                                                       th:value="*{prohibitExit}"/>
+                                                <label style="margin-left: 25px;" class="form-check-label" th:text="#{parking.prohibitExit}"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
                                         <label class="col-2 col-form-label"></label>
                                         <div class="col-10">
                                             <button type="submit" class="btn btn-success waves-effect waves-light" th:text="#{parking.addNew}"></button>

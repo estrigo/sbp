@@ -63,4 +63,10 @@ public class Parking {
 
     /* Значение ключа через который передается номер авто */
     private String kaspiPlateParam;
+
+    @Column(name = "display_in_telegram")
+    private Boolean displayInTelegram;
+
+    @Column(columnDefinition="tinyint(1) default 0")
+    private Boolean prohibitExit = false;
 }

@@ -56,9 +56,9 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
-  #mail:
-  #  host: smtp.gmail.com
-  #  port: 587
+  mail:
+    host: smtp.gmail.com
+    port: 25
     username: parqour.smartparking@gmail.com
     password: aqaxhlmflyfvujnr
     properties:
@@ -99,6 +99,9 @@ barrier:
   modbus:
     keep:
       connected: false
+  permanent:
+    open:
+      enabled: false
 car:
   movement:
     simulate: false
@@ -145,6 +148,8 @@ webkassa:
   host: https://kkm.webkassa.kz
 rekassa:
   host: https://api.rekassa.kz/api
+fiscalization:
+  enabled: false
 discountPayments:
   show: false
 telegram:

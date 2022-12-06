@@ -4,7 +4,9 @@ import kz.spt.lib.model.Parking;
 import kz.spt.rateplugin.model.IntervalRate;
 import kz.spt.rateplugin.model.ParkingRate;
 import kz.spt.rateplugin.model.RateCondition;
+import kz.spt.rateplugin.service.DimensionsService;
 import kz.spt.rateplugin.service.RateService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
@@ -14,27 +16,25 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 @Slf4j
 @Controller
 @RequestMapping("/rate")
+@RequiredArgsConstructor
 public class RateController {
 
-    private RateService rateService;
+    private final RateService rateService;
+    private final DimensionsService dimensionsService;
 
-    public RateController(RateService rateService){
-        this.rateService = rateService;
-    }
 
     @GetMapping("/list")
     public String showAllWhitelist(Model model) {
         model.addAttribute("parkings", rateService.listPaymentParkings());
         return "rate/list";
     }
+
 
     @GetMapping("/edit/{parkingId}")
     public String getEditingRateId(Model model, @PathVariable Long parkingId) {
@@ -46,6 +46,8 @@ public class RateController {
         }
         model.addAttribute("parkingRate", parkingRate);
         model.addAttribute("currencyTypes", ParkingRate.CurrencyType.values());
+        model.addAttribute("dimensionsList", dimensionsService.findAll());
+        model.addAttribute("intervalRate", new IntervalRate());
         model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
         return "/rate/edit";
     }
@@ -111,6 +113,7 @@ public class RateController {
         model.addAttribute("intervalRates", rateService.getIntervalRateByParkingRate(parkingRate));
         return "/rate/interval-edit";
     }
+
 
     @PostMapping("/interval-delete")
     public String deleteIntervalRate(@ModelAttribute(value="intervalRate") IntervalRate intervalRate) {

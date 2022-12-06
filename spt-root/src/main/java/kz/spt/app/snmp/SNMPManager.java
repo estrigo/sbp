@@ -31,8 +31,12 @@ public class SNMPManager {
     }
 
     public void start() throws IOException {
-        transport = new DefaultUdpTransportMapping();
-        snmp = new Snmp(transport);
+        if(transport == null){
+            transport = new DefaultUdpTransportMapping();
+        }
+        if(snmp == null){
+            snmp = new Snmp(transport);
+        }
         snmp.listen();
     }
 
@@ -70,10 +74,12 @@ public class SNMPManager {
         if(snmp != null){
             snmp.close();
         }
+        snmp = null;
 
         if(transport != null){
             transport.close();
         }
+        transport = null;
     };
 
     private Target getTarget() {

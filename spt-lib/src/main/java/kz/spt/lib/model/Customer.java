@@ -2,6 +2,7 @@ package kz.spt.lib.model;
 
 import lombok.*;
 import org.hibernate.envers.Audited;
+import org.hibernate.validator.constraints.Email;
 
 import javax.persistence.*;
 import java.util.List;
@@ -33,5 +34,12 @@ public class Customer {
 
     @Transient
     List<String> plateNumbers;
+
+    @Column(name = "email", unique = true)
+    @Email(message = "Please provide a valid e-mail")
+    private String email;
+
+    @Column
+    private Boolean mailReceiver;
 
 }

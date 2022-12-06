@@ -1,7 +1,10 @@
 package kz.spt.app.controller;
 
+import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
+import kz.spt.app.service.ReasonsService;
 import kz.spt.lib.model.Camera;
+import kz.spt.lib.model.Reasons;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,9 +23,13 @@ import java.util.Date;
 public class ArmController {
 
     private CameraService cameraService;
+    private ReasonsService reasonsService;
+    private BarrierService barrierService;
 
-    public ArmController(CameraService cameraService) {
+    public ArmController(CameraService cameraService, ReasonsService reasonsService, BarrierService barrierService) {
         this.cameraService = cameraService;
+        this.reasonsService = reasonsService;
+        this.barrierService = barrierService;
     }
 
     @GetMapping("/realtime")
@@ -30,7 +37,21 @@ public class ArmController {
         model.addAttribute("cameras", cameraService.cameraListWithoutTab());
         model.addAttribute("ip", ip);
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN").contains(m.getAuthority())));
+        model.addAttribute("reasons", reasonsService.findAllReasons());
+        model.addAttribute("permanentOpenEnabled", barrierService.getPermanentOpenEnabled());
         return "arm/realtime";
+    }
+
+    @PostMapping("/deleteReason")
+    public String deleteGateOpenReason(@RequestParam("selectedReasonId") String selectedReasonId) {
+        reasonsService.deleteReasonById(Long.valueOf(selectedReasonId));
+        return "redirect:realtime/";
+    }
+
+    @PostMapping("/addReason")
+    public String addNewGateOpenReason(@RequestParam("newReason") String newReason) {
+        reasonsService.addNewReason(newReason);
+        return "redirect:realtime/";
     }
 
     @GetMapping("/realtime/{cameraTabId}")
@@ -38,6 +59,8 @@ public class ArmController {
         model.addAttribute("cameras", cameraService.cameraListByTabId(cameraTabId));
         model.addAttribute("ip", ip);
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN").contains(m.getAuthority())));
+        model.addAttribute("permanentOpenEnabled", barrierService.getPermanentOpenEnabled());
+        model.addAttribute("reasons", reasonsService.findAllReasons());
         return "arm/realtime";
     }
 

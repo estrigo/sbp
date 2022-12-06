@@ -62,6 +62,8 @@ public class CustomerServiceImpl implements CustomerService {
                 }
             }
             oldCustomer.setPhoneNumber(customer.getPhoneNumber());
+            oldCustomer.setEmail(customer.getEmail());
+            oldCustomer.setMailReceiver(customer.getMailReceiver());
             customerRepository.save(oldCustomer);
         } else {
             for (String plateNumber : plateNumbers) {

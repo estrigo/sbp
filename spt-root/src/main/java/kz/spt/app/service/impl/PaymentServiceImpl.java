@@ -548,7 +548,7 @@ public class PaymentServiceImpl implements PaymentService {
                 node.put("sum", commandDto.getSum());
                 node.put("change", commandDto.getChange());
                 node.put("txn_id", commandDto.getTxn_id());
-                node.put("operationName", "Оплата парковки");
+                node.put("operationName", "Оплата парковки, ГРНЗ: " + commandDto.getAccount());
                 node.put("paymentType", "ikkm_payment".equals(commandDto.getType()) ? 1 : 0);
                 JsonNode checkResult = billingPluginRegister.execute(node);
                 return checkResult;
@@ -576,6 +576,7 @@ public class PaymentServiceImpl implements PaymentService {
             node.put("inDate", format.format(rateQueryDto.inDate));
             node.put("outDate", format.format(rateQueryDto.outDate));
             node.put("cashlessPayment", rateQueryDto.cashlessPayment);
+            node.put("carType", rateQueryDto.dimensionId);
             JsonNode result = ratePluginRegister.execute(node);
             return result.get("rateResult").decimalValue().setScale(2);
         }
@@ -606,7 +607,7 @@ public class PaymentServiceImpl implements PaymentService {
                     ratePluginNode.put("carModel", cars.getModel());
                     if (carModelService.getByModel(cars.getModel()) != null) {
                         CarModel carModel = carModelService.getByModel(cars.getModel());
-                        ratePluginNode.put("carType", carModel.getType());
+                        ratePluginNode.put("carType", carModel.getDimensions().getId());
                     } else {
                         log.info("This model doesn't exist in db - " + cars.getModel());
                     }
@@ -732,7 +733,7 @@ public class PaymentServiceImpl implements PaymentService {
                 node.put("carModel", cars.getModel());
                 if (carModelService.getByModel(cars.getModel()) != null) {
                     CarModel carModel = carModelService.getByModel(cars.getModel());
-                    node.put("carType", carModel.getType());
+                    node.put("carType", carModel.getDimensions().getId());
                 } else {
                     log.info("This model doesn't exist in db - " + cars.getModel());
                 }

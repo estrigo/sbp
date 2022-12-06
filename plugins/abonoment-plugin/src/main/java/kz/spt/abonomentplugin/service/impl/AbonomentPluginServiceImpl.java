@@ -375,6 +375,8 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
                 if(balance.compareTo(expiring.getPrice()) >= 0){
                     rootServicesGetterService.decreaseBalance(expiring.getCar().getPlatenumber(), expiring.getPrice(), expiring.getParking().getName());
                     newAbonement.setPaid(true);
+                } else {
+                    newAbonement.setPaid(false);
                 }
             } catch (Exception e){
                 log.warning("Ошибка работы с балансом: " + expiring.getCar().getPlatenumber() + " ошибка: " + e.getMessage());

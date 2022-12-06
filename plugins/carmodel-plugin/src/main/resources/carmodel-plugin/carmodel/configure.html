@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
+<link th:href="@{/assets/css/fancybox.css}" rel="stylesheet" type="text/css"/>
+
+
+<div class="content">
+  <div class="container">
+    <div class="card table-responsive table-striped">
+      <div class="card-header" th:text="#{carmodel.title}"></div>
+      <div class="card-body">
+        <th:block sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')">
+          <div class="form-group row">
+            <div class="col-12">
+              <th:block sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')">
+                <span th:if="${fileUploadResult != null}" th:text="${fileUploadResult}"></span>
+                <div style="margin-bottom: 2%;">
+                  <form method="POST" data-th-action="@{list}" enctype="multipart/form-data"
+                        id="fileUploadForm">
+                    <div class="row">
+                      <div class="col">
+                        <label class="control-label" for="uploadfile"
+                               th:text="#{carmodel.uploadList}"></label>
+                        <input type="file" class="form-control" id="uploadfile"
+                               th:placeholder="#{carmodel.uploadList}" name="uploadfile"
+                               th:required="required">
+                      </div>
+                      <div class="col">
+                        <label class="control-label" th:text="#{carmodel.chooseDimensions}"></label>
+                        <select class="form-control" id="dropDimension" name="selectedDimension" th:field="*{dimensions.id}"
+                                th:required="required">
+                          <option value="" th:text="#{carmodel.chooseDimensions}" selected disabled></option>
+                          <option th:each="dimension : ${dimensionList}"
+                                  th:value="${dimension.id}"
+                                  th:text="${dimension.carClassification}"></option>
+                        </select>
+                      </div>
+                    </div>
+                    <button type="submit" style="margin-top: 1%;" class="btn btn-success" id="btnSubmit"
+                            th:text="#{carmodel.upload}"></button>
+                  </form>
+                </div>
+              </th:block>
+              </div>
+            <div class="col-6">
+              <a th:href="@{|/carmodel/configure/car/add|}"
+                 class="btn btn-primary btn-custom waves-effect waves-light w-md"
+                 th:text="#{carmodel.add}"></a>
+            </div>
+            <div class="col-6">
+              <a th:href="@{|/carmodel/configure/carDimensions/add|}"
+                 class="btn btn-primary btn-custom waves-effect waves-light w-md"
+                 th:text="#{carmodel.addDimensions}"></a>
+            </div>
+          </div>
+        </th:block>
+        <div class="table-responsive" data-pattern="priority-columns">
+          <table id="CarmodelTable" class="table table-bordered">
+            <thead>
+            <tr>
+              <th th:text="#{carmodel.model}">Model</th>
+              <th th:text="#{carmodel.type}">Type</th>
+              <th th:text="#{carmodel.updatedBy}">Created By</th>
+              <th th:text="#{carmodel.updatedTime}">Update Time</th>
+              <th th:text="#{carmodel.edit}">Edit</th>
+              <th th:text="#{carmodel.delete}">Delete</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="carModel : ${carModels}">
+              <td><span th:text="${carModel.model}"></span></td>
+              <td><span th:each="dimen : ${carModel.dimensions}" th:value="${dimen.id}" th:text="${dimen.carClassification}"></span></td>
+              <td><span th:text="${carModel.updatedBy}"></span></td>
+              <td><span th:text="${carModel.updatedTime}"></span></td>
+              <td>
+                <a th:href="@{/carmodel/configure/car/edit/{id}(id=${carModel.id})}" class="btn btn-primary">
+                  <img th:src="@{/images/outline-edit-24px.svg}">
+                </a>
+              </td>
+              <td>
+                <a th:href="@{/carmodel/configure/car/delete/{id}(id=${carModel.id})}" class="btn btn-primary">
+                  <img th:src="@{/images/outline-delete-24px.svg}">
+                </a>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer"
+             th:include="~{/carmodel/fragments/pagination.html::page-navigation(url='/carmodel/configure/car',page=${carModels})}">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+</html>
+
+
+

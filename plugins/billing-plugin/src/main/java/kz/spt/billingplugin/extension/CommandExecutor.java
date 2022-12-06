@@ -20,6 +20,7 @@ import kz.spt.billingplugin.model.dto.webkassa.ZReport;
 import kz.spt.billingplugin.repository.PaymentProviderRepository;
 import kz.spt.billingplugin.repository.PaymentRepository;
 import kz.spt.billingplugin.service.*;
+import kz.spt.billingplugin.service.impl.FiscalCheckServiceImpl;
 import kz.spt.billingplugin.service.impl.ReKassaServiceImpl;
 import kz.spt.billingplugin.service.impl.WebKassaServiceImpl;
 import kz.spt.lib.extension.PluginRegister;
@@ -53,6 +54,7 @@ public class CommandExecutor implements PluginRegister {
     private PaymentRepository paymentRepository;
     private PaymentProviderRepository paymentProviderRepository;
     private LanguagePropertiesService languagePropertiesService;
+    private FiscalCheckService fiscalCheckService;
 
     private static final String TRANSACTION_ID = "transactionId";
 
@@ -206,8 +208,7 @@ public class CommandExecutor implements PluginRegister {
                 int paymentType = command.get("paymentType").intValue();
                 String txn_id = command.get("txn_id").textValue();
 
-                OfdCheckData ofdCheckData = registerCheck(provider, command);
-
+                OfdCheckData ofdCheckData = getFiscalCheckService().registerCheck(provider, command);
                 log.info("Check Response " + ofdCheckData.toString());
 
                 if (ofdCheckData != null && ofdCheckData.getCheckNumber() != null) {
@@ -221,9 +222,7 @@ public class CommandExecutor implements PluginRegister {
                         payment.setIkkm(paymentType == 1);
                         getPaymentService().savePayment(payment);
                     }
-
                 }
-
 
             } else if ("zReport".equals(commandName)) {
 
@@ -341,6 +340,10 @@ public class CommandExecutor implements PluginRegister {
                 getPaymentService().cancelPaymentByTransactionId(
                         command.get(TRANSACTION_ID).textValue(),
                         command.get("reason").textValue());
+            } else if ("startPaymentRegistryJob".equals(commandName)){
+                getPaymentService().startToSendPaymentList();
+            } else if ("stopPaymentRegistryJob".equals(commandName)){
+                getPaymentService().stopToSendPaymentList();
             } else {
                 throw new RuntimeException("Unknown command for billing operation");
             }
@@ -409,44 +412,11 @@ public class CommandExecutor implements PluginRegister {
         return reKassaService;
     }
 
-    private OfdCheckData registerCheck(PaymentProvider provider, JsonNode command) {
-
-        int sum = command.get("sum").intValue();
-        int change = command.get("change").intValue();
-        String operationName = command.get("operationName").textValue();
-        int paymentType = command.get("paymentType").intValue();
-        String txn_id = command.get("txn_id").textValue();
-        OfdCheckData ofdCheckData = null;
-        if (provider.getOfdProviderType().equals(PaymentProvider.OFD_PROVIDER_TYPE.WebKassa)) {
-            String cashboxNumber = provider.getWebKassaID();
-            Check check = new Check();
-            check.setCashboxUniqueNumber(cashboxNumber);
-            Position position = new Position();
-            position.price = sum - change;
-            position.positionName = operationName;
-            check.getPositions().add(position);
-
-            kz.spt.billingplugin.model.dto.webkassa.Payment payment = new kz.spt.billingplugin.model.dto.webkassa.Payment();
-            payment.paymentType = paymentType;
-            payment.sum = String.valueOf(sum);
-            check.getPayments().add(payment);
-            check.setChange(String.valueOf(change));
-            check.setExternalCheckNumber(txn_id + "-" + provider.getId());
-            AuthRequestDTO authRequestDTO = new AuthRequestDTO();
-            authRequestDTO.setPassword(provider.getWebKassaPassword());
-            authRequestDTO.setLogin(provider.getWebKassaLogin());
-            log.info("[WebKassa] Request for check number for txn " + txn_id);
-            ofdCheckData = getWebKassaService().registerCheck(check, provider);
-            log.info("[WebKassa] Result " + ofdCheckData.getCheckNumber());
-        } else if (provider.getOfdProviderType().equals(PaymentProvider.OFD_PROVIDER_TYPE.ReKassa)) {
-            RekassaCheckRequest checkRequest = new RekassaCheckRequest();
-            checkRequest.fillPayment(sum, change, paymentType == 1);
-            log.info("[ReKassa] Request for check number for txn " + txn_id);
-            ofdCheckData = getReKassaService().registerCheck(checkRequest, provider);
-            log.info("[ReKassa] Result " + ofdCheckData.getCheckNumber());
-
-
+    private FiscalCheckService getFiscalCheckService() {
+        if (fiscalCheckService == null) {
+            fiscalCheckService = (FiscalCheckServiceImpl) BillingPlugin.INSTANCE.getApplicationContext().getBean("fiscalCheckServiceImpl");
         }
-        return ofdCheckData;
+        return fiscalCheckService;
     }
+
 }

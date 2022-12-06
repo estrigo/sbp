@@ -20,7 +20,7 @@
                             <tr>
                                 <th><a th:text="#{car.platenumber}"></a></th>
                                 <th><a th:text="#{blacklist.type}"></a></th>
-                                <th sec:authorize="hasRole('ROLE_ADMIN')" id="deleteTH"></th>
+                                <th sec:authorize="!hasRole('ROLE_ACCOUNTANT')" id="deleteTH"></th>
                             </tr>
                             </thead>
                         </table>
