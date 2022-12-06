@@ -154,6 +154,8 @@ notification:
   token: ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmxiV0ZwYkNJNkltMWhibUZuWlhKQWJXRm5iblZ0TG10NkluMC5LSE4wWkdsdUtUMGdZekpqTnpNM05qZzJZall4Tm1NMk9XWXdOMkl4WXpkbU16WTJNR0UyTlRnNU1UTXlORGhpWVRKaVpqazJORFprClkyVmpNamN6TVdVek9HTmpOR1JsTndv
   send: false
   parkingUid: DEMO
+fiscalization:
+  mobile: false
 booking:
   check.out: false
 cors:
