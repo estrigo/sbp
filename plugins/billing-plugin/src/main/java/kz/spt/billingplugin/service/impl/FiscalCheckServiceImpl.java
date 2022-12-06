@@ -34,6 +34,12 @@ public class FiscalCheckServiceImpl implements FiscalCheckService {
     @Value("${fiscalization.enabled}")
     private Boolean checkFiscalization;
 
+    @Value("${fiscalization.mobile}")
+    Boolean mobilePayFiscalization;
+
+    @Value("${fiscalization.periodHour}")
+    Integer periodHour;
+
     private final WebKassaServiceImpl webKassaService;
     private final PaymentRepository paymentRepository;
     private final PaymentProviderRepository paymentProviderRepository;
@@ -45,15 +51,21 @@ public class FiscalCheckServiceImpl implements FiscalCheckService {
         this.paymentRepository = paymentRepository;
     }
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRateString = "${fiscalization.frequency}")
     public void scheduledRequestForFiscalReceipt() {
         if (checkFiscalization) {
             Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.HOUR, -2);
-            List<PaymentProvider> paymentProviderList = paymentProviderRepository.findAllByIsParkomatIsTrue();
-            List<Payment> paymentList =
-                    paymentRepository.findAllByCreatedAfterAndProviderInAndCheckNumberIsNull(
-                            calendar.getTime(), paymentProviderList);
+            calendar.add(Calendar.HOUR, -periodHour);
+            List<Payment> paymentList;
+            if (mobilePayFiscalization) {
+                paymentList = paymentRepository.findAllByCreatedAfterAndCheckNumberIsNull(
+                                calendar.getTime());
+            } else {
+                List<PaymentProvider> paymentProviderList = paymentProviderRepository.findAllByIsParkomatIsTrue();
+                paymentList =
+                        paymentRepository.findAllByCreatedAfterAndProviderInAndCheckNumberIsNull(
+                                calendar.getTime(), paymentProviderList);
+            }
             log.info("[WebKassa] " + paymentList.size() + " payments with no check number.");
             for (Payment p : paymentList) {
                 ObjectNode node = this.objectMapper.createObjectNode();
@@ -63,7 +75,7 @@ public class FiscalCheckServiceImpl implements FiscalCheckService {
                 node.put("change", 0);
                 node.put("txn_id", p.getTransaction());
                 node.put("operationName", "Оплата парковки, ГРНЗ: " + p.getCarNumber());
-                node.put("paymentType", p.isIkkm() ? 1 : 0);
+                node.put("paymentType", p.isIkkm() ? 1 : 4);
                 OfdCheckData ofdCheckData = registerCheck(p.getProvider(), node);
                 log.info("[WebKassa] Response ofdCheckData: " + ofdCheckData.toString());
                 if (ofdCheckData.getCheckNumber() != null) {

@@ -150,6 +150,9 @@ rekassa:
   host: https://api.rekassa.kz/api
 fiscalization:
   enabled: false
+  mobile: false
+  frequency: 60000
+  periodHour: 2
 discountPayments:
   show: false
 telegram:
