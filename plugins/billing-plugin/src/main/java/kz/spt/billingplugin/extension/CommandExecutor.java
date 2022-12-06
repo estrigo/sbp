@@ -28,7 +28,6 @@ import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Customer;
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.service.Language;
-import kz.spt.lib.service.LanguagePropertiesService;
 import kz.spt.lib.service.MessageKey;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
@@ -54,7 +53,6 @@ public class CommandExecutor implements PluginRegister {
     private PaymentRepository paymentRepository;
     private PaymentProviderRepository paymentProviderRepository;
     private FiscalCheckService fiscalCheckService;
-    private LanguagePropertiesService languagePropertiesService;
 
     private static final String TRANSACTION_ID = "transactionId";
 
@@ -128,7 +126,8 @@ public class CommandExecutor implements PluginRegister {
 
                 Map<String, Object> messageValues = new HashMap<>();
                 messageValues.put("provider", payment.getProvider().getName());
-                Map<String, String> messages = languagePropertiesService.getWithDifferentLanguages(MessageKey.BILLING_DESCRIPTION_RECEIVED_FROM_PROVIDER);
+                Map<String, String> messages = getRootServicesGetterService().getLanguagePropertiesService().
+                        getWithDifferentLanguages(MessageKey.BILLING_DESCRIPTION_RECEIVED_FROM_PROVIDER);
 
                 getBalanceService().addBalance(carNumber, payment.getPrice(), carStateId, messages.get(Language.EN), messages.get(Language.RU), messages.get(Language.LOCAL), payment.getProvider().getName() );
 

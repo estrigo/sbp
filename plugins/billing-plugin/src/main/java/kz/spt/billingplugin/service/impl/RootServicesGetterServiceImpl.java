@@ -20,6 +20,7 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     private MailService mailService;
     private PaymentRegistryJob paymentRegistryJob;
     private SyslogService syslogService;
+    private LanguagePropertiesService languagePropertiesService;
 
     private CarsService carsService;
 
@@ -103,6 +104,14 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
             syslogService = (SyslogService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("syslogServiceImpl");
         }
         return this.syslogService;
+    }
+
+    @Override
+    public LanguagePropertiesService getLanguagePropertiesService() {
+        if (languagePropertiesService == null) {
+            languagePropertiesService = (LanguagePropertiesService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("languagePropertiesServiceImpl");
+        }
+        return languagePropertiesService;
     }
 
 }
