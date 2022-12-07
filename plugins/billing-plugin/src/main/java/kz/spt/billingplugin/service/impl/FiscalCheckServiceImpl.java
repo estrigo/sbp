@@ -57,18 +57,10 @@ public class FiscalCheckServiceImpl implements FiscalCheckService {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.HOUR, -periodHour);
             List<Payment> paymentList;
-            if (mobilePayFiscalization) {
-                List<PaymentProvider> paymentProviderList = paymentProviderRepository.findAllByWebKassaIDIsNotNull();
-                log.info("paymentProviderList size: " + paymentProviderList.size());
-                paymentList =
-                        paymentRepository.findAllByCreatedAfterAndProviderInAndCheckNumberIsNull(
-                                calendar.getTime(), paymentProviderList);
-            } else {
-                List<PaymentProvider> paymentProviderList = paymentProviderRepository.findAllByIsParkomatIsTrue();
-                paymentList =
-                        paymentRepository.findAllByCreatedAfterAndProviderInAndCheckNumberIsNull(
-                                calendar.getTime(), paymentProviderList);
-            }
+            List<PaymentProvider> paymentProviderList = paymentProviderRepository.findAllByIsParkomatIsTrue();
+            paymentList =
+                    paymentRepository.findAllByCreatedAfterAndProviderInAndCheckNumberIsNull(
+                            calendar.getTime(), paymentProviderList);
             log.info("[WebKassa] " + paymentList.size() + " payments with no check number.");
             for (Payment p : paymentList) {
                 ObjectNode node = this.objectMapper.createObjectNode();
@@ -78,9 +70,42 @@ public class FiscalCheckServiceImpl implements FiscalCheckService {
                 node.put("change", 0);
                 node.put("txn_id", p.getTransaction());
                 node.put("operationName", "Оплата парковки, ГРНЗ: " + p.getCarNumber());
-                node.put("paymentType", p.isIkkm() ? 1 : 4);
+                node.put("paymentType", p.isIkkm() ? 1 : 0);
                 OfdCheckData ofdCheckData = registerCheck(p.getProvider(), node);
                 log.info("[WebKassa] Response ofdCheckData: " + ofdCheckData.toString());
+                if (ofdCheckData.getCheckNumber() != null) {
+                    p.setCheckNumber(ofdCheckData.getCheckNumber());
+                    p.setCheckUrl(ofdCheckData.getCheckUrl());
+                }
+            }
+            paymentRepository.saveAll(paymentList);
+        }
+    }
+
+    @Scheduled(fixedRateString = "${fiscalization.frequency}")
+    public void scheduledFiscalizationForMobile() {
+        if (mobilePayFiscalization) {
+            log.info("[mobilePayFiscalization] started !!!");
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, -periodHour);
+            List<Payment> paymentList;
+            List<PaymentProvider> paymentProviderList =
+                    paymentProviderRepository.findAllByWebKassaIDIsNotNullAndIsParkomatIsFalse();
+            paymentList =
+                    paymentRepository.findAllByCreatedAfterAndProviderInAndCheckNumberIsNull(
+                            calendar.getTime(), paymentProviderList);
+            log.info("[MOBILE] " + paymentList.size() + " payments with no check number.");
+            for (Payment p : paymentList) {
+                ObjectNode node = this.objectMapper.createObjectNode();
+                node.put("command", "getCheck");
+                node.put("parkomatId", p.getProvider().getClientId());
+                node.put("sum", p.getPrice());
+                node.put("change", 0);
+                node.put("txn_id", p.getTransaction());
+                node.put("operationName", "Оплата парковки, ГРНЗ: " + p.getCarNumber());
+                node.put("paymentType", 4);
+                OfdCheckData ofdCheckData = registerCheck(p.getProvider(), node);
+                log.info("[MOBILE] Response ofdCheckData: " + ofdCheckData.toString());
                 if (ofdCheckData.getCheckNumber() != null) {
                     p.setCheckNumber(ofdCheckData.getCheckNumber());
                     p.setCheckUrl(ofdCheckData.getCheckUrl());
