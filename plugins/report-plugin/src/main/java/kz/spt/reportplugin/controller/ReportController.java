@@ -1,6 +1,5 @@
 package kz.spt.reportplugin.controller;
 
-import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.reportplugin.dto.SumReportDto;
 import kz.spt.reportplugin.dto.SumReportFinalDto;
 import kz.spt.reportplugin.dto.SumReportListDto;
@@ -13,7 +12,6 @@ import kz.spt.reportplugin.service.impl.JournalReportServiceImpl;
 import kz.spt.reportplugin.service.impl.ManualOpenReportServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
@@ -41,18 +39,7 @@ public class ReportController extends BasicRestController<SumReportDto> {
     }
 
     @GetMapping("/manualOpen")
-    public String manualOpen(Model model) {
-        EventFilterDto eventFilterDto = new EventFilterDto();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MINUTE, 1);
-        Date dateTo = calendar.getTime();
-        eventFilterDto.dateToString = format.format(dateTo);
-
-        calendar.add(Calendar.DAY_OF_YEAR, -1);
-        Date dateFrom = calendar.getTime();
-        eventFilterDto.dateFromString = format.format(dateFrom);
-        model.addAttribute("eventFilterDto", eventFilterDto);
+    public String manualOpen() {
         return "report/manualOpen";
     }
 

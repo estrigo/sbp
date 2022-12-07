@@ -7,7 +7,6 @@ import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CurrentUser;
-import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.reportplugin.ReportPlugin;
@@ -563,11 +562,6 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
         page.setDraw(pagingRequest.getDraw());
 
         return page;
-    }
-
-    @Override
-    public Page<SumReportDto> pageFilter(PagingRequest pagingRequest, EventFilterDto eventFilterDto) {
-        return null;
     }
 
     @Override
