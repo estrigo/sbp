@@ -11,7 +11,7 @@
 			<div class="card-body">
 				<div class="infoboard">
 					<div class="row">
-						<h4 class="col" th:text="#{infoboard.parking}"></h4>
+						<h1 class="col" th:text="#{infoboard.parking}"></h1>
 						<select class="col form-control selectParking" id="selectParking">
 							<option value="" th:text="#{parking.parkings}" selected disabled></option>
 							<option th:each="r : ${parkings}" th:value="${r.id}" th:text="${r.name}">
@@ -19,22 +19,22 @@
 						</select>
 					</div>
 					<div class="row">
-						<h4 class="col" th:text="#{infoboard.gate}"></h4>
+						<h1 class="col" th:text="#{infoboard.gate}"></h1>
 						<select class="col form-control selectGate" id="selectGate" >
 							<option selected disabled th:text="#{events.gate}" value="default"></option>
 						</select>
 					</div>
 					<div class="row">
-						<h4 class="col car-info" th:text="#{infoboard.platenumber}"></h4>
-						<h4 class="col car-info" id="platenumber"></h4>
+						<h1 class="col car-info" th:text="#{infoboard.platenumber}"></h1>
+						<h1 class="col car-info" id="platenumber" style="font-size: 80px"></h1>
 					</div>
 					<div class="row">
-						<h4 class="col car-info" th:text="#{infoboard.duration}"></h4>
-						<h4 class="col car-info" id="parking-duration"></h4>
+						<h1 class="col car-info" th:text="#{infoboard.duration}"></h1>
+						<h1 class="col car-info" id="parking-duration"></h1>
 					</div>
 					<div class="row">
-						<h4 class="col car-info" th:text="#{infoboard.amount}"></h4>
-						<h4 class="col car-info" id="total-amount"></h4>
+						<h1 class="col car-info" th:text="#{infoboard.amount}"></h1>
+						<h1 class="col car-info" id="total-amount"></h1>
 					</div>
 				</div>
 			</div>
@@ -102,9 +102,9 @@
 			cache: false,
 			success: function (data) {
 				console.log("data", data)
-				let carNumber = "<h4 className=\"col car-info\" id=\"platenumber\">" + (data.carState.carNumber !== "null" || data.carState.carNumber !== "") ? data.carState.carNumber : ""  + "</h4>"
-				let duration = "<h4 className=\"col car-info\" id=\"parking-duration\">" + (data.carState.duration !== "null" || data.carState.duration !== "") ? data.carState.duration : "" + "</h4>"
-				let amount = "<h4 className=\"col car-info\" id=\"total-amount\">" + [data.carState.rateAmount, data.currency].join('') + "</h4>"
+				let carNumber = "<h1 className=\"col car-info\" id=\"platenumber\" style=\"font-size: 60px\">" + (data.carState.carNumber !== "null" || data.carState.carNumber !== "") ? data.carState.carNumber : ""  + "</h1>"
+				let duration = "<h1 className=\"col car-info\" id=\"parking-duration\">" + (data.carState.duration !== "null" || data.carState.duration !== "") ? data.carState.duration : "" + "</h1>"
+				let amount = "<h1 className=\"col car-info\" id=\"total-amount\" style=\"font-size: 80px\">" + [data.carState.rateAmount, data.currency].join('') + "</h1>"
 
 				console.log("data.plateNumber", carNumber)
 				console.log("rateamount", data.carState.rateAmount)
