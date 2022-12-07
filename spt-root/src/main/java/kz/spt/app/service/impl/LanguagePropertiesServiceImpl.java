@@ -3,7 +3,7 @@ package kz.spt.app.service.impl;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.loader.StringLoader;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
-import kz.spt.lib.service.Language;
+import kz.spt.lib.utils.Language;
 import kz.spt.lib.service.LanguagePropertiesService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;

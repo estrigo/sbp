@@ -4,7 +4,7 @@ import kz.spt.app.component.SpringContext;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.service.BarrierService;
-import kz.spt.lib.service.MessageKey;
+import kz.spt.lib.utils.MessageKey;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.Gate;
