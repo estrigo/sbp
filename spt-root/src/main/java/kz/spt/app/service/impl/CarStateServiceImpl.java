@@ -540,7 +540,7 @@ public class CarStateServiceImpl implements CarStateService {
         String plateNumber = eventLogService.findLast(gateId);
 
         if(plateNumber!=null){
-            CarState carState = getLastNotLeft(plateNumber);
+            CarState carState = Optional.of(getLastNotLeft(plateNumber)).orElse(new CarState());
             carStateDto = CarStateDto.fromCarState(carState);
 
             SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
