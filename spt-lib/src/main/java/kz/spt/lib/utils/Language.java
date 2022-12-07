@@ -1,4 +1,4 @@
-package kz.spt.lib.service;
+package kz.spt.lib.utils;
 
 public interface Language {
     public static final String EN = "en";

@@ -1,4 +1,4 @@
-package kz.spt.lib.service;
+package kz.spt.lib.utils;
 
 public interface MessageKey {
 
@@ -78,7 +78,11 @@ public interface MessageKey {
     public static final String DIMENSION_PASSENGER_CAR = "events.dimension.passengerCar";
     public static final String DIMENSION_TRUCK = "events.dimension.truck";
     public static final String DIMENSION_GAZELLE = "events.dimension.gazelle";
+    public static final String CAR_MODEL_PASSENGER_CAR = "carmodel.passengerCar";
+    public static final String CAR_MODEL_TYPE_TRUCK = "carmodel.type.truck";
+    public static final String CAR_MODEL_GAZELLE = "carmodel.gazelle";
     public static final String DIMENSION_NOT_RECOGNIZED = "events.dimension.notRecognized";
+    public static final String DIMENSION = "events.message.dimension";
     public static final String DIMENSION_MINIBUS = "events.dimension.minibus";
     public static final String BARRIER_SEND_SIGNAL_OPEN_IN = "events.message.barrier.send.signal.open.IN";
     public static final String BARRIER_SEND_SIGNAL_OPEN_OUT = "events.message.barrier.send.signal.open.OUT";
@@ -126,4 +130,9 @@ public interface MessageKey {
     public static final String FRIDAY = "day.friday";
     public static final String SATURDAY = "day.saturday";
     public static final String SUNDAY = "day.sunday";
+    public static final String PASSENGER_CAR = "day.sunday";
+    public static final String TRUCK = "day.sunday";
+    public static final String GAZELLE = "day.sunday";
+
+
 }
