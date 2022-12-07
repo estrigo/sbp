@@ -10,8 +10,10 @@ import kz.spt.lib.model.Gate;
 import kz.spt.app.repository.GateRepository;
 import kz.spt.app.service.GateService;
 import lombok.extern.slf4j.Slf4j;
+import kz.spt.lib.model.dto.GateDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -86,5 +88,11 @@ public class GateServiceImpl implements GateService {
     @Override
     public Iterable<Gate> listAllGatesWithDependents() {
         return gateRepository.findByGatesByDependents();
+    }
+
+    @Override
+    public List<GateDto> getGateByParkingId(Long id) {
+        List<Gate> gates = gateRepository.findByParking_Id(id);
+        return GateDto.fromGates(gates);
     }
 }

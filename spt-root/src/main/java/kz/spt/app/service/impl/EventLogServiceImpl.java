@@ -27,6 +27,7 @@ import org.pf4j.PluginManager;
 import org.pf4j.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -434,6 +435,19 @@ public class EventLogServiceImpl implements EventLogService {
     @Override
     public void sendSocketMessage(String topic, String message) {
         messagingTemplate.convertAndSend("/"+topic, message);
+    }
+
+    @Override
+    public String findLast(Long gateId) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE, -3);
+
+        List<EventLog> eventLogs = eventLogRepository.getEventsFromDate(calendar.getTime(), Gate.class.getSimpleName(), gateId);
+        if(eventLogs != null && eventLogs.size()>0){
+            EventLog eventLog = eventLogs.get(0);
+            return eventLog.getPlateNumber();
+        }
+        return null;
     }
 
     private Page<EventsDto> getPage(long count, List<EventsDto> events, PagingRequest pagingRequest) {

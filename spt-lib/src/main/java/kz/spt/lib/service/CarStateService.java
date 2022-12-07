@@ -10,6 +10,7 @@ import kz.spt.lib.model.Parking;
 import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.model.dto.CarStateExcelDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
+import kz.spt.lib.model.dto.temp.CarStateCurrencyDto;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -65,6 +66,8 @@ public interface CarStateService {
     List<String> getCarsInParking();
 
     List<String> getCarsInParkingAndNotPaid();
+
+    CarStateCurrencyDto getCarState(Long gateId) throws Exception;
 
     CarState createCarStateOutWhenNoEntryRecord(String carNumber, Date inTimestamp, Camera camera,
                                                     Boolean paid, String photoUrl);
