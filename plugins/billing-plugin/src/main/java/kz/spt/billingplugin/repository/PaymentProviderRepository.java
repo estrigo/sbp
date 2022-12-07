@@ -20,4 +20,6 @@ public interface PaymentProviderRepository extends JpaRepository<PaymentProvider
     PaymentProvider findByName(String name);
 
     List<PaymentProvider> findAllByIsParkomatIsTrue();
+
+    List<PaymentProvider> findAllByWebKassaIDIsNotNull();
 }

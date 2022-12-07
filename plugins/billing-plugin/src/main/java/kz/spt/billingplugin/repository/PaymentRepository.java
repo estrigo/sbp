@@ -54,8 +54,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
             @Param(value = "transactionId") String transactionId,
             @Param(value = "reason") String reason);
 
-    List<Payment> findAllByCreatedAfterAndCheckNumberIsNull (Date date);
-
     List<Payment> findAllByCreatedAfterAndProviderInAndCheckNumberIsNull(
             Date date, List<PaymentProvider> providers);
 

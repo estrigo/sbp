@@ -58,8 +58,10 @@ public class FiscalCheckServiceImpl implements FiscalCheckService {
             calendar.add(Calendar.HOUR, -periodHour);
             List<Payment> paymentList;
             if (mobilePayFiscalization) {
-                paymentList = paymentRepository.findAllByCreatedAfterAndCheckNumberIsNull(
-                                calendar.getTime());
+                List<PaymentProvider> paymentProviderList = paymentProviderRepository.findAllByWebKassaIDIsNotNull();
+                paymentList =
+                        paymentRepository.findAllByCreatedAfterAndProviderInAndCheckNumberIsNull(
+                                calendar.getTime(), paymentProviderList);
             } else {
                 List<PaymentProvider> paymentProviderList = paymentProviderRepository.findAllByIsParkomatIsTrue();
                 paymentList =
