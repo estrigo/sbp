@@ -1,7 +1,8 @@
 package kz.spt.carmodelplugin.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import kz.spt.lib.service.MessageKey;
+import kz.spt.lib.service.LanguagePropertiesService;
+import kz.spt.lib.utils.Dimension;
+import kz.spt.lib.utils.MessageKey;
 import kz.spt.carmodelplugin.bootstrap.datatable.CarmodelComparators;
 
 import kz.spt.carmodelplugin.repository.CarmodelRepository;
@@ -37,6 +38,8 @@ public class CarModelServicePlImpl implements CarModelServicePl {
     private RootServicesGetterService rootServicesGetterService;
 
     private CarmodelRepository2 carmodelRepository2;
+
+    private LanguagePropertiesService languagePropertiesService;
 
 
     public CarModelServicePlImpl(CarmodelRepository carmodelRepository,
@@ -96,7 +99,8 @@ public class CarModelServicePlImpl implements CarModelServicePl {
                     dimension = MessageKey.DIMENSION_NOT_RECOGNIZED;
                 }
             }
-            carmodelDto.setDimension(dimension);
+            String dimensionMessage = rootServicesGetterService.getLanguagesService().getMessageFromProperties(dimension);
+            carmodelDto.setDimension(dimensionMessage);
             resultList.add(carmodelDto);
         }
         return getPage(count, resultList, pagingRequest);
@@ -155,15 +159,20 @@ public class CarModelServicePlImpl implements CarModelServicePl {
     public void editDimensionOfCar(String plateNumber, String dimension) {
         Cars cars = rootServicesGetterService.getCarsService().findByPlatenumber(plateNumber);
         String oldModel = cars.getModel();
-        if (dimension != null && (dimension.equals("carmodel.passengerCar") || dimension.equals("Легковая"))) {
-            cars.setModel("Toyota_Camry");
-        } else if (dimension != null && (dimension.equals("carmodel.gazelle") || dimension.equals("Газель"))){
-            cars.setModel("Hyundai_Bus");
-        } else if (dimension != null && (dimension.equals("carmodel.truck") || dimension.equals("Грузовик"))){
-            cars.setModel("Zil_Truck");
-        } else {
-            cars.setModel("Toyota_Camry");
+
+        if (dimension != null){
+            Dimension checkedDimension = checkForDimension(dimension);
+            if (checkedDimension.equals(Dimension.PASSENGER_CAR)) {
+                cars.setModel("Toyota_Camry");
+            } else if (checkedDimension.equals(Dimension.GAZELLE)){
+                cars.setModel("Hyundai_Bus");
+            } else if (checkedDimension.equals(Dimension.TRUCK)){
+                cars.setModel("Zil_Truck");
+            } else {
+                cars.setModel("Toyota_Camry");
+            }
         }
+
         rootServicesGetterService.getCarsService().saveCars(cars);
 
 
@@ -244,5 +253,32 @@ public class CarModelServicePlImpl implements CarModelServicePl {
           log.warning("Update error CarModel: " + carModel.getModel());
         }
     }
+
+    private Dimension checkForDimension(String dimension){
+        Map<String, String> passengerCarDimensions = rootServicesGetterService.getLanguagesService()
+                .getWithDifferentLanguages(MessageKey.CAR_MODEL_PASSENGER_CAR);
+        Map<String, String> truckDimensions = rootServicesGetterService.getLanguagesService()
+                .getWithDifferentLanguages(MessageKey.CAR_MODEL_TYPE_TRUCK);
+        Map<String, String> gazelleDimensions = rootServicesGetterService.getLanguagesService()
+                .getWithDifferentLanguages(MessageKey.CAR_MODEL_GAZELLE);
+
+        dimension = dimension.trim().toLowerCase();
+        if (clearString(passengerCarDimensions).containsValue(dimension)){
+            return Dimension.PASSENGER_CAR;
+        }
+        else if (clearString(truckDimensions).containsValue(dimension)){
+            return Dimension.TRUCK;
+        }
+        else if (clearString(gazelleDimensions).containsValue(dimension)){
+            return Dimension.GAZELLE;
+        }
+        else return Dimension.NOT_RECOGNIZED;
+    }
+
+    private Map<String, String> clearString(Map<String, String> dimensions){
+        dimensions.forEach((k, v) -> dimensions.put(k, v.trim().toLowerCase()));
+        return dimensions;
+    }
+
 
 }

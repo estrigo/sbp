@@ -173,6 +173,19 @@
             <artifactId>pebble</artifactId>
             <version>2.4.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.uuid</groupId>
+            <artifactId>java-uuid-generator</artifactId>
+            <version>4.0.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.checkerframework/checker-qual -->
+        <dependency>
+            <groupId>com.mitchellbosecke</groupId>
+            <artifactId>pebble</artifactId>
+            <version>2.4.0</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.checkerframework/checker-qual -->
         <dependency>
             <groupId>org.checkerframework</groupId>

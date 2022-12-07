@@ -9,7 +9,7 @@ import kz.spt.abonomentplugin.model.AbonomentTypes;
 import kz.spt.abonomentplugin.service.AbonomentPluginService;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.service.LanguagePropertiesService;
-import kz.spt.lib.service.MessageKey;
+import kz.spt.lib.utils.MessageKey;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;

@@ -15,7 +15,7 @@ import kz.spt.app.model.dto.SensorStatusDto;
 import kz.spt.app.repository.BarrierRepository;
 import kz.spt.app.service.BarrierService;
 import kz.spt.lib.service.LanguagePropertiesService;
-import kz.spt.lib.service.MessageKey;
+import kz.spt.lib.utils.MessageKey;
 import kz.spt.app.snmp.SNMPManager;
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Gate;
@@ -223,10 +223,10 @@ public class BarrierServiceImpl implements BarrierService {
 
             if (barrier.getBarrierType() == null) {
                 Map<String, Object> messageValues = new HashMap<>();
-                messageValues.put("gateName", gate.gateName);
-
                 String key = Gate.GateType.IN.equals(gate.gateType) ? MessageKey.BARRIER_SEND_SIGNAL_OPEN_IN :
                         (Gate.GateType.OUT.equals(gate.gateType) ? MessageKey.BARRIER_SEND_SIGNAL_OPEN_OUT : MessageKey.BARRIER_SEND_SIGNAL_OPEN);
+
+                messageValues.put("gateName", gate.gateName);
 
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, messageValues, key);
                 result = false;
@@ -324,12 +324,11 @@ public class BarrierServiceImpl implements BarrierService {
 
             if (barrier.getBarrierType() == null) {
                 Map<String, Object> messageValues = new HashMap<>();
-                messageValues.put("gateName", gate.gateName);
-
                 String key = Gate.GateType.IN.equals(gate.gateType) ? MessageKey.BARRIER_SEND_SIGNAL_EXIT_IN :
                         (Gate.GateType.OUT.equals(gate.gateType) ? MessageKey.BARRIER_SEND_SIGNAL_EXIT_OUT : MessageKey.BARRIER_SEND_SIGNAL_EXIT);
-                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, messageValues, key);
 
+                messageValues.put("gateName", gate.gateName);
+                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, messageValues, key);
                 return false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
                 if (barrier.isImpulseSignal()) {
@@ -545,7 +544,6 @@ public class BarrierServiceImpl implements BarrierService {
 
                     messageValues.put("gateName", gate.gateName);
                     eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, messageValues, key);
-                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, messageValues, key);
                 }
             }
             if (Command.Close.equals(command) && isOpenValueChanged) {
@@ -697,7 +695,7 @@ public class BarrierServiceImpl implements BarrierService {
                             (Gate.GateType.OUT.equals(gate.gateType) ? MessageKey.BARRIER_COULD_NOT_CHANGE_OUT : MessageKey.BARRIER_COULD_NOT_CHANGE);
 
                     messageValues.put("gateName", gate.gateName);
-                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null,  messageValues, key);
+                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, messageValues, key);
                 }
             }
             if (Command.Close.equals(command) && isOpenValueChanged) {

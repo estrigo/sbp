@@ -21,7 +21,7 @@ import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.Parking;
 import kz.spt.lib.service.LanguagePropertiesService;
-import kz.spt.lib.service.MessageKey;
+import kz.spt.lib.utils.MessageKey;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.i18n.LocaleContextHolder;

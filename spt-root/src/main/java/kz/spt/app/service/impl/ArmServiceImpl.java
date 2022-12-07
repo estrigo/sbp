@@ -20,7 +20,7 @@ import kz.spt.app.model.strategy.barrier.open.ManualOpenStrategy1;
 import kz.spt.app.model.strategy.barrier.open.ManualOpenStrategy2;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
-import kz.spt.lib.service.MessageKey;
+import kz.spt.lib.utils.MessageKey;
 import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.service.*;
@@ -222,7 +222,7 @@ public class ArmServiceImpl implements ArmService {
                                 (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_OPEN_OUT : MessageKey.MANUAL_OPEN);
 
                         eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), debtPlatenumber, messageValues, key);
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key);
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.MANUAL_GATE_OPEN);
 
                         if (debtPlatenumber != null) {
                             if (snapshot != null && !"".equals(snapshot) && !"null".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
@@ -252,7 +252,7 @@ public class ArmServiceImpl implements ArmService {
                                 (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_OPEN_OUT : MessageKey.MANUAL_OPEN);
 
                         eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), debtPlatenumber, messageValues, key);
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key);
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.MANUAL_GATE_OPEN);
 
                         if (debtPlatenumber != null) {
                             if (snapshot != null && !"".equals(snapshot) && !"null".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
@@ -314,8 +314,9 @@ public class ArmServiceImpl implements ArmService {
             messageValues.put("description", camera.getGate().getDescription());
             messageValues.put("parking", camera.getGate().getParking().getName());
 
-            String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.MANUAL_OPEN_IN :
-                    (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_OPEN_OUT : MessageKey.MANUAL_OPEN);
+
+            String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.MANUAL_PASS_IN :
+                    (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_PASS_OUT : MessageKey.MANUAL_PASS);
 
             eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", messageValues, key);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.MANUAL_GATE_OPEN);
@@ -412,6 +413,7 @@ public class ArmServiceImpl implements ArmService {
             messageValues.put("username", username);
             messageValues.put("description", camera.getGate().getDescription());
             messageValues.put("parking", camera.getGate().getParking().getName());
+
 
             String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.MANUAL_CLOSE_IN :
                     (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_CLOSE_OUT : MessageKey.MANUAL_CLOSE);
