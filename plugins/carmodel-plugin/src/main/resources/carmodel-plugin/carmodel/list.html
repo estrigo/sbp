@@ -145,9 +145,15 @@
 
                     // menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="editModel" data-id="' + carmodel.id + '">' + [[#{carState.editModel}]] + '</button>';
 
-                    menu += '<button class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.passengerCar}]] + '">' + [[#{carmodel.passengerCar}]] + '</button>';
-                    menu += '<button class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.gazelle}]] + '">' + [[#{carmodel.gazelle}]] + '</button>';
-                    menu += '<button class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.truck}]] + '">' + [[#{carmodel.truck}]] + '</button>';
+                    for(let dimension of [[${dimensions}]]){
+                        // const keys = Object.keys(dimension);
+                        // console.log(keys);
+                        menu += '<option class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + dimension.carClassification + '">' + dimension.carClassification + '</option>';
+                        console.log("dimension.id", dimension.id)
+                    }
+                    // menu += '<option class="dropdown-item" th:each="dimension : ${dimensions}" th:value="${dimension.id}" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.passengerCar}]] + '">' + [[#{carmodel.passengerCar}]] + '</option>';
+                    // menu += '<button class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.gazelle}]] + '">' + [[#{carmodel.gazelle}]] + '</button>';
+                    // menu += '<button class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.truck}]] + '">' + [[#{carmodel.truck}]] + '</button>';
 
                     menu += '</div></div>';
 
@@ -208,6 +214,7 @@
             $.post("/carmodel/editType?plateNumber=" + $input.data("number") + "&dimension=" + $input.data("type"), function (data) {
                 if (data && data == true) {
                     table.ajax.reload(); //reload datatable
+                    console.log("&dimension=", $input.data("type"));
                 } else {
                     table.ajax.reload();
                 }
