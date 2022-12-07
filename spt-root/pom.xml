@@ -180,6 +180,13 @@
             <version>4.0.1</version>
             <scope>compile</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.checkerframework/checker-qual -->
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+            <version>3.27.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
