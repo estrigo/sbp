@@ -24,11 +24,6 @@ public interface EventLogRepository extends JpaRepository<EventLog, Long>, JpaSp
 
     List<EventLog> findByEventTypeIn(List<EventLog.EventType> types, Pageable pageable);
 
-    List<EventLog> findAllByCreatedBetweenAndEventTypeInOrderByIdDesc(Date dateFrom, Date dateTo,
-                                                                List<EventLog.EventType> types, Pageable pageable);
-
-    Long countByCreatedBetweenAndEventTypeIn(Date dateFrom, Date dateTo, List<EventLog.EventType> types);
-
     Long countByEventTypeIn(List<EventLog.EventType> types);
 
 
