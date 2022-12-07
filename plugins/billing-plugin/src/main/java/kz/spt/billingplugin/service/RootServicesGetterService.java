@@ -16,5 +16,5 @@ public interface RootServicesGetterService {
     MailService getMailService();
     PaymentRegistryJob getPaymentRegistryJob();
     SyslogService getSyslogService();
-    LanguagePropertiesService getLanguagePropertiesService();
+    LanguagePropertiesService getLanguageService();
 }

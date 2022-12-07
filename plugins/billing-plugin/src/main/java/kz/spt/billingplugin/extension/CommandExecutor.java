@@ -124,8 +124,7 @@ public class CommandExecutor implements PluginRegister {
 
                 Map<String, Object> messageValues = new HashMap<>();
                 messageValues.put("provider", payment.getProvider().getName());
-                Map<String, String> messages = getRootServicesGetterService().getLanguagePropertiesService().
-                        getWithDifferentLanguages(MessageKey.BILLING_DESCRIPTION_RECEIVED_FROM_PROVIDER);
+                Map<String, String> messages = rootServicesGetterService.getLanguageService().getWithDifferentLanguages(MessageKey.BILLING_DESCRIPTION_RECEIVED_FROM_PROVIDER);
 
                 getBalanceService().addBalance(carNumber, payment.getPrice(), carStateId, messages.get(Language.EN), messages.get(Language.RU), messages.get(Language.LOCAL), payment.getProvider().getName() );
 

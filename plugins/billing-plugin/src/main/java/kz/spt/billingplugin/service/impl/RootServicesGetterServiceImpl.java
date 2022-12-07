@@ -20,9 +20,9 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     private MailService mailService;
     private PaymentRegistryJob paymentRegistryJob;
     private SyslogService syslogService;
-    private LanguagePropertiesService languagePropertiesService;
 
     private CarsService carsService;
+    private LanguagePropertiesService languagePropertiesService;
 
     @Override
     public ParkingService getParkingService() {
@@ -107,10 +107,11 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     }
 
     @Override
-    public LanguagePropertiesService getLanguagePropertiesService() {
+    public LanguagePropertiesService getLanguageService() {
         if (languagePropertiesService == null) {
             languagePropertiesService = (LanguagePropertiesService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("languagePropertiesServiceImpl");
         }
+
         return languagePropertiesService;
     }
 
