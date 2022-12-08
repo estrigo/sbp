@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 @Builder
@@ -38,11 +39,11 @@ public class CarInEventStrategy extends AbstractOpenStrategy {
     }
 
     @Override
-    public void carEvent() {
+    public void carEvent() throws Exception {
         CarEventService carEventService = SpringContext.getBean(CarEventService.class);
         GateStatusDto gate = StatusCheckJob.findGateStatusDtoById(gateId);
         if (!gate.isSimpleWhitelist && !enteredFromThisSecondsBefore) {
-            carEventService.saveCarInState(eventDto, camera, whitelistCheckResults, properties);
+            carEventService.saveCarInState(eventDto, camera, whitelistCheckResults, properties, null);
         }
     }
 

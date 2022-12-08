@@ -712,6 +712,7 @@ public class CarEventServiceImpl implements CarEventService {
         JsonNode whitelistCheckResults = null;
         Boolean enteredFromThisSecondsBefore = false;
         JsonNode abonements = null;
+        BigDecimal prepaid = new BigDecimal(0);
         abonements = abonomentService.getAbonomentsDetails(eventDto.car_number, camera.getGate().getParking().getId(), new Date(), format);
 
         // проверить выезжала ли с другого выезда, по умолчанию не больше 20 секунд
@@ -792,7 +793,7 @@ public class CarEventServiceImpl implements CarEventService {
                     BigDecimal balance = currentBalanceResult.get("currentBalance").decimalValue();
 
                     JsonNode prepaidValueResult = getPrepaidValue(camera.getGate().getParking().getId(), properties);
-                    BigDecimal prepaid = BigDecimal.valueOf(prepaidValueResult.get("prepaidValue").longValue());
+                    prepaid = BigDecimal.valueOf(prepaidValueResult.get("prepaidValue").longValue());
 
                     if ((balance != null && prepaid != null) && balance.subtract(prepaid).compareTo(BigDecimal.ZERO) >= 0) {
                         decreaseBalance(eventDto.car_number, camera.getGate().getParking().getName(), null, prepaid, properties);
@@ -805,13 +806,13 @@ public class CarEventServiceImpl implements CarEventService {
                     } else {
                         properties.put("type", EventLog.StatusType.Deny);
                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, camera.getId(), eventDto.getCarNumberWithRegion(),
-                                "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance + ". Выезд с " + carState.getParking().getName(),
-                                "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance + ". Departure from " + carState.getParking().getName(),
-                                "Ausfahrt nicht erlaubt: Nicht genug Guthaben, um das Parken zu bezahlen. Gesamtsumme zu zahlen: " + prepaid + ". Saldo: " + balance + ". Abfahrt von " + carState.getParking().getName());
+                                "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance + ". Выезд с " + camera.getGate().getParking().getName(),
+                                "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance + ". Departure from " + camera.getGate().getParking().getName(),
+                                "Ausfahrt nicht erlaubt: Nicht genug Guthaben, um das Parken zu bezahlen. Gesamtsumme zu zahlen: " + prepaid + ". Saldo: " + balance + ". Abfahrt von " + camera.getGate().getParking().getName());
                         eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties,
-                                "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance + ". Выезд с " + carState.getParking().getName(),
-                                "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance + ". Departure from " + carState.getParking().getName(),
-                                "Ausfahrt nicht erlaubt: Nicht genug Guthaben, um das Parken zu bezahlen. Gesamtsumme zu zahlen: " + prepaid + ". Saldo: " + balance + ". Abfahrt von " + carState.getParking().getName(),
+                                "В проезде отказано: Не достаточно средств для списания оплаты за паркинг. Сумма к оплате: " + prepaid + ". Баланс: " + balance + ". Выезд с " + camera.getGate().getParking().getName(),
+                                "Not allowed to exit: Not enough balance to pay for parking. Total sum to pay: " + prepaid + ". Balance: " + balance + ". Departure from " + camera.getGate().getParking().getName(),
+                                "Ausfahrt nicht erlaubt: Nicht genug Guthaben, um das Parken zu bezahlen. Gesamtsumme zu zahlen: " + prepaid + ". Saldo: " + balance + ". Abfahrt von " + camera.getGate().getParking().getName(),
                                 EventLog.EventType.NOT_ENOUGH_BALANCE);
                         hasAccess = false;
                     }
@@ -911,7 +912,7 @@ public class CarEventServiceImpl implements CarEventService {
 
                 if(photoElementPassed && loopPassed){
                     if (!gate.isSimpleWhitelist && !enteredFromThisSecondsBefore) {
-                        saveCarInState(eventDto, camera, whitelistCheckResults, properties);
+                        saveCarInState(eventDto, camera, whitelistCheckResults, properties, prepaid);
                     } else if (enteredFromThisSecondsBefore) {
                         properties.put("type", EventLog.StatusType.Allow);
                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(),
@@ -954,7 +955,7 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     @Override
-    public void saveCarInState(CarEventDto eventDto, Camera camera, JsonNode whitelistCheckResults, Map<String, Object> properties) {
+    public void saveCarInState(CarEventDto eventDto, Camera camera, JsonNode whitelistCheckResults, Map<String, Object> properties, BigDecimal prepaidSum) throws Exception {
         PluginRegister carModelPluginRegister = pluginService.getPluginRegister(StaticValues.carmodelPlugin);
         String eventWithDimensionRu = "";
         String eventWithDimensionEn = "";
@@ -991,7 +992,7 @@ public class CarEventServiceImpl implements CarEventService {
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, message_ru, message_en, message_de, EventLog.EventType.WHITELIST);
         } else if (Parking.ParkingType.PREPAID.equals(camera.getGate().getParking().getParkingType())) {
             properties.put("type", EventLog.StatusType.Allow);
-            carStateService.createINState(eventDto.car_number, eventDto.event_date_time, camera, false, null, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
+            CarState carState = carStateService.createINState(eventDto.car_number, eventDto.event_date_time, camera, true, whitelistCheckResults != null ? whitelistCheckResults.toString() : null, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(),
                     "Пропускаем авто: Авто с гос. номером " + eventDto.car_number + " по предоплате" + eventWithDimensionRu,
                     "Permitted: Car with number " + eventDto.car_number + " on prepaid basis" + eventWithDimensionEn,
@@ -1001,6 +1002,8 @@ public class CarEventServiceImpl implements CarEventService {
                     "Permitted: Car with number " + eventDto.car_number + " on prepaid basis" + eventWithDimensionEn,
                     "Erlaubt: Auto mit Kennzeichen  " + eventDto.car_number + " auf Prepaid-Basis" + eventWithDimensionDe,
                     EventLog.EventType.PREPAID);
+            carState.setRateAmount(prepaidSum);
+            carStateService.save(carState);
         } else {
             if (whitelistCheckResults == null) {
                 properties.put("type", EventLog.StatusType.Allow);

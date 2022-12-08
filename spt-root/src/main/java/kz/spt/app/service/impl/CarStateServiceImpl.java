@@ -66,7 +66,7 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
-    public void createINState(String carNumber, Date inTimestamp, Camera camera, Boolean paid, String whitelistJson, String inPhotoUrl) {
+    public CarState createINState(String carNumber, Date inTimestamp, Camera camera, Boolean paid, String whitelistJson, String inPhotoUrl) {
         CarState carState = new CarState();
         carState.setCarNumber(carNumber);
         carState.setInTimestamp(inTimestamp);
@@ -79,6 +79,7 @@ public class CarStateServiceImpl implements CarStateService {
         carState.setPaid(paid);
         carState.setInPhotoUrl(inPhotoUrl);
         carStateRepository.save(carState);
+        return carState;
     }
 
     @Override
