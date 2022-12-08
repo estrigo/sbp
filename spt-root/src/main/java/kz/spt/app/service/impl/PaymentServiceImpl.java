@@ -17,6 +17,7 @@ import kz.spt.lib.model.dto.payment.CommandDto;
 import kz.spt.lib.service.*;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -51,6 +52,9 @@ public class PaymentServiceImpl implements PaymentService {
     SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
 
     private final PaymentCheckLogService paymentCheckLogService;
+
+    @Value("${fiscalization.mobile}")
+    Boolean mobilePayFiscalization;
 
     public PaymentServiceImpl(CarStateService carStateService, PluginService pluginService, CarsService carService, ParkingService parkingService, EventLogService eventLogService,
                               CarModelService carModelService, AbonomentService abonomentService, WhitelistRootService whitelistRootService, QrPanelService qrPanelService,
@@ -899,8 +903,24 @@ public class PaymentServiceImpl implements PaymentService {
             paymentResult = billingPluginRegister.execute(node);
         }
 
-        if (paymentResult.has("paymentError")) {
+        if (paymentResult != null && paymentResult.has("paymentError")) {
             return fillError(commandDto, paymentResult.get("paymentError").textValue(), paymentResult.get("paymentErrorCode").intValue());
+        } else {
+//          Request check number of succeeded payments from WebKassa | Enable only for airport of Astana
+            if (mobilePayFiscalization) {
+                log.info("Webkassa check request " + commandDto);
+                ObjectNode objectNode = this.objectMapper.createObjectNode();
+                objectNode.put("command", "getCheck");
+                objectNode.put("parkomatId", commandDto.getClientId());
+                objectNode.put("sum", commandDto.getSum());
+                objectNode.put("change", 0);
+                objectNode.put("txn_id", commandDto.getTxn_id());
+                objectNode.put("operationName", "Оплата парковки, ГРНЗ: " + commandDto.getAccount());
+                objectNode.put("paymentType", 4);
+                if (billingPluginRegister != null) {
+                    billingPluginRegister.execute(objectNode);
+                }
+            }
         }
         return paymentResult;
     }

@@ -16,7 +16,7 @@ public class PaymentSpecification {
     }
 
     public static Specification<Payment> likePlateNumber(String plateNumber) {
-        return (root, query, builder) -> builder.like(root.get(Payment_.car).get(Cars_.PLATENUMBER), "%" + plateNumber + "%");
+        return (root, query, builder) -> builder.like(root.get(Payment_.CAR_NUMBER), "%" + plateNumber + "%");
     }
 
     public static Specification<Payment> equalAmount(BigDecimal amount) {

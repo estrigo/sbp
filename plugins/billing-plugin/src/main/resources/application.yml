@@ -48,6 +48,9 @@ rekassa:
   host: https://api-test.rekassa.kz/api
 fiscalization:
   enabled: false
+  mobile: false
+  frequency: 60000
+  periodHour: 2
 save:
   removed:
     debt:
