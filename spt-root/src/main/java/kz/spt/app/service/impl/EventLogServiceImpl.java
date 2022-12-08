@@ -236,6 +236,17 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
+    public List<EventLog> listByTypeAndDate(List<EventLog.EventType> types, Pageable pageable,
+                                            Date dateFrom, Date dateTo) {
+        return eventLogRepository.findAllByCreatedBetweenAndEventTypeInOrderByIdDesc(dateFrom, dateTo, types, pageable);
+    }
+
+    @Override
+    public Long countByTypeAndDate(List<EventLog.EventType> types, Date dateFrom, Date dateTo) {
+        return eventLogRepository.countByCreatedBetweenAndEventTypeIn(dateFrom, dateTo,types);
+    }
+
+    @Override
     public Long countByType(List<EventLog.EventType> types) {
         return eventLogRepository.countByEventTypeIn(types);
     }
