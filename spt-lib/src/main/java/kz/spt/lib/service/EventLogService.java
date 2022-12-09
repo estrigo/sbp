@@ -55,4 +55,6 @@ public interface EventLogService {
     String findLastWithDebts(Long gateId);
 
     void sendSocketMessage(String topic, String message);
+
+    String findLast(Long gateId);
 }

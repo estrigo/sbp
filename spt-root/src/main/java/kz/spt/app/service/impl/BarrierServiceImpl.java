@@ -29,6 +29,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,7 +41,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BarrierServiceImpl implements BarrierService {
 
     public static Map<String, ModbusMaster> modbusMasterMap = new ConcurrentHashMap<>();
-
     public static Map<String, SNMPManager> snmpManagerMap = new ConcurrentHashMap<>();
     private final BarrierRepository barrierRepository;
     private final EventLogService eventLogService;
@@ -46,7 +48,15 @@ public class BarrierServiceImpl implements BarrierService {
     private final String BARRIER_OFF = "0";
     private Boolean disableOpen;
 
+    private static Map<String, Map<Integer, Boolean>> modbusLastCommandIsManual = new ConcurrentHashMap<>();
+    private static Map<String, Map<String, Boolean>> snmpLastCommandIsManual = new ConcurrentHashMap<>();
+
+    private static Map<String, Map<String, Boolean>> jetsonLastCommandIsManual = new ConcurrentHashMap<>();
+
     private Boolean modbusIcpdasOldWay = false;
+
+    @Value("${barrier.permanent.open.enabled:false}")
+    Boolean permanentOpenEnabled;
 
     public BarrierServiceImpl(@Value("${barrier.open.disabled}") Boolean disableOpen, @Value("${barrier.modbus.icpdas.old.way}") Boolean modbusIcpdasOldWay, BarrierRepository barrierRepository, EventLogService eventLogService) {
         this.disableOpen = disableOpen;
@@ -157,7 +167,7 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public Boolean openBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
-        log.info("Barrier " + barrier.getIp() + " open process started for car number: " +  properties.get("carNumber"));
+        log.info("Barrier " + barrier.getIp() + " open process started");
         Boolean result = true;
         if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier())) { //  ignore in development
             GateStatusDto gate = new GateStatusDto();
@@ -177,12 +187,44 @@ public class BarrierServiceImpl implements BarrierService {
                     result = snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
                 }
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
-                result = modbusChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                result = modbusChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Open);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
                 result = jetsonChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Open);
             }
         }
-        log.info("Barrier " + barrier.getIp() + " open process ended for car number: " + (String) properties.get("carNumber"));
+        log.info("Barrier " + barrier.getIp() + " open process ended");
+        return result;
+    }
+
+    @Override
+    public Boolean openPermanentBarrier(Barrier barrier) throws ModbusProtocolException, IOException, ModbusNumberException, InterruptedException, ModbusIOException, ParseException {
+
+        log.info("Barrier " + barrier.getIp() + " permanent open process started ");
+        Boolean result = true;
+        if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier())) { //  ignore in development
+            GateStatusDto gate = new GateStatusDto();
+            gate.gateType = barrier.getGate().getGateType();
+            gate.gateName = barrier.getGate().getName();
+
+            if (barrier.getBarrierType() == null) {
+                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null,
+                        "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы открыть",
+                        "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to open",
+                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " zu öffnen");
+                result = false;
+            } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
+                if (barrier.isImpulseSignal()) {
+                    result = snmpPermanentChangeValueImpulse(gate, BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                } else {
+                    result = snmpPermanentChangeValue(gate, BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                }
+            } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
+                result = modbusPermanentChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Open);
+            } else if (Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
+                result = jetsonPermanentChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Open);
+            }
+        }
+        log.info("Barrier " + barrier.getIp() + " permanent open process ended");
         return result;
     }
 
@@ -230,9 +272,37 @@ public class BarrierServiceImpl implements BarrierService {
                     return snmpChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Close);
                 }
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
-                return modbusChangeValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Close);
+                return modbusChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Close);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
                 return jetsonChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Close);
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public Boolean closePermanentBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
+        if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier())) { //  ignore in development
+            GateStatusDto gate = new GateStatusDto();
+            gate.gateType = barrier.getGate().getGateType();
+            gate.gateName = barrier.getGate().getName();
+
+            if (barrier.getBarrierType() == null) {
+                eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null,
+                        "Для отправки сигнала на шлагбаум нужно настроит тип (SNMP, MODBUS) для " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " чтобы закрыть",
+                        "To send a signal to the barrier, you need to configure the type (SNMP, MODBUS) for " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " to close",
+                        "Um ein Signal an die Schranke zu senden, müssen Sie den Typ (SNMP, MODBUS) konfigurieren für" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " zu schließen");
+                return false;
+            } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
+                if (barrier.isImpulseSignal()) {
+                    return snmpPermanentChangeValueImpulse(gate, BarrierStatusDto.fromBarrier(barrier), Command.Close);
+                } else {
+                    return snmpPermanentChangeValue(gate, BarrierStatusDto.fromBarrier(barrier), Command.Close);
+                }
+            } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
+                return modbusPermanentChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Close);
+            } else if (Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
+                return jetsonPermanentChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Close);
             }
         }
         return true;
@@ -256,7 +326,7 @@ public class BarrierServiceImpl implements BarrierService {
                     result = snmpChangeValue(gate, carNumber, barrier, Command.Open);
                 }
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.type)) {
-                result = modbusChangeValue(gate, carNumber, barrier, Command.Open);
+                result = modbusChangeValue(barrier, Command.Open);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.type)) {
                 result = jetsonChangeValue(barrier, Command.Open);
             }
@@ -280,7 +350,7 @@ public class BarrierServiceImpl implements BarrierService {
                     return snmpChangeValue(gate, carNumber, barrier, Command.Close);
                 }
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.type)) {
-                return modbusChangeValue(gate, carNumber, barrier, Command.Close);
+                return modbusChangeValue(barrier, Command.Close);
             } else if (Barrier.BarrierType.JETSON.equals(barrier.type)) {
                 return jetsonChangeValue(barrier, Command.Close);
             }
@@ -290,6 +360,12 @@ public class BarrierServiceImpl implements BarrierService {
 
     private Boolean snmpChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException, ParseException {
         Boolean result = true;
+
+        Boolean permanentlyOpen = snmpLastCommandIsManual.containsKey(barrier.ip) && snmpLastCommandIsManual.get(barrier.ip).containsKey(barrier.openOid);
+
+        if(Command.Close.equals(command) && permanentlyOpen){
+            return false;
+        }
 
         SNMPManager barrierClient = getConnectedSNMPManagerInstance(barrier.ip, barrier.password, barrier.snmpVersion);
 
@@ -331,7 +407,7 @@ public class BarrierServiceImpl implements BarrierService {
                             "Schrankensteuerung" + (Gate.GateType.IN.equals(gate.gateType) ? "eintrag" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " konnte nicht auf 1 für Eröffnung ändern " + (carNumber != null ? " für Kennzeichen " + carNumber : ""));
                 }
             }
-            if ((Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType)) && isOpenValueChanged) {
+            if (!permanentlyOpen && (Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType)) && isOpenValueChanged) {
                 Thread.sleep(500);
                 String currentValue2 = barrierClient.getCurrentValue(oid);
                 if (BARRIER_ON.equals(currentValue2)) {
@@ -346,7 +422,7 @@ public class BarrierServiceImpl implements BarrierService {
                     }
                 }
             }
-        } else if (Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType)) {
+        } else if (!permanentlyOpen && (Command.Close.equals(command) || Barrier.SensorsType.AUTOMATIC.equals(barrier.sensorsType))) {
             Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
             if (!isReturnValueChanged) {
                 for (int i = 0; i < 3; i++) {
@@ -361,8 +437,105 @@ public class BarrierServiceImpl implements BarrierService {
         return result;
     }
 
+    private Boolean snmpPermanentChangeValue(GateStatusDto gate, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException, ParseException {
+        Boolean result = true;
+
+        String openOid = barrier.openOid;
+
+        SNMPManager barrierClient = getConnectedSNMPManagerInstance(barrier.ip, barrier.password, barrier.snmpVersion);
+
+        if (Command.Close.equals(command)) {
+            String openValue = barrierClient.getCurrentValue(barrier.openOid);
+            if (BARRIER_ON.equals(openValue)) {
+                Boolean changed = barrierClient.changeValue(barrier.openOid, Integer.valueOf(BARRIER_OFF));
+                if (!changed) {
+                    for (int i = 0; i < 3; i++) {
+                        changed = barrierClient.changeValue(barrier.openOid, Integer.valueOf(BARRIER_OFF));
+                        if (changed) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        String oid = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
+        String currentValue = barrierClient.getCurrentValue(oid);
+
+        if (currentValue == null) {
+            throw new RuntimeException("Snmp controller connection error");
+        } else if (BARRIER_OFF.equals(currentValue)) {
+            Boolean isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
+            log.info("snmp isOpenValueChanged: " + isOpenValueChanged);
+            if (!isOpenValueChanged) {
+                for (int i = 0; i < 3; i++) {
+                    isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
+                    if (isOpenValueChanged) {
+                        break;
+                    }
+                }
+                if (!isOpenValueChanged) {
+                    result = false;
+                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 1", "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1", "");
+                }
+            }
+            if (Command.Close.equals(command) && isOpenValueChanged) {
+                Thread.sleep(500);
+                String currentValue2 = barrierClient.getCurrentValue(oid);
+                if (BARRIER_ON.equals(currentValue2)) {
+                    Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                    log.info("oid: " + oid + " set off");
+                    if (!isReturnValueChanged) {
+                        for (int i = 0; i < 3; i++) {
+                            isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                            if (isReturnValueChanged) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } else if(Command.Close.equals(command)) {
+            Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+            log.info("oid: " + oid + " set off");
+            if (!isReturnValueChanged) {
+                for (int i = 0; i < 3; i++) {
+                    isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                    if (isReturnValueChanged) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(result){
+            if(Command.Open.equals(command)){
+                Map<String, Boolean> oids = snmpLastCommandIsManual.containsKey(barrier.ip) ? snmpLastCommandIsManual.get(barrier.ip) : new HashMap<>();
+                oids.put(openOid, true);
+                snmpLastCommandIsManual.put(barrier.ip, oids);
+            } else {
+                if(snmpLastCommandIsManual.containsKey(barrier.ip)){
+                    Map<String, Boolean> oids = snmpLastCommandIsManual.get(barrier.ip);
+                    if(oids.containsKey(openOid)){
+                        oids.remove(openOid);
+                        snmpLastCommandIsManual.put(barrier.ip, oids);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+
     private Boolean snmpChangeValueImpulse(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException {
         Boolean result = true;
+
+        Boolean permanentlyOpen = snmpLastCommandIsManual.containsKey(barrier.ip) && snmpLastCommandIsManual.get(barrier.ip).containsKey(barrier.openOid);
+
+        if(Command.Close.equals(command) && permanentlyOpen){
+            return false;
+        }
 
         SNMPManager barrierClient = getConnectedSNMPManagerInstance(barrier.ip, barrier.password, barrier.snmpVersion);
 
@@ -389,7 +562,7 @@ public class BarrierServiceImpl implements BarrierService {
                             "Schrankensteuerung" + (Gate.GateType.IN.equals(gate.gateType) ? "einfahrt" : (Gate.GateType.OUT.equals(gate.gateType) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + gate.gateName + " konnte nicht auf 1 für Eröffnung ändern " + (carNumber != null ? " für Kennzeichen " + carNumber : ""));
                 }
             }
-            if (isOpenValueChanged) {
+            if (!permanentlyOpen && isOpenValueChanged) {
                 Thread.sleep(barrier.impulseDelay);
                 String currentValue2 = barrierClient.getCurrentValue(oid);
                 if (BARRIER_ON.equals(currentValue2)) {
@@ -404,7 +577,7 @@ public class BarrierServiceImpl implements BarrierService {
                     }
                 }
             }
-        } else {
+        } else if(!permanentlyOpen) {
             Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
             if (!isReturnValueChanged) {
                 for (int i = 0; i < 3; i++) {
@@ -419,10 +592,87 @@ public class BarrierServiceImpl implements BarrierService {
         return result;
     }
 
-    private Boolean modbusChangeValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws RuntimeException, UnknownHostException, ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException {
+    private Boolean snmpPermanentChangeValueImpulse(GateStatusDto gate, BarrierStatusDto barrier, Command command) throws IOException, InterruptedException {
+        Boolean result = true;
+
+        String openOid = barrier.openOid;
+
+        SNMPManager barrierClient = getConnectedSNMPManagerInstance(barrier.ip, barrier.password, barrier.snmpVersion);
+
+        String oid = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
+        String currentValue = barrierClient.getCurrentValue(oid);
+
+        if (currentValue == null) {
+            throw new RuntimeException("Snmp controller connection error");
+        } else if (BARRIER_OFF.equals(currentValue)) {
+            Boolean isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
+            log.info("snmp isOpenValueChanged: " + isOpenValueChanged);
+            if (!isOpenValueChanged) {
+                for (int i = 0; i < 3; i++) {
+                    isOpenValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_ON));
+                    if (isOpenValueChanged) {
+                        break;
+                    }
+                }
+                if (!isOpenValueChanged) {
+                    result = false;
+                    eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.id, null, "Контроллер шлагбаума " + (Gate.GateType.IN.equals(gate.gateType) ? "въезда" : (Gate.GateType.OUT.equals(gate.gateType) ? "выезда" : "въезда/выезда")) + " " + gate.gateName + " не получилась перенести на значение 1", "Controller for gate " + (Gate.GateType.IN.equals(gate.gateType) ? "enter" : (Gate.GateType.OUT.equals(gate.gateType) ? "exit" : "enter/exit")) + " " + gate.gateName + " couldn't change to 1", "");
+                }
+            }
+            if (Command.Close.equals(command) && isOpenValueChanged) {
+                Thread.sleep(barrier.impulseDelay);
+                String currentValue2 = barrierClient.getCurrentValue(oid);
+                if (BARRIER_ON.equals(currentValue2)) {
+                    Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                    if (!isReturnValueChanged) {
+                        for (int i = 0; i < 3; i++) {
+                            isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                            if (isReturnValueChanged) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } else if(Command.Close.equals(command)) {
+            Boolean isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+            if (!isReturnValueChanged) {
+                for (int i = 0; i < 3; i++) {
+                    isReturnValueChanged = barrierClient.changeValue(oid, Integer.valueOf(BARRIER_OFF));
+                    if (isReturnValueChanged) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(result){
+            if(Command.Open.equals(command)){
+                Map<String, Boolean> oids = snmpLastCommandIsManual.containsKey(barrier.ip) ? snmpLastCommandIsManual.get(barrier.ip) : new HashMap<>();
+                oids.put(openOid, true);
+                snmpLastCommandIsManual.put(barrier.ip, oids);
+            } else {
+                if(snmpLastCommandIsManual.containsKey(barrier.ip)){
+                    Map<String, Boolean> oids = snmpLastCommandIsManual.get(barrier.ip);
+                    if(oids.containsKey(openOid)){
+                        oids.remove(openOid);
+                        snmpLastCommandIsManual.put(barrier.ip, oids);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private Boolean modbusChangeValue(BarrierStatusDto barrier, Command command) throws RuntimeException, UnknownHostException, ModbusIOException, ModbusProtocolException, ModbusNumberException, InterruptedException {
         Boolean result = false;
 
+        Boolean permanentlyOpen = modbusLastCommandIsManual.containsKey(barrier.ip) && modbusLastCommandIsManual.get(barrier.ip).containsKey(barrier.modbusOpenRegister-1);
+
         if(!modbusIcpdasOldWay){
+            log.info("!modbusIcpdasOldWay: ");
+
             int register = Command.Open.equals(command) ? barrier.modbusOpenRegister - 1 : barrier.modbusCloseRegister - 1;
             GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, true);
 
@@ -432,10 +682,12 @@ public class BarrierServiceImpl implements BarrierService {
             }
 
             log.info("modbus isOpenValueChanged: " + result);
-            if(result){
-                GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, false);
-            } else {
-                GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, false);
+            if(!permanentlyOpen){
+                if(result){
+                    GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, false);
+                } else {
+                    GateStatusDto.setModbusMasterWriteValue(barrier.ip, register, false);
+                }
             }
         } else {
             ModbusMaster m;
@@ -463,7 +715,7 @@ public class BarrierServiceImpl implements BarrierService {
                 int[] new_values = new int[1];
                 new_values[0] = new_value;
                 m.writeMultipleRegisters(slaveId, offset, new_values);
-                if(!barrier.dontSendZero) {
+                if(!permanentlyOpen && !barrier.dontSendZero) {
                     Thread.sleep(500);
                     new_values[0] = 0; // turn off all holdings
                     m.writeMultipleRegisters(slaveId, offset, new_values);
@@ -472,7 +724,7 @@ public class BarrierServiceImpl implements BarrierService {
             } else {
                 boolean isOpenValueChanged = modbusRetryWrite(m, slaveId, offset, true);
                 log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
-                if(!barrier.dontSendZero) {
+                if(!permanentlyOpen && !barrier.dontSendZero) {
                     Thread.sleep(500);
                     boolean isOpenReturnValueChanged = modbusRetryWrite(m, slaveId, offset, false);
                     log.info("modbus isOpenReturnValueChanged: " + isOpenReturnValueChanged);
@@ -486,10 +738,136 @@ public class BarrierServiceImpl implements BarrierService {
         return result;
     }
 
+    private Boolean modbusPermanentChangeValue(BarrierStatusDto barrier, Command command) throws InterruptedException, UnknownHostException, ModbusIOException, ModbusProtocolException, ModbusNumberException {
+
+        Boolean result = false;
+        long startMillis = System.currentTimeMillis();
+
+        int openRegister = barrier.modbusOpenRegister - 1;
+        int closeRegister = barrier.modbusCloseRegister - 1;
+
+        if(!modbusIcpdasOldWay){
+            if(Command.Open.equals(command)){
+                GateStatusDto.setModbusMasterWriteValue(barrier.ip, openRegister, true);
+
+                while ((result == null || !result) && (System.currentTimeMillis() - startMillis < 5000)){
+                    result = GateStatusDto.getModbusMasterInputValue(barrier.ip, openRegister);
+                }
+                log.info("modbus isOpenValueChanged: " + result);
+            } else {
+                GateStatusDto.setModbusMasterWriteValue(barrier.ip, openRegister, false);
+                Thread.sleep(200);
+
+                GateStatusDto.setModbusMasterWriteValue(barrier.ip, closeRegister, true);
+
+                while ((result == null || !result) && (System.currentTimeMillis() - startMillis < 5000)){
+                    result = GateStatusDto.getModbusMasterInputValue(barrier.ip, closeRegister);
+                }
+                log.info("modbus isCloseValueChanged: " + result);
+                GateStatusDto.setModbusMasterWriteValue(barrier.ip, closeRegister, false);
+            }
+        } else {
+            ModbusMaster m;
+            if (!modbusMasterMap.containsKey(barrier.ip) || modbusMasterMap.get(barrier.ip) == null) {
+                modbusMasterMap.put(barrier.ip, getConnectedInstance(barrier.ip));
+            }
+            m = modbusMasterMap.get(barrier.ip);
+            int slaveId = 1;
+            // since 1.2.8
+            if (!m.isConnected()) {
+                log.info("barrier.ip: " + barrier.ip + " !m.isConnected()");
+                try {
+                    m.connect();
+                } catch (Exception e) {
+                    log.info("retry connect error: " + e.getMessage());
+                    modbusRetryConnect(m);
+                }
+            }
+
+            if (barrier.modbusDeviceVersion != null && "210-301".equals(barrier.modbusDeviceVersion)) {
+                int offset = 470;
+                int[] new_values = new int[1];
+                if(Command.Open.equals(command)){
+                    new_values[0] = (int) Math.pow(2, openRegister);
+                } else {
+                    new_values[0] = (int) Math.pow(2, closeRegister);
+                }
+                m.writeMultipleRegisters(slaveId, offset, new_values);
+                if(!barrier.dontSendZero && Command.Close.equals(command)) {
+                    Thread.sleep(500);
+                    new_values[0] = 0; // turn off all holdings
+                    m.writeMultipleRegisters(slaveId, offset, new_values);
+                }
+                result = true;
+            } else {
+                int offset = Command.Open.equals(command) ? barrier.modbusOpenRegister - 1 : barrier.modbusCloseRegister - 1;
+                if(!barrier.dontSendZero && Command.Close.equals(command)) {
+                    Thread.sleep(500);
+                    modbusRetryWrite(m, slaveId, openRegister, false);
+                }
+                boolean isOpenValueChanged = modbusRetryWrite(m, slaveId, offset, true);
+                log.info("modbus isOpenValueChanged: " + isOpenValueChanged);
+                if(!barrier.dontSendZero && Command.Close.equals(command)) {
+                    Thread.sleep(500);
+                    boolean isOpenReturnValueChanged = modbusRetryWrite(m, slaveId, offset, false);
+                    log.info("modbus isOpenReturnValueChanged: " + isOpenReturnValueChanged);
+                }
+                result = isOpenValueChanged;
+            }
+            if (barrier.modbusDeviceVersion != null && "icpdas".equals(barrier.modbusDeviceVersion)) {
+                m.disconnect();
+            }
+        }
+
+        if(result){
+            if(Command.Open.equals(command)){
+                Map<Integer, Boolean> pins = modbusLastCommandIsManual.containsKey(barrier.ip) ? modbusLastCommandIsManual.get(barrier.ip) : new HashMap<>();
+                pins.put(openRegister, true);
+                modbusLastCommandIsManual.put(barrier.ip, pins);
+            } else {
+                if(modbusLastCommandIsManual.containsKey(barrier.ip)){
+                    Map<Integer, Boolean> pins = modbusLastCommandIsManual.get(barrier.ip);
+                    if(pins.containsKey(openRegister)){
+                        pins.remove(openRegister);
+                        modbusLastCommandIsManual.put(barrier.ip, pins);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
     private Boolean jetsonChangeValue(BarrierStatusDto barrier, Command command) {
         String pin = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
         var response = new RestTemplateBuilder().build().getForObject("http://" + barrier.ip + ":9001" + "/gate_action?pin=" + pin, JetsonResponse.class);
         log.info(response.toString());
+        return response.getSuccess();
+    }
+
+    private Boolean jetsonPermanentChangeValue(BarrierStatusDto barrier, Command command) {
+
+        String openPin = barrier.openOid;
+        String closePin = barrier.closeOid;
+
+        String pin = Command.Open.equals(command) ? barrier.openOid : barrier.closeOid;
+        var response = new RestTemplateBuilder().build().getForObject("http://" + barrier.ip + ":9001" + "/gate_action?pin=" + pin, JetsonResponse.class);
+        log.info(response.toString());
+
+        if(Command.Open.equals(command)){
+            Map<String, Boolean> pins = jetsonLastCommandIsManual.containsKey(barrier.ip) ? jetsonLastCommandIsManual.get(barrier.ip) : new HashMap<>();
+            pins.put(openPin, true);
+            jetsonLastCommandIsManual.put(barrier.ip, pins);
+        } else {
+            if(jetsonLastCommandIsManual.containsKey(barrier.ip)){
+                Map<String, Boolean> pins = jetsonLastCommandIsManual.get(barrier.ip);
+                if(pins.containsKey(openPin)){
+                    pins.remove(openPin);
+                    jetsonLastCommandIsManual.put(barrier.ip, pins);
+                }
+            }
+        }
+
         return response.getSuccess();
     }
 
@@ -593,4 +971,45 @@ public class BarrierServiceImpl implements BarrierService {
         return connected;
     }
 
+    @Override
+    public List<Long> getBarrierOpenCameraIdsList(){
+        List<Long> openBarrierCameras = new ArrayList<>();
+        if(modbusLastCommandIsManual.size() > 0){
+            for (Map.Entry<String, Map<Integer, Boolean>> modbus : modbusLastCommandIsManual.entrySet()) {
+                if(modbus.getValue().size() > 0){
+                    for (Map.Entry<Integer, Boolean> pins : modbus.getValue().entrySet()) {
+                        List<Long> cameraIds = StatusCheckJob.getBarrierOpenCameraIds(modbus.getKey(), pins.getKey()+1, null);
+                        if(cameraIds.size() > 0){
+                            for (Long id: cameraIds) {
+                                openBarrierCameras.add(id);
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+        if(snmpLastCommandIsManual.size() > 0){
+            for (Map.Entry<String, Map<String, Boolean>> snmp : snmpLastCommandIsManual.entrySet()) {
+                if(snmp.getValue().size() > 0){
+                    for (Map.Entry<String, Boolean> oids : snmp.getValue().entrySet()) {
+                        List<Long> cameraIds = StatusCheckJob.getBarrierOpenCameraIds(snmp.getKey(), null, oids.getKey());
+                        if(cameraIds.size() > 0){
+                            for (Long id: cameraIds) {
+                                openBarrierCameras.add(id);
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+        return openBarrierCameras;
+    }
+
+    @Override
+    public Boolean getPermanentOpenEnabled(){
+        return permanentOpenEnabled;
+    }
 }

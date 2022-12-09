@@ -185,4 +185,9 @@ public class ParkingServiceImpl implements ParkingService {
     public Boolean isLcd() {
         return hasAccessLcd;
     }
+
+    @Override
+    public List<Parking> getAllParkings() {
+        return parkingRepository.findAll();
+    }
 }

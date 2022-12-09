@@ -9,6 +9,7 @@ import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.PosTerminal;
 import kz.spt.lib.model.dto.parkomat.ParkomatCommandDTO;
 import kz.spt.lib.service.CarStateService;
+import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.PaymentService;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
@@ -49,9 +50,12 @@ public class ScheduleWorks {
 
     private PaymentService paymentService;
 
-    public ScheduleWorks(PosTerminalRepository posTerminalRepository, PaymentService paymentService) {
+    private EventLogService eventLogService;
+
+    public ScheduleWorks(PosTerminalRepository posTerminalRepository, PaymentService paymentService, EventLogService eventLogService) {
         this.posTerminalRepository = posTerminalRepository;
         this.paymentService = paymentService;
+        this.eventLogService = eventLogService;
     }
 
     @Scheduled(cron = "${cron.scheduler.expr_reset}")

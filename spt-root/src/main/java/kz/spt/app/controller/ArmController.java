@@ -1,5 +1,6 @@
 package kz.spt.app.controller;
 
+import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
 import kz.spt.app.service.ReasonsService;
 import kz.spt.lib.model.Camera;
@@ -23,10 +24,12 @@ public class ArmController {
 
     private CameraService cameraService;
     private ReasonsService reasonsService;
+    private BarrierService barrierService;
 
-    public ArmController(CameraService cameraService, ReasonsService reasonsService) {
+    public ArmController(CameraService cameraService, ReasonsService reasonsService, BarrierService barrierService) {
         this.cameraService = cameraService;
         this.reasonsService = reasonsService;
+        this.barrierService = barrierService;
     }
 
     @GetMapping("/realtime")
@@ -35,6 +38,7 @@ public class ArmController {
         model.addAttribute("ip", ip);
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN").contains(m.getAuthority())));
         model.addAttribute("reasons", reasonsService.findAllReasons());
+        model.addAttribute("permanentOpenEnabled", barrierService.getPermanentOpenEnabled());
         return "arm/realtime";
     }
 
@@ -55,6 +59,8 @@ public class ArmController {
         model.addAttribute("cameras", cameraService.cameraListByTabId(cameraTabId));
         model.addAttribute("ip", ip);
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN").contains(m.getAuthority())));
+        model.addAttribute("permanentOpenEnabled", barrierService.getPermanentOpenEnabled());
+        model.addAttribute("reasons", reasonsService.findAllReasons());
         return "arm/realtime";
     }
 

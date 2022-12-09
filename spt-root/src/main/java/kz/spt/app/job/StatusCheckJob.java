@@ -1,5 +1,6 @@
 package kz.spt.app.job;
 
+import com.google.gson.JsonArray;
 import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -122,5 +124,29 @@ public class StatusCheckJob {
             }
         }
         return false;
+    }
+
+    public static List<Long> getBarrierOpenCameraIds(String barrierIp, Integer pin, String oid){
+        List<Long> cameraIds = new ArrayList<>();
+        for (GateStatusDto gateStatusDto : globalGateDtos) {
+            if(gateStatusDto.barrier != null){
+                Boolean satisfy =
+                        (barrierIp.equals(gateStatusDto.barrier.ip) && pin != null && Barrier.BarrierType.MODBUS.equals(gateStatusDto.barrier.type) && pin.equals(gateStatusDto.barrier.modbusOpenRegister))
+                        || (barrierIp.equals(gateStatusDto.barrier.ip) && oid != null && Barrier.BarrierType.SNMP.equals(gateStatusDto.barrier.type) && oid.equals(gateStatusDto.barrier.openOid));
+
+                if(satisfy){
+                    if(gateStatusDto.frontCamera != null && gateStatusDto.frontCamera.ip != null){
+                        cameraIds.add(gateStatusDto.frontCamera.id);
+                    }
+                    if(gateStatusDto.backCamera != null && gateStatusDto.backCamera.ip != null){
+                        cameraIds.add(gateStatusDto.backCamera.id);
+                    }
+                    if(gateStatusDto.frontCamera2 != null && gateStatusDto.frontCamera2.ip != null){
+                        cameraIds.add(gateStatusDto.frontCamera2.id);
+                    }
+                }
+            }
+        }
+        return cameraIds;
     }
 }

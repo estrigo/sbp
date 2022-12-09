@@ -99,6 +99,9 @@ barrier:
   modbus:
     keep:
       connected: false
+  permanent:
+    open:
+      enabled: false
 car:
   movement:
     simulate: false
@@ -145,6 +148,11 @@ webkassa:
   host: https://kkm.webkassa.kz
 rekassa:
   host: https://api.rekassa.kz/api
+fiscalization:
+  enabled: false
+  mobile: false
+  frequency: 60000
+  periodHour: 2
 discountPayments:
   show: false
 telegram:

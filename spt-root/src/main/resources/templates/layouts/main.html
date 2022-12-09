@@ -127,6 +127,10 @@
                             <a th:href="@{|/balance/operation|}" class="waves-effect waves-primary"><i
                                     class="ti-list-ol"></i><span th:text=" #{balance.balance} "></span></a>
                         </li>
+                        <li sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_OPERATOR_PARQOUR', 'ROLE_OPERATOR_NO_REVENUE_SHARE', 'ROLE_OPERATOR', 'ROLE_MANAGER') && !hasRole('ROLE_ACCOUNTANT')">
+                            <a th:href="@{|/infoboard/list|}" class="waves-effect waves-primary"><i
+                                    class="ti-list-ol"></i><span th:text=" #{infoboard.infoboard} "></span></a>
+                        </li>
                         <li sec:authorize="hasRole('ROLE_ACCOUNTANT') && !hasRole('ROLE_BAQORDA')">
                             <a class="waves-effect waves-primary" onclick="javascript:$('#helpModal').modal('show')">
                                 <i class="ti-heart"></i><span th:text=" #{crm.help} "></span></a>
