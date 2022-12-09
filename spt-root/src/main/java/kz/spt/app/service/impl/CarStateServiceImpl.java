@@ -553,55 +553,6 @@ public class CarStateServiceImpl implements CarStateService {
         return carStateRepository.getPlateNumbersByOutTimestampIsNullAndNotPaid();
     }
 
-    public CarStateCurrencyDto getCarState(Long gateId) throws Exception {
-        CarStateDto carStateDto = new CarStateDto();
-        CarStateCurrencyDto carStateCurrencyDto = new CarStateCurrencyDto();
-        String currency = "";
-
-        String plateNumber = eventLogService.findLast(gateId);
-
-        if(plateNumber!=null){
-            CarState carState = Optional.of(getLastNotLeft(plateNumber)).orElse(new CarState());
-            carStateDto = CarStateDto.fromCarState(carState);
-
-            SimpleDateFormat format = new SimpleDateFormat(StaticValues.dateFormatTZ);
-            carStateDto.setOutTimestamp(DateUtils.round(new Date(), Calendar.MINUTE));
-
-            BigDecimal rateResult = calculateRate(carStateDto.inTimestamp, carStateDto.outTimestamp, carState, format);
-
-            long duration = carStateDto.outTimestamp.getTime() - carStateDto.inTimestamp.getTime() + (60*1000);
-            carStateDto.setDuration(String.valueOf(TimeUnit.MILLISECONDS.toMinutes(duration)));
-
-            GateDto gate = GateDto.fromGate(gateService.getById(gateId));
-            currency = getCurrency(gate.getParkingId());
-
-            BigDecimal balance = pluginService.checkBalance(plateNumber);
-            if(balance.compareTo(BigDecimal.ZERO) < 0) rateResult = rateResult.add(balance.abs());
-
-            carStateDto.setRateAmount(rateResult);
-        }
-
-        carStateCurrencyDto.setCarState(carStateDto);
-        carStateCurrencyDto.setCurrency(currency);
-
-        return carStateCurrencyDto;
-    }
-
-    private String getCurrency(Long parkingId) throws Exception {
-        PluginRegister ratePluginRegister = pluginService.getPluginRegister(StaticValues.ratePlugin);
-        String currency = "";
-
-        if (ratePluginRegister != null) {
-            ObjectNode command = objectMapper.createObjectNode();
-            command.put("command", "getCurrency");
-            command.put("parkingId", parkingId);
-            JsonNode rateResult = ratePluginRegister.execute(command);
-
-            currency = rateResult.get("currency").textValue();
-        }
-
-        return currency;
-    }
 
 
     @Override
