@@ -68,10 +68,16 @@
                 </div>
                 <div class="card m-b-10">
                     <div class="card-block">
-                            <span class="badge"
+                        <div style="display: flex; justify-content: space-between;">
+                            <span class="badge" style="height: 20px"
                                   th:class="${'IN'.equals(camera.gate.gateType.toString()) ? 'badge badge-primary' : 'badge badge-success'}"
                                   th:text="${camera.gate.gateType}">
                             </span>
+                            <div style="padding: 5px" th:id="${'loading_anim_' + camera.id}">
+
+                            </div>
+                        </div>
+
                         <h5 class="mt-0 card-title" th:text="${camera.name}"></h5>
                         <h6 class="card-subtitle text-muted" th:text="${camera.gate.name}"></h6>
                     </div>
@@ -364,6 +370,7 @@
 
     function buttonHandler(disable, reasonCameraId){
         if(disable){
+            $('#loading_anim_' + reasonCameraId).html('<img src="/assets/images/Ajax-loader.gif"></img>');
             $('#button_handler_1' + reasonCameraId).attr('disabled', 'disabled')
             $('#button_handler_2' + reasonCameraId).attr('disabled', 'disabled')
             $('#button_handler_3' + reasonCameraId).attr('disabled', 'disabled')
@@ -372,6 +379,7 @@
             $('#button_handler_6' + reasonCameraId).attr('disabled', 'disabled')
 
         }else{
+            $('#loading_anim_' + reasonCameraId).html('')
             $('#button_handler_1' + reasonCameraId).removeAttr('disabled')
             $('#button_handler_2' + reasonCameraId).removeAttr('disabled')
             $('#button_handler_3' + reasonCameraId).removeAttr('disabled')
