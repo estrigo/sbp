@@ -95,14 +95,11 @@
 
 <script th:inline="javascript">
     var locale = [[${#locale}]];
-    var address = locale==="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json';
-    if (locale == "en") {
-        address = "";
-    }
+    var address = locale==="en" ? '': '/plugins/datatables/json/'+locale+'.json';
+
   //Buttons examples
   var table = $('#datatable-buttons').DataTable({
     lengthChange: false,
-    buttons: ['copy', 'excel', 'pdf', 'csv'],
     language: {
       url: address
     }

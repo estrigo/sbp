@@ -5,14 +5,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.abonomentplugin.AbonomentPlugin;
 import kz.spt.abonomentplugin.service.RootServicesGetterService;
 import kz.spt.lib.extension.PluginRegister;
-import kz.spt.lib.service.CarsService;
-import kz.spt.lib.service.ParkingService;
-import kz.spt.lib.service.PluginService;
+import kz.spt.lib.service.*;
+import kz.spt.lib.utils.Language;
+import kz.spt.lib.utils.MessageKey;
 import kz.spt.lib.utils.StaticValues;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Transactional(noRollbackFor = Exception.class)
@@ -20,6 +22,7 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
 
     private CarsService carsService;
     private ParkingService parkingService;
+    private LanguagePropertiesService languagePropertiesService;
 
     private PluginService pluginService;
 
@@ -49,6 +52,15 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     }
 
     @Override
+    public LanguagePropertiesService getLanguageService() {
+        if (languagePropertiesService == null) {
+            languagePropertiesService = (LanguagePropertiesService) AbonomentPlugin.INSTANCE.getMainApplicationContext().getBean("languagePropertiesServiceImpl");
+        }
+
+        return languagePropertiesService;
+    }
+
+    @Override
     public  BigDecimal getBalance(String plateNumber) throws Exception {
         PluginRegister billingPluginRegister = getPluginService().getPluginRegister(StaticValues.billingPlugin);
 
@@ -65,17 +77,24 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
         return BigDecimal.ZERO;
     }
 
+
+
     @Override
     public void decreaseBalance(String plateNumber, BigDecimal value, String parkingName) throws Exception {
         PluginRegister billingPluginRegister = getPluginService().getPluginRegister(StaticValues.billingPlugin);
         if (billingPluginRegister != null) {
+            Map<String, Object> messageValues = new HashMap<>();
+            messageValues.put("parking", parkingName);
+
+            Map<String, String> messages = languagePropertiesService.getWithDifferentLanguages(MessageKey.BILLING_REASON_PAYMENT_PAID_PERMIT, messageValues);
+
             ObjectNode billingSubtractNode = StaticValues.objectMapper.createObjectNode();
             billingSubtractNode.put("command", "decreaseCurrentBalance");
             billingSubtractNode.put("amount", value);
             billingSubtractNode.put("plateNumber", plateNumber);
-            billingSubtractNode.put("reason", "Оплата абономента паркинга " + parkingName);
-            billingSubtractNode.put("reasonEn", "Payment for paid permit of parking " + parkingName);
-            billingSubtractNode.put("reasonLocal", "Zahlung für bezahlten Parkausweis " + parkingName);
+            billingSubtractNode.put("reason", messages.get(Language.RU));
+            billingSubtractNode.put("reasonEn", messages.get(Language.EN));
+            billingSubtractNode.put("reasonLocal", messages.get(Language.LOCAL));
             billingSubtractNode.put("provider", "Subscription fee");
             billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
         }

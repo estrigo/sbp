@@ -7,13 +7,13 @@
 <div class="content">
     <div class="container">
         <div class="card table-responsive table-striped">
-            <div class="card-header">Occupancy</div>
+            <div class="card-header" th:text="#{dashboard.occupancy}"></div>
             <div class="card-body">
 
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card-box">
-                            <h4 class="m-t-0 header-title"><b>Realtime occupancy</b></h4>
+                            <h4 class="m-t-0 header-title" th:text="#{dashboard.realtimeOccupancy}"><b></b></h4>
                             <div id="animating-donut" class="ct-chart ct-golden-section"></div>
                         </div>
                     </div>
@@ -28,11 +28,11 @@
                 <div class="row">
                     <div class="col-lg-4">
                         <div class="btn-group m-b-10">
-                            <button id="year" type="button" class="btn btn-primary waves-effect" onclick="setType('year')">Years</button>
-                            <button id="month" type="button" class="btn btn-secondary waves-effect" onclick="setType('month')">Months</button>
-                            <button id="week" type="button" class="btn btn-secondary waves-effect" onclick="setType('week')">Weeks</button>
-                            <button id="day" type="button" class="btn btn-secondary waves-effect" onclick="setType('day')">Days</button>
-                            <button id="period" type="button" class="btn btn-secondary waves-effect" onclick="setType('period')">Period</button>
+                            <button id="year" type="button" class="btn btn-primary waves-effect" onclick="setType('year')" th:text="#{dashboard.years}">Years</button>
+                            <button id="month" type="button" class="btn btn-secondary waves-effect" onclick="setType('month')" th:text="#{dashboard.months}">Months</button>
+                            <button id="week" type="button" class="btn btn-secondary waves-effect" onclick="setType('week')" th:text="#{dashboard.weeks}">Weeks</button>
+                            <button id="day" type="button" class="btn btn-secondary waves-effect" onclick="setType('day')" th:text="#{dashboard.day}">Days</button>
+                            <button id="period" type="button" class="btn btn-secondary waves-effect" onclick="setType('period')" th:text="#{dashboard.period}">Period</button>
                         </div>
                     </div>
                 </div>
@@ -58,11 +58,11 @@
                 <div class="row">
                     <div class="col-lg-4">
                         <div class="btn-group m-b-10">
-                            <button id="yearDuration" type="button" class="btn btn-primary waves-effect" onclick="setTypeDuration('year')">Years</button>
-                            <button id="monthDuration" type="button" class="btn btn-secondary waves-effect" onclick="setTypeDuration('month')">Months</button>
-                            <button id="weekDuration" type="button" class="btn btn-secondary waves-effect" onclick="setTypeDuration('week')">Weeks</button>
-                            <button id="dayDuration" type="button" class="btn btn-secondary waves-effect" onclick="setTypeDuration('day')">Days</button>
-                            <button id="periodDuration" type="button" class="btn btn-secondary waves-effect" onclick="setTypeDuration('period')">Period</button>
+                            <button id="yearDuration" type="button" class="btn btn-primary waves-effect" onclick="setTypeDuration('year')" th:text="#{dashboard.years}"></button>
+                            <button id="monthDuration" type="button" class="btn btn-secondary waves-effect" onclick="setTypeDuration('month')" th:text="#{dashboard.months}"></button>
+                            <button id="weekDuration" type="button" class="btn btn-secondary waves-effect" onclick="setTypeDuration('week')" th:text="#{dashboard.weeks}"></button>
+                            <button id="dayDuration" type="button" class="btn btn-secondary waves-effect" onclick="setTypeDuration('day')" th:text="#{dashboard.day}"></button>
+                            <button id="periodDuration" type="button" class="btn btn-secondary waves-effect" onclick="setTypeDuration('period')" th:text="#{dashboard.period}"></button>
                         </div>
                     </div>
                 </div>
@@ -88,11 +88,11 @@
                 <div class="row">
                     <div class="col-lg-4">
                         <div class="btn-group m-b-10">
-                            <button id="yearOccupancy" type="button" class="btn btn-primary waves-effect" onclick="setTypeOccupancy('year')">Years</button>
-                            <button id="monthOccupancy" type="button" class="btn btn-secondary waves-effect" onclick="setTypeOccupancy('month')">Months</button>
-                            <button id="weekOccupancy" type="button" class="btn btn-secondary waves-effect" onclick="setTypeOccupancy('week')">Weeks</button>
-                            <button id="dayOccupancy" type="button" class="btn btn-secondary waves-effect" onclick="setTypeOccupancy('day')">Days</button>
-                            <button id="periodOccupancy" type="button" class="btn btn-secondary waves-effect" onclick="setTypeOccupancy('period')">Period</button>
+                            <button id="yearOccupancy" type="button" class="btn btn-primary waves-effect" onclick="setTypeOccupancy('year')" th:text="#{dashboard.years}">Years</button>
+                            <button id="monthOccupancy" type="button" class="btn btn-secondary waves-effect" onclick="setTypeOccupancy('month')" th:text="#{dashboard.months}">Months</button>
+                            <button id="weekOccupancy" type="button" class="btn btn-secondary waves-effect" onclick="setTypeOccupancy('week')" th:text="#{dashboard.weeks}">Weeks</button>
+                            <button id="dayOccupancy" type="button" class="btn btn-secondary waves-effect" onclick="setTypeOccupancy('day')" th:text="#{dashboard.day}">Days</button>
+                            <button id="periodOccupancy" type="button" class="btn btn-secondary waves-effect" onclick="setTypeOccupancy('period')" th:text="#{dashboard.period}">Period</button>
                         </div>
                     </div>
                 </div>
@@ -144,6 +144,8 @@
     let type = "year";
     let typeDuration = "year";
     let typeOccupancy = "year";
+
+    var locale = [[${#locale}]];
 
     let occupancyLineChart = undefined;
     let gatesBarChart = undefined;
@@ -247,23 +249,24 @@
 
     function drawOccupancyMultiLineChart(){
         const labels = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00'];
+
         const data = {
             labels: labels,
             datasets: [
                 {
-                    label: 'Белый список',
+                    label: [[#{label.whitelist}]],
                     data: [400, 350, 375, 500, 600, 300, 350],
                     borderColor: 'rgb(255, 99, 132)',
                     yAxisID: 'y',
                 },
                 {
-                    label: 'Абонементы',
+                    label: [[#{label.abonnement}]],
                     data: [100, 120, 105, 144, 210, 150, 170],
                     borderColor: 'rgb(54, 162, 235)',
                     yAxisID: 'y',
                 },
                 {
-                    label: 'Платный',
+                    label: [[#{label.payment}]],
                     data: [1000, 990, 1100, 800, 950, 970, 900],
                     borderColor: 'rgb(75, 192, 192)',
                     yAxisID: 'y',
@@ -284,7 +287,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Заполняемость'
+                        text: [[#{label.occupancy}]]
                     }
                 },
                 scales: {
@@ -334,7 +337,7 @@
                 labels: result[0],
                 datasets: [
                     {
-                        label: 'Cars',
+                        label: [[#{label.cars}]],
                         data: result[1][0],
                         borderColor: 'rgb(255, 99, 132)',
                         pointStyle: 'circle',
@@ -429,7 +432,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: (ctx) => 'Number of Passes through Gates',
+                            text: (ctx) => [[#{title.passes.number}]],
                         }
                     }
                 }
@@ -532,7 +535,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: (ctx) => 'Number of Cars by Parking Duration',
+                            text: (ctx) => [[#{title.cars.parkingDuration}]],
                         }
                     }
                 }
@@ -579,7 +582,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Payment count by providers'
+                            text: [[#{title.payment.byProviders}]]
                         },
                     },
                     responsive: true,
@@ -703,13 +706,11 @@
         $.ajax(settings).done(function (result) {
             console.log('realTimeOccupancy: ', result);
 
-            let labels = result.labels;
-
             const data = {
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Subscriptions',
+                        label: [[#{label.subscriptions}]],
                         data: result.abonementRecords[0],
                         borderColor: colors[0],
                         pointStyle: 'circle',
@@ -717,7 +718,7 @@
                         pointHoverRadius: 10
                     },
                     {
-                        label: 'Active',
+                        label: [[#{label.active}]],
                         data: result.autoClosedRecords[0],
                         borderColor: colors[1],
                         pointStyle: 'circle',
@@ -725,15 +726,15 @@
                         pointHoverRadius: 10
                     },
                     {
-                        label: 'Left by debt',
-                        data: result.debtRecords[0],
+                        label: [[#{label.left.byDebt}]],
+                        data: result.debtRecords[2],
                         borderColor: colors[2],
                         pointStyle: 'circle',
                         pointRadius: 5,
                         pointHoverRadius: 10
                     },
                     {
-                        label: 'Left by free minutes',
+                        label: [[#{label.left.free}]],
                         data: result.freeMinuteRecords[0],
                         borderColor: colors[3],
                         pointStyle: 'circle',
@@ -741,7 +742,7 @@
                         pointHoverRadius: 10
                     },
                     {
-                        label: 'Free',
+                        label: [[#{label.left.byFreeMinutes}]],
                         data: result.freeRecords[0],
                         borderColor: colors[4],
                         pointStyle: 'circle',
@@ -749,7 +750,7 @@
                         pointHoverRadius: 10
                     },
                     {
-                        label: 'Left by balance',
+                        label: [[#{label.left.byBalance}]],
                         data: result.fromBalanceRecords[0],
                         borderColor: colors[5],
                         pointStyle: 'circle',
@@ -757,7 +758,7 @@
                         pointHoverRadius: 10
                     },
                     {
-                        label: 'Left by paid permit',
+                        label: [[#{label.left.byPaidPermit}]],
                         data: result.paymentRecords[0],
                         borderColor: colors[6],
                         pointStyle: 'circle',
@@ -765,7 +766,7 @@
                         pointHoverRadius: 10
                     },
                     {
-                        label: 'Left by free permit',
+                        label: [[#{label.left.byFreePermit}]],
                         data: result.whitelistRecords[0],
                         borderColor: colors[7],
                         pointStyle: 'circle',
@@ -783,7 +784,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: (ctx) => 'Realtime occupancy',
+                            text: (ctx) => [[#{label.occupancy.realtime}]],
                         }
                     }
                 }

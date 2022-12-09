@@ -20,6 +20,7 @@ import kz.spt.app.model.strategy.barrier.open.ManualOpenStrategy1;
 import kz.spt.app.model.strategy.barrier.open.ManualOpenStrategy2;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.CameraService;
+import kz.spt.lib.utils.MessageKey;
 import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarEventDto;
 import kz.spt.lib.service.*;
@@ -124,11 +125,17 @@ public class ArmServiceImpl implements ArmService {
                             username = currentUser.getUsername();
                         }
                     }
-                    String descriptionRu = "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
-                    String descriptionEn = "Manual opening gate: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
-                    String descriptionDe = "Manuelles Öffnen des Tores: Benutzer"+ username + " geöffnetes Tor für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "einfahrt" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName();
-                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", descriptionRu, descriptionEn, descriptionDe);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, descriptionDe);
+
+                    Map<String, Object> messageValues = new HashMap<>();
+                    messageValues.put("username", username);
+                    messageValues.put("description", camera.getGate().getDescription());
+                    messageValues.put("parking", camera.getGate().getParking().getName());
+
+                    String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.MANUAL_OPEN_IN :
+                            (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_OPEN_OUT : MessageKey.MANUAL_OPEN);
+
+                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", messageValues, key);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key);
                 }
             }
 
@@ -202,13 +209,20 @@ public class ArmServiceImpl implements ArmService {
                             }
                         }
 
-                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLog.StatusType.Success, camera.getId(), debtPlatenumber, snapshot, null, null);
+                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLog.StatusType.Success, camera.getId(), debtPlatenumber, snapshot);
 
-                        String description = "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName() + " Причина: " + reason;
-                        String descriptionEn = "Manual opening gate: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName() + " Reason: " + reason;
-                        String descriptionDe = "Manuelles Öffnen des Tores: Benutzer"+ username + " geöffnetes Tor für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName() + " Grund: " + reason;
-                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), debtPlatenumber, description, descriptionEn, descriptionDe);
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, descriptionDe, EventLog.EventType.MANUAL_GATE_OPEN);
+                        Map<String, Object> messageValues = new HashMap<>();
+                        messageValues.put("username", username);
+                        messageValues.put("description", camera.getGate().getDescription());
+                        messageValues.put("parking", camera.getGate().getParking().getName());
+                        messageValues.put("additionalMessage", camera.getGate().getParking().getName());
+                        messageValues.put("reason", camera.getGate().getParking().getName());
+
+                        String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.MANUAL_OPEN_IN :
+                                (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_OPEN_OUT : MessageKey.MANUAL_OPEN);
+
+                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), debtPlatenumber, messageValues, key);
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.MANUAL_GATE_OPEN);
 
                         if (debtPlatenumber != null) {
                             if (snapshot != null && !"".equals(snapshot) && !"null".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
@@ -225,13 +239,20 @@ public class ArmServiceImpl implements ArmService {
                             properties.put("carNumber", debtPlatenumber);
                         }
 
-                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLog.StatusType.Success, camera.getId(), debtPlatenumber, snapshot, null, null);
+                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLog.StatusType.Success, camera.getId(), debtPlatenumber, snapshot);
 
-                        String description = "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName() + " Причина: " + reason;
-                        String descriptionEn = "Manual opening gate: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName() + " Reason: " + reason;
-                        String descriptionDe = "Manuelles Öffnen des Tores: Benutzer"+ username + " geöffnetes Tor für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "einfahrt" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName() + " Grund: " + reason;
-                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), debtPlatenumber, description, descriptionEn, descriptionDe);
-                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, description, descriptionEn, descriptionDe, EventLog.EventType.MANUAL_GATE_OPEN);
+                        Map<String, Object> messageValues = new HashMap<>();
+                        messageValues.put("username", username);
+                        messageValues.put("description", camera.getGate().getDescription());
+                        messageValues.put("parking", camera.getGate().getParking().getName());
+                        messageValues.put("additionalMessage", MessageKey.REASON);
+                        messageValues.put("reason", reason);
+
+                        String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.MANUAL_OPEN_IN :
+                                (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_OPEN_OUT : MessageKey.MANUAL_OPEN);
+
+                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), debtPlatenumber, messageValues, key);
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.MANUAL_GATE_OPEN);
 
                         if (debtPlatenumber != null) {
                             if (snapshot != null && !"".equals(snapshot) && !"null".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
@@ -288,9 +309,17 @@ public class ArmServiceImpl implements ArmService {
             properties.put("type", EventLog.StatusType.Allow);
             properties.put("event", EventLog.EventType.MANUAL_GATE_OPEN);
 
-            String descriptionDe = "Manuelles Öffnen des Tores: Benutzer"+ username + " geöffnetes Tor für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "einfahrt" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName();
-            eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName(), "Manual opening gate: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName(), descriptionDe);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, "Ручное открытие шлагбаума: Пользователь " + username + " открыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName(), "Manual gate opening: User " + username + " opened gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName(), descriptionDe, EventLog.EventType.MANUAL_GATE_OPEN);
+            Map<String, Object> messageValues = new HashMap<>();
+            messageValues.put("username", username);
+            messageValues.put("description", camera.getGate().getDescription());
+            messageValues.put("parking", camera.getGate().getParking().getName());
+
+
+            String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.MANUAL_PASS_IN :
+                    (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_PASS_OUT : MessageKey.MANUAL_PASS);
+
+            eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", messageValues, key);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.MANUAL_GATE_OPEN);
 
             Boolean result = barrierService.openPermanentBarrier(camera.getGate().getBarrier());
             objectNode.put("result", result);
@@ -334,12 +363,18 @@ public class ArmServiceImpl implements ArmService {
                             username = currentUser.getUsername();
                         }
                     }
-                    String descriptionRu = "Ручное закрытие шлагбаума: Пользователь " + username + " закрыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
-                    String descriptionEn = "Manual closing gate: User " + username + " closed gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
-                    String descriptionDe = "Manuelles Schließen des Tores: Benutzer " + username + " schloss die Barriere für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "einfahrt" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName();
 
-                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", descriptionRu, descriptionEn, descriptionDe);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, descriptionDe);
+                    Map<String, Object> messageValues = new HashMap<>();
+                    messageValues.put("username", username);
+                    messageValues.put("description", camera.getGate().getDescription());
+                    messageValues.put("parking", camera.getGate().getParking().getName());
+
+
+                    String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.MANUAL_CLOSE_IN :
+                            (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_CLOSE_OUT : MessageKey.MANUAL_CLOSE);
+
+                    eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", messageValues, key);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key);
                 }
             }
 
@@ -374,12 +409,17 @@ public class ArmServiceImpl implements ArmService {
             properties.put("type", EventLog.StatusType.Allow);
             properties.put("event", EventLog.EventType.MANUAL_GATE_CLOSE);
 
-            String descriptionRu = "Ручное закрытие шлагбаума: Пользователь " + username + " закрыл шлагбаум для " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "въезда" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "выезда" : "въезда/выезда")) + " " + camera.getGate().getDescription() + " парковки " + camera.getGate().getParking().getName();
-            String descriptionEn = "Manual closing gate: User " + username + " closed gate for " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "enter" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "exit" : "enter/exit")) + " " + camera.getGate().getDescription() + " parking " + camera.getGate().getParking().getName();
-            String descriptionDe = "Manuelles Schließen des Tores: Benutzer " + username + " schloss die Barriere für " + (camera.getGate().getGateType().equals(Gate.GateType.IN) ? "einfahrt" : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? "ausfahrt" : "einfahrt/ausfahrt")) + " " + camera.getGate().getDescription() + " parken " + camera.getGate().getParking().getName();
+            Map<String, Object> messageValues = new HashMap<>();
+            messageValues.put("username", username);
+            messageValues.put("description", camera.getGate().getDescription());
+            messageValues.put("parking", camera.getGate().getParking().getName());
 
-            eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", descriptionRu, descriptionEn, descriptionDe);
-            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, descriptionRu, descriptionEn, descriptionDe, EventLog.EventType.MANUAL_GATE_CLOSE);
+
+            String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.MANUAL_CLOSE_IN :
+                    (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_CLOSE_OUT : MessageKey.MANUAL_CLOSE);
+
+            eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", messageValues, key);
+            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.MANUAL_GATE_CLOSE);
 
             Boolean result = barrierService.closePermanentBarrier(camera.getGate().getBarrier(), properties);
 
@@ -431,10 +471,11 @@ public class ArmServiceImpl implements ArmService {
                     username = currentUser.getUsername();
                 }
             }
-            eventLogService.createEventLog(Gate.class.getSimpleName(), null, null,
-                    "Ручная перезвгрузка паркомата: Пользователь " + username,
-                    "Manual restart parkomat: User " + username,
-                    "Manueller Neustart von parkomat: Benutzer " + username);
+
+            Map<String, Object> messageValues = new HashMap<>();
+            messageValues.put("username", username);
+
+            eventLogService.createEventLog(Gate.class.getSimpleName(), null, null, messageValues, MessageKey.MANUAL_RESTART);
         }
         return change;
     }
@@ -508,10 +549,8 @@ public class ArmServiceImpl implements ArmService {
     @Override
     public JsonNode getTabsWithCameraList() {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de" : "en";
-        if (locale.toString().equals("ru")) {
-            language = "ru";
-        }
+        String language = locale.getLanguage();
+
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
 
         ArrayNode tabsWithCameras = objectMapper.createArrayNode();

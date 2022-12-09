@@ -67,6 +67,8 @@ public interface CarStateService {
 
     List<String> getCarsInParkingAndNotPaid();
 
+    CarStateCurrencyDto getCarState(Long gateId) throws Exception;
+
     CarState createCarStateOutWhenNoEntryRecord(String carNumber, Date inTimestamp, Camera camera,
                                                     Boolean paid, String photoUrl);
     CarStateCurrencyDto getCarState(Long gateId) throws Exception;

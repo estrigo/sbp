@@ -1,66 +1,69 @@
-stages:
-  - package
-  - build
-  - deploy
-maven-build:
-  tags:
-    - parquor
-  image: maven:3.8.5-openjdk-11-slim
-  stage: package
-  cache:
-    paths:
-      - ./m2/repository
-  script:
-     - mvn clean package -Dmaven.test.skip=true
+ stages:
+   - package
+   - build
+   - deploy
+ maven-build:
+   tags:
+     - parqourintro
+   image: maven:3.8.5-openjdk-11-slim
+   stage: package
+   cache:
+     paths:
+       - ./m2/repository
+   script:
+      - mvn clean package -Dmaven.test.skip=true
 
-  artifacts:
-    paths:
-     - ./target/sandbox/*.jar
+   artifacts:
+     paths:
+      - ./target/sandbox/*
 
-  only:
-    - master
+   only:
+     - dev
 
-docker-build-api:
-  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
-  stage: build
-  tags:
-    - parquor
-  variables:
-    DOCKER_TLS_CERTDIR: ''
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
-  services:
-    - docker:19.03.0-dind
-  before_script:
-    - aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 115357906813.dkr.ecr.eu-central-1.amazonaws.com
-  script:
-    - docker build -t 115357906813.dkr.ecr.eu-central-1.amazonaws.com/container-registry:parking_management_$CI_COMMIT_SHORT_SHA .
-    - docker push 115357906813.dkr.ecr.eu-central-1.amazonaws.com/container-registry:parking_management_$CI_COMMIT_SHORT_SHA
-  only:
-    - master
+ docker-build-api:
+   image: docker:stable
+   stage: build
+   tags:
+     - parqourintro
+   variables:
+     DOCKER_TLS_CERTDIR: ''
+     DOCKER_HOST: tcp://docker:2375/
+     DOCKER_DRIVER: overlay2
+   services:
+     - docker:19.03.0-dind
+   before_script:
+     - docker login --username $ACCESS_USERNAME --password $ACCESS_TOKEN registry.gitlab.com
 
-deploy to prod:
-  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
-  tags:
-    - parquor
-  stage: deploy
-  only:
-    - master
-  before_script:
-    - apt-get update
-    - apt-get install openssh-client curl -y
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo "${DEPLOY_STAGING_SERVER_PRIVATE_KEY}" | tr -d '\r' > ~/.ssh/ssh.pem
-    - chmod 600 ~/.ssh/ssh.pem
-    - ssh-keyscan -H -p 4080 ${DEPLOYMENT_STAGING_SERVER_IP} >> ~/.ssh/known_hosts
-    - chmod 600 ~/.ssh/known_hosts
-    - sed -i "s,{api-image},115357906813.dkr.ecr.eu-central-1.amazonaws.com/container-registry:parking_management_$CI_COMMIT_SHORT_SHA,g"  ./docker-prod/compose/docker-compose.yml
-    - scp -i ~/.ssh/ssh.pem -P 4080 -r  ./docker-prod ${SSH_USERNAME}@${DEPLOYMENT_STAGING_SERVER_IP}:/home/devops/
-  script:
-    # run docker-compose
-    - ssh -i ~/.ssh/ssh.pem ${SSH_USERNAME}@${DEPLOYMENT_STAGING_SERVER_IP} -p 4080
-      "cd ~/docker-prod/compose/;
-      aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 115357906813.dkr.ecr.eu-central-1.amazonaws.com;
-      docker-compose -f ./docker-compose.yml pull;
-      docker-compose -f ./docker-compose.yml up -d;"
+
+   script:
+     - docker build -t $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA .
+     - docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA
+   only:
+     - dev
+
+ deploy to prod:
+   image: docker:stable
+   tags:
+     - parqourintro
+   stage: deploy
+   only:
+     - dev
+   before_script:
+     - apk update
+     - apk add openssh curl
+     - mkdir -p ~/.ssh
+     - chmod 700 ~/.ssh
+     - echo "${DEPLOY_NEW_SERVER_PRIVATE_KEY}" | tr -d '\r' > ~/.ssh/id_rsa
+     - chmod 600 ~/.ssh/id_rsa
+     - ssh-keyscan -H ${DEPLOY_NEW_SERVER_IP} >> ~/.ssh/known_hosts
+     - chmod 600 ~/.ssh/known_hosts
+     - sed -i "s,{api-image},$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA,g"  ./docker-prod/compose/docker-compose.yml
+     - scp -i ~/.ssh/id_rsa -r  ./docker-prod ${SSH_USERNAME_NEW}@${DEPLOY_NEW_SERVER_IP}:/home/spt/
+
+   script:
+     # run docker-compose
+     - ssh -i ~/.ssh/id_rsa ${SSH_USERNAME_NEW}@${DEPLOY_NEW_SERVER_IP}
+       "cd ~/docker-prod/compose/;
+       docker login --username $ACCESS_USERNAME --password $ACCESS_TOKEN registry.gitlab.com;
+       docker-compose -f ./docker-compose.yml pull;
+       docker-compose -f ./docker-compose.yml up -d;"

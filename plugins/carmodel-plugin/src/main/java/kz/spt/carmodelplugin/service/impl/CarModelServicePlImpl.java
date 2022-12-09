@@ -1,5 +1,8 @@
 package kz.spt.carmodelplugin.service.impl;
 
+import kz.spt.lib.service.LanguagePropertiesService;
+import kz.spt.lib.utils.Dimension;
+import kz.spt.lib.utils.MessageKey;
 import kz.spt.carmodelplugin.bootstrap.datatable.CarmodelComparators;
 
 import kz.spt.carmodelplugin.repository.CarmodelRepository;
@@ -35,6 +38,8 @@ public class CarModelServicePlImpl implements CarModelServicePl {
     private RootServicesGetterService rootServicesGetterService;
 
     private CarmodelRepository2 carmodelRepository2;
+
+    private LanguagePropertiesService languagePropertiesService;
 
 
     public CarModelServicePlImpl(CarmodelRepository carmodelRepository,
@@ -81,20 +86,21 @@ public class CarModelServicePlImpl implements CarModelServicePl {
             if (mp.get("car_model") != null) {
                 carmodelDto.setCarModel((String) mp.get("car_model"));
             }
-            String dimension="Нераспознанный";
+            String dimension=MessageKey.DIMENSION_NOT_RECOGNIZED;
             if (mp.get("dimension") != null) {
                 Integer type = (Integer) mp.get("dimension");
                 if (type==1) {
-                    dimension="Легковая";
+                    dimension = MessageKey.DIMENSION_PASSENGER_CAR;
                 } else if (type==2) {
-                    dimension="Газель";
+                    dimension=MessageKey.DIMENSION_GAZELLE;
                 } else if (type==3){
-                    dimension="Грузовик";
+                    dimension = MessageKey.DIMENSION_TRUCK;
                 } else {
-                    dimension="Нераспознанный";
+                    dimension = MessageKey.DIMENSION_NOT_RECOGNIZED;
                 }
             }
-            carmodelDto.setDimension(dimension);
+            String dimensionMessage = rootServicesGetterService.getLanguagesService().getMessageFromProperties(dimension);
+            carmodelDto.setDimension(dimensionMessage);
             resultList.add(carmodelDto);
         }
         return getPage(count, resultList, pagingRequest);
@@ -153,15 +159,20 @@ public class CarModelServicePlImpl implements CarModelServicePl {
     public void editDimensionOfCar(String plateNumber, String dimension) {
         Cars cars = rootServicesGetterService.getCarsService().findByPlatenumber(plateNumber);
         String oldModel = cars.getModel();
-        if (dimension != null && (dimension.equals("carmodel.passengerCar") || dimension.equals("Легковая"))) {
-            cars.setModel("Toyota_Camry");
-        } else if (dimension != null && (dimension.equals("carmodel.gazelle") || dimension.equals("Газель"))){
-            cars.setModel("Hyundai_Bus");
-        } else if (dimension != null && (dimension.equals("carmodel.truck") || dimension.equals("Грузовик"))){
-            cars.setModel("Zil_Truck");
-        } else {
-            cars.setModel("Toyota_Camry");
+
+        if (dimension != null){
+            Dimension checkedDimension = checkForDimension(dimension);
+            if (checkedDimension.equals(Dimension.PASSENGER_CAR)) {
+                cars.setModel("Toyota_Camry");
+            } else if (checkedDimension.equals(Dimension.GAZELLE)){
+                cars.setModel("Hyundai_Bus");
+            } else if (checkedDimension.equals(Dimension.TRUCK)){
+                cars.setModel("Zil_Truck");
+            } else {
+                cars.setModel("Toyota_Camry");
+            }
         }
+
         rootServicesGetterService.getCarsService().saveCars(cars);
 
 
@@ -178,12 +189,16 @@ public class CarModelServicePlImpl implements CarModelServicePl {
         properties.put("eventTime", format.format(new Date()));
         properties.put("type", EventLog.StatusType.Success);
 
+        Map<String, Object> messageValues = new HashMap<>();
+        messageValues.put("dimension", dimension);
+        messageValues.put("newModel", cars.getModel());
+        messageValues.put("oldModel", oldModel);
+        messageValues.put("username", username);
+
         rootServicesGetterService.getEventLogService().createEventLog(Cars.class.getSimpleName(),
                 null,
                 properties,
-                "Ручное изменение габарита автомибиля, новое значение:" + dimension + ", новая модель: " + cars.getModel() + ", старая модель:" + oldModel + ", пользователь:" + username,
-                "Manual edit dimension of car, new value:" + dimension + ", new model: " + cars.getModel() + ", old model:" + oldModel + ", user:" + username,
-                "Dimension des Autos manuell bearbeiten, neuer Wert:" + dimension + ", neues Modell: " + cars.getModel() + ", altes Modell:" + oldModel + ", Benutzer:" + username);
+                messageValues, MessageKey.MANUAL_EDIT_DIMENSION);
 
 
     }
@@ -238,5 +253,32 @@ public class CarModelServicePlImpl implements CarModelServicePl {
           log.warning("Update error CarModel: " + carModel.getModel());
         }
     }
+
+    private Dimension checkForDimension(String dimension){
+        Map<String, String> passengerCarDimensions = rootServicesGetterService.getLanguagesService()
+                .getWithDifferentLanguages(MessageKey.CAR_MODEL_PASSENGER_CAR);
+        Map<String, String> truckDimensions = rootServicesGetterService.getLanguagesService()
+                .getWithDifferentLanguages(MessageKey.CAR_MODEL_TYPE_TRUCK);
+        Map<String, String> gazelleDimensions = rootServicesGetterService.getLanguagesService()
+                .getWithDifferentLanguages(MessageKey.CAR_MODEL_GAZELLE);
+
+        dimension = dimension.trim().toLowerCase();
+        if (clearString(passengerCarDimensions).containsValue(dimension)){
+            return Dimension.PASSENGER_CAR;
+        }
+        else if (clearString(truckDimensions).containsValue(dimension)){
+            return Dimension.TRUCK;
+        }
+        else if (clearString(gazelleDimensions).containsValue(dimension)){
+            return Dimension.GAZELLE;
+        }
+        else return Dimension.NOT_RECOGNIZED;
+    }
+
+    private Map<String, String> clearString(Map<String, String> dimensions){
+        dimensions.forEach((k, v) -> dimensions.put(k, v.trim().toLowerCase()));
+        return dimensions;
+    }
+
 
 }

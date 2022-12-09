@@ -14,10 +14,10 @@ import java.util.List;
 public interface BalanceService {
 
     BigDecimal addBalance(String plateNumber, BigDecimal value, Long carStateId, String description,
-                          String descriptionRu, String provider);
+                          String descriptionRu, String descriptionLocal, String provider);
 
     BigDecimal subtractBalance(String plateNumber, BigDecimal value, Long carStateId, String description,
-                               String descriptionRu, String provider);
+                               String descriptionRu, String descriptionLocal, String provider);
 
     BigDecimal getBalance(String plateNumber);
 

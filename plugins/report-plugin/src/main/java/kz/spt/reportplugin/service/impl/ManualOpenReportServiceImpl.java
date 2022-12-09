@@ -5,6 +5,7 @@ import kz.spt.lib.bootstrap.datatable.Order;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.EventLog;
+import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.model.dto.EventsDto;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.reportplugin.ReportPlugin;
@@ -13,18 +14,19 @@ import kz.spt.reportplugin.dto.filter.FilterReportDto;
 import kz.spt.reportplugin.service.ReportService;
 import kz.spt.reportplugin.service.RootServicesGetterService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @Transactional(noRollbackFor = Exception.class)
 @RequiredArgsConstructor
@@ -48,6 +50,7 @@ public class ManualOpenReportServiceImpl implements ReportService<EventsDto> {
     public Page<EventsDto> page(PagingRequest pagingRequest) {
         List<EventLog.EventType> eventLogs = Arrays.asList(EventLog.EventType.MANUAL_GATE_CLOSE,
                 EventLog.EventType.MANUAL_GATE_OPEN);
+
         var all = getEventLogService()
                 .listByType(eventLogs,
                         PageRequest.of(pagingRequest.getStart(),
@@ -55,12 +58,36 @@ public class ManualOpenReportServiceImpl implements ReportService<EventsDto> {
         Long count = getEventLogService().countByType(eventLogs);
         var eventDtoList = eventsDtoList(all);
 
+        Page<EventsDto> page = new Page<>(eventDtoList);
+        page.setRecordsFiltered(count.intValue());
+        page.setRecordsTotal(count.intValue());
+        page.setDraw(pagingRequest.getDraw());
+        return page;
+    }
+
+    @Override
+    public Page<EventsDto> pageFilter(PagingRequest pagingRequest, EventFilterDto eventFilterDto) throws ParseException {
+        List<EventLog.EventType> eventLogs = (eventFilterDto.eventType!=null ? Arrays.asList(eventFilterDto.eventType) :
+                Arrays.asList(EventLog.EventType.MANUAL_GATE_CLOSE, EventLog.EventType.MANUAL_GATE_OPEN));
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+        Date dateFrom = format.parse(eventFilterDto.dateFromString);
+        Date dateTo = format.parse(eventFilterDto.dateToString);
+
+        var all = getEventLogService()
+                .listByTypeAndDate(eventLogs,
+                        PageRequest.of(pagingRequest.getStart()/pagingRequest.getLength(),
+                                pagingRequest.getLength()), dateFrom, dateTo);
+
+        Long count = getEventLogService().countByTypeAndDate(eventLogs, dateFrom, dateTo);
+        var eventDtoList = eventsDtoList(all);
 
         Page<EventsDto> page = new Page<>(eventDtoList);
         page.setRecordsFiltered(count.intValue());
         page.setRecordsTotal(count.intValue());
         page.setDraw(pagingRequest.getDraw());
         return page;
+
     }
 
     private List<EventsDto> eventsDtoList (List<EventLog> eventLogs) {
@@ -72,6 +99,7 @@ public class ManualOpenReportServiceImpl implements ReportService<EventsDto> {
                                 .plateNumber(e.getNullSafePlateNumber())
                                 .description(e.getNullSafeDescription())
                                 .descriptionEn(e.getNullSafeDescriptionEn())
+                                .descriptionDe(e.getNullSafeDescriptionDe())
                                 .smallImgUrl(e.getProperties().get("carSmallImageUrl") != null ? (String) e.getProperties().get("carSmallImageUrl") : "")
                                 .bigImgUrl(e.getProperties().get("carImageUrl") != null ? (String) e.getProperties().get("carImageUrl") : "")
                                 .build()))

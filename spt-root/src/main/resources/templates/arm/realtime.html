@@ -947,12 +947,12 @@
                     '<td>' + response[i].ip + '</td>' +
                     '<td>' + response[i].parking + '</td>' +
                     '<td>' +
-                    '   <button class="btn btn-warning" ' + (response[i].permanentlyOpen ? 'style="display: none"' : 'style="display: block"' ) + ' id="permanentOpenCamera' + response[i].id + '" onclick="openPermanent(' + response[i].id + ')">Зафиксировать в открытом положении</button>' +
+                    '   <button class="btn btn-warning" ' + (response[i].permanentlyOpen ? 'style="display: none"' : 'style="display: block"' ) + ' id="permanentOpenCamera' + response[i].id + '" onclick="openPermanent(' + response[i].id + ')">'+[[#{arm.button.fix.open}]]+'</button>' +
                     '   <div style="display:none;" id="permanentOpenCameraStatus' + response[i].id + '"><span class="badge badge-warning">' + [[#{events.error}]] + '</span></div>' +
-                    '   <div style="display:none;" class="alert alert-warning" ' + (response[i].permanentlyOpen ? 'style="display: block"' : 'style="display: none"' ) + ' id="permanentOpenStatus' + response[i].id + '">Зафиксирован в открытом положении</div>' +
+                    '   <div style="display:none;" class="alert alert-warning" ' + (response[i].permanentlyOpen ? 'style="display: block"' : 'style="display: none"' ) + ' id="permanentOpenStatus' + response[i].id + '">'+[[#{arm.button.fixed.open}]]+'</div>' +
                     '</td>' +
                     '<td>' +
-                    '   <button class="btn btn-primary" onclick="closePermanent(' + response[i].id + ')">Закрыть</button>' +
+                    '   <button class="btn btn-primary" onclick="closePermanent(' + response[i].id + ')">'+[[#{arm.close}]]+'</button>' +
                     '   <div style="display:none;" id="permanentCloseCameraStatus' + response[i].id + '"><span class="badge badge-warning">' + [[#{events.error}]] + '</span></div>' +
                     '</td>' +
                     '</tr>';
@@ -1175,7 +1175,7 @@
                 if (otherReason && otherReason.length >= 3) {
                     reason = otherReason;
                 } else {
-                    $('#otherReasonAlert').text((locale === "ru" ? 'Необходимо написать причину!' : 'Open reason required!'));
+                    $('#otherReasonAlert').text([[#{alert.write.reason}]]);
                     $('#otherReasonAlert').css("background-color", "#ef5350");
                     $('#otherReasonAlert').css("color", "white");
                     return;
@@ -1203,7 +1203,7 @@
                 console.log(response);
             });
         } else {
-            $('#openReasonAlert').text('Необходимо выбрать причину!');
+            $('#openReasonAlert').text([[#{alert.choose.reason}]]);
             $('#openReasonAlert').css("background-color", "#ef5350");
             $('#openReasonAlert').css("color", "white");
         }

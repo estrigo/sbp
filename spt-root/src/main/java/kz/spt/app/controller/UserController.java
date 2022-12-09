@@ -77,10 +77,7 @@ public class UserController {
     public String processRequestEditUser(Model model, @PathVariable Long id, @Valid User user,
                                          BindingResult bindingResult) {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = "en";
-        if (locale.toString().equals("ru")) {
-            language = "ru-RU";
-        }
+        String language = locale.getLanguage();
 
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
         if(StringUtils.isEmpty(user.getUsername())){
