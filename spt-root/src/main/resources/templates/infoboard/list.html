@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html th:replace="layouts/main::main(~{::div}, ~{::script}, ~{::link})" xmlns="http://www.w3.org/1999/html">
+
+<link th:href="@{/plugins/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/buttons.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+<link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css"/>
+
+<div class="content">
+	<div class="container">
+		<div class="card table-responsive table-striped">
+			<div class="card-body">
+				<div class="infoboard">
+					<div class="row">
+						<h1 class="col" th:text="#{infoboard.parking}"></h1>
+						<select class="col form-control selectParking" id="selectParking">
+							<option value="" th:text="#{parking.parkings}" selected disabled></option>
+							<option th:each="r : ${parkings}" th:value="${r.id}" th:text="${r.name}">
+							</option>
+						</select>
+					</div>
+					<div class="row">
+						<h1 class="col" th:text="#{infoboard.gate}"></h1>
+						<select class="col form-control selectGate" id="selectGate" >
+							<option selected disabled th:text="#{events.gate}" value="default"></option>
+						</select>
+					</div>
+					<div class="row">
+						<h1 class="col car-info" th:text="#{infoboard.platenumber}"></h1>
+						<h1 class="col car-info" id="platenumber" style="font-size: 80px"></h1>
+					</div>
+					<div class="row">
+						<h1 class="col car-info" th:text="#{infoboard.duration}"></h1>
+						<h1 class="col car-info" id="parking-duration"></h1>
+					</div>
+					<div class="row">
+						<h1 class="col car-info" th:text="#{infoboard.amount}"></h1>
+						<h1 class="col car-info" id="total-amount"></h1>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript" th:inline="javascript">
+	$(document).ready(function () {
+		$("#selectParking").change(function () {
+			select_parking();
+		});
+
+	});
+	function select_parking() {
+		var parkingId = $("#selectParking").val();
+
+		$.ajax({
+			type: "GET",
+			contentType: "application/json",
+			url: "/infoboard/list/"+parkingId,
+			dataType:'json',
+			cache: false,
+			success: function (data) {
+				console.log("data", data)
+				let option = "";
+				$("#selectGate option:disabled").each(function()
+				{
+					option = $(this)[0].outerHTML
+				});
+
+				console.log("Option: ", option)
+				var options = option
+				$.each(data, function(index, value) {
+					options += "<option value=\""+value.id+"\">"+value.name+" </option>"
+
+					console.log("index", index)
+					console.log("value", value)
+
+				});
+
+				$('#selectGate').html(options);
+				console.log("Options: ", options)
+				console.log("SUCCESS : ", data);
+			},
+			error: function (e) {
+				console.log("ERROR : ", e);
+			}
+		});
+	}
+
+	$(document).ready(function () {
+		$("#selectGate").change(function () {
+			select_gate();
+		});
+	});
+
+	function select_gate(){
+		let gateId = $("#selectGate").val();
+		$.ajax({
+			type: "GET",
+			contentType: "application/json",
+			url: "/infoboard/carstate?gateId=" + gateId,
+			dataType:'json',
+			cache: false,
+			success: function (data) {
+				console.log("data", data)
+				let carNumber = "<h1 className=\"col car-info\" id=\"platenumber\" style=\"font-size: 60px\">" + (data.carState.carNumber !== "null" || data.carState.carNumber !== "") ? data.carState.carNumber : ""  + "</h1>"
+				let duration = "<h1 className=\"col car-info\" id=\"parking-duration\">" + (data.carState.duration !== "null" || data.carState.duration !== "") ? data.carState.duration : "" + "</h1>"
+				let amount = "<h1 className=\"col car-info\" id=\"total-amount\" style=\"font-size: 80px\">" + [data.carState.rateAmount, data.currency].join('') + "</h1>"
+
+				console.log("data.plateNumber", carNumber)
+				console.log("rateamount", data.carState.rateAmount)
+				console.log("currency", data.currency)
+				console.log("(data.currency !== \"null\" || data.currency !== \"\")", (data.currency !== "null" || data.currency !== ""))
+				console.log("amount", amount)
+
+				$('#platenumber').html(carNumber);
+				$('#parking-duration').html(duration);
+				$('#total-amount').html(amount);
+				console.log("SUCCESS : ", data);
+			},
+			error: function (e) {
+				console.log("ERROR : ", e);
+			}
+		});
+	}
+
+
+</script>
+
+</html>
