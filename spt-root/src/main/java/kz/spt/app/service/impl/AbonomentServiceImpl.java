@@ -180,7 +180,6 @@ public class AbonomentServiceImpl implements AbonomentService {
         Iterator<JsonNode> iterator = abonements.iterator();
         List<Period> periods = new ArrayList<>();
         JsonNode prevAbonoment = null;
-        Period p = null;
 
         while (iterator.hasNext()) {
             JsonNode abonoment = iterator.next();
@@ -191,26 +190,17 @@ public class AbonomentServiceImpl implements AbonomentService {
 
             if(prevAbonoment == null){
                 if(inDate.before(start)){
-                    p = new Period();
+                    Period p = new Period();
                     p.setStart(inDate);
                     p.setEnd(start);
+                    periods.add(p);
                 }
             } else {
-                if(abonementFormat.parse(prevAbonoment.get("end").textValue()).getTime() - start.getTime() > 0){
-                    if(p == null){
-                        p = new Period();
-                        p.setStart(inDate);
-                        p.setEnd(start);
-                    } else {
-                        if(p.getEnd().equals(abonementFormat.parse(prevAbonoment.get("end").textValue()))){
-                            p.setEnd(start);
-                        } else {
-                            periods.add(p);
-                            p = new Period();
-                            p.setStart(abonementFormat.parse(prevAbonoment.get("end").textValue()));
-                            p.setEnd(start);
-                        }
-                    }
+                if(start.getTime() - abonementFormat.parse(prevAbonoment.get("end").textValue()).getTime() > 1000*60*60 ){ // Alexandr Vostrikov: час допустимо
+                    Period p = new Period();
+                    p.setStart(abonementFormat.parse(prevAbonoment.get("end").textValue()));
+                    p.setEnd(start);
+                    periods.add(p);
                 }
             }
 
@@ -263,20 +253,10 @@ public class AbonomentServiceImpl implements AbonomentService {
                             }
                             Date periodEnd = startCalendar.getTime();
 
-                            if(p == null){
-                                p = new Period();
-                                p.setStart(periodStart);
-                                p.setEnd(periodEnd);
-                            } else {
-                                if(p.getEnd().equals(periodStart)){
-                                    p.setEnd(periodEnd);
-                                } else {
-                                    periods.add(p);
-                                    p = new Period();
-                                    p.setStart(periodStart);
-                                    p.setEnd(periodEnd);
-                                }
-                            }
+                            Period p = new Period();
+                            p.setStart(periodStart);
+                            p.setEnd(periodEnd);
+                            periods.add(p);
                         }
                     }
                 }
@@ -292,10 +272,6 @@ public class AbonomentServiceImpl implements AbonomentService {
             } else {
                 prevAbonoment = abonoment;
             }
-        }
-
-        if(p != null){
-            periods.add(p);
         }
 
         return periods;
