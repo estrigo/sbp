@@ -5,6 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface GateRepository extends JpaRepository<Gate, Long> {
 
@@ -18,4 +21,9 @@ public interface GateRepository extends JpaRepository<Gate, Long> {
     Gate findFirstByTabloIpAndGateType(String tabloIp, Gate.GateType type);
 
     Iterable<Gate> findByGateTypeAndTabloIpIsNotNull(Gate.GateType type);
+
+    List<Gate> findByParking_Id(Long id);
+
+
+
 }

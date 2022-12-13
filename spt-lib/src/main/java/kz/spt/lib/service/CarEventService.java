@@ -29,7 +29,7 @@ public interface CarEventService {
 
     void handleLiveStreamEvent(byte[] event_image,String event_descriptor, String event_timestamp) throws Exception;
 
-    void saveCarInState(CarEventDto eventDto, Camera camera, JsonNode whitelistCheckResults, Map<String, Object> properties);
+    void saveCarInState(CarEventDto eventDto, Camera camera, JsonNode whitelistCheckResults, Map<String, Object> properties, BigDecimal prepaidSum) throws Exception;
 
     void saveCarOutState(CarEventDto eventDto, Camera camera, CarState carState, Map<String, Object> properties, BigDecimal balance, BigDecimal rateResult, BigDecimal zerotouchValue, SimpleDateFormat format, StaticValues.CarOutBy carOutBy, JsonNode abonements, JsonNode whitelists) throws Exception;
 

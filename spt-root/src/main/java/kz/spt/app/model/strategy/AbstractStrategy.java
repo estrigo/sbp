@@ -12,7 +12,7 @@ public abstract class AbstractStrategy implements Serializable {
 
     public abstract void success();
 
-    public abstract void carEvent();
+    public abstract void carEvent() throws Exception;
 
     public abstract void error();
 }

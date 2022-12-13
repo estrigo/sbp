@@ -29,4 +29,6 @@ public interface ParkingService {
     List<ParkingDto> getParkings();
 
     Boolean isLcd();
+
+    List<Parking> getAllParkings();
 }

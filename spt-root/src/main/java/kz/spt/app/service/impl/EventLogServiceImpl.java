@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
+import kz.spt.app.repository.EventLogRepository;
+import kz.spt.app.service.GateService;
+import kz.spt.app.utils.StringExtensions;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
@@ -434,6 +437,19 @@ public class EventLogServiceImpl implements EventLogService {
     @Override
     public void sendSocketMessage(String topic, String message) {
         messagingTemplate.convertAndSend("/"+topic, message);
+    }
+
+    @Override
+    public String findLast(Long gateId) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE, -3);
+
+        List<EventLog> eventLogs = eventLogRepository.getEventsFromDate(calendar.getTime(), Gate.class.getSimpleName(), gateId);
+        if(eventLogs != null && eventLogs.size()>0){
+            EventLog eventLog = eventLogs.get(0);
+            return eventLog.getPlateNumber();
+        }
+        return null;
     }
 
     private Page<EventsDto> getPage(long count, List<EventsDto> events, PagingRequest pagingRequest) {

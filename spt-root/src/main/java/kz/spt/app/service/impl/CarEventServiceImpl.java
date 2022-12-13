@@ -723,6 +723,7 @@ public class CarEventServiceImpl implements CarEventService {
         JsonNode whitelistCheckResults = null;
         Boolean enteredFromThisSecondsBefore = false;
         JsonNode abonements = null;
+        BigDecimal prepaid = new BigDecimal(0);
         abonements = abonomentService.getAbonomentsDetails(eventDto.car_number, camera.getGate().getParking().getId(), new Date(), format);
 
         // проверить выезжала ли с другого выезда, по умолчанию не больше 20 секунд
@@ -801,12 +802,12 @@ public class CarEventServiceImpl implements CarEventService {
                     BigDecimal balance = currentBalanceResult.get("currentBalance").decimalValue();
 
                     JsonNode prepaidValueResult = getPrepaidValue(camera.getGate().getParking().getId(), properties);
-                    BigDecimal prepaid = BigDecimal.valueOf(prepaidValueResult.get("prepaidValue").longValue());
+                    prepaid = BigDecimal.valueOf(prepaidValueResult.get("prepaidValue").longValue());
 
                     messageValues.put("prepaid", prepaid);
                     messageValues.put("subtractResult", balance.subtract(prepaid));
                     messageValues.put("balance", balance);
-                    messageValues.put("parking", carState.getParking().getName());
+                    messageValues.put("parking", camera.getGate().getParking().getName());
 
                     if ((balance != null && prepaid != null) && balance.subtract(prepaid).compareTo(BigDecimal.ZERO) >= 0) {
                         decreaseBalance(eventDto.car_number, camera.getGate().getParking().getName(), null, prepaid, properties);
@@ -916,7 +917,7 @@ public class CarEventServiceImpl implements CarEventService {
 
                 if(photoElementPassed && loopPassed){
                     if (!gate.isSimpleWhitelist && !enteredFromThisSecondsBefore) {
-                        saveCarInState(eventDto, camera, whitelistCheckResults, properties);
+                        saveCarInState(eventDto, camera, whitelistCheckResults, properties, prepaid);
                     } else if (enteredFromThisSecondsBefore) {
                         properties.put("type", EventLog.StatusType.Allow);
 
@@ -948,7 +949,7 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     @Override
-    public void saveCarInState(CarEventDto eventDto, Camera camera, JsonNode whitelistCheckResults, Map<String, Object> properties) {
+    public void saveCarInState(CarEventDto eventDto, Camera camera, JsonNode whitelistCheckResults, Map<String, Object> properties, BigDecimal prepaidSum) throws Exception {
         PluginRegister carModelPluginRegister = pluginService.getPluginRegister(StaticValues.carmodelPlugin);
 
         Map<String, Object> messageValues = new HashMap<>();
@@ -985,11 +986,13 @@ public class CarEventServiceImpl implements CarEventService {
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.WHITELIST);
         } else if (Parking.ParkingType.PREPAID.equals(camera.getGate().getParking().getParkingType())) {
             properties.put("type", EventLog.StatusType.Allow);
-
-            carStateService.createINState(eventDto.car_number, eventDto.event_date_time, camera, false, null, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
+            CarState carState = carStateService.createINState(eventDto.car_number, eventDto.event_date_time, camera, true, whitelistCheckResults != null ? whitelistCheckResults.toString() : null, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
 
             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, MessageKey.ALLOWED_PAYMENT_PREPAID_BASIS);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, MessageKey.ALLOWED_PAYMENT_PREPAID_BASIS, EventLog.EventType.PREPAID);
+
+            carState.setRateAmount(prepaidSum);
+            carStateService.save(carState);
         } else {
             if (whitelistCheckResults == null) {
                 properties.put("type", EventLog.StatusType.Allow);
