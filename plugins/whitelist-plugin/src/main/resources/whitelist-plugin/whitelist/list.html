@@ -222,7 +222,7 @@
                 "visible": [[${canDelete}]],
                 "orderable": false,
                 "render": function (data, type) {
-                    return '<a href="delete/' + data + '">' + del + '</a>';
+                    return '<a href="javascript:deleteAlert(' + data + ')">' + del + '</a>';
                 }
             },
             {
@@ -236,6 +236,24 @@
             url: address
         }
     });
+
+    function deleteAlert(id){
+        if(confirm([[#{alert.sureToDelete}]])){
+            var settings = {
+                "url": "/whitelist/delete/" + id,
+                "method": "GET",
+                "timeout": 0,
+                "processData": false,
+                "contentType": false,
+                "data": false
+            };
+            $.ajax(settings).done(function (response) {
+                table.ajax.reload();
+            });
+        }else{
+
+        }
+    }
 
     var table1 = $('#whitelist-group-table').DataTable({
         processing: true,
@@ -267,7 +285,7 @@
                 "visible": [[${canDelete}]],
                 "orderable": false,
                 "render": function (data, type) {
-                    return '<a href="group/delete/' + data + '">' + del + '</a>';
+                    return '<a href="javascript:alertDeleteGroup(' + data + ')">' + del + '</a>';
                 }
             },
         ],
@@ -276,6 +294,24 @@
             url: address
         }
     });
+
+    function alertDeleteGroup(id){
+        if(confirm([[#{alert.sureToDelete}]])){
+            var settings = {
+                "url": "/whitelist/group/delete/" + id,
+                "method": "GET",
+                "timeout": 0,
+                "processData": false,
+                "contentType": false,
+                "data": false
+            };
+            $.ajax(settings).done(function (response) {
+                table1.ajax.reload();
+            });
+        }else{
+
+        }
+    }
 
     var interval = null;
     $(document).on('ready', function () {

@@ -116,7 +116,7 @@
             {"data": "type"},
             {"data": function (blacklist) {
                     if($('#deleteTH').length > 0){
-                        return '<a href="/blacklist/delete?id=' + blacklist.id + '">' + del + '</a>';
+                        return '<a href="javascript:deleteAlert(' + blacklist.id + ')">' + del + '</a>';
                     } else {
                         return '';
                     }
@@ -125,6 +125,25 @@
             }
         ]
     });
+
+    function deleteAlert(id){
+        if(confirm([[#{alert.sureToDelete}]])){
+            var settings = {
+                "url": "/blacklist/delete?id=" + id,
+                "method": "GET",
+                "timeout": 0,
+                "processData": false,
+                "contentType": false,
+                "data": false
+            };
+            $.ajax(settings).done(function (response) {
+                table.ajax.reload();
+            });
+        }else{
+
+        }
+    }
+
 
     var interval = null;
     $(document).on('ready', function () {

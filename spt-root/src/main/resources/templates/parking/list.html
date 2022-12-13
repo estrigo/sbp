@@ -56,7 +56,7 @@
                                       </a>
 
                                       <div class="dropdown-divider"></div>
-                                      <a class="dropdown-item " sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')" th:href="@{|/parking/delete/${parking.id}|}">
+                                      <a class="dropdown-item " sec:authorize="hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN')" th:href="@{|/parking/delete/${parking.id}|}" onclick="if (!confirm([[#{alert.sureToDelete}]])) return false">
                                           <i class='fa fa-trash' aria-hidden='true'></i> <span th:text="#{crm.delete}"></span></a>
                                   </div>
                               </div>
@@ -110,6 +110,25 @@
 
   table.buttons().container()
           .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+
+    function deleteAlert(id){
+        if(confirm([[#{alert.sureToDelete}]])){
+            var settings = {
+                "url": "/parking/delete/" + id,
+                "method": "GET",
+                "timeout": 0,
+                "processData": false,
+                "contentType": false,
+                "data": false
+            };
+            $.ajax(settings).done(function (response) {
+
+            });
+        }else{
+
+        }
+    }
+
 
 </script>
 

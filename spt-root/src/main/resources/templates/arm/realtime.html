@@ -187,7 +187,7 @@
                                             th:value="${reason.id}"></option>
                                 </select>
                                 <br>
-                                <button type="submit" class="btn btn-warning waves-effect"
+                                <button type="submit" class="btn btn-danger waves-effect"
                                         th:text="#{arm.deleteReason}"></button>
                             </form>
                             <hr>
@@ -1045,11 +1045,15 @@
     }
 
     function removeTab(tabId, tabName) {
-        let trList = $('#cameraTabsAccordion').find('#card' + tabId).find('table>tbody>tr');
-        $('#cameraTabsAccordion').find('#card0').find('table>tbody').append(trList);
-        $("#card" + tabId).remove();
-        moveOptions = moveOptions.replace("<option value='" + tabId + "'>" + tabName + "</option>", "");
-        $('#cameraTabsAccordion').find('select').html(moveOptions);
+        if(confirm([[#{alert.sureToDelete}]])){
+            let trList = $('#cameraTabsAccordion').find('#card' + tabId).find('table>tbody>tr');
+            $('#cameraTabsAccordion').find('#card0').find('table>tbody').append(trList);
+            $("#card" + tabId).remove();
+            moveOptions = moveOptions.replace("<option value='" + tabId + "'>" + tabName + "</option>", "");
+            $('#cameraTabsAccordion').find('select').html(moveOptions);
+        } else{
+
+        }
     }
 
     function save() {
