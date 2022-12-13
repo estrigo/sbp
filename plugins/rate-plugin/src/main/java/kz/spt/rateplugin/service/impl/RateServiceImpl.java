@@ -63,8 +63,12 @@ public class RateServiceImpl implements RateService {
     }
 
     private Long checkCarType (String carType) {
-        if (ObjectUtils.isEmpty(carType)) {return null;}
-        return Long.valueOf(carType);
+        try {
+            if (ObjectUtils.isEmpty(carType)) {return null;}
+            return Long.valueOf(carType);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
