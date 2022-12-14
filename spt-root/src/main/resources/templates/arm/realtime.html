@@ -192,10 +192,10 @@
                             </form>
                             <hr>
                             <form th:action="@{/arm/addReason}" method="post" enctype="multipart/form-data">
-                                <input class="form-control" name="newReason" type="text">
+                                <input class="form-control" name="newReason" id="newReasonInput" type="text" onkeyup="success()">
                                 <br>
-                                <button type="submit" class="btn btn-success waves-effect"
-                                        th:text="#{arm.addReason}"></button>
+                                <button type="submit" class="btn btn-success waves-effect" id="newReasonBtn"
+                                        th:text="#{arm.addReason}" disabled></button>
                             </form>
                         </div>
                     </div>
@@ -413,6 +413,16 @@
             $('#openGateWOReason').modal('hide');
             console.log(response);
         });
+    }
+
+    function success() {
+        if($('#newReasonInput').val()==="" || $('#newReasonInput').val()===" ") {
+            console.log("input empty")
+            $('#newReasonBtn').prop('disabled',true);
+        } else {
+            console.log("input not empty")
+            $('#newReasonBtn').prop('disabled', false);
+        }
     }
 
     function showOpenGateModalWOReason (cameraId) {
