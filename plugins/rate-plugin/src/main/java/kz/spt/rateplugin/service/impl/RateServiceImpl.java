@@ -62,6 +62,15 @@ public class RateServiceImpl implements RateService {
         return rateRepository.getByParkingId(parkingId);
     }
 
+    private Long checkCarType (String carType) {
+        try {
+            if (ObjectUtils.isEmpty(carType)) {return null;}
+            return Long.valueOf(carType);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @Override
     public BigDecimal calculatePayment(Long parkingId, Date inDate, Date outDate, Boolean cashlessPayment, Boolean isCheck, String paymentsJson, String carType, String plateNumber) throws JsonProcessingException {
 
@@ -184,7 +193,7 @@ public class RateServiceImpl implements RateService {
                 carType = "1";
             }
             IntervalRate current = getSatisfiedIntervalRate(inCalendarHour, parkingRate, isDimensions, Long.valueOf(carType));
-            if (current == null) current = jsonIntervalParser(parkingRate, inCalendarHour, isDimensions, Long.valueOf(carType));
+            if (current == null) current = jsonIntervalParser(parkingRate, inCalendarHour, isDimensions, checkCarType(carType));
             Iterator<RateCondition> conditionIterator = rateConditionRepository.findAllByIntervalRateId(
                     current.getId()).iterator();
             String[] hourMin = current.getDatetimeFrom().split(":");
@@ -253,7 +262,7 @@ public class RateServiceImpl implements RateService {
             Boolean isDimensions = false;
             double inCalendarHour = inCalendar.get(Calendar.HOUR_OF_DAY) + (double) inCalendar.get(Calendar.MINUTE) / 60;
             IntervalRate current = getSatisfiedIntervalRate(inCalendarHour, parkingRate);
-            if (current == null) current = jsonIntervalParser(parkingRate, inCalendarHour, isDimensions, Long.valueOf(carType));
+            if (current == null) current = jsonIntervalParser(parkingRate, inCalendarHour, isDimensions, checkCarType(carType));
             Iterator<RateCondition> conditionIterator = rateConditionRepository.findAllByIntervalRateId(
                     current.getId()).iterator();
             String[] hourMin = current.getDatetimeFrom().split(":");
@@ -525,6 +534,9 @@ public class RateServiceImpl implements RateService {
     }
 
     private IntervalRate getSatisfiedIntervalRate(double inCalendarHour, ParkingRate parkingRate, Boolean isDimensions, Long carTypeId) {
+        if (ObjectUtils.isEmpty(carTypeId)) {
+            return null;
+        }
         IntervalRate returnRate = null;
         if (isDimensions) {
             List<IntervalRate> rates = intervalRateRepository.findAllByDimensionSetId(carTypeId);
@@ -612,7 +624,7 @@ public class RateServiceImpl implements RateService {
             intervalRateRepository.save(intervalRate);
         }
         if(isDimensions) {
-            IntervalRate resultIntervalRate = getSatisfiedIntervalRate(inCalendarHour, parkingRate, isDimensions, Long.valueOf(carTypeId));
+            IntervalRate resultIntervalRate = getSatisfiedIntervalRate(inCalendarHour, parkingRate, isDimensions, carTypeId);
             return resultIntervalRate;
         }
         else {

@@ -9,6 +9,7 @@ import kz.spt.lib.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.thymeleaf.util.StringUtils;
 
 import java.util.*;
@@ -38,7 +39,9 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void saveCustomer(Customer customer) {
         Set<String> plateNumbers = customer.getPlateNumbers().stream().collect(Collectors.toSet());
-
+        if (ObjectUtils.isEmpty(customer.getEmail())) {
+            customer.setEmail(null);
+        }
         customer.setCars(new ArrayList<Cars>());
         Customer oldCustomer = customerRepository.getCustomerWithCar(customer.getId());
         if (oldCustomer != null) {
