@@ -30,6 +30,7 @@ import org.pf4j.PluginManager;
 import org.pf4j.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -235,6 +236,17 @@ public class EventLogServiceImpl implements EventLogService {
     @Override
     public List<EventLog> listByType(List<EventLog.EventType> types, Pageable pageable) {
         return eventLogRepository.findByEventTypeIn(types, pageable);
+    }
+
+    @Override
+    public List<EventLog> listByTypeAndDate(List<EventLog.EventType> types, Pageable pageable,
+                                            Date dateFrom, Date dateTo) {
+        return eventLogRepository.findAllByCreatedBetweenAndEventTypeInOrderByIdDesc(dateFrom, dateTo, types, pageable);
+    }
+
+    @Override
+    public Long countByTypeAndDate(List<EventLog.EventType> types, Date dateFrom, Date dateTo) {
+        return eventLogRepository.countByCreatedBetweenAndEventTypeIn(dateFrom, dateTo,types);
     }
 
     @Override

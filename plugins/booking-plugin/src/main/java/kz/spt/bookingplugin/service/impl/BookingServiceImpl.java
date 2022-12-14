@@ -7,7 +7,6 @@ import kz.spt.bookingplugin.exceptions.BookingValidException;
 import kz.spt.bookingplugin.model.BookingLog;
 import kz.spt.bookingplugin.repository.BookingRepository;
 import kz.spt.bookingplugin.service.BookingService;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -18,14 +17,20 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -43,13 +48,23 @@ public class BookingServiceImpl implements BookingService {
     private String halaparkTokenUrl;
     @Value("${booking.halapark.postUrl}")
     private String halaparkPostUrl;
+    @Value("${booking.esentai.check}")
+    private Boolean esentaiCheck;
+    @Value("${booking.esentai.tokenUrl}")
+    private String esentaiTokenUrl;
+    @Value("${booking.esentai.postUrl}")
+    private String esentaiPostUrl;
+    @Value("${booking.esentai.login}")
+    private String login;
+    @Value("${booking.esentai.password}")
+    private String password;
 
     public BookingServiceImpl(BookingRepository bookingRepository) {
         this.bookingRepository = bookingRepository;
     }
 
     @Override
-    public Boolean checkBookingValid(String plateNumber, String region, String position) throws BookingValidException {
+    public Boolean checkBookingValid(String plateNumber, String region, String position, String entrance) throws BookingValidException {
         boolean valid = false;
         try {
             if (bookingHalaparkCheck) {
@@ -123,9 +138,68 @@ public class BookingServiceImpl implements BookingService {
                 halaparkHttpClient.close();
                 bookingRepository.save(bookingLog);
             }
+            else if (esentaiCheck) {
+                String token = String.valueOf(getEsentaiToken());
+                RestTemplate restTemplate = new RestTemplate();
+                Map<String, Object> params = new HashMap<>();
+                params.put("vehicle_gov_number", plateNumber);
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+                org.springframework.http.HttpEntity<Map<String, Object>> request =
+                        new org.springframework.http.HttpEntity<>(params, headers);
+                if (entrance.equals("entry")) {
+                    try {
+                        ResponseEntity<String> responseEntity =
+                                restTemplate.postForEntity(esentaiPostUrl + "/start", request, String.class);
+                        log.info("[Esentai] response for entry {}", responseEntity.getBody());
+                        if (responseEntity.getBody() != null) {
+                            JSONObject jsonResp = new JSONObject(responseEntity.getBody());
+                            valid = (Boolean) jsonResp.get("found");
+                        }
+                    } catch (Exception e) {
+                        log.info("[Esentai] error: {}", e.getMessage());
+                    }
+                } else if (entrance.equals("exit")) {
+                    try {
+                        ResponseEntity<String> responseEntity =
+                                restTemplate.postForEntity(esentaiPostUrl + "/finish", request, String.class);
+                        log.info("[Esentai] response for exit {}", responseEntity.getBody());
+                        if (responseEntity.getBody() != null) {
+                            JSONObject jsonResp = new JSONObject(responseEntity.getBody());
+                            valid = (Boolean) jsonResp.get("allowed_to_exit");
+                        }
+                    } catch (Exception e) {
+                        log.info("[Esentai] error: {}", e.getMessage());
+                    }
+                }
+            }
             return valid;
         } catch (Exception e) {
             throw new BookingValidException(e.getMessage());
+        }
+    }
+
+    private Object getEsentaiToken() {
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> params = new HashMap<>();
+        params.put("email", login);
+        params.put("password", password);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        org.springframework.http.HttpEntity<Map<String, Object>> request =
+                new org.springframework.http.HttpEntity<>(params, headers);
+        try {
+            ResponseEntity<String> responseEntity = restTemplate.postForEntity(esentaiTokenUrl, request, String.class);
+            Object token = null;
+            if (responseEntity.getBody() != null) {
+                JSONObject jsonResp = new JSONObject(responseEntity.getBody());
+                token = jsonResp.get("auth_token");
+            }
+            return token;
+        } catch (Exception e) {
+            log.info("[Esentai] get token error {}", e.getMessage());
+            return e.getMessage();
         }
     }
 

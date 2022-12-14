@@ -13,6 +13,7 @@ import kz.spt.lib.model.dto.EventsDto;
 import org.springframework.data.domain.Pageable;
 
 import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -39,8 +40,11 @@ public interface EventLogService {
 
     List<EventLog> listByType(List<EventLog.EventType> type, Pageable pageable);
 
+    List<EventLog> listByTypeAndDate(List<EventLog.EventType> type, Pageable pageable, Date dateFrom, Date dateTo);
+
     Long countByType(List<EventLog.EventType> type);
 
+    Long countByTypeAndDate(List<EventLog.EventType> type, Date dateFrom, Date dateTo);
 
     EventLog getById(Long id);
 

@@ -19,12 +19,12 @@
                                     <div class="form-group col-md-2">
                                         <label for="dateFrom"  th:text="#{payments.startDate}"></label>
                                         <input id="dateFrom" name="dateFrom" type="date" class="form-control form-control-sm"
-                                               th:placeholder="#{payments.startDate}">
+                                               th:placeholder="#{payments.startDate}" required>
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="dateTo" th:text="#{payments.endDate}"></label>
                                         <input id="dateTo" name="dateTo" type="date" class="form-control form-control-sm"
-                                               th:placeholder="#{payments.endDate}">
+                                               th:placeholder="#{payments.endDate}" required>
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="paymentProvider" th:text="#{billing.provider}"></label>

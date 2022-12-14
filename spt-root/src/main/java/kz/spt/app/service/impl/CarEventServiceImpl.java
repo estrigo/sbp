@@ -76,6 +76,7 @@ public class CarEventServiceImpl implements CarEventService {
     private final ZoneId id = ZoneId.systemDefault();
 
     private final TabloService tabloService;
+
     private final LanguagePropertiesService languagePropertiesService;
 
     @Value("${parking.has.access.unknown.cases}")
@@ -1058,7 +1059,7 @@ public class CarEventServiceImpl implements CarEventService {
 
             if (hasAccess) {
                 return true;
-            } else if (checkBooking(eventDto.car_number, eventDto.lp_region, "1")) {
+            } else if (checkBooking(eventDto.car_number, eventDto.lp_region, "1", "entry")) {
                 properties.put("type", EventLog.StatusType.Allow);
 
                 eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, MessageKey.ALLOWED_VALID_BOOKING);
@@ -1078,7 +1079,7 @@ public class CarEventServiceImpl implements CarEventService {
 
                 return false;
             }
-        } else if (checkBooking(eventDto.car_number, eventDto.lp_region, "1")) {
+        } else if (checkBooking(eventDto.car_number, eventDto.lp_region, "1", "entry")) {
             log.info(eventDto.car_number + ": booking check booking return true");
 
             properties.put("type", EventLog.StatusType.Allow);
@@ -1098,7 +1099,7 @@ public class CarEventServiceImpl implements CarEventService {
         return false;
     }
 
-    private boolean checkBooking(String plateNumber, String region, String position) throws Exception {
+    private boolean checkBooking(String plateNumber, String region, String position, String entrance) throws Exception {
         PluginRegister bookingPluginRegister = pluginService.getPluginRegister(StaticValues.bookingPlugin);
         if (bookingPluginRegister != null) {
             ObjectNode node = this.objectMapper.createObjectNode();
@@ -1106,6 +1107,7 @@ public class CarEventServiceImpl implements CarEventService {
             node.put("position", position);
             node.put("region", region);
             node.put("command", "checkBooking");
+            node.put("entrance", entrance);
             JsonNode result = bookingPluginRegister.execute(node);
             return result.get("bookingResult").booleanValue();
         } else {
@@ -1310,7 +1312,7 @@ public class CarEventServiceImpl implements CarEventService {
 
                     if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
                         if (bookingCheckOut) {
-                            hasAccess = checkBooking(eventDto.car_number, eventDto.lp_region, "2");
+                            hasAccess = checkBooking(eventDto.car_number, eventDto.lp_region, "2", "exit");
                             if (hasAccess) {
                                 properties.put("type", EventLog.StatusType.Allow);
 
@@ -1424,7 +1426,7 @@ public class CarEventServiceImpl implements CarEventService {
                             hasAccess = true;
                             carOutBy = StaticValues.CarOutBy.WHITELIST;
                         } else if (bookingCheckOut) {
-                            hasAccess = checkBooking(eventDto.car_number, eventDto.lp_region, "2");
+                            hasAccess = checkBooking(eventDto.car_number, eventDto.lp_region, "2", "exit");
                             if (hasAccess) {
                                 hasAccess = true;
                                 carOutBy = StaticValues.CarOutBy.BOOKING;

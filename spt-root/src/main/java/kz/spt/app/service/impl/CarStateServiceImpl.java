@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.repository.CarStateRepository;
 import kz.spt.app.service.BarrierService;
+import kz.spt.app.service.GateService;
+import kz.spt.lib.service.*;
 import kz.spt.lib.service.*;
 import kz.spt.lib.utils.Language;
 import kz.spt.lib.utils.MessageKey;
@@ -15,6 +17,8 @@ import kz.spt.lib.model.*;
 import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.model.dto.CarStateExcelDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
+import kz.spt.lib.model.dto.GateDto;
+import kz.spt.lib.model.dto.temp.CarStateCurrencyDto;
 import kz.spt.lib.model.dto.GateDto;
 import kz.spt.lib.model.dto.temp.CarStateCurrencyDto;
 import kz.spt.lib.utils.StaticValues;
@@ -546,6 +550,8 @@ public class CarStateServiceImpl implements CarStateService {
     public List<String> getCarsInParkingAndNotPaid(){
         return carStateRepository.getPlateNumbersByOutTimestampIsNullAndNotPaid();
     }
+
+
 
     @Override
     public CarState createCarStateOutWhenNoEntryRecord(String carNumber, Date timestamp,
