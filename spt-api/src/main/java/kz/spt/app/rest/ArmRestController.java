@@ -47,12 +47,12 @@ public class ArmRestController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping(value = "/emergency/open/{value}")
-    public Boolean emergencyOpen(@PathVariable("value") String value, @AuthenticationPrincipal UserDetails currentUser) {
+    public Boolean emergencyOpen(@PathVariable("value") String value, @AuthenticationPrincipal UserDetails currentUser) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
         return armService.setEmergencyOpen(Boolean.valueOf(value), currentUser);
     }
 
     @GetMapping(value = "/emergency/status")
-    public Boolean emergencyOpen() {
+    public Boolean emergencyStatus() {
         return armService.getEmergencyStatus();
     }
 

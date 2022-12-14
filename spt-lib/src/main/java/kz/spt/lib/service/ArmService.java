@@ -28,7 +28,7 @@ public interface ArmService {
 
     Boolean restartParkomat(String ip);
 
-    Boolean setEmergencyOpen(Boolean value, UserDetails currentUser);
+    Boolean setEmergencyOpen(Boolean value, UserDetails currentUser) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException;
 
     Boolean getEmergencyStatus();
 

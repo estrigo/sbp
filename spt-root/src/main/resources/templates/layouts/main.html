@@ -285,9 +285,10 @@
 
     function cancelWarning() {
         $.get("/rest/arm/emergency/open/false", function (data) {
-            if (data && data === false) {
+            if (data === false) {
                 $('#warningSet').show();
-                $('#warningMessage').hide();
+                $('#warningBarriersOpen').hide();
+                $('#armOpenEmergencyButton').show();
             }
         });
     }
@@ -296,14 +297,19 @@
         $.get("/rest/arm/emergency/open/true", function (data) {
             if (data) {
                 $('#warningSet').hide();
-                $('#warningMessage').show();
+                $('#warningBarriersOpen').show();
+                $('#armOpenEmergencyButton').hide();
             }
         });
     });
 
     $(document).on('ready', function () {
         $.get("/rest/arm/emergency/status", function (data) {
-            console.log(data);
+            if (data) {
+                $('#warningSet').hide();
+                $('#warningBarriersOpen').show();
+                $('#armOpenEmergencyButton').hide();
+            }
         });
     });
 </script>

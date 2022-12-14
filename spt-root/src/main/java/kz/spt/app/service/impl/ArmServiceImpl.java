@@ -13,6 +13,7 @@ import kz.spt.app.job.SensorStatusCheckJob;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.CameraStatusDto;
+import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.strategy.barrier.close.AbstractCloseStrategy;
 import kz.spt.app.model.strategy.barrier.close.ManualCloseStrategy;
 import kz.spt.app.model.strategy.barrier.open.AbstractOpenStrategy;
@@ -36,6 +37,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -80,15 +82,18 @@ public class ArmServiceImpl implements ArmService {
     private CarImageService carImageService;
     private PaymentService paymentService;
 
+    private PropertyService propertyService;
+
     public ArmServiceImpl(CameraService cameraService, BarrierService barrierService, EventLogService eventLogService,
                           CarEventService carEventService, CarImageService carImageService,
-                          PaymentService paymentService) {
+                          PaymentService paymentService, PropertyService propertyService) {
         this.cameraService = cameraService;
         this.barrierService = barrierService;
         this.eventLogService = eventLogService;
         this.carEventService = carEventService;
         this.carImageService = carImageService;
         this.paymentService = paymentService;
+        this.propertyService = propertyService;
     }
 
     @Override
@@ -387,8 +392,9 @@ public class ArmServiceImpl implements ArmService {
     @Override
     public JsonNode closePermanentGate(Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
         ObjectNode objectNode = StaticValues.objectMapper.createObjectNode();
+
         Camera camera = cameraService.getCameraById(cameraId);
-        if (camera != null && camera.getGate() != null && camera.getGate().getBarrier() != null) {
+        if (!StatusCheckJob.emergencyModeOn && camera != null && camera.getGate() != null && camera.getGate().getBarrier() != null) {
 
             String username = "";
             if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
@@ -422,8 +428,6 @@ public class ArmServiceImpl implements ArmService {
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.MANUAL_GATE_CLOSE);
 
             Boolean result = barrierService.closePermanentBarrier(camera.getGate().getBarrier(), properties);
-
-            log.info("close result: " + result);
 
             objectNode.put("result", result);
             objectNode.set("permanentOpenCameraIds", getBarrierOpenCameraIds());
@@ -480,17 +484,48 @@ public class ArmServiceImpl implements ArmService {
         return change;
     }
 
+    @Bean
+    public void updateEmergencyStatus() throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
+        String emergencyStatusValue= propertyService.getValue(StaticValues.emergencyStatusKey);
+        if(StaticValues.emergencyStatusOpenValue.equals(emergencyStatusValue)){
+            for (GateStatusDto gateStatusDto : StatusCheckJob.globalGateDtos) {
+                if(Gate.GateType.OUT.equals(gateStatusDto.gateType)){
+                    CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
+                    openPermanentGate(cameraStatusDto.id);
+                }
+            }
+            StatusCheckJob.emergencyModeOn = true;
+        }
+    }
+
     @Override
-    public Boolean setEmergencyOpen(Boolean value, UserDetails currentUser) {
+    public Boolean setEmergencyOpen(Boolean value, UserDetails currentUser) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException {
         if (currentUser != null) {
             if (value) {
                 StatusCheckJob.emergencyModeOn = value;
+
+                for (GateStatusDto gateStatusDto : StatusCheckJob.globalGateDtos) {
+                    if(Gate.GateType.OUT.equals(gateStatusDto.gateType)){
+                        CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
+                        openPermanentGate(cameraStatusDto.id);
+                    }
+                }
+                propertyService.setValue(StaticValues.emergencyStatusKey, StaticValues.emergencyStatusOpenValue);
+
             } else {
                 final Collection<? extends GrantedAuthority> authorities = currentUser.getAuthorities();
                 for (final GrantedAuthority grantedAuthority : authorities) {
                     String authorityName = grantedAuthority.getAuthority();
-                    if ("ROLE_ADMIN".equals(authorityName)) {
+                    if ("ROLE_ADMIN".equals(authorityName) || "ROLE_SUPERADMIN".equals(authorityName)) {
                         StatusCheckJob.emergencyModeOn = value;
+
+                        for (GateStatusDto gateStatusDto : StatusCheckJob.globalGateDtos) {
+                            if(Gate.GateType.OUT.equals(gateStatusDto.gateType)){
+                                CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
+                                closePermanentGate(cameraStatusDto.id);
+                            }
+                        }
+                        propertyService.setValue(StaticValues.emergencyStatusKey, StaticValues.emergencyStatusClosedValue);
                     }
                 }
             }
