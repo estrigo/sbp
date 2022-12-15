@@ -151,8 +151,8 @@
                                 </th:block>
                                 <form th:action="@{/rate/interval-add}" th:object="${intervalRate}" method="post">
                                     <input type="hidden" name="parkingRate.id" th:value="${parkingRate.getId()}">
-                                    от: <input type="time" name="datetimeFrom">
-                                    до: <input type="time" name="datetimeTo">
+                                    <span th:text="#{rate.from}"></span> <input type="time" name="datetimeFrom">
+                                    <span th:text="#{rate.to}"></span> <input type="time" name="datetimeTo">
                                     <button type="submit" class="btn btn-primary waves-effect">Добавить</button>
                                 </form>
                             </div>

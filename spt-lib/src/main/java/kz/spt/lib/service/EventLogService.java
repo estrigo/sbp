@@ -13,6 +13,7 @@ import kz.spt.lib.model.dto.EventsDto;
 import org.springframework.data.domain.Pageable;
 
 import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -25,11 +26,13 @@ public interface EventLogService {
         Lp
     }
 
-    void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, String descriptionDe);
+    void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, Map<String, Object> messageValues, String key);
 
-    void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, String descriptionDe, EventLog.EventType eventType);
+    void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, Map<String, Object> messageValues, String key, EventLog.EventType eventType);
 
-    void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long gateId, String plateNumber, String message, String messageEng, String messageDe);
+    void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long gateId, String plateNumber, Map<String, Object> messageValues, String key);
+
+    void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long gateId, String plateNumber, String snapshot);
 
     Iterable<EventLog> listByType(EventLog.EventType type);
 
@@ -37,8 +40,11 @@ public interface EventLogService {
 
     List<EventLog> listByType(List<EventLog.EventType> type, Pageable pageable);
 
+    List<EventLog> listByTypeAndDate(List<EventLog.EventType> type, Pageable pageable, Date dateFrom, Date dateTo);
+
     Long countByType(List<EventLog.EventType> type);
 
+    Long countByTypeAndDate(List<EventLog.EventType> type, Date dateFrom, Date dateTo);
 
     EventLog getById(Long id);
 

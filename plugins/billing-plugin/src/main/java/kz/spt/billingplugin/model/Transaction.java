@@ -22,13 +22,14 @@ import java.util.Date;
 })
 public class Transaction {
 
-    public Transaction(String plateNumber, BigDecimal amount, Long carStateId, String description, String descriptionRu,
+    public Transaction(String plateNumber, BigDecimal amount, Long carStateId, String description, String descriptionRu, String descriptionLocal,
                        String provider, BigDecimal remainder, Cars car){
         this.plateNumber = plateNumber;
         this.amount = amount;
         this.carStateId = carStateId;
         this.description = description;
         this.descriptionRu = descriptionRu;
+        this.descriptionLocal = descriptionLocal;
         this.date = new Date();
         this.provider = provider;
         this.remainder = remainder;
@@ -58,6 +59,9 @@ public class Transaction {
 
     @Column(name = "description_ru")
     String descriptionRu;
+
+    @Column(name = "description_local")
+    String descriptionLocal;
 
     @Column(name = "date")
     private Date date;

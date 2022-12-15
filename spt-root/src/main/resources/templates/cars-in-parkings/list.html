@@ -57,9 +57,8 @@
     //Buttons examples
     var table = $('#datatable-buttons').DataTable({
         lengthChange: false,
-        buttons: ['copy', 'excel', 'pdf', 'csv'],
         language: {
-            url: locale==="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json'
+            url: locale==="en" ? '': '/plugins/datatables/json/'+locale+'.json'
         }
     });
 

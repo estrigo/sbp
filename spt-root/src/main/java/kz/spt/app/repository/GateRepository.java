@@ -20,10 +20,8 @@ public interface GateRepository extends JpaRepository<Gate, Long> {
 
     Gate findFirstByTabloIpAndGateType(String tabloIp, Gate.GateType type);
 
-    Iterable<Gate> findByGateTypeAndTabloIpIsNotNull(Gate.GateType type);
-
     List<Gate> findByParking_Id(Long id);
 
-
+    Iterable<Gate> findByGateTypeAndTabloIpIsNotNull(Gate.GateType type);
 
 }

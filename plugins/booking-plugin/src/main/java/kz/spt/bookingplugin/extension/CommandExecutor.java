@@ -28,9 +28,11 @@ public class CommandExecutor implements PluginRegister {
                 if (command.has("platenumber") && command.get("platenumber").isTextual()) {
                     String position = command.has("position") ? command.get("position").textValue() : "1";
                     String region = command.has("region") ? command.get("region").textValue() : "";
+                    String entrance = command.has("entrance") ? command.get("entrance").textValue() : "";
                     Boolean result = false;
                     try {
-                        result = getBookingService().checkBookingValid(command.get("platenumber").textValue(), region, position);
+                        result = getBookingService().checkBookingValid(
+                                command.get("platenumber").textValue(), region, position, entrance);
                     } catch (Exception e) {
                         log.error("<< checkBookingValid threw error : {} ", e.getMessage());
                     }

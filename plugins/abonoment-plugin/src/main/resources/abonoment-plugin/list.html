@@ -266,16 +266,13 @@
 
 <script type="text/javascript" th:inline="javascript">
     var locale = [[${#locale}]];
-    var address = locale==="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json';
+    var address = locale==="en" ? '': '/plugins/datatables/json/'+locale+'.json';
     var paidStatus = [[#{abonoment.paid}]];
     var notPaidStatus = [[#{abonoment.notPaid}]];
     let canEdit = [[${canEdit}]];
     var del = [[#{crm.delete}]];
     let checked = true;
 
-    if (locale == "en") {
-        address = "";
-    };
     function checkSelectedTypes(value){
         if(value === 'DAYS'){
             $('#daysRow').show();
@@ -411,7 +408,6 @@
             {"data": "custom", "width" : "230px"},
             {"data": "price", "width" : "20%"}
         ],
-        "buttons": ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: address
         }
@@ -485,13 +481,13 @@
         const options = {
             // custom days names (it's default values)
             days: {
-                0: 'Понедельник',
-                1: 'Вторник',
-                2: 'Среда',
-                3: 'Четверг',
-                4: 'Пятница',
-                5: 'Суббота',
-                6: 'Воскресенье',
+                0: [[#{day.monday}]],
+                1: [[#{day.tuesday}]],
+                2: [[#{day.wednesday}]],
+                3: [[#{day.thursday}]],
+                4: [[#{day.friday}]],
+                5: [[#{day.saturday}]],
+                6: [[#{day.sunday}]],
             },
 
             // custom class names for dom elements (it's default values)

@@ -76,10 +76,7 @@ public class CustomerController {
     @PostMapping("/add")
     public String processRequestAddParking(Model model, @Valid Customer customer, BindingResult bindingResult) {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = "en";
-        if (locale.toString().equals("ru")) {
-            language = "ru-RU";
-        }
+        String language = locale.getLanguage();
 
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
         if (bindingResult.hasErrors()) {

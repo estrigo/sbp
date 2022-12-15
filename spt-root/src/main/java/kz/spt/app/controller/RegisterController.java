@@ -37,10 +37,7 @@ public class RegisterController {
     @PostMapping("/register")
     public String processRegistrationForm(Model model, @Valid User user, BindingResult bindingResult) {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = "en";
-        if (locale.toString().equals("ru")) {
-            language = "ru-RU";
-        }
+        String language = locale.getLanguage();
 
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
 
@@ -56,6 +53,10 @@ public class RegisterController {
         }
         if(StringUtils.isEmpty(user.getPassword())){
             ObjectError error = new ObjectError("passwordIsNull", bundle.getString("user.emailIsNull"));
+            bindingResult.addError(error);
+        }
+        if(StringUtils.isEmpty(user.getEmail())){
+            ObjectError error = new ObjectError("emailIsNull", bundle.getString("user.emailIsNull"));
             bindingResult.addError(error);
         }
         if(StringUtils.isEmpty(user.getFirstName())){

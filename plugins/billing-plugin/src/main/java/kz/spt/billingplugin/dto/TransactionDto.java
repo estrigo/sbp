@@ -20,7 +20,7 @@ public class TransactionDto {
         TransactionDto transactionDto = new TransactionDto();
         transactionDto.id = transaction.getId();
         transactionDto.amount = transaction.getAmount();
-        transactionDto.description = transaction.getDescriptionRu();
+        transactionDto.description = transaction.getDescriptionLocal();
         transactionDto.plateNumber = transaction.getPlateNumber();
         transactionDto.provider = transaction.getProvider();
         transactionDto.remainder = transaction.getRemainder();

@@ -12,10 +12,6 @@ import kz.spt.billingplugin.model.dto.OfdCheckData;
 import kz.spt.billingplugin.model.dto.PaymentApiDto;
 import kz.spt.billingplugin.model.dto.PaymentDto;
 import kz.spt.billingplugin.model.dto.PaymentStatusApiDto;
-import kz.spt.billingplugin.model.dto.rekassa.RekassaCheckRequest;
-import kz.spt.billingplugin.model.dto.webkassa.AuthRequestDTO;
-import kz.spt.billingplugin.model.dto.webkassa.Check;
-import kz.spt.billingplugin.model.dto.webkassa.Position;
 import kz.spt.billingplugin.model.dto.webkassa.ZReport;
 import kz.spt.billingplugin.repository.PaymentProviderRepository;
 import kz.spt.billingplugin.repository.PaymentRepository;
@@ -27,6 +23,9 @@ import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.Customer;
 import kz.spt.lib.model.Parking;
+import kz.spt.lib.utils.Language;
+import kz.spt.lib.service.LanguagePropertiesService;
+import kz.spt.lib.utils.MessageKey;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
@@ -35,9 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Log
@@ -52,6 +49,7 @@ public class CommandExecutor implements PluginRegister {
     private WebKassaService reKassaService;
     private PaymentRepository paymentRepository;
     private PaymentProviderRepository paymentProviderRepository;
+    private LanguagePropertiesService languagePropertiesService;
     private FiscalCheckService fiscalCheckService;
 
     private static final String TRANSACTION_ID = "transactionId";
@@ -123,7 +121,12 @@ public class CommandExecutor implements PluginRegister {
 
                 String carNumber = command.get("carNumber").textValue();
                 Long carStateId = command.has("carStateId") ? command.get("carStateId").longValue() : null;
-                getBalanceService().addBalance(carNumber, payment.getPrice(), carStateId, "Received payment from " + payment.getProvider().getName(), "Получен платеж от " + payment.getProvider().getName(), payment.getProvider().getName());
+
+                Map<String, Object> messageValues = new HashMap<>();
+                messageValues.put("provider", payment.getProvider().getName());
+                Map<String, String> messages = rootServicesGetterService.getLanguageService().getWithDifferentLanguages(MessageKey.BILLING_DESCRIPTION_RECEIVED_FROM_PROVIDER, messageValues);
+
+                getBalanceService().addBalance(carNumber, payment.getPrice(), carStateId, messages.get(Language.EN), messages.get(Language.RU), messages.get(Language.LOCAL), payment.getProvider().getName() );
 
                 if (savedPayment.getCarStateId() != null) {
                     List<Payment> carStatePayments = getPaymentService().getPaymentsByCarStateId(savedPayment.getCarStateId());
@@ -164,23 +167,25 @@ public class CommandExecutor implements PluginRegister {
                 }
             } else if ("decreaseCurrentBalance".equals(commandName)) {
                 if (command.has("plateNumber") && command.has("amount") && command.has("reason")
-                        && command.has("reasonEn") && command.has("provider")) {
+                        && command.has("reasonEn") && command.has("reasonLocal") && command.has("provider")) {
                     String reason = command.get("reason").textValue();
                     String reasonEn = command.get("reasonEn").textValue();
+                    String reasonLocal = command.get("reasonLocal").textValue();
                     String provider = command.get("provider").textValue();
-                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), command.has("carStateId") ? command.get("carStateId").longValue() : null, reasonEn, reason, provider));
+                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), command.has("carStateId") ? command.get("carStateId").longValue() : null, reasonEn, reason, reasonLocal, provider));
                 } else {
                     throw new RuntimeException("Not all decreaseCurrentBalance parameters set");
                 }
             } else if ("increaseCurrentBalance".equals(commandName)) {
                 if (command.has("plateNumber") && command.has("amount") && command.has("reason")
-                        && command.has("reasonEn") && command.has("provider")) {
+                        && command.has("reasonEn") && command.has("reasonLocal") && command.has("provider")) {
                     String plateNumber = command.get("plateNumber").textValue();
                     BigDecimal amount = command.get("amount").decimalValue();
                     String reason = command.get("reason").textValue();
                     String reasonEn = command.get("reasonEn").textValue();
+                    String reasonLocal = command.get("reasonLocal").textValue();
                     String provider = command.get("provider").textValue();
-                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reason, reasonEn, provider));
+                    node.put("currentBalance", getBalanceService().addBalance(plateNumber, amount, null, reasonEn, reason, reasonLocal,provider));
                 } else {
                     throw new RuntimeException("Not all increaseCurrentBalance parameters set");
                 }

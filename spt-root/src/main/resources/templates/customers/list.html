@@ -64,18 +64,11 @@
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
 
 <script  th:inline="javascript">
-    var edit = 'Редактировать';
-    var del = 'Удалить';
+    var edit = [[#{buttons.edit}]];
+    var del = [[#{buttons.delete}]];
     var locale = [[${#locale}]];
-    var address = locale=="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json';
-    if (locale == "en") {
-        address = "";
-        edit = "Edit";
-        del = "Delete";
-    }else if(locale == "de"){
-        edit = "Bearbeiten";
-        del = "Löschen";
-    }
+    var address = locale == "en" ? "": '/plugins/datatables/json/' + locale + '.json';
+
     const table = $('#customerTable').DataTable({
         "processing": true,
         "serverSide": true,
@@ -116,7 +109,6 @@
                 }
             }}
         ],
-        "buttons": ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: address
         }

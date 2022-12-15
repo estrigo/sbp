@@ -9,6 +9,7 @@ import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.CarState;
 import kz.spt.lib.model.dto.CarStateDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
+import kz.spt.lib.model.dto.EventFilterDto;
 import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
@@ -182,6 +183,11 @@ public class JournalReportServiceImpl implements ReportService<JournalReportDto>
         page.setDraw(pagingRequest.getDraw());
 
         return page;
+    }
+
+    @Override
+    public Page<JournalReportDto> pageFilter(PagingRequest pagingRequest, EventFilterDto eventFilterDto) {
+        return null;
     }
 
     @Override

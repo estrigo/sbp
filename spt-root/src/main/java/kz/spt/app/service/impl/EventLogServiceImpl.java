@@ -12,6 +12,7 @@ import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.repository.EventLogRepository;
+import kz.spt.lib.service.LanguagePropertiesService;
 import kz.spt.app.utils.StringExtensions;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.model.EventLog;
@@ -29,6 +30,7 @@ import org.pf4j.PluginManager;
 import org.pf4j.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -62,6 +64,9 @@ public class EventLogServiceImpl implements EventLogService {
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
 
+    @Autowired
+    private LanguagePropertiesService languagePropertiesService;
+
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
 
     private static final Comparator<EventsDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
@@ -77,14 +82,15 @@ public class EventLogServiceImpl implements EventLogService {
     @Value("${telegram.bot.external.enabled}")
     Boolean telegramBotExternalEnabled;
 
-    public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager, CarsService carsService) {
+    public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager, CarsService carsService, LanguagePropertiesService languagePropertiesService) {
         this.eventLogRepository = eventLogRepository;
         this.pluginManager = pluginManager;
         this.carsService = carsService;
+        this.languagePropertiesService = languagePropertiesService;
     }
 
     @Override
-    public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, String descriptionDe) {
+    public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, Map<String, Object> messageValues, String key) {
         EventLog eventLog = new EventLog();
 
         if(objectClass != null && objectClass.equals("Camera"))
@@ -96,12 +102,15 @@ public class EventLogServiceImpl implements EventLogService {
         if(StringUtils.isNotNullOrEmpty(eventLog.getPlateNumber())){
             eventLog.setCar(carsService.createCar(eventLog.getPlateNumber()));
         }
+
+        Map<String, String> messages = languagePropertiesService.getWithDifferentLanguages(key, messageValues);
+
         eventLog.setObjectId(objectId);
         eventLog.setStatusType((properties != null && properties.containsKey("type")) ? EventLog.StatusType.valueOf(properties.get("type").toString()) : null);
         eventLog.setEventType((properties != null && properties.containsKey("event")) ? EventLog.EventType.valueOf(properties.get("event").toString()) : null);
-        eventLog.setDescription(description);
-        eventLog.setDescriptionEn(descriptionEn);
-        eventLog.setDescriptionDe(descriptionDe);
+        eventLog.setDescription(messages.get("ru"));
+        eventLog.setDescriptionEn(messages.get("en"));
+        eventLog.setDescriptionDe(messages.get("local"));
         eventLog.setCreated(new Date());
         eventLog.setProperties(properties != null ? properties : new HashMap<>());
 
@@ -109,7 +118,7 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
-    public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, String description, String descriptionEn, String descriptionDe, EventLog.EventType eventType) {
+    public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, Map<String, Object> messageValues, String key, EventLog.EventType eventType) {
         EventLog eventLog = new EventLog();
 
         if(objectClass != null && objectClass.equals("Camera"))
@@ -119,33 +128,63 @@ public class EventLogServiceImpl implements EventLogService {
         if(StringUtils.isNotNullOrEmpty(eventLog.getPlateNumber())){
             eventLog.setCar(carsService.createCar(eventLog.getPlateNumber()));
         }
+
+        Map<String, String> messages = languagePropertiesService.getWithDifferentLanguages(key, messageValues);
+
         eventLog.setObjectClass(objectClass);
         eventLog.setObjectId(objectId);
         eventLog.setStatusType((properties != null && properties.containsKey("type")) ? EventLog.StatusType.valueOf(properties.get("type").toString()) : null);
         eventLog.setEventType((properties != null && properties.containsKey("event")) ? EventLog.EventType.valueOf(properties.get("event").toString()) : null);
-        eventLog.setDescription(description);
-        eventLog.setDescriptionEn(descriptionEn);
-        eventLog.setDescriptionDe(descriptionDe);
+        eventLog.setDescription(messages.get("ru"));
+        eventLog.setDescriptionEn(messages.get("en"));
+        eventLog.setDescriptionDe(messages.get("local"));
         eventLog.setCreated(new Date());
         eventLog.setProperties(properties != null ? properties : new HashMap<>());
         eventLog.setEventType(eventType);
         eventLogRepository.save(eventLog);
     }
 
-    public void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long id, String plateNumber, String message, String messageEng, String messageDe) {
+    public void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long id, String plateNumber, Map<String, Object> messageValues, String key) {
 
         CameraStatusDto cameraStatusDto = StatusCheckJob.findCameraStatusDtoById(id);
         CameraStatusDto cameraStatusDtoByIp = StatusCheckJob.findCameraStatusDtoByIp(cameraStatusDto.ip);
 
-        if (ArmEventType.Photo.equals(eventType) && message == null && messageEng == null) {
+        Map<String, String> messages = languagePropertiesService.getWithDifferentLanguages(key, messageValues);
+
+        if (ArmEventType.Photo.equals(eventType) && messages.get("ru") == null && messages.get("en") == null && messages.get("local") == null) {
             return;
         }
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         ObjectNode node = objectMapper.createObjectNode();
         node.put("datetime", format.format(new Date()));
-        node.put("message", message);
-        node.put("messageEng", messageEng);
-        node.put("messageDe", messageDe);
+        node.put("message", messages.get("ru"));
+        node.put("messageEng", messages.get("en"));
+        node.put("messageDe", messages.get("local"));
+        node.put("plateNumber", plateNumber);
+        node.put("id", cameraStatusDtoByIp.id);
+        node.put("eventType", eventType.toString());
+        node.put("eventStatus", eventStatus.toString());
+
+        //////////////////////send notification to bot
+        if(telegramBotExternalEnabled){
+            sendEventBot(node);
+        }
+        /////////////////////
+
+        messagingTemplate.convertAndSend("/topic", node.toString());
+    }
+    public void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long id, String plateNumber, String snapshot) {
+
+        CameraStatusDto cameraStatusDto = StatusCheckJob.findCameraStatusDtoById(id);
+        CameraStatusDto cameraStatusDtoByIp = StatusCheckJob.findCameraStatusDtoByIp(cameraStatusDto.ip);
+
+        if (ArmEventType.Photo.equals(eventType) && snapshot == null) {
+            return;
+        }
+        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+        ObjectNode node = objectMapper.createObjectNode();
+        node.put("datetime", format.format(new Date()));
+        node.put("message", snapshot);
         node.put("plateNumber", plateNumber);
         node.put("id", cameraStatusDtoByIp.id);
         node.put("eventType", eventType.toString());
@@ -197,6 +236,17 @@ public class EventLogServiceImpl implements EventLogService {
     @Override
     public List<EventLog> listByType(List<EventLog.EventType> types, Pageable pageable) {
         return eventLogRepository.findByEventTypeIn(types, pageable);
+    }
+
+    @Override
+    public List<EventLog> listByTypeAndDate(List<EventLog.EventType> types, Pageable pageable,
+                                            Date dateFrom, Date dateTo) {
+        return eventLogRepository.findAllByCreatedBetweenAndEventTypeInOrderByIdDesc(dateFrom, dateTo, types, pageable);
+    }
+
+    @Override
+    public Long countByTypeAndDate(List<EventLog.EventType> types, Date dateFrom, Date dateTo) {
+        return eventLogRepository.countByCreatedBetweenAndEventTypeIn(dateFrom, dateTo,types);
     }
 
     @Override
@@ -326,7 +376,7 @@ public class EventLogServiceImpl implements EventLogService {
             EventLogExcelDto eventLogExcelDto = new EventLogExcelDto();
             eventLogExcelDto.plateNumber = eventLog.getPlateNumber();
             eventLogExcelDto.created = format.format(eventLog.getCreated());
-            eventLogExcelDto.description = eventLog.getDescription();
+            eventLogExcelDto.description = eventLog.getDescriptionDe()!=null ? eventLog.getDescriptionDe(): eventLog.getDescriptionEn();
             eventLogExcelDto.status = eventLog.getProperties().containsKey("type") && eventLog.getProperties().get("type") != null ? StringExtensions.locale("events.".concat(eventLog.getProperties().get("type").toString().toLowerCase())) : "";
             eventLogExcelDto.gate = eventLog.getProperties().containsKey("gateName") ? eventLog.getProperties().get("gateName").toString() : "";
             eventLogExcelDtos.add(eventLogExcelDto);

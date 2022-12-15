@@ -54,10 +54,7 @@
 
 <script th:inline="javascript">
     var locale = [[${#locale}]];
-    var address = locale==="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json';
-    if (locale == "en") {
-        address = "";
-    }
+    var address = locale==="en" ? '': '/plugins/datatables/json/'+locale+'.json';
 
     let date=new Date();
     $('#date').val((new Date(date.getFullYear(),date.getMonth(),date.getDate(), 6, 0, 0, 0)).toISOString().substring(0,10));
@@ -90,7 +87,6 @@
         "order": [ //[[ in thymeleaf is inline script
             [1, "desc"]
         ],
-        "buttons": ['copy', 'excel', 'pdf', 'csv'],
         language: {
             url: address
         }
