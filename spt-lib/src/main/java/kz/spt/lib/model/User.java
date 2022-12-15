@@ -26,8 +26,6 @@ public class User {
     private String username;
 
     @Column(name = "email", nullable = false, unique = true)
-    @Email(message = "Please provide a valid e-mail")
-    @NotEmpty(message = "Please provide an e-mail")
     private String email;
 
     private String firstName;

@@ -55,6 +55,10 @@ public class RegisterController {
             ObjectError error = new ObjectError("passwordIsNull", bundle.getString("user.emailIsNull"));
             bindingResult.addError(error);
         }
+        if(StringUtils.isEmpty(user.getEmail())){
+            ObjectError error = new ObjectError("emailIsNull", bundle.getString("user.emailIsNull"));
+            bindingResult.addError(error);
+        }
         if(StringUtils.isEmpty(user.getFirstName())){
             ObjectError error = new ObjectError("firstnameIsNull", bundle.getString("user.firstNameIsNull"));
             bindingResult.addError(error);

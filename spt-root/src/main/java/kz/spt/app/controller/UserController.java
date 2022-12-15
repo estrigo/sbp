@@ -94,6 +94,10 @@ public class UserController {
             ObjectError error = new ObjectError("firstnameIsNull", bundle.getString("user.firstNameIsNull"));
             bindingResult.addError(error);
         }
+        if(StringUtils.isEmpty(user.getEmail())){
+            ObjectError error = new ObjectError("emailIsNull", bundle.getString("user.emailIsNull"));
+            bindingResult.addError(error);
+        }
         if(StringUtils.isEmpty(user.getLastName())){
             ObjectError error = new ObjectError("lastnameIsNull", bundle.getString("user.lastNameIsNull"));
             bindingResult.addError(error);
