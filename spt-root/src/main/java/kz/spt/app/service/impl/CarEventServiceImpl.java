@@ -630,12 +630,12 @@ public class CarEventServiceImpl implements CarEventService {
 
     private boolean isAllow(CarEventDto carEvent, CameraStatusDto cameraStatusDto, Map<String, Object> properties, GateStatusDto gate) {
         if (blacklistService.findByPlate(carEvent.car_number).isPresent()) {
-            properties.put("type", EventLog.StatusType.Deny);
+            properties.put("type", EventLog.StatusType.Blacklist);
 
             Map<String, Object> messageValues = new HashMap<>();
             messageValues.put("platenumber", carEvent.car_number);
 
-            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, cameraStatusDto.id, carEvent.getCarNumberWithRegion(), messageValues, MessageKey.NOT_ALLOWED_BAN);
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Blacklist, cameraStatusDto.id, carEvent.getCarNumberWithRegion(), messageValues, MessageKey.NOT_ALLOWED_BAN);
             eventLogService.createEventLog(Gate.class.getSimpleName(), cameraStatusDto.gateId, properties, messageValues, MessageKey.NOT_ALLOWED_BAN, EventLog.EventType.NOT_PASS);
             return false;
         }
