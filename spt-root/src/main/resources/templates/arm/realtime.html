@@ -200,15 +200,15 @@
                                             th:value="${reason.id}"></option>
                                 </select>
                                 <br>
-                                <button type="submit" class="btn btn-warning waves-effect"
+                                <button type="submit" class="btn btn-danger waves-effect"
                                         th:text="#{arm.deleteReason}"></button>
                             </form>
                             <hr>
                             <form th:action="@{/arm/addReason}" method="post" enctype="multipart/form-data">
-                                <input class="form-control" name="newReason" type="text">
+                                <input class="form-control" name="newReason" id="newReasonInput" type="text" onkeyup="success()">
                                 <br>
-                                <button type="submit" class="btn btn-success waves-effect"
-                                        th:text="#{arm.addReason}"></button>
+                                <button type="submit" class="btn btn-success waves-effect" id="newReasonBtn"
+                                        th:text="#{arm.addReason}" disabled></button>
                             </form>
                         </div>
                     </div>
@@ -453,6 +453,16 @@
             buttonHandler(false, reasonCameraId);
             console.log(response);
         });
+    }
+
+    function success() {
+        if($('#newReasonInput').val()==="" || $('#newReasonInput').val()===" ") {
+            console.log("input empty")
+            $('#newReasonBtn').prop('disabled',true);
+        } else {
+            console.log("input not empty")
+            $('#newReasonBtn').prop('disabled', false);
+        }
     }
 
     function showOpenGateModalWOReason (cameraId) {
@@ -1092,11 +1102,15 @@
     }
 
     function removeTab(tabId, tabName) {
-        let trList = $('#cameraTabsAccordion').find('#card' + tabId).find('table>tbody>tr');
-        $('#cameraTabsAccordion').find('#card0').find('table>tbody').append(trList);
-        $("#card" + tabId).remove();
-        moveOptions = moveOptions.replace("<option value='" + tabId + "'>" + tabName + "</option>", "");
-        $('#cameraTabsAccordion').find('select').html(moveOptions);
+        if(confirm([[#{alert.sureToDelete}]])){
+            let trList = $('#cameraTabsAccordion').find('#card' + tabId).find('table>tbody>tr');
+            $('#cameraTabsAccordion').find('#card0').find('table>tbody').append(trList);
+            $("#card" + tabId).remove();
+            moveOptions = moveOptions.replace("<option value='" + tabId + "'>" + tabName + "</option>", "");
+            $('#cameraTabsAccordion').find('select').html(moveOptions);
+        } else{
+
+        }
     }
 
     function save() {

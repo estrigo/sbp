@@ -173,6 +173,7 @@ public class CarEventServiceImpl implements CarEventService {
                 eventDto.lp_rect = null;
                 eventDto.lp_picture = null;
                 eventDto.manualEnter = true;
+                eventDto.manualOpen = true;
                 eventDto.cameraId = cameraId;
 
                 if (snapshot != null && !"".equals(snapshot) && !"undefined".equals(snapshot) && !"null".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
@@ -405,6 +406,8 @@ public class CarEventServiceImpl implements CarEventService {
             eventDto.lp_rect = null;
             eventDto.lp_picture = null;
             eventDto.manualEnter = true;
+            eventDto.manualOpen = false;
+            eventDto.manualOpenWithoutBarrier = true;
             eventDto.cameraId = cameraId;
 
             SimpleDateFormat format = new SimpleDateFormat(dateFormat);
@@ -693,10 +696,13 @@ public class CarEventServiceImpl implements CarEventService {
                 strategy.isWaitLoop = true;
                 SensorStatusCheckJob.add(strategy);
             } else {
-                boolean openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+                boolean openResult = false;
+                if (eventDto.manualOpenWithoutBarrier) {
+                    openResult = true;
+                }else {
+                    openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+                }
                 if (openResult) {
-
-
                     gate.gateStatus = GateStatusDto.GateStatus.Open;
                     gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
                     gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
@@ -872,7 +878,11 @@ public class CarEventServiceImpl implements CarEventService {
                     strategy.gateId = gate.gateId;
                     strategy.isWaitLoop = true;
                     SensorStatusCheckJob.add(strategy);
-                } else {
+                }
+                if (eventDto.manualOpenWithoutBarrier) {
+                    openResult = true;
+                }
+                else {
                     openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
                 }
             } catch (Throwable e) {
@@ -1637,8 +1647,14 @@ public class CarEventServiceImpl implements CarEventService {
                     strategy.gateId = gate.gateId;
                     strategy.isWaitPhel = true;
                     SensorStatusCheckJob.add(strategy);
-                }else{
-                    openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+                }
+                else{
+                    if (eventDto.manualOpenWithoutBarrier) {
+                        openResult = true;
+                    }
+                    else {
+                        openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+                    }
                     if (openResult) {
                         gate.gateStatus = GateStatusDto.GateStatus.Open;
                         gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
