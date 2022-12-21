@@ -16,6 +16,7 @@ import kz.spt.lib.model.dto.adminPlace.WhiteListEvent;
 import kz.spt.lib.model.dto.adminPlace.WhiteListGroupEvent;
 import kz.spt.lib.model.dto.adminPlace.enums.WhlProcessEnum;
 import kz.spt.lib.service.CarsService;
+import kz.spt.lib.utils.MessageKey;
 import kz.spt.whitelistplugin.bootstrap.datatable.WhiteListComparators;
 import kz.spt.whitelistplugin.model.AbstractWhitelist;
 import kz.spt.whitelistplugin.model.WhitelistGroups;
@@ -51,19 +52,11 @@ public class WhitelistServiceImpl implements WhitelistService {
     private final String dateformat = "yyyy-MM-dd'T'HH:mm";
     private WhitelistRepository whitelistRepository;
     private WhitelistGroupsRepository whitelistGroupsRepository;
-    private RootServicesGetterService rootServicesGetterService;
+    private static RootServicesGetterService rootServicesGetterService;
 
     private ApplicationEventPublisher eventPublisher;
 
-    private static final Map<String, String> dayValues = new HashMap<>() {{
-        put("0", "Понедельник");
-        put("1", "Вторник");
-        put("2", "Среда");
-        put("3", "Четверг");
-        put("4", "Пятница");
-        put("5", "Суббота");
-        put("6", "Воскресенье");
-    }};
+    private static final Map<String, String> dayValues = new HashMap<>();
     private static final Comparator<WhiteListDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     public WhitelistServiceImpl(WhitelistRepository whitelistRepository, WhitelistGroupsRepository whitelistGroupsRepository,
@@ -632,18 +625,16 @@ public class WhitelistServiceImpl implements WhitelistService {
 
     public static String formConditionDetails(AbstractWhitelist w, String name) throws JsonProcessingException {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = "en";
-        if (locale.toString().equals("ru")) {
-            language = "ru-RU";
-        } else {
-            dayValues.put("0", "Monday");
-            dayValues.put("1", "Tuesday");
-            dayValues.put("2", "Wednesday");
-            dayValues.put("3", "Thursday");
-            dayValues.put("4", "Friday");
-            dayValues.put("5", "Saturday");
-            dayValues.put("6", "Sunday");
-        }
+        String language = locale.getLanguage();
+
+        dayValues.put("0", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.MONDAY, language));
+        dayValues.put("1", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.TUESDAY, language));
+        dayValues.put("2", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.WEDNESDAY, language));
+        dayValues.put("3", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.THURSDAY, language));
+        dayValues.put("4", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.FRIDAY, language));
+        dayValues.put("5", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.SATURDAY, language));
+        dayValues.put("6", rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.SUNDAY, language));
+
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
 
 

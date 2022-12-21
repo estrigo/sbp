@@ -7,7 +7,7 @@ import java.util.ResourceBundle;
 
 public class LocalizationExtensions {
     public static String language() {
-        return LocaleContextHolder.getLocale().toString().equals("ru") ? "ru" : "en";
+        return LocaleContextHolder.getLocale().getLanguage();
     }
 
     public static ResourceBundle resourceBundle(String... name) {

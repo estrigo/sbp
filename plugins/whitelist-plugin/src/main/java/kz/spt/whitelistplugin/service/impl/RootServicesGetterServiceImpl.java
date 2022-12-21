@@ -16,6 +16,8 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
 
     private AdminService adminService;
 
+    private LanguagePropertiesService languagePropertiesService;
+
     @Override
     public CarsService getCarsService() {
         if (this.carsService == null) {
@@ -46,6 +48,14 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
             adminService = (AdminService) WhitelistPlugin.INSTANCE.getMainApplicationContext().getBean("adminServiceImpl");
         }
         return this.adminService;
+    }
+
+    @Override
+    public LanguagePropertiesService getLanguageService() {
+        if (this.languagePropertiesService == null) {
+            languagePropertiesService = (LanguagePropertiesService) WhitelistPlugin.INSTANCE.getMainApplicationContext().getBean("languagePropertiesServiceImpl");
+        }
+        return this.languagePropertiesService;
     }
 
 }

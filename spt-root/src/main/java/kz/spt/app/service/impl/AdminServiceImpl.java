@@ -18,6 +18,7 @@ import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,7 @@ public class AdminServiceImpl implements AdminService {
     private final static String WHL_G_ADD = "/rest/whitelist/group/add";
     private final static String WHL_G_DEL = "/rest/whitelist/group/deleted";
     private final static String WHL_SPECIAL = "rest/whitelist/special";
-    private final static String REPORT = "/rest/report/%s/%s";
+    private final static String REPORT = "/rest/report/%s/%s/%s";
 
     @Override
     public String getProperty(String key) {
@@ -171,8 +172,9 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public byte[] report(List<?> list, String reportName, String format) {
         String host = getProperty(KEY_HOST);
+        String locale = LocaleContextHolder.getLocale().getLanguage();
         if (!ObjectUtils.isEmpty(host)) {
-            String uri = String.format(URL, host, String.format(REPORT, reportName, format));
+            String uri = String.format(URL, host, String.format(REPORT, reportName, format, locale));
             try {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String json = gson.toJson(new ReportDataSet(list));
@@ -188,8 +190,9 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public byte[] report(Object dto, String reportName, String format) {
         String host = getProperty(KEY_HOST);
+        String locale = LocaleContextHolder.getLocale().getLanguage();
         if (!ObjectUtils.isEmpty(host)) {
-            String uri = String.format(URL, host, String.format(REPORT, reportName, format));
+            String uri = String.format(URL, host, String.format(REPORT, reportName, format, locale));
             try {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String json = gson.toJson(new ReportDataSet(dto));

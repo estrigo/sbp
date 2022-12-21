@@ -44,7 +44,7 @@
                                         <label class="col-2 col-form-label" th:text="#{customer.carsList}"></label>
                                         <div class="col-10">
                                             <select class="form-control" multiple data-role="tagsinput"
-                                                    th:field="*{plateNumbers}" placeholder="Add car numbers">
+                                                    th:field="*{plateNumbers}" th:placeholder="#{customer.addCarNumber}">
                                             </select>
                                         </div>
                                     </div>
@@ -96,7 +96,7 @@
             $.get("/rest/customers/customerExist/" + phoneNumber, function (data) {
                 console.log("Result message: " + data);
                 if (data===1){
-                    $('#alertText').text("Такой номер телефона уже добавлен");
+                    $('#alertText').text([[#{alert.exists.phoneNumber}]]);
                     $('#submitButton').children().prop('disabled',true);
                 }else {
                     $('#alertText').text("");

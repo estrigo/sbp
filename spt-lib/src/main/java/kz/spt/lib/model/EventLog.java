@@ -94,7 +94,7 @@ public class EventLog {
         return getDescriptionEn() != null ? this.descriptionEn : "";
     }
     public String getNullSafeDescriptionDe() {
-        return getDescriptionDe() != null ? this.descriptionDe : "";
+        return getDescriptionDe() != null ? this.descriptionDe : getNullSafeDescriptionEn();
     }
 
 }

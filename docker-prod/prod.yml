@@ -51,7 +51,7 @@ spring:
     hikari:
       idle-timeout: 10000
       pool-name: SptRootHikariPool
-      connection-timeout: 40000 #Максимальное количество миллисекунд для ожидания подключения из пула
+      connection-timeout: 120000 #Максимальное количество миллисекунд для ожидания подключения из пула
       #Значение конструктора по умолчанию: SECONDS.toMillis(30) = 30000 Значение конфигурации по умолчанию после проверки: 	30000
       minimum-idle: 10 #Минимальное количество неактивных соединений, поддерживаемых в пуле
       #Значение конструктора по умолчанию: -1	Значение конфигурации по умолчанию после проверки: 10
@@ -130,7 +130,7 @@ barrier:
         way: false
   permanent:
     open:
-      enabled: false
+      enabled: true
 car:
   movement:
     simulate: false
@@ -147,6 +147,12 @@ booking:
     check: false # включить проверку booking для разных операторов.
     tokenUrl: http://halapark.calltekky.com/api/auth/getToken
     postUrl: http://halapark.calltekky.com/api/auth/getBookingByParquorcameras
+  esentai:
+    check: false # включить проверку въезда/выезда в Есентай
+    login: nurganat.maulsharif+spt@gmail.com
+    password: 12345
+    tokenUrl: https://auth-test.myesentai.kz/auth/staff-sign-in
+    postUrl: https://parking-test.myesentai.kz/v2/parking-session
 zero:
   touch:
     rahmet:

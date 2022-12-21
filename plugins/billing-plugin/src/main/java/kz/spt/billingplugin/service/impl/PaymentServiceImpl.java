@@ -162,6 +162,7 @@ public class PaymentServiceImpl implements PaymentService {
                 firstPayment.getCarStateId(),
                 firstPayment.getDescription(),
                 firstPayment.getDescription(),
+                firstPayment.getDescription(),
                 firstPayment.getProvider().getName());
     }
 

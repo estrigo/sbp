@@ -11,8 +11,10 @@ import kz.spt.app.repository.GateRepository;
 import kz.spt.app.service.GateService;
 import kz.spt.lib.model.dto.GateDto;
 import lombok.extern.slf4j.Slf4j;
+import kz.spt.lib.model.dto.GateDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 import java.util.List;
 

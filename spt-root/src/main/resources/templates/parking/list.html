@@ -16,6 +16,7 @@
                         <div class="form-group row">
                             <div class="col-12">
                                 <a th:href="@{|/parking/add|}" class="btn btn-success waves-effect waves-light" th:text="#{crm.add}"></a>
+                                <a th:href="@{|/admin-place/gitinfo|}" class="btn btn-secondary waves-effect waves-light" th:text="#{infoboard.infoBuild}"></a>
                             </div>
                         </div>
                         </p>
@@ -96,14 +97,11 @@
 
 <script th:inline="javascript">
     var locale = [[${#locale}]];
-    var address = locale==="de" ? '/plugins/datatables/json/de.json': '/plugins/datatables/json/ru.json';
-    if (locale == "en") {
-        address = "";
-    }
+    var address = locale==="en" ? '': '/plugins/datatables/json/'+locale+'.json';
+
   //Buttons examples
   var table = $('#datatable-buttons').DataTable({
     lengthChange: false,
-    buttons: ['copy', 'excel', 'pdf', 'csv'],
     language: {
       url: address
     }

@@ -85,6 +85,7 @@ public class FiscalCheckServiceImpl implements FiscalCheckService {
     @Scheduled(fixedRateString = "${fiscalization.frequency}")
     public void scheduledFiscalizationForMobile() {
         if (mobilePayFiscalization) {
+            log.info("[mobilePayFiscalization] started !!!");
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.HOUR, -periodHour);
             List<Payment> paymentList;

@@ -33,10 +33,7 @@ public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
     @Override
     public List<Map<String, Object>> getLinks(){
         Locale locale = LocaleContextHolder.getLocale();
-        String language = locale.toString().equals("de") ? "de" : "en";
-        if (locale.toString().equals("ru")) {
-            language = "ru-RU";
-        }
+        String language = locale.getLanguage();
 
         ResourceBundle bundle = ResourceBundle.getBundle("billing-plugin", Locale.forLanguageTag(language));
         List<Map<String, Object>> list = new ArrayList<>();

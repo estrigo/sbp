@@ -60,7 +60,9 @@ public class CarmodelController {
                     .dateToString(format.format(dateTo))
                     .build());
         }
+        List<Dimensions> dimensions = carDimensionsService.listDimensions();
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
+        model.addAttribute("dimensions", dimensions);
         return "carmodel/list";
     }
 
@@ -118,6 +120,7 @@ public class CarmodelController {
             model.addAttribute("carmodelDto", carmodelDto);
         }
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN").contains(m.getAuthority())));
+        model.addAttribute("dimenstions", carDimensionsService.listDimensions());
         return "carmodel/list";
     }
 
@@ -134,10 +137,7 @@ public class CarmodelController {
                                  BindingResult bindingResult,
                                  @AuthenticationPrincipal UserDetails currentUser) {
         Locale locale = LocaleContextHolder.getLocale();
-        String language = "en";
-        if (locale.toString().equals("ru")) {
-            language = "ru-RU";
-        }
+        String language = locale.getLanguage();
 
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(language));
 

@@ -22,6 +22,7 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
     private SyslogService syslogService;
 
     private CarsService carsService;
+    private LanguagePropertiesService languagePropertiesService;
 
     @Override
     public ParkingService getParkingService() {
@@ -103,6 +104,15 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
             syslogService = (SyslogService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("syslogServiceImpl");
         }
         return this.syslogService;
+    }
+
+    @Override
+    public LanguagePropertiesService getLanguageService() {
+        if (languagePropertiesService == null) {
+            languagePropertiesService = (LanguagePropertiesService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("languagePropertiesServiceImpl");
+        }
+
+        return languagePropertiesService;
     }
 
 }
