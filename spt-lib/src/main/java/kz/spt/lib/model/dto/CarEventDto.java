@@ -32,6 +32,7 @@ public class CarEventDto {
     public String lp_rect;
     public Boolean manualEnter = false; //Ручной запуск авто через набор номера
     public Boolean manualOpen = false; //Ручное открытие шлагбаума
+    public Boolean manualOpenWithoutBarrier = false; //Ручное открытие без открытия шлагбаума
 
     public String lp_region;
     public String lp_country;
