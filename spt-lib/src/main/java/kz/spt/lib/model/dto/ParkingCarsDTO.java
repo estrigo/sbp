@@ -10,6 +10,6 @@ import java.util.List;
 public class ParkingCarsDTO {
 
     public Parking parking;
-    public List<Cars> carsList;
-
+    public List<String> carsList;
+    public Integer size = 0;
 }
