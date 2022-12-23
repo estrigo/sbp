@@ -1031,7 +1031,7 @@ public class CarEventServiceImpl implements CarEventService {
                     carStateService.createINState(eventDto.car_number, eventDto.event_date_time, camera, false, whitelistCheckResults != null ? whitelistCheckResults.toString() : null, properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
 
                     eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, MessageKey.ALLOWED_FREE_PERMIT);
-                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.WHITELIST);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, MessageKey.ALLOWED_FREE_PERMIT, EventLog.EventType.WHITELIST);
                 } else {
                     properties.put("type", EventLog.StatusType.Allow);
 
@@ -1910,6 +1910,7 @@ public class CarEventServiceImpl implements CarEventService {
             } else {
                 BigDecimal subtractResult = balance.subtract(rateResult);
                 messageValues.put("subtractResult", subtractResult);
+                messageValues.put("rateResult", rateResult);
                 properties.put("type", EventLog.StatusType.Allow);
 
                 String key = MessageKey.ALLOWED_PAYMENT_PAID;
