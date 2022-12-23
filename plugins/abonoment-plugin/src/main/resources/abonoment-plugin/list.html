@@ -6,7 +6,7 @@
 <link th:href="@{/plugins/datatables/responsive.bootstrap4.min.css}" rel="stylesheet" type="text/css" />
 
 <div class="content">
-    <div class="container">
+    <div class="container-fluid">
         <div class="row">
             <div class="col-12">
                 <div class="card-box table-responsive">
@@ -522,22 +522,27 @@
         var form = new FormData();
         form.append("id", id);
 
-        var settings = {
-            "url": "/rest/abonoment/type/delete",
-            "method": "POST",
-            "timeout": 0,
-            "processData": false,
-            "contentType": false,
-            "data": form
-        };
-        $.ajax(settings).done(function (response) {
-            if(response.result){
-                $('#addAbonomentType').modal('hide');
-                typesTable.ajax.reload(); //reload datatable
-            } else {
-                // set error to modal div
-            }
-        });
+        if(confirm([[#{alert.sureToDelete}]])){
+            var settings = {
+                "url": "/rest/abonoment/type/delete",
+                "method": "POST",
+                "timeout": 0,
+                "processData": false,
+                "contentType": false,
+                "data": form
+            };
+            $.ajax(settings).done(function (response) {
+                if(response.result){
+                    $('#addAbonomentType').modal('hide');
+                    typesTable.ajax.reload(); //reload datatable
+                } else {
+                    // set error to modal div
+                }
+            });
+        }
+        else{
+
+        }
     }
 
     function saveAbonoment(){

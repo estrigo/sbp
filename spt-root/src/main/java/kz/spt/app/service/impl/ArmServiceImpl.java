@@ -215,8 +215,8 @@ public class ArmServiceImpl implements ArmService {
                         messageValues.put("username", username);
                         messageValues.put("description", camera.getGate().getDescription());
                         messageValues.put("parking", camera.getGate().getParking().getName());
-                        messageValues.put("additionalMessage", camera.getGate().getParking().getName());
-                        messageValues.put("reason", camera.getGate().getParking().getName());
+                        messageValues.put("additionalMessage", MessageKey.REASON);
+                        messageValues.put("reason", reason);
 
                         String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.MANUAL_OPEN_IN :
                                 (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_OPEN_OUT : MessageKey.MANUAL_OPEN);
@@ -232,7 +232,7 @@ public class ArmServiceImpl implements ArmService {
                             }
                             paymentService.createDebtAndOUTState(debtPlatenumber, camera, properties);
                         }
-                    } else if (Gate.GateType.IN.equals(camera.getGate().getGateType()) || Gate.GateType.REVERSE.equals(camera.getGate().getGateType())) {
+                    } else if (Gate.GateType.IN.equals(camera.getGate().getGateType())) {
                         String debtPlatenumber = eventLogService.findLastWithDebts(camera.getGate().getId());
 
                         if (debtPlatenumber != null) {

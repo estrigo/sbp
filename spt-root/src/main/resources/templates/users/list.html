@@ -104,7 +104,8 @@
             "render" : function(id){
                  if($('#delete').length)
                 {
-                    return '<a href = "delete/' + id+'">'+ del + '<a>';
+                    // return '<a href = "delete/' + id+'">'+ del + '<a>';
+                    return '<a href = "javascript:deleteAlert(' + id+')">'+ del + '<a>';
                 }
                 else
                 {
@@ -116,6 +117,24 @@
             url: address
         }
     });
+
+    function deleteAlert(id){
+        if(confirm([[#{alert.sureToDelete}]])){
+            var settings = {
+                "url": "/users/delete/" + id,
+                "method": "GET",
+                "timeout": 0,
+                "processData": false,
+                "contentType": false,
+                "data": false
+            };
+            $.ajax(settings).done(function (response) {
+                table.ajax.reload();
+            });
+        }else{
+
+        }
+    }
 
     var interval = null;
     $(document).on('ready',function(){
