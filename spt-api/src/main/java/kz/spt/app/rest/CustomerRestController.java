@@ -3,6 +3,7 @@ package kz.spt.app.rest;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Customer;
+import kz.spt.lib.model.dto.CustomerExcelDto;
 import kz.spt.lib.service.CustomerService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,6 +28,11 @@ public class CustomerRestController {
     @PostMapping
     public Page<Customer> list(@RequestBody PagingRequest pagingRequest) {
         return customerService.getCustomer(pagingRequest);
+    }
+
+    @GetMapping("/excel")
+    public List<CustomerExcelDto> list(@RequestParam String searchText) {
+        return customerService.getCustomerExcel(searchText);
     }
 
     @GetMapping("/customerExist/{phoneNum}")
