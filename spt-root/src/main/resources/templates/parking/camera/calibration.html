@@ -82,7 +82,7 @@
 <script th:src="@{/plugins/calibration/PolygonTool.js}"></script>
 <script th:src="@{/plugins/calibration/RectangleTool.js}"></script>
 <script th:src="@{/assets/js/stomp.js}"></script>
-<script>
+<script th:inline="javascript">
 
     let canvas = document.getElementById('screen');
     let context = canvas.getContext('2d');
