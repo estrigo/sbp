@@ -510,9 +510,9 @@ public class ArmServiceImpl implements ArmService {
 
     @Override
     public byte[] snapshot(Long cameraId) throws Throwable {
-        Camera camera = cameraService.getCameraById(cameraId);
-        if (camera == null || org.apache.commons.lang3.StringUtils.isEmpty(camera.getSnapshotUrl())) return null;
-        Future<byte[]> future = getSnapshot(camera.getIp(), camera.getLogin(), camera.getPassword(), camera.getSnapshotUrl());
+        CameraStatusDto cameraStatusDto = StatusCheckJob.findCameraStatusDtoById(cameraId);
+        if (cameraStatusDto == null || org.apache.commons.lang3.StringUtils.isEmpty(cameraStatusDto.getSnapshotUrl())) return null;
+        Future<byte[]> future = getSnapshot(cameraStatusDto.getIp(), cameraStatusDto.getLogin(), cameraStatusDto.getPassword(), cameraStatusDto.getSnapshotUrl());
         while (true) {
             if (future.isDone()) {
                 return future.get();

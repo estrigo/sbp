@@ -73,6 +73,8 @@ public class Camera {
     private String carmenIp;
     private String carmenLogin;
     private String carmenPassword;
+
+    @Column(columnDefinition="tinyint(1) default 1")
     private Boolean snapshotEnabled;
 
     @DateTimeFormat(pattern = "HH:mm")
