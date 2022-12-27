@@ -171,7 +171,7 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public Boolean openBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
-        log.info("Barrier " + barrier.getIp() + " open process started");
+        log.info("Barrier " + barrier.getIp() + " open process started for " + (properties.containsKey("carNumber")? (String) properties.get("carNumber") : ""));
         Boolean result = true;
         if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier())) { //  ignore in development
             GateStatusDto gate = new GateStatusDto();
@@ -207,7 +207,7 @@ public class BarrierServiceImpl implements BarrierService {
                 result = jetsonChangeValue(BarrierStatusDto.fromBarrier(barrier), Command.Open);
             }
         }
-        log.info("Barrier " + barrier.getIp() + " open process ended");
+        log.info("Barrier " + barrier.getIp() + " open process ended for " + (properties.containsKey("carNumber")? (String) properties.get("carNumber") : ""));
         return result;
     }
 

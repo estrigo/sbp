@@ -132,25 +132,9 @@
         mask2: [],
     };
     let currentTool;
-    function connect() {
-        console.log('Web socket initializing');
-        socket = new WebSocket((window.location.protocol.indexOf('https') !== -1 ? 'wss' : 'ws') + '://' + window.location.host + '/greeting');
-        ws = Stomp.over(socket);
-
-        ws.connect({}, function (frame) {
-            console.log('Web socket connecting');
-            ws.subscribe("/topic", function (message) {
-                const messageBody = JSON.parse(message.body);
-                showGreeting(messageBody);
-            });
-        }, function (error) {
-            console.log("STOMP error " + error);
-        });
-    }
 
     $(document).ready(function () {
         get();
-        setTimeout(connect, 1000);
         errorImageView.setAttribute('src', '[[#{arm.noConnection}]]');
         errorImageView.addEventListener('load', function () {
             noConnectionViewLoaded = true;
@@ -462,7 +446,9 @@
             } else {
                 context.drawImage(image, 0, 0, image.width, image.height);
             }
-            setTimeout(updateSnapshotOnline);
+            setTimeout(function () {
+                updateSnapshotOnline(path);
+            }, 1000);
         });
         isLoading(true);
         if (path) {
@@ -477,7 +463,9 @@
             if (!isStreamOn) {
                 return;
             }
-            setTimeout(updateSnapshotOnline);
+            setTimeout(function () {
+                updateSnapshotOnline(path);
+            }, 1000);
         });
     };
 
@@ -501,28 +489,7 @@
             "fancyImage": fancyImage
         }
     }
-    function showGreeting(messageBody) {
-        const logs = demoCamera.logs;
-        const fancyImage = demoCamera.fancyImage;
-        const canvas = demoCamera.canvas;
-        const context = canvas.getContext('2d');
 
-        if (messageBody.eventType == 'Picture' && canvas.dataset.id == messageBody.id) {
-            demoCamera.snapshot = messageBody.message.indexOf('data:image/jpg;base64,') !== -1 ? messageBody.message : 'data:image/jpg;base64,' + messageBody.message;
-            let image = new Image();
-
-            image.src = demoCamera.snapshot;
-            image.onload = function () {
-                canvas.width = image.width + 1;
-                canvas.height = image.height + 1;
-                context.drawImage(image, 0, 0, image.width, image.height);
-                image = null;
-            };
-        }
-        else {
-            console.log('Unknown event type ' + JSON.stringify(messageBody));
-        }
-    }
     function streamOn() {
         if (!isStreamOn) {
             //clearCanvas();
@@ -531,6 +498,7 @@
                 isStreamOn: "true"
             });
             initCamera(cameraId);
+            updateSnapshotOnline('/files/pic/v2/' + cameraIp.replaceAll(".", "-") + carImageExtension + "?ver=" + Math.random());
         }
     }
 
