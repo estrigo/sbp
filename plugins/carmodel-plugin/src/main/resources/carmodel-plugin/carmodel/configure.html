@@ -90,7 +90,7 @@
           </table>
         </div>
         <div class="card-footer"
-             th:include="~{/carmodel/fragments/pagination.html::page-navigation(url='/carmodel/configure/car',page=${carModels})}">
+             th:include="~{/carmodel/fragments/pagination.html::page-navigation(url='/carmodel/configure/car',page=${carModels}, pageSize=${size})}">
         </div>
       </div>
     </div>
