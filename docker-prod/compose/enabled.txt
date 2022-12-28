@@ -3,3 +3,4 @@ billing-plugin
 rate-plugin
 abonoment-plugin
 carmodel-plugin
+report-plugin
