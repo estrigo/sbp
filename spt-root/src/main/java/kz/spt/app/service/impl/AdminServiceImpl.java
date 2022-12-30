@@ -18,6 +18,7 @@ import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
@@ -38,7 +39,6 @@ public class AdminServiceImpl implements AdminService {
     private final PropertyRepository propertyRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final GitInfoService gitInfoService;
-
     private final WhitelistRootService whitelistRootService;
     @Value("${restAdmin.login}")
     private String login;
@@ -167,6 +167,16 @@ public class AdminServiceImpl implements AdminService {
                 whitelistRootService.updateWhlByGroupId((WhlResponse) request.getBody());
             }
         }
+    }
+
+    @Bean
+    private void sendGitInfo() {
+        String host = getProperty(KEY_HOST);
+        execute(
+                String.format(URL, host, "/rest/send/git-info"),
+                adminCommandDto(null),
+                Void.class
+        );
     }
 
     @Override
