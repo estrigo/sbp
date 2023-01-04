@@ -2,7 +2,6 @@ package kz.spt.app.model.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
 
 @Data
 @Builder
