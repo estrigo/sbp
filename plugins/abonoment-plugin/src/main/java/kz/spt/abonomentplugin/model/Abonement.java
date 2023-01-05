@@ -53,7 +53,7 @@ public class Abonement {
     @Column(name = "type")
     private String type;
 
-    @Column(name = "paidType")
+    @Column(name = "paid_type")
     private String paidType;
 
     @Column(columnDefinition = "text")
@@ -68,4 +68,7 @@ public class Abonement {
 
     @UpdateTimestamp
     private Date updated;
+
+    @Column(name = "created_user")
+    private String createdUser;
 }
