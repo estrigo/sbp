@@ -350,7 +350,7 @@ public class BalanceServiceImpl implements BalanceService {
                 if (carState != null)
                     transactionDto.period = (carState.getParking() != null ? carState.getParking().getName() + " " : "") + sdf.format(carState.getInTimestamp()) + (carState.getOutTimestamp() != null ? " - " + sdf.format(carState.getOutTimestamp()) : "");
             }
-            if(transaction.getIsAbonomentPayment()){
+            if(transaction.getIsAbonomentPayment() != null && !transaction.getIsAbonomentPayment()){
                 transactionDto.period = "Abonoment Payment";
             }
             transactionDto.date = sdf.format(transaction.getDate());
