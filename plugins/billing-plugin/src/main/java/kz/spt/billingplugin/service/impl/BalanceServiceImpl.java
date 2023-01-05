@@ -57,7 +57,7 @@ public class BalanceServiceImpl implements BalanceService {
 
     @Override
     public BigDecimal addBalance(String plateNumber, BigDecimal value, Long carStateId, String description, String descriptionRu, String descriptionLocal,
-                                 String provider) {
+                                 String provider, Boolean isAbonomentPayment) {
         Balance balance;
         Optional<Balance> optionalBalance = balanceRepository.findById(plateNumber);
         if (optionalBalance.isPresent()) {
@@ -71,7 +71,7 @@ public class BalanceServiceImpl implements BalanceService {
         Balance savedBalance = balanceRepository.save(balance);
 
         Transaction transaction = new Transaction(plateNumber, value, carStateId, description, descriptionRu, descriptionLocal,
-                provider, getBalance(plateNumber), rootServicesGetterService.getCarService().findByPlatenumber(plateNumber));
+                provider, getBalance(plateNumber), rootServicesGetterService.getCarService().findByPlatenumber(plateNumber), isAbonomentPayment);
         transactionRepository.save(transaction);
 
         return savedBalance.getBalance();
@@ -79,9 +79,9 @@ public class BalanceServiceImpl implements BalanceService {
 
     @Override
     public BigDecimal subtractBalance(String plateNumber, BigDecimal value, Long carStateId, String description,
-                                      String descriptionRu, String descriptionLocal, String provider) {
+                                      String descriptionRu, String descriptionLocal, String provider, Boolean isAbonomentPayment) {
         return addBalance(plateNumber, BigDecimal.ZERO.compareTo(value) > 0 ? value : value.multiply(new BigDecimal(-1)), carStateId, description, descriptionRu, descriptionLocal,
-                provider);
+                provider, isAbonomentPayment);
     }
 
     @Override
@@ -349,6 +349,9 @@ public class BalanceServiceImpl implements BalanceService {
                 CarState carState = carStateService.findById(transaction.getCarStateId());
                 if (carState != null)
                     transactionDto.period = (carState.getParking() != null ? carState.getParking().getName() + " " : "") + sdf.format(carState.getInTimestamp()) + (carState.getOutTimestamp() != null ? " - " + sdf.format(carState.getOutTimestamp()) : "");
+            }
+            if(transaction.getIsAbonomentPayment()){
+                transactionDto.period = "Abonoment Payment";
             }
             transactionDto.date = sdf.format(transaction.getDate());
             filteredDto.add(transactionDto);

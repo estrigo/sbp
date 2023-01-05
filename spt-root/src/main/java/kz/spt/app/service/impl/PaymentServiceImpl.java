@@ -866,8 +866,10 @@ public class PaymentServiceImpl implements PaymentService {
         } else if (isAbonomentPayment) {
             node.put("inDate", format.format(new Date()));
             parkingId = getNotPaidAbonoment(commandDto).get("parkingId").longValue();
+            node.put("isAbonomentPayment", true);
         } else {
             node.put("inDate", format.format(new Date()));
+            node.put("isAbonomentPayment", false);
 
             if (parkingType != null) {
                 Parking parking = parkingService.findByType(Parking.ParkingType.PREPAID);
