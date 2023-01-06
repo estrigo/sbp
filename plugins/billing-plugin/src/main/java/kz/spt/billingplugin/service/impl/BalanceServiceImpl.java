@@ -345,16 +345,26 @@ public class BalanceServiceImpl implements BalanceService {
         List<TransactionDto> filteredDto = new ArrayList<>(transactionsList.getSize());
         for (Transaction transaction : transactionsList.toList()) {
             TransactionDto transactionDto = TransactionDto.fromTransaction(transaction);
+
+            log.info("transactionDto.platenumber:  " + transaction.getPlateNumber());
+
             if (transaction.getCarStateId() != null) {
                 CarState carState = carStateService.findById(transaction.getCarStateId());
                 if (carState != null)
                     transactionDto.period = (carState.getParking() != null ? carState.getParking().getName() + " " : "") + sdf.format(carState.getInTimestamp()) + (carState.getOutTimestamp() != null ? " - " + sdf.format(carState.getOutTimestamp()) : "");
             }
-            if(transaction.getIsAbonomentPayment() != null && !transaction.getIsAbonomentPayment()){
+            log.info("transactionDto.period1:  " + transactionDto.period);
+
+            log.info("transaction.getIsAbonomentPayment() != null:  " + (transaction.getIsAbonomentPayment() != null));
+            if(transaction.getIsAbonomentPayment() != null && transaction.getIsAbonomentPayment()){
                 transactionDto.period = "Abonoment Payment";
+                log.info("transaction.getIsAbonomentPayment(): " + transaction.getIsAbonomentPayment());
+                log.info("!transaction.getIsAbonomentPayment(): " + !transaction.getIsAbonomentPayment());
             }
+            log.info("transactionDto.period2:  " + transactionDto.period);
             transactionDto.date = sdf.format(transaction.getDate());
             filteredDto.add(transactionDto);
+
         }
 
         Page<TransactionDto> page = new Page<>(filteredDto);
