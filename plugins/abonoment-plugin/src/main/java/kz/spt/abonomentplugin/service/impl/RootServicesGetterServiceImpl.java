@@ -96,6 +96,7 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
             billingSubtractNode.put("reasonEn", messages.get(Language.EN));
             billingSubtractNode.put("reasonLocal", messages.get(Language.LOCAL));
             billingSubtractNode.put("provider", "Subscription fee");
+            billingSubtractNode.put("isAbonomentPayment", true);
             billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
         }
     }

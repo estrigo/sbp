@@ -324,6 +324,7 @@ public class PaymentServiceImpl implements PaymentService {
                 billingSubtractNode.put("reasonEn", messages.get(Language.EN));
                 billingSubtractNode.put("reasonLocal", messages.get(Language.LOCAL));
                 billingSubtractNode.put("provider", commandDto.clientId);
+                billingSubtractNode.put("isAbonomentPayment", true);
                 billingPluginRegister.execute(billingSubtractNode).get("currentBalance").decimalValue();
             }
             setAbonomentPaid(abonomentResultNode.get("id").longValue());

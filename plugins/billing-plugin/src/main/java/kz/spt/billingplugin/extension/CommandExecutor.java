@@ -65,6 +65,8 @@ public class CommandExecutor implements PluginRegister {
 
         if (command != null && command.has("command")) {
             String commandName = command.get("command").textValue();
+            Boolean isAbonomentPayment = command.has("isAbonomentPayment") ? command.get("isAbonomentPayment").booleanValue() : false;
+
             if ("getPasswordHash".equals(commandName)) {
                 if (command.has("client_id") && command.get("client_id").isTextual()) {
                     PaymentProvider paymentProvider = getPaymentProviderService().getProviderByClientId(command.get("client_id").textValue());
@@ -108,8 +110,6 @@ public class CommandExecutor implements PluginRegister {
                     Customer customer = getRootServicesGetterService().getCustomerService().findById(command.get("customerId").longValue());
                     payment.setCustomer(customer);
                 }
-
-                Boolean isAbonomentPayment = command.has("isAbonomentPayment") ? command.get("isAbonomentPayment").booleanValue() : false;
 
                 payment.setInDate(command.get("inDate").textValue() != null ? format.parse(command.get("inDate").textValue()) : null);
                 payment.setRateDetails(command.has("rateName") ? command.get("rateName").textValue() : "");
@@ -175,7 +175,7 @@ public class CommandExecutor implements PluginRegister {
                     String reasonEn = command.get("reasonEn").textValue();
                     String reasonLocal = command.get("reasonLocal").textValue();
                     String provider = command.get("provider").textValue();
-                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), command.has("carStateId") ? command.get("carStateId").longValue() : null, reasonEn, reason, reasonLocal, provider, false));
+                    node.put("currentBalance", getBalanceService().subtractBalance(command.get("plateNumber").textValue(), command.get("amount").decimalValue(), command.has("carStateId") ? command.get("carStateId").longValue() : null, reasonEn, reason, reasonLocal, provider, isAbonomentPayment));
                 } else {
                     throw new RuntimeException("Not all decreaseCurrentBalance parameters set");
                 }
