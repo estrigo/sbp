@@ -231,6 +231,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     @Override
     public JsonNode getUnpaidNotExpiredAbonoment(String plateNumber) {
         Pageable first = PageRequest.of(0, 1);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         List<Abonement> abonements = abonomentRepository.findNotPaidAbonoment(plateNumber, new Date(), first);
         if(abonements.size() > 0){
             Abonement abonement = abonements.get(0);
@@ -239,6 +240,24 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             node.put("parkingId", abonement.getParking().getId());
             node.put("parkingName", abonement.getParking().getName());
             node.put("id", abonement.getId());
+            node.put("period", sdf.format(abonement.getBegin()) + sdf.format(abonement.getEnd()));
+            return node;
+        }
+        return null;
+    }
+    @Override
+    public JsonNode getPaidNotExpiredAbonoment(String plateNumber) {
+        Pageable first = PageRequest.of(0, 1);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+        List<Abonement> abonements = abonomentRepository.findPaidAbonoment(plateNumber, new Date(), first);
+        if(abonements.size() > 0){
+            Abonement abonement = abonements.get(0);
+            ObjectNode node = objectMapper.createObjectNode();
+            node.put("price", abonement.getPrice());
+            node.put("parkingId", abonement.getParking().getId());
+            node.put("parkingName", abonement.getParking().getName());
+            node.put("id", abonement.getId());
+            node.put("period", sdf.format(abonement.getBegin()) + sdf.format(abonement.getEnd()));
             return node;
         }
         return null;

@@ -68,6 +68,10 @@ public class CommandExecutor implements PluginRegister {
                 String plateNumber = jsonCommand.get("plateNumber").textValue();
                 JsonNode unpaidNotExpiredAbonoment = getAbonomentPluginService().getUnpaidNotExpiredAbonoment(plateNumber);
                 node.set("unPaidNotExpiredAbonoment", unpaidNotExpiredAbonoment);
+            }else if("hasPaidNotExpiredAbonoment".equals(command)){
+                String plateNumber = jsonCommand.get("plateNumber").textValue();
+                JsonNode paidNotExpiredAbonoment = getAbonomentPluginService().getPaidNotExpiredAbonoment(plateNumber);
+                node.set("paidNotExpiredAbonoment", paidNotExpiredAbonoment);
             } else if("setAbonomentPaid".equals(command)){
                 Long id = jsonCommand.get("id").longValue();
                 getAbonomentPluginService().setAbonomentPaid(id);

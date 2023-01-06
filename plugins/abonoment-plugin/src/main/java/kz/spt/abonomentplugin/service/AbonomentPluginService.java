@@ -33,6 +33,7 @@ public interface AbonomentPluginService {
     Page<AbonomentDTO> abonomentDtoList(PagingRequest pagingRequest, AbonementFilterDto filter) throws ParseException;
 
     JsonNode getUnpaidNotExpiredAbonoment(String plateNumber);
+    JsonNode getPaidNotExpiredAbonoment(String plateNumber);
 
     void setAbonomentPaid(Long id);
 

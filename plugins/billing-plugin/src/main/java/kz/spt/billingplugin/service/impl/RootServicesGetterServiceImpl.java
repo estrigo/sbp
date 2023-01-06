@@ -23,6 +23,7 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
 
     private CarsService carsService;
     private LanguagePropertiesService languagePropertiesService;
+    private PaymentService rootPaymentService;
 
     @Override
     public ParkingService getParkingService() {
@@ -113,6 +114,15 @@ public class RootServicesGetterServiceImpl implements RootServicesGetterService 
         }
 
         return languagePropertiesService;
+    }
+
+    @Override
+    public PaymentService getRootPaymentService() {
+        if (rootPaymentService == null) {
+            rootPaymentService = (PaymentService) BillingPlugin.INSTANCE.getMainApplicationContext().getBean("paymentServiceImpl");
+        }
+
+        return rootPaymentService;
     }
 
 }

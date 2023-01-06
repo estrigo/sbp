@@ -720,6 +720,37 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
+    @Override
+    public JsonNode getPaidNotExpiredAbonoment(String platenumber) throws Exception {
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonementPlugin);
+        if (abonomentPluginRegister != null) {
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("command", "hasPaidNotExpiredAbonoment");
+            node.put("plateNumber", platenumber);
+
+            JsonNode result = abonomentPluginRegister.execute(node);
+            if (result.has("paidNotExpiredAbonoment")) {
+                return result.get("paidNotExpiredAbonoment");
+            }
+        }
+        return null;
+    }
+
+    public JsonNode getNotPaidAbonoment(String platenumber) throws Exception {
+        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonementPlugin);
+        if (abonomentPluginRegister != null) {
+            ObjectNode node = this.objectMapper.createObjectNode();
+            node.put("command", "hasUnpaidNotExpiredAbonoment");
+            node.put("plateNumber", platenumber);
+
+            JsonNode result = abonomentPluginRegister.execute(node);
+            if (result.has("unPaidNotExpiredAbonoment")) {
+                return result.get("unPaidNotExpiredAbonoment");
+            }
+        }
+        return null;
+    }
+
     private BillingInfoSuccessDto fillPayment(CarState carState, SimpleDateFormat format, CommandDto commandDto, String paymentsJson) throws Exception {
         BillingInfoSuccessDto dto = null;
 
@@ -970,18 +1001,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private JsonNode getNotPaidAbonoment(CommandDto commandDto) throws Exception {
-        PluginRegister abonomentPluginRegister = pluginService.getPluginRegister(StaticValues.abonementPlugin);
-        if (abonomentPluginRegister != null) {
-            ObjectNode node = this.objectMapper.createObjectNode();
-            node.put("command", "hasUnpaidNotExpiredAbonoment");
-            node.put("plateNumber", commandDto.account);
-
-            JsonNode result = abonomentPluginRegister.execute(node);
-            if (result.has("unPaidNotExpiredAbonoment")) {
-                return result.get("unPaidNotExpiredAbonoment");
-            }
-        }
-        return null;
+        return getNotPaidAbonoment(commandDto.getAccount());
     }
 
     private BillingInfoSuccessDto fillAbonomentDetails(JsonNode abonomentJsonNode, CommandDto commandDto) throws Exception {

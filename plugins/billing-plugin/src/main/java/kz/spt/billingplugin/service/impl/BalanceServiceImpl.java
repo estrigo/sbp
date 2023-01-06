@@ -1,5 +1,6 @@
 package kz.spt.billingplugin.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import kz.spt.billingplugin.bootstrap.datatable.BalanceComparators;
 import kz.spt.billingplugin.dto.BalanceDebtLogDto;
 import kz.spt.billingplugin.dto.TransactionDto;
@@ -144,7 +145,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public Page<TransactionDto> getTransactionList(PagingRequest pagingRequest, TransactionFilterDto dto) throws ParseException {
+    public Page<TransactionDto> getTransactionList(PagingRequest pagingRequest, TransactionFilterDto dto) throws Exception {
         org.springframework.data.domain.Page<Transaction> transactions = listByFilters(dto, pagingRequest);
         return getTransactionPage(transactions, pagingRequest);
     }
@@ -337,7 +338,7 @@ public class BalanceServiceImpl implements BalanceService {
         return saveRemovedDebtBalance;
     }
 
-    private Page<TransactionDto> getTransactionPage(org.springframework.data.domain.Page<Transaction> transactionsList, PagingRequest pagingRequest) {
+    private Page<TransactionDto> getTransactionPage(org.springframework.data.domain.Page<Transaction> transactionsList, PagingRequest pagingRequest) throws Exception {
 
         CarStateService carStateService = rootServicesGetterService.getCarStateService();
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
@@ -357,9 +358,13 @@ public class BalanceServiceImpl implements BalanceService {
 
             log.info("transaction.getIsAbonomentPayment() != null:  " + (transaction.getIsAbonomentPayment() != null));
             if(transaction.getIsAbonomentPayment() != null && transaction.getIsAbonomentPayment()){
-                transactionDto.period = "Abonoment Payment";
                 log.info("transaction.getIsAbonomentPayment(): " + transaction.getIsAbonomentPayment());
                 log.info("!transaction.getIsAbonomentPayment(): " + !transaction.getIsAbonomentPayment());
+                JsonNode abonoment = rootServicesGetterService.getRootPaymentService().getPaidNotExpiredAbonoment(transaction.getPlateNumber());
+                String parkingName = abonoment.get("parkingName").textValue();
+                String period = abonoment.get("period").textValue();
+                transactionDto.period = parkingName + " " + period;
+
             }
             log.info("transactionDto.period2:  " + transactionDto.period);
             transactionDto.date = sdf.format(transaction.getDate());

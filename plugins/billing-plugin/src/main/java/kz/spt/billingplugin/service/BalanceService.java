@@ -27,7 +27,7 @@ public interface BalanceService {
 
     void deleteAllDebts();
 
-    Page<TransactionDto> getTransactionList(PagingRequest pagingRequest, TransactionFilterDto dto) throws ParseException;
+    Page<TransactionDto> getTransactionList(PagingRequest pagingRequest, TransactionFilterDto dto) throws Exception;
 
     Page<BalanceDebtLogDto> getClearedDebtList(PagingRequest pagingRequest, String date) throws ParseException;
 
