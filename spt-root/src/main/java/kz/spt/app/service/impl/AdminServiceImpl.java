@@ -24,6 +24,7 @@ import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
@@ -172,11 +173,15 @@ public class AdminServiceImpl implements AdminService {
     @Bean
     private void sendGitInfo() {
         String host = getProperty(KEY_HOST);
-        execute(
-                String.format(URL, host, "/rest/send/git-info"),
-                adminCommandDto(null),
-                Void.class
-        );
+        try {
+            execute(
+                    String.format(URL, host, "/rest/send/git-info"),
+                    adminCommandDto(null),
+                    Void.class
+            );
+        } catch (ResourceAccessException e) {
+            log.warning("Incorrect host address or admin soft absent.\n" + e.getMessage());
+        }
     }
 
     @Override
