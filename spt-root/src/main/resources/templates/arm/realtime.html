@@ -43,6 +43,9 @@
                 </div>
             </div>
         </th:block>
+        <div class="row" style="text-align: center; margin-bottom: 10px;" th:if="${permanentOpenEnabled}">
+            <button id="armOpenEmergencyButton" class="btn btn-danger" onclick="showWarningModal()" th:text="#{arm.openWarningBarrier}"></button>
+        </div>
         <div class="row">
             <div class="item" th:each="camera, iterStat : ${cameras}"
                  th:id="${'item_' + camera.id}"

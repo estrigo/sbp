@@ -37,4 +37,10 @@ public class StaticValues {
     public static String carSmallImagePropertyName = "carSmallImageUrl";
     public static String carmodelPlugin = "carmodel-plugin";
     public static String megaPlugin = "mega-plugin";
+
+    public static String emergencyStatusKey = "emergencyStatusKey";
+
+    public static String emergencyStatusOpenValue = "open";
+
+    public static String emergencyStatusClosedValue = "closed";
 }

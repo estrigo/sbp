@@ -1,17 +1,18 @@
 package kz.spt.app.job;
 
-import com.google.gson.JsonArray;
-import kz.spt.app.model.dto.BarrierStatusDto;
-import kz.spt.app.model.dto.CameraStatusDto;
-import kz.spt.app.model.dto.GateStatusDto;
-import kz.spt.app.model.dto.SensorStatusDto;
+import kz.spt.app.model.dto.*;
 import kz.spt.app.service.BarrierService;
+import kz.spt.lib.service.ArmService;
+import kz.spt.lib.service.EmergencySignalService;
 import kz.spt.app.service.GateService;
+import kz.spt.app.thread.EmergencyStatusCheckThread;
 import kz.spt.app.thread.GateStatusCheckThread;
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Gate;
+import kz.spt.lib.model.dto.EmergencySignalConfigDto;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -30,16 +31,24 @@ public class StatusCheckJob {
 
     private BarrierService barrierService;
 
+    private ArmService armService;
+
+    @Value("${barrier.permanent.open.enabled:false}")
+    Boolean permanentOpenEnabled;
+
     @Autowired
-    public StatusCheckJob(GateService gateService, BarrierService barrierService){
+    public StatusCheckJob(GateService gateService, BarrierService barrierService, ArmService armService){
         this.gateService = gateService;
         this.barrierService = barrierService;
+        this.armService = armService;
     }
 
     public static Boolean emergencyModeOn = false;
 
     public static Map<Long, Boolean> isGatesProcessing = new ConcurrentHashMap<>();
     public static Queue<GateStatusDto> globalGateDtos = new ConcurrentLinkedQueue<>();
+
+    public static EmergencySignalConfigDto emergencySignalConfigDto = null;
 
     public static Map<String, BarrierStatusDto> barrierStatusDtoMap = new ConcurrentHashMap<>();
     public static Map<String, SensorStatusDto> loopStatusDtoMap = new ConcurrentHashMap<>();
@@ -60,6 +69,13 @@ public class StatusCheckJob {
                     new GateStatusCheckThread(gateStatusDto, barrierService).start();
                 }
             }
+        }
+        int i = 0;
+        if(permanentOpenEnabled && emergencySignalConfigDto != null && emergencySignalConfigDto.allFieldsFilled){
+            if(i == 0){
+                new EmergencyStatusCheckThread(emergencySignalConfigDto, barrierService, armService).start();
+            }
+            i = i < 4 ? i++ : 0;
         }
     }
 

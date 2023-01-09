@@ -19,6 +19,12 @@
                                 <a th:href="@{|/admin-place/gitinfo|}" class="btn btn-secondary waves-effect waves-light" th:text="#{infoboard.infoBuild}"></a>
                             </div>
                         </div>
+                        <div class="form-group row" th:if="${permanentOpenEnabled}">
+                            <div class="col-12">
+                                <span th:if="${emergencySignalConfig != null}" th:text="${emergencySignalConfig.ip}"></span>
+                                <a href="#" class="btn btn-secondary waves-effect waves-light" th:text="#{crm.configureEmergencyConfig}" onclick="configureEmergencyConfig()"></a>
+                            </div>
+                        </div>
                         </p>
 <hr>
                       <table id="datatable-buttons" class="table table-bordered">
@@ -77,6 +83,37 @@
                 </div>
               </div>
             </div>
+    <div class="modal fade" id="config-add" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="col-md form-group">
+                        <label class="form-label" th:text="#{barrier.ip}"></label>
+                        <input type="text" class="form-control" id="ip" name="ip" required autocomplete="off">
+                    </div>
+                    <div class="col-md form-group">
+                        <label for="modbusRegister" class="control-label" th:text="#{barrier.modbusRegister}"></label>
+                        <input type="number" step="1" min="0" class="form-control" id="modbusRegister">
+                    </div>
+                    <div class="col-md form-group">
+                        <label for="defaultValue" class="control-label" th:text="#{barrier.defaultActiveSignal}"></label>
+                        <select class="form-control" id="defaultValue">
+                            <option value=""></option>
+                            <option value="1">1</option>
+                            <option value="0">0</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success"
+                            th:text="#{crm.save}" onclick="saveConfig()">
+                    </button>
+                    <button type="button" class="btn btn-danger" th:text="#{crm.close}" onclick="closeConfig()">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Required datatable js -->
@@ -110,7 +147,31 @@
   table.buttons().container()
           .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
 
+  function configureEmergencyConfig(){
+      $('#config-add').modal('show');
+  }
 
+    function saveConfig(){
+      let ip = $('#ip').val();
+      let modbusRegister = $('#modbusRegister').val();
+      let defaultValue = $('#defaultValue').val();
+      console.log($('#ip').val());
+      console.log($('#modbusRegister').val());
+      console.log($('#defaultValue').val());
+
+        const settings = {
+            "url": "/rest/parking/emergencyConfig/add/",
+            "method": "POST",
+            "data": {'ip': ip, 'modbusRegister': modbusRegister, 'defaultActiveSignal': defaultValue}
+        };
+        $.ajax(settings).done(function () {
+            $('#config-add').modal('hide');
+        });
+    }
+
+    function closeConfig(){
+        $('#config-add').modal('hide');
+    }
 </script>
 
 </html>

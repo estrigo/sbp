@@ -9,6 +9,13 @@
             </button>
         </li>
     </ul>
+    <ul class="list-inline menu-left mb-0" style="display: none" id="warningBarriersOpen">
+        <li class="float-left">
+            <div class="alert alert-danger">
+                Внимание! Шлагбаумы открыты через аварийный режим! <a sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')" href="javascript:cancelWarning()" class="alert-link">Закрыть</a>
+            </div>
+        </li>
+    </ul>
     <ul class="list-inline menu-left mb-0">
         <li sec:authorize="hasRole('ROLE_ADMIN')" class="hide-phone">
             <a th:href="@{|/parking/list|}" style="color: white; border-color: white;" class="btn">

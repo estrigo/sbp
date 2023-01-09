@@ -30,17 +30,11 @@ public class CarImageServiceImpl implements CarImageService {
     private String debtPlateNumber;
     private String imagePath;
     private EventLogService eventLogService;
-    private StatusCheckJob statusCheckJob;
-    private CameraServiceImpl cameraServiceImpl;
 
 
-    public CarImageServiceImpl(@Value("${images.file.path}") String imagePath,
-                               EventLogService eventLogService, StatusCheckJob statusCheckJob,
-                               CameraServiceImpl cameraServiceImpl) {
+    public CarImageServiceImpl(@Value("${images.file.path}") String imagePath, EventLogService eventLogService) {
         this.imagePath = imagePath;
         this.eventLogService = eventLogService;
-        this.statusCheckJob = statusCheckJob;
-        this.cameraServiceImpl = cameraServiceImpl;
     }
 
     @Override

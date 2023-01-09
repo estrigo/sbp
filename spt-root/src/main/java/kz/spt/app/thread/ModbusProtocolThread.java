@@ -35,9 +35,11 @@ public class ModbusProtocolThread extends Thread  {
 
     private Map<Integer, Long> closeTimeouts = new HashMap<>();
     private Boolean running = true;
+    private Boolean write = true;
 
-    public ModbusProtocolThread(BarrierStatusDto barrierStatusDto) {
+    public ModbusProtocolThread(BarrierStatusDto barrierStatusDto, Boolean write) {
         this.barrierStatusDto  = barrierStatusDto;
+        this.write = write;
         getConnectedInstance(barrierStatusDto.ip);
     }
 
@@ -105,14 +107,16 @@ public class ModbusProtocolThread extends Thread  {
                 }
 
                 try {
-                    if("icpdas".equals(barrierStatusDto.modbusDeviceVersion)){
-                        modbusMaster.writeMultipleCoils(slaveId, offset, new_boolean_values);
-                        calculateChangedRegisters(new_boolean_values);
-                    } else {
-                        modbusMaster.writeMultipleRegisters(slaveId, offset, new_values);
-                        calculateChangedRegisters(new_values[0]);
+                    if(write){
+                        if("icpdas".equals(barrierStatusDto.modbusDeviceVersion)){
+                            modbusMaster.writeMultipleCoils(slaveId, offset, new_boolean_values);
+                            calculateChangedRegisters(new_boolean_values);
+                        } else {
+                            modbusMaster.writeMultipleRegisters(slaveId, offset, new_values);
+                            calculateChangedRegisters(new_values[0]);
+                        }
+                        Thread.sleep(300);
                     }
-                    Thread.sleep(100);
                 } catch (ModbusProtocolException | ModbusNumberException | ModbusIOException | InterruptedException e) {
                     log.info(barrierStatusDto.ip + " write Registers : " + new_values[0] + " error. message: " + e.getMessage());
                     try {
@@ -131,7 +135,7 @@ public class ModbusProtocolThread extends Thread  {
                 try {
                     outputValues = modbusMaster.readDiscreteInputs(slaveId, offset, 8);
                              //getTestValues(barrierStatusDto); Only for testing
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 } catch (ModbusProtocolException | ModbusNumberException | ModbusIOException | InterruptedException e) {
                     log.info(barrierStatusDto.ip + " read Registers error. message: " + e.getMessage());
                     try {
@@ -200,24 +204,5 @@ public class ModbusProtocolThread extends Thread  {
         for(int i=0; i < changedValues.length; i++){
             inputValues.put(i, changedValues[i]);
         }
-    }
-
-    private boolean[] getTestValues(BarrierStatusDto barrierStatusDto){
-
-        boolean loopValue = CarSimulateJob.magneticLoopMap.containsKey(barrierStatusDto.id)  ? CarSimulateJob.magneticLoopMap.get(barrierStatusDto.id) : false;
-        boolean pheValue = CarSimulateJob.photoElementLoopMap.containsKey(barrierStatusDto.id) ? CarSimulateJob.photoElementLoopMap.get(barrierStatusDto.id) : false;
-
-        boolean[] values = new boolean[8];
-        for (int i = 0; i<values.length; i++){
-            if(barrierStatusDto.loopModbusRegister-1 == i){
-                values[i] = loopValue;
-            } else if(barrierStatusDto.photoElementModbusRegister-1 == i){
-                values[i] = pheValue;
-            } else {
-                values[i] = false;
-            }
-        }
-
-        return values;
     }
 }
