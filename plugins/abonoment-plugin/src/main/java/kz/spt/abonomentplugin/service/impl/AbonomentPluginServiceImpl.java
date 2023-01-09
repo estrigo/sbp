@@ -240,7 +240,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             node.put("parkingId", abonement.getParking().getId());
             node.put("parkingName", abonement.getParking().getName());
             node.put("id", abonement.getId());
-            node.put("period", sdf.format(abonement.getBegin()) + sdf.format(abonement.getEnd()));
+            node.put("period", sdf.format(abonement.getBegin()) + " - " + sdf.format(abonement.getEnd()));
             return node;
         }
         return null;
@@ -257,7 +257,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             node.put("parkingId", abonement.getParking().getId());
             node.put("parkingName", abonement.getParking().getName());
             node.put("id", abonement.getId());
-            node.put("period", sdf.format(abonement.getBegin()) + sdf.format(abonement.getEnd()));
+            node.put("period", sdf.format(abonement.getBegin()) + " - " + sdf.format(abonement.getEnd()));
             return node;
         }
         return null;
