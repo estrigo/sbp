@@ -170,6 +170,43 @@ public class BarrierServiceImpl implements BarrierService {
     }
 
     @Override
+    public int getEmergencySensorStatus(SensorStatusDto sensor) throws IOException, ParseException, ModbusIOException, ModbusProtocolException, ModbusNumberException {
+        if (!disableOpen && (sensor.gateNotControlBarrier == null || !sensor.gateNotControlBarrier)) {
+           if (Barrier.BarrierType.MODBUS.equals(sensor.type)) {
+                if(!modbusIcpdasOldWay){
+                    int result = -1;
+
+                    Boolean value = GateStatusDto.getEmergencyModbusMasterOutputValue(sensor.ip, sensor.modbusRegister-1);
+                    result = value ? 1 : 0;
+                    return result;
+                } else {
+                    int result = -1;
+                    if (!modbusMasterMap.containsKey(sensor.barrierIp) || modbusMasterMap.get(sensor.barrierIp) == null) {
+                        modbusMasterMap.put(sensor.barrierIp, getConnectedInstance(sensor.barrierIp));
+                    }
+                    ModbusMaster m = modbusMasterMap.get(sensor.barrierIp);
+                    int slaveId = 1;
+
+                    if (!m.isConnected()) {
+                        m.connect();
+                    }
+
+                    int offset = sensor.modbusRegister - 1;
+                    boolean[] changedValue = m.readCoils(slaveId, offset, 1);
+                    if (changedValue != null && changedValue.length > 0) {
+                        result = changedValue[0] ? 1 : 0;
+                    }
+                    if (sensor.modbusDeviceVersion != null && "icpdas".equals(sensor.modbusDeviceVersion)) {
+                        m.disconnect();
+                    }
+                    return result;
+                }
+            }
+        }
+        return -1;
+    }
+
+    @Override
     public Boolean openBarrier(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
         log.info("Barrier " + barrier.getIp() + " open process started for " + (properties.containsKey("carNumber")? (String) properties.get("carNumber") : ""));
         Boolean result = true;

@@ -296,11 +296,13 @@ public class ArmServiceImpl implements ArmService {
         if (camera != null && camera.getGate() != null && camera.getGate().getBarrier() != null) {
 
             String username = "";
-            if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+            if (SecurityContextHolder.getContext().getAuthentication() != null && SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
                 CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 if (currentUser != null) {
                     username = currentUser.getUsername();
                 }
+            } else {
+                username = "system";
             }
 
             Map<String, Object> properties = new HashMap<>();
@@ -320,8 +322,8 @@ public class ArmServiceImpl implements ArmService {
             messageValues.put("parking", camera.getGate().getParking().getName());
 
 
-            String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.MANUAL_PASS_IN :
-                    (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_PASS_OUT : MessageKey.MANUAL_PASS);
+            String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.MANUAL_OPEN_IN :
+                    (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.MANUAL_OPEN_OUT : MessageKey.MANUAL_PASS);
 
             eventLogService.sendSocketMessage(EventLogService.ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), "", messageValues, key);
             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.MANUAL_GATE_OPEN);

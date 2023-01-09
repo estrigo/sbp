@@ -1,13 +1,11 @@
 package kz.spt.app.controller;
 
 import kz.spt.app.repository.CarStateRepository;
-import kz.spt.app.service.CameraService;
+import kz.spt.app.service.*;
 import kz.spt.lib.model.*;
 import kz.spt.lib.service.CarStateService;
+import kz.spt.lib.service.EmergencySignalService;
 import kz.spt.lib.service.ParkingService;
-import kz.spt.app.service.BarrierService;
-import kz.spt.app.service.ControllerService;
-import kz.spt.app.service.GateService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @org.springframework.stereotype.Controller
 @Log
@@ -33,13 +30,16 @@ public class ParkingController {
     private CarStateRepository carStateRepository;
     private CarStateService carStateService;
 
+    private EmergencySignalService emergencySignalService;
+
     @Value("${carmen.live.enabled}")
     Boolean carmenLiveEnabled;
 
 
     public ParkingController(ParkingService parkingService, CameraService cameraService, GateService gateService,
                              BarrierService barrierService, ControllerService controllerService,
-                             CarStateRepository carStateRepository, CarStateService carStateService) {
+                             CarStateRepository carStateRepository, CarStateService carStateService,
+                             EmergencySignalService emergencySignalService) {
         this.parkingService = parkingService;
         this.cameraService = cameraService;
         this.gateService = gateService;
@@ -47,11 +47,14 @@ public class ParkingController {
         this.controllerService = controllerService;
         this.carStateRepository = carStateRepository;
         this.carStateService = carStateService;
+        this.emergencySignalService = emergencySignalService;
     }
 
     @GetMapping("/list")
     public String showAllParking(Model model) {
         model.addAttribute("parkings", parkingService.listAllParking());
+        model.addAttribute("permanentOpenEnabled", barrierService.getPermanentOpenEnabled());
+        model.addAttribute("emergencySignalConfig", emergencySignalService.getConfigured());
         return "parking/list";
     }
 

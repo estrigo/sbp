@@ -268,6 +268,18 @@ public class GateStatusDto {
         return modbusMasterThreadMap.get(barrierIp).getOutputValue(register);
     }
 
+    public static Boolean getEmergencyModbusMasterOutputValue(String barrierIp, int register){
+        if(!modbusMasterThreadMap.containsKey(barrierIp)){
+            createEmergencyNewThread(barrierIp);
+            try {
+                Thread.sleep(700); // Wait modbus barrier initialization
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return modbusMasterThreadMap.get(barrierIp).getOutputValue(register);
+    }
+
     public static Boolean getModbusMasterInputValue(String barrierIp, int register){
         if(!modbusMasterThreadMap.containsKey(barrierIp)){
             createNewThread(barrierIp);
@@ -283,7 +295,19 @@ public class GateStatusDto {
     }
 
     private static void createNewThread(String barrierIp){
-        ModbusProtocolThread thread = new ModbusProtocolThread(StatusCheckJob.barrierStatusDtoMap.get(barrierIp));
+        ModbusProtocolThread thread = new ModbusProtocolThread(StatusCheckJob.barrierStatusDtoMap.get(barrierIp), true);
+        thread.start();
+        modbusMasterThreadMap.put(barrierIp, thread);
+        log.info("Adding barrier: " + barrierIp  + " to modbusMasterThreadMap");
+    }
+
+    private static void createEmergencyNewThread(String barrierIp){
+        BarrierStatusDto barrierStatusDto = new BarrierStatusDto();
+        barrierStatusDto.ip = barrierIp;
+        barrierStatusDto.type = Barrier.BarrierType.MODBUS;
+        barrierStatusDto.modbusDeviceVersion = "icpdas";
+
+        ModbusProtocolThread thread = new ModbusProtocolThread(barrierStatusDto, false);
         thread.start();
         modbusMasterThreadMap.put(barrierIp, thread);
         log.info("Adding barrier: " + barrierIp  + " to modbusMasterThreadMap");
