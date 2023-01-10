@@ -980,9 +980,9 @@ public class CarEventServiceImpl implements CarEventService {
             } else {
                 dimension = languagePropertiesService.getMessageFromProperties(MessageKey.DIMENSION_NOT_RECOGNIZED);
             }
-            messageValues.put("eventWithDimensionRu", dimension);
-            messageValues.put("eventWithDimensionEn", dimension);
-            messageValues.put("eventWithDimensionLocal", dimension);
+            messageValues.put("eventWithDimensionRu", ", " + dimension);
+            messageValues.put("eventWithDimensionEn", ", " + dimension);
+            messageValues.put("eventWithDimensionLocal", ", " + dimension);
         }
         if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
             properties.put("type", EventLog.StatusType.Allow);
