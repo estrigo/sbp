@@ -280,7 +280,15 @@
     }
 
     function showWarningModal() {
-        $.Notification.confirm('error', 'top center', '[[#{crm.warning}]]' + '!!!', '[[#{crm.emergencyOpenConfirm}]]', '[[#{crm.yes}]]', '[[#{crm.no}]]');
+        if(confirm('[[#{crm.warning}]]' + '!!!' + '[[#{crm.emergencyOpenConfirm}]]')){
+            $.get("/rest/arm/emergency/open/true", function (data) {
+                        if (data) {
+                            $('#warningSet').hide();
+                            $('#warningBarriersOpen').show();
+                            $('#armOpenEmergencyButton').hide();
+                        }
+                    });
+        }
     }
 
     function cancelWarning() {
@@ -292,16 +300,6 @@
             }
         });
     }
-
-    $(document).on('click', '.notifyjs-metro-base .yes', function () {
-        $.get("/rest/arm/emergency/open/true", function (data) {
-            if (data) {
-                $('#warningSet').hide();
-                $('#warningBarriersOpen').show();
-                $('#armOpenEmergencyButton').hide();
-            }
-        });
-    });
 
     $(document).on('ready', function () {
         $.get("/rest/arm/emergency/status", function (data) {
