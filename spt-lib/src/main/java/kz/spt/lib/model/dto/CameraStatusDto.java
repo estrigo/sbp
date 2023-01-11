@@ -1,4 +1,4 @@
-package kz.spt.app.model.dto;
+package kz.spt.lib.model.dto;
 
 import kz.spt.lib.model.dto.CarEventDto;
 import lombok.Data;

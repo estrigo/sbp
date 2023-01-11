@@ -21,7 +21,7 @@ public interface CarEventService {
 
     void handleTempCarEvent(MultipartFile file, String json) throws Exception;
 
-    boolean passCar(Long cameraId, String platenumber, String snapshot) throws Exception;
+    boolean passCar(Long cameraId, String platenumber) throws Exception;
 
     void handleRtaCarEvent(MultipartFile event_image_0, MultipartFile  event_cropped_image_0, String event_descriptor, String event_timestamp) throws Exception;
 

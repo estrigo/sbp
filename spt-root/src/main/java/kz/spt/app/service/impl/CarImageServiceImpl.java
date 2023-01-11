@@ -1,20 +1,37 @@
 package kz.spt.app.service.impl;
 
+import kz.spt.app.component.HttpRequestFactoryDigestAuth;
 import kz.spt.app.job.StatusCheckJob;
-import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
+import kz.spt.lib.model.dto.CameraStatusDto;
 import kz.spt.lib.model.EventLog;
 import kz.spt.lib.model.dto.CarPictureFromRestDto;
 import kz.spt.lib.service.CarImageService;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
+import lombok.val;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.StringUtils;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,6 +48,8 @@ public class CarImageServiceImpl implements CarImageService {
     private String imagePath;
     private EventLogService eventLogService;
 
+    @Value("${hardcode.string.noPicture}")
+    private String noPicture;
 
     public CarImageServiceImpl(@Value("${images.file.path}") String imagePath, EventLogService eventLogService) {
         this.imagePath = imagePath;
@@ -50,6 +69,7 @@ public class CarImageServiceImpl implements CarImageService {
 
         String fileName = carNumber + "_" + format.format(calendar.getTime());
         String path = imagePath + "/" + year + "/" + month + "/" + day + "/";
+        log.info("path: " + path);
         File theDir = new File(path);
         if (!theDir.exists()) {
             theDir.mkdirs();
@@ -150,6 +170,68 @@ public class CarImageServiceImpl implements CarImageService {
         }
         catch (Exception e) {
             log.warning("Error of saveImageFromBase64ToPicture: " + e);
+        }
+    }
+
+    public byte[] manualSnapShot(CameraStatusDto cameraStatusDto) {
+
+        if(cameraStatusDto.snapshotUrl == null || cameraStatusDto.login ==  null || cameraStatusDto.password  == null){
+            byte[] encodeToString = Base64.decodeBase64(noPicture);
+            return encodeToString;
+        }
+
+        try {
+            final int CONN_TIMEOUT = 10;
+            String ip = cameraStatusDto.ip;
+            HttpHost host = new HttpHost(ip, 8080, "http");
+            CloseableHttpClient client = HttpClientBuilder.create()
+                    .setDefaultCredentialsProvider(provider(cameraStatusDto.login, cameraStatusDto.password))
+                    .useSystemProperties()
+                    .build();
+            HttpComponentsClientHttpRequestFactory requestFactory =
+                    new HttpRequestFactoryDigestAuth(host, client);
+            requestFactory.setConnectTimeout(CONN_TIMEOUT * 1000);
+            requestFactory.setConnectionRequestTimeout(CONN_TIMEOUT * 1000);
+            requestFactory.setReadTimeout(CONN_TIMEOUT * 1000);
+            var restTemplate = new RestTemplate(requestFactory);
+            val headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG);
+            StringBuilder address = new StringBuilder();
+            address.append("http://");
+            address.append(ip);
+            address.append(cameraStatusDto.snapshotUrl);
+            HttpEntity entity = new HttpEntity(headers);
+            byte[] imageBytes = restTemplate.getForObject(address.toString(), byte[].class, entity);
+            return imageBytes;
+        }
+        catch (Exception e) {
+            log.warning("RestTemplate timeout for snapshot: " + e);
+            byte[] encodeToString = Base64.decodeBase64(noPicture);
+            return encodeToString ;
+        }
+    }
+
+    public CredentialsProvider provider(String login, String password) {
+        CredentialsProvider provider = new BasicCredentialsProvider();
+        UsernamePasswordCredentials credentials =
+                new UsernamePasswordCredentials(login, password);
+        provider.setCredentials(AuthScope.ANY, credentials);
+        return provider;
+    }
+
+    public String encodeBase64StringWithSize(byte[] bytes)  {
+        try {
+            ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
+            Thumbnails.of(new ByteArrayInputStream(bytes))
+                    .size(500, 500)
+                    .outputFormat("JPEG")
+                    .outputQuality(1)
+                    .toOutputStream(resultStream);
+            return StringUtils.newStringUtf8(Base64.encodeBase64(resultStream.toByteArray(), false));
+        }
+        catch (Exception e) {
+            log.warning("Error of encodeBase64StringAndSize: " + e);
+            return noPicture;
         }
     }
 }
