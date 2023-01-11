@@ -280,7 +280,7 @@
     }
 
     function showWarningModal() {
-        if(confirm('[[#{crm.warning}]]' + '!' + '[[#{crm.emergencyOpenConfirm}]]')){
+        if(confirm('[[#{crm.warning}]]' + '! ' + '[[#{crm.emergencyOpenConfirm}]]')){
             $.get("/rest/arm/emergency/open/true", function (data) {
                         if (data) {
                             $('#warningSet').hide();
