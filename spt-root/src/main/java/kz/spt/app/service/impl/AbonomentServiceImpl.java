@@ -16,6 +16,7 @@ import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +42,7 @@ public class AbonomentServiceImpl implements AbonomentService {
     }
 
     @Override
-    public JsonNode createAbonomentType(int period,String customJson, String type, int price) throws Exception {
+    public JsonNode createAbonomentType(int period,String customJson, String type, int price, UserDetails currentUser) throws Exception {
         ObjectNode result = objectMapper.createObjectNode();
         result.put("result", false);
 
@@ -53,6 +54,7 @@ public class AbonomentServiceImpl implements AbonomentService {
             command.put("customJson", customJson);
             command.put("type", type);
             command.put("price", price);
+            command.put("createdUser", currentUser.getUsername());
             JsonNode abonomentResult = abonomentPluginRegister.execute(command);
             result.put("result", abonomentResult.get("result").booleanValue());
             if(abonomentResult.has("error")){
@@ -87,7 +89,7 @@ public class AbonomentServiceImpl implements AbonomentService {
     }
 
     @Override
-    public JsonNode createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws Exception {
+    public JsonNode createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked, UserDetails currentUser) throws Exception {
 
         ObjectNode result = objectMapper.createObjectNode();
         result.put("result", false);
@@ -101,6 +103,7 @@ public class AbonomentServiceImpl implements AbonomentService {
             command.put("typeId", typeId);
             command.put("dateStart", dateStart);
             command.put("checked", checked);
+            command.put("createdUser", currentUser.getUsername());
             JsonNode abonomentResult = abonomentPluginRegister.execute(command);
             result.put("result", abonomentResult.get("result").booleanValue());
             if(abonomentResult.has("error")){

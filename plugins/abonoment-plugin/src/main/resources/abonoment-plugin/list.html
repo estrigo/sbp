@@ -68,6 +68,7 @@
                                     <th><a th:text="#{abonoment.parking}"></a></th>
                                     <th><a th:text="#{abonoment.types}"></a></th>
                                     <th><a th:text="#{abonement.createdDate}"></a></th>
+                                    <th><a th:text="#{abonement.createdUser}"></a></th>
                                 </tr>
                                 </thead>
                             </table>
@@ -89,6 +90,7 @@
                                     <th><a th:text="#{abonoment.Type.DAYS}"></a></th>
                                     <th><a th:text="#{abonoment.days}"></a></th>
                                     <th><a th:text="#{abonoment.typePrice}"></a></th>
+                                    <th><a th:text="#{abonement.createdUser}"></a></th>
                                 </tr>
                                 </thead>
                             </table>
@@ -331,7 +333,8 @@
                     "carNumber": $('#carNumber').val(),
                     "searchAbonementTypes": $('#searchAbonementTypes').val(),
                     "dateToString": $("#dateTo").val(),
-                    "dateFromString": $('#dateFrom').val()
+                    "dateFromString": $('#dateFrom').val(),
+                    "createdUser":$('#createdUser').val()
                 };
                 return JSON.stringify(d);
             }
@@ -363,7 +366,8 @@
             },
             {"data": "parking", "orderable": false},
             {"data": "type", "width" : "230px", "orderable": false},
-            {"data": "created"}
+            {"data": "created"},
+            {"data": "createdUser", "orderable": false}
         ],
         "order": [ //[[ in thymeleaf is inline script
             [2, "desc"]
@@ -406,7 +410,8 @@
             },
             {"data": "period", "width" : "20%"},
             {"data": "custom", "width" : "230px"},
-            {"data": "price", "width" : "20%"}
+            {"data": "price", "width" : "20%"},
+	        {"data": "createdUser", "orderable": false}
         ],
         language: {
             url: address

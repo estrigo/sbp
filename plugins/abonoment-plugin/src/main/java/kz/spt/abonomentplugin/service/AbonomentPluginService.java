@@ -16,36 +16,37 @@ import java.util.List;
 
 public interface AbonomentPluginService {
 
-    AbonomentTypes createType(int period,String customJson, String type, int price) throws JsonProcessingException;
+	AbonomentTypes createType(int period, String customJson, String type, int price, String createdUser) throws JsonProcessingException;
 
-    void deleteType(Long id);
+	void deleteType(Long id);
 
-    Page<AbonomentTypeDTO> abonomentTypeDtoList(PagingRequest pagingRequest);
+	Page<AbonomentTypeDTO> abonomentTypeDtoList(PagingRequest pagingRequest);
 
-    List<AbonomentTypes> getAllAbonomentTypes();
+	List<AbonomentTypes> getAllAbonomentTypes();
 
-    Abonement createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws ParseException;
+	Abonement createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked, String createdUser) throws ParseException;
 
-    void deleteAbonoment(Long id);
+	void deleteAbonoment(Long id);
 
-    void deleteAbonomentByParkingID(Long parkingId);
+	void deleteAbonomentByParkingID(Long parkingId);
 
-    Page<AbonomentDTO> abonomentDtoList(PagingRequest pagingRequest, AbonementFilterDto filter) throws ParseException;
+	Page<AbonomentDTO> abonomentDtoList(PagingRequest pagingRequest, AbonementFilterDto filter) throws ParseException;
 
-    JsonNode getUnpaidNotExpiredAbonoment(String plateNumber);
+	JsonNode getUnpaidNotExpiredAbonoment(String plateNumber);
+
     JsonNode getPaidNotExpiredAbonoment(String plateNumber);
 
-    void setAbonomentPaid(Long id);
+	void setAbonomentPaid(Long id);
 
-    JsonNode getPaidNotExpiredAbonoment(String plateNumber, Long parkingId, Date carInDate) throws JsonProcessingException;
+	JsonNode getPaidNotExpiredAbonoment(String plateNumber, Long parkingId, Date carInDate) throws JsonProcessingException;
 
-    Boolean checkAbonomentIntersection(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws ParseException;
+	Boolean checkAbonomentIntersection(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws ParseException;
 
-    void deleteNotPaidExpired();
+	void deleteNotPaidExpired();
 
-    void creteNewForOld();
+	void creteNewForOld();
 
-    String checkExpiration(String plateNumber, Long parkingId);
+	String checkExpiration(String plateNumber, Long parkingId);
 
-    List<AbonomentDTO> getAbonementsByPlateNumber(String plateNumber);
+	List<AbonomentDTO> getAbonementsByPlateNumber(String plateNumber);
 }

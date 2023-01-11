@@ -68,7 +68,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     }
 
     @Override
-    public AbonomentTypes createType(int period,String customJson,String type, int price) throws JsonProcessingException {
+    public AbonomentTypes createType(int period, String customJson, String type, int price, String createdUser) throws JsonProcessingException {
         AbonomentTypes abonomentTypes = new AbonomentTypes();
 
         String custom = customJson;
@@ -123,6 +123,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         abonomentTypes.setType(type);
         abonomentTypes.setPrice(price);
         abonomentTypes.setCustomNumbers(customJson);
+        abonomentTypes.setCreatedUser(createdUser);
         AbonomentTypes savedAbonomentTypes = abonomentTypesRepository.save(abonomentTypes);
 
         return savedAbonomentTypes;
@@ -173,7 +174,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     }
 
     @Override
-    public Abonement createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws ParseException {
+    public Abonement createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked, String createdUser) throws ParseException {
 
         final String dateTimeFormat = "yyyy-MM-dd'T'HH:mm";
 
@@ -191,6 +192,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         abonement.setPaid(false);
         abonement.setMonths(type.getPeriod());
         abonement.setChecked(checked);
+        abonement.setCreatedUser(createdUser);
         Locale locale = LocaleContextHolder.getLocale();
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(locale.toString()));
         if (type.getType().equals("UNLIMITED")){
