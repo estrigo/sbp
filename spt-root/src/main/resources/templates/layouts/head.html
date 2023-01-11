@@ -13,6 +13,7 @@
         <li class="float-left">
             <div class="alert alert-danger" style="display: flex">
                 <p th:text="#{crm.barrierOpenWarning}" th:remove="tag"></p>
+                &nbsp;
                 <a sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN')" href="javascript:cancelWarning()" class="alert-link" th:text="#{crm.cancel}"></a>
             </div>
         </li>
