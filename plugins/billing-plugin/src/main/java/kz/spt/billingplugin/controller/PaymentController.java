@@ -89,8 +89,8 @@ public class PaymentController {
                              @RequestParam(required = false, name = "dateTo") String dateTo,
                              @RequestParam(required = false, name = "paymentProvider") Long paymentProvider,
                              @RequestParam(required = false, name = "carNumber") String carNumber,
-                             @RequestParam(required = false, name = "total") BigDecimal total,
                              @RequestParam(required = false, name = "transaction") String transaction,
+                             @RequestParam(required = false, name = "total") BigDecimal total,
                              HttpServletResponse response) throws Exception {
         if (ObjectUtils.isEmpty(dateFrom) || ObjectUtils.isEmpty(dateTo)) {
             throw new Exception("dateFrom or dateTo is empty");
