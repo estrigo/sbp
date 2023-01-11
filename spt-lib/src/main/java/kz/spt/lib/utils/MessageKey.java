@@ -133,6 +133,7 @@ public interface MessageKey {
     public static final String PASSENGER_CAR = "day.sunday";
     public static final String TRUCK = "day.sunday";
     public static final String GAZELLE = "day.sunday";
+    public static final String NO_VALUE = "log.noValue";
 
 
 }

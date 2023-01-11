@@ -94,6 +94,7 @@ public class CarmodelController {
         model.addAttribute("canEdit", currentUser.getAuthorities().stream().anyMatch(m-> Arrays.asList("ROLE_ADMIN","ROLE_OPERATOR").contains(m.getAuthority())));
         model.addAttribute("dimensionList", carDimensionsService.listDimensions());
         model.addAttribute("dimensions", new Dimensions());
+        model.addAttribute("size", pageable.getPageSize());
         return "carmodel/configure";
     }
 

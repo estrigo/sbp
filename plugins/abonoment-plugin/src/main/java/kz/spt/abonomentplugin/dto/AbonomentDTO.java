@@ -24,6 +24,8 @@ public class AbonomentDTO {
     public String parking;
     public String type;
     public String created;
+
+    public String createdUser;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String customNumbers;
 
@@ -40,6 +42,7 @@ public class AbonomentDTO {
         dto.price = abonement.getPrice();
         dto.paid = abonement.getPaid();
         dto.type = abonement.getType();
+        dto.createdUser = abonement.getCreatedUser();
         if(abonement.getCreated() != null){
             dto.created = format.format(abonement.getCreated());
         }
@@ -68,6 +71,7 @@ public class AbonomentDTO {
         dto.paid = abonement.getPaid();
         dto.type = abonement.getType();
         dto.customNumbers = abonement.getCustomNumbers();
+        dto.createdUser = abonement.getCreatedUser();
         if(abonement.getCreated() != null){
             dto.created = format.format(abonement.getCreated());
         }

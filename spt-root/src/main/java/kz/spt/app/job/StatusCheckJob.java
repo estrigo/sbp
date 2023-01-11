@@ -1,6 +1,11 @@
 package kz.spt.app.job;
 
 import kz.spt.app.model.dto.*;
+import com.google.gson.JsonArray;
+import kz.spt.app.model.dto.BarrierStatusDto;
+import kz.spt.lib.model.dto.CameraStatusDto;
+import kz.spt.app.model.dto.GateStatusDto;
+import kz.spt.app.model.dto.SensorStatusDto;
 import kz.spt.app.service.BarrierService;
 import kz.spt.lib.service.ArmService;
 import kz.spt.lib.service.EmergencySignalService;

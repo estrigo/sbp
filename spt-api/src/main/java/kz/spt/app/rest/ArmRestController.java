@@ -29,9 +29,8 @@ public class ArmRestController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
     @RequestMapping(value = "/open/barrier", method = RequestMethod.POST, consumes = "multipart/form-data")
     public Boolean openGateBarrier(@RequestParam("cameraId") Long cameraId,
-                                   @RequestParam("reason") String reason,
-                                   @RequestParam("snapshot") String snapshot) throws Exception {
-        return armService.openGate(cameraId, snapshot, reason);
+                                   @RequestParam("reason") String reason) throws Exception {
+        return armService.openGate(cameraId, reason);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
@@ -58,9 +57,8 @@ public class ArmRestController {
 
     @RequestMapping(value = "/pass", method = RequestMethod.POST, consumes = "multipart/form-data")
     public Boolean passCar(@RequestParam("cameraId") Long cameraId,
-                           @RequestParam("platenumber") String platenumber,
-                           @RequestParam("snapshot") String snapshot) throws Exception {
-        return armService.passCar(cameraId, platenumber, snapshot);
+                           @RequestParam("platenumber") String platenumber) throws Exception {
+        return armService.passCar(cameraId, platenumber);
     }
 
     @SneakyThrows

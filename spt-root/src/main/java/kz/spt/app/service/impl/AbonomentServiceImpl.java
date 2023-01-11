@@ -16,6 +16,7 @@ import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.service.PluginService;
 import kz.spt.lib.utils.StaticValues;
 import lombok.extern.java.Log;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +42,7 @@ public class AbonomentServiceImpl implements AbonomentService {
     }
 
     @Override
-    public JsonNode createAbonomentType(int period,String customJson, String type, int price) throws Exception {
+    public JsonNode createAbonomentType(int period,String customJson, String type, int price, UserDetails currentUser) throws Exception {
         ObjectNode result = objectMapper.createObjectNode();
         result.put("result", false);
 
@@ -53,6 +54,7 @@ public class AbonomentServiceImpl implements AbonomentService {
             command.put("customJson", customJson);
             command.put("type", type);
             command.put("price", price);
+            command.put("createdUser", currentUser.getUsername());
             JsonNode abonomentResult = abonomentPluginRegister.execute(command);
             result.put("result", abonomentResult.get("result").booleanValue());
             if(abonomentResult.has("error")){
@@ -87,7 +89,7 @@ public class AbonomentServiceImpl implements AbonomentService {
     }
 
     @Override
-    public JsonNode createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws Exception {
+    public JsonNode createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked, UserDetails currentUser) throws Exception {
 
         ObjectNode result = objectMapper.createObjectNode();
         result.put("result", false);
@@ -101,6 +103,7 @@ public class AbonomentServiceImpl implements AbonomentService {
             command.put("typeId", typeId);
             command.put("dateStart", dateStart);
             command.put("checked", checked);
+            command.put("createdUser", currentUser.getUsername());
             JsonNode abonomentResult = abonomentPluginRegister.execute(command);
             result.put("result", abonomentResult.get("result").booleanValue());
             if(abonomentResult.has("error")){
@@ -180,7 +183,6 @@ public class AbonomentServiceImpl implements AbonomentService {
         Iterator<JsonNode> iterator = abonements.iterator();
         List<Period> periods = new ArrayList<>();
         JsonNode prevAbonoment = null;
-        Period p = null;
 
         while (iterator.hasNext()) {
             JsonNode abonoment = iterator.next();
@@ -191,26 +193,17 @@ public class AbonomentServiceImpl implements AbonomentService {
 
             if(prevAbonoment == null){
                 if(inDate.before(start)){
-                    p = new Period();
+                    Period p = new Period();
                     p.setStart(inDate);
                     p.setEnd(start);
+                    periods.add(p);
                 }
             } else {
-                if(abonementFormat.parse(prevAbonoment.get("end").textValue()).getTime() - start.getTime() > 0){
-                    if(p == null){
-                        p = new Period();
-                        p.setStart(inDate);
-                        p.setEnd(start);
-                    } else {
-                        if(p.getEnd().equals(abonementFormat.parse(prevAbonoment.get("end").textValue()))){
-                            p.setEnd(start);
-                        } else {
-                            periods.add(p);
-                            p = new Period();
-                            p.setStart(abonementFormat.parse(prevAbonoment.get("end").textValue()));
-                            p.setEnd(start);
-                        }
-                    }
+                if(start.getTime() - abonementFormat.parse(prevAbonoment.get("end").textValue()).getTime() > 1000*60*60 ){ // Alexandr Vostrikov: час допустимо
+                    Period p = new Period();
+                    p.setStart(abonementFormat.parse(prevAbonoment.get("end").textValue()));
+                    p.setEnd(start);
+                    periods.add(p);
                 }
             }
 
@@ -263,20 +256,10 @@ public class AbonomentServiceImpl implements AbonomentService {
                             }
                             Date periodEnd = startCalendar.getTime();
 
-                            if(p == null){
-                                p = new Period();
-                                p.setStart(periodStart);
-                                p.setEnd(periodEnd);
-                            } else {
-                                if(p.getEnd().equals(periodStart)){
-                                    p.setEnd(periodEnd);
-                                } else {
-                                    periods.add(p);
-                                    p = new Period();
-                                    p.setStart(periodStart);
-                                    p.setEnd(periodEnd);
-                                }
-                            }
+                            Period p = new Period();
+                            p.setStart(periodStart);
+                            p.setEnd(periodEnd);
+                            periods.add(p);
                         }
                     }
                 }
@@ -292,10 +275,6 @@ public class AbonomentServiceImpl implements AbonomentService {
             } else {
                 prevAbonoment = abonoment;
             }
-        }
-
-        if(p != null){
-            periods.add(p);
         }
 
         return periods;

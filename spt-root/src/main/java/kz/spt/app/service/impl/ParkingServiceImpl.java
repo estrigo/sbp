@@ -16,6 +16,7 @@ import kz.spt.lib.service.CarStateService;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.ParkingService;
 import kz.spt.lib.service.PluginService;
+import org.apache.commons.collections.ArrayStack;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -141,15 +142,13 @@ public class ParkingServiceImpl implements ParkingService {
         List<ParkingCarsDTO> carsInParkings = new ArrayList<>(parkings.size());
 
         for (Parking parking : parkings) {
-            List<Cars> resultCars = new ArrayList<>(parkings.size());
             ParkingCarsDTO parkingCarsDTO = new ParkingCarsDTO();
             parkingCarsDTO.setParking(parking);
             for (CarState carState : carStates) {
                 if (carState.getParking() != null && carState.getParking().getId().equals(parking.getId())) {
-                    resultCars.add(carsService.findByPlatenumber(carState.getCarNumber()));
+                    parkingCarsDTO.setSize(parkingCarsDTO.getSize() + 1);
                 }
             }
-            parkingCarsDTO.setCarsList(resultCars);
             carsInParkings.add(parkingCarsDTO);
         }
         return carsInParkings;
@@ -157,13 +156,15 @@ public class ParkingServiceImpl implements ParkingService {
 
     @Override
     public ParkingCarsDTO carsInParking(Long parkingId) {
-        List<ParkingCarsDTO> listCarsInParkings = listAllParkingCars();
-        for (ParkingCarsDTO parkingCarsDTO : listCarsInParkings) {
-            if (parkingCarsDTO.getParking().getId().equals(parkingId)) {
-                return parkingCarsDTO;
-            }
+        ParkingCarsDTO parkingCarsDTO = new ParkingCarsDTO();
+        parkingCarsDTO.setParking(parkingRepository.getOne(parkingId));
+        List<CarState> carStates = (List<CarState>) carStateService.getAllNotLeft(parkingId);
+        List<String> cars = new ArrayList<>();
+        for(CarState cs:carStates){
+           cars.add(cs.getCarNumber());
         }
-        return null;
+        parkingCarsDTO.setCarsList(cars);
+        return parkingCarsDTO;
     }
 
     @Override

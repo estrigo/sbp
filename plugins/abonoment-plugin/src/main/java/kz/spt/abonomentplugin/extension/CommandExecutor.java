@@ -41,7 +41,8 @@ public class CommandExecutor implements PluginRegister {
                 int price = jsonCommand.get("price").intValue();
                 String customJson = jsonCommand.get("customJson").textValue();
                 String type = jsonCommand.get("type").textValue();
-                AbonomentTypes abonomentTypes = getAbonomentPluginService().createType(period, customJson, type, price);
+                String createdUser = jsonCommand.get("createdUser").textValue();
+                AbonomentTypes abonomentTypes = getAbonomentPluginService().createType(period, customJson, type, price, createdUser);
                 node.put("result", true);
             } else if("deleteType".equals(command)){
                 Long typeId = jsonCommand.get("id").longValue();
@@ -53,11 +54,12 @@ public class CommandExecutor implements PluginRegister {
                 Long typeId = jsonCommand.get("typeId").longValue();
                 String dateStart = jsonCommand.get("dateStart").textValue();
                 Boolean checked = jsonCommand.get("checked").booleanValue();
+                String createdUser = jsonCommand.get("createdUser").textValue();
                 if(getAbonomentPluginService().checkAbonomentIntersection(platenumber, parkingId, typeId, dateStart, checked)){
                     node.put("result", false);
-                    node.put("error", languagePropertiesService.getMessageFromProperties(MessageKey.ABONNEMENT_ERROR_DATES_OVERLAP_PLATENUMBER));
+                    node.put("error", getLanguagePropertiesService().getMessageFromProperties(MessageKey.ABONNEMENT_ERROR_DATES_OVERLAP_PLATENUMBER));
                 } else {
-                    Abonement abonement = getAbonomentPluginService().createAbonoment(platenumber, parkingId, typeId, dateStart, checked);
+                    Abonement abonement = getAbonomentPluginService().createAbonoment(platenumber, parkingId, typeId, dateStart, checked, createdUser);
                     node.put("result", true);
                 }
             } else if("deleteAbonoment".equals(command)){
@@ -68,6 +70,10 @@ public class CommandExecutor implements PluginRegister {
                 String plateNumber = jsonCommand.get("plateNumber").textValue();
                 JsonNode unpaidNotExpiredAbonoment = getAbonomentPluginService().getUnpaidNotExpiredAbonoment(plateNumber);
                 node.set("unPaidNotExpiredAbonoment", unpaidNotExpiredAbonoment);
+            }else if("hasPaidNotExpiredAbonoment".equals(command)){
+                String plateNumber = jsonCommand.get("plateNumber").textValue();
+                JsonNode paidNotExpiredAbonoment = getAbonomentPluginService().getPaidNotExpiredAbonoment(plateNumber);
+                node.set("paidNotExpiredAbonoment", paidNotExpiredAbonoment);
             } else if("setAbonomentPaid".equals(command)){
                 Long id = jsonCommand.get("id").longValue();
                 getAbonomentPluginService().setAbonomentPaid(id);
@@ -106,5 +112,12 @@ public class CommandExecutor implements PluginRegister {
             abonomentPluginService = (AbonomentPluginService) AbonomentPlugin.INSTANCE.getApplicationContext().getBean("abonomentPluginServiceImpl");
         }
         return abonomentPluginService;
+    }
+
+    private LanguagePropertiesService getLanguagePropertiesService() {
+        if (languagePropertiesService == null) {
+            languagePropertiesService = (LanguagePropertiesService) AbonomentPlugin.INSTANCE.getMainApplicationContext().getBean("languagePropertiesServiceImpl");
+        }
+        return languagePropertiesService;
     }
 }

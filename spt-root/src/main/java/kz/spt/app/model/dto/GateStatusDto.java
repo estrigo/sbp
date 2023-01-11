@@ -5,6 +5,7 @@ import kz.spt.app.thread.ModbusProtocolThread;
 import kz.spt.lib.model.Barrier;
 import kz.spt.lib.model.Camera;
 import kz.spt.lib.model.Gate;
+import kz.spt.lib.model.dto.CameraStatusDto;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 

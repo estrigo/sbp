@@ -163,7 +163,8 @@ public class PaymentServiceImpl implements PaymentService {
                 firstPayment.getDescription(),
                 firstPayment.getDescription(),
                 firstPayment.getDescription(),
-                firstPayment.getProvider().getName());
+                firstPayment.getProvider().getName(),
+                false);
     }
 
     private List<Payment> listByFilters(FilterPaymentDTO filterDto) {

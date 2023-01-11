@@ -41,4 +41,8 @@ public interface PaymentService {
     void cancelTransactionByTrxId(
             String transactionId,
             String reason) throws Exception;
+
+    JsonNode getNotPaidAbonoment(String platenumber) throws Exception;
+
+    JsonNode getPaidNotExpiredAbonoment(String platenumber) throws Exception;
 }

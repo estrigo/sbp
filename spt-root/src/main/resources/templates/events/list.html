@@ -12,7 +12,7 @@
                 <div class="card table-responsive">
                     <div class="card-header" th:text="#{events.events}"></div>
                     <div class="card-body">
-                        <form th:action="@{|/events/excel|}" th:object="${eventFilterDto}" method="post" id="search">
+                        <form th:action="@{|/events/list|}" th:object="${eventFilterDto}" method="post" id="search">
                             <div class="row">
                                 <div class="col-4">
                                     <label th:text="#{events.dateFrom}"></label>
@@ -123,6 +123,17 @@
             "&plateNumber=" + $('#plateNumber').val() + "&gateId=" + $('#gateId').val() + "&eventType=" + $('#eventType').val();
     }
 
+    Fancybox.bind("[data-fancybox]", {
+	    Image: {
+		    Panzoom: {
+			    zoomFriction: 0.75,
+			    maxScale: function () {
+				    return 3;
+			    },
+		    },
+	    },
+    });
+
     const table = $('#eventTable').DataTable({
         "processing": true,
         "serverSide": true,
@@ -156,10 +167,10 @@
                 "orderable": false,
                 "render": function (data, type, event) {
                     if(event.smallImgUrl){
-                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigImgUrl + '" data-caption="' + event.plateNumber + '" data-width="1800">' +
+                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigImgUrl + '" data-caption="' + event.plateNumber + '">' +
                             '<img class="thumb-img" alt src="/files/pictures' + event.smallImgUrl + '"></a>';
                     } else if(event.bigImgUrl){
-                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigImgUrl + '" data-caption="' + event.plateNumber + '" data-width="1800">' +
+                        return '<a class="col col--4" data-fancybox="event" data-src="/files/pictures' + event.bigImgUrl + '" data-caption="' + event.plateNumber + '">' +
                             '<img class="thumb-img" alt src="/files/pictures' + event.bigImgUrl + '"></a>';
                     }
                     return '';

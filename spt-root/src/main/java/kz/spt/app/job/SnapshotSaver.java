@@ -2,11 +2,8 @@ package kz.spt.app.job;
 
 
 import kz.spt.app.component.HttpRequestFactoryDigestAuth;
-import kz.spt.app.job.StatusCheckJob;
-import kz.spt.app.model.dto.CameraStatusDto;
+import kz.spt.lib.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
-import kz.spt.app.service.CameraService;
-import kz.spt.lib.model.Camera;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import lombok.val;
@@ -24,11 +21,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;

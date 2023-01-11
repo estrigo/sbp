@@ -16,7 +16,7 @@ public interface ArmService {
 
     Boolean openGate(Long cameraId) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException;
 
-    Boolean openGate(Long cameraId, String snapshot, String reason) throws Exception;
+    Boolean openGate(Long cameraId, String reason) throws Exception;
 
     JsonNode openPermanentGate(Long cameraId) throws ModbusProtocolException, ModbusNumberException, IOException, ParseException, InterruptedException, ModbusIOException;
 
@@ -32,7 +32,7 @@ public interface ArmService {
 
     Boolean getEmergencyStatus();
 
-    Boolean passCar(Long cameraId, String platenumber, String snapshot) throws Exception;
+    Boolean passCar(Long cameraId, String platenumber) throws Exception;
 
     byte[] snapshot(Long cameraId) throws Throwable;
 

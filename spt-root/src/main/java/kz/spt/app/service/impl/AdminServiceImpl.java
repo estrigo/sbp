@@ -2,14 +2,17 @@ package kz.spt.app.service.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import kz.spt.app.model.dto.ReportDataSet;
 import kz.spt.app.model.dto.GenericResponse;
+import kz.spt.app.model.dto.ReportDataSet;
 import kz.spt.app.model.dto.WhlResponse;
 import kz.spt.app.repository.PropertyRepository;
 import kz.spt.app.service.WhitelistRootService;
 import kz.spt.lib.model.Property;
-import kz.spt.lib.model.dto.adminPlace.*;
-
+import kz.spt.lib.model.dto.adminPlace.AdminCommandDto;
+import kz.spt.lib.model.dto.adminPlace.GenericWhlEvent;
+import kz.spt.lib.model.dto.adminPlace.Prop;
+import kz.spt.lib.model.dto.adminPlace.WhiteListEvent;
+import kz.spt.lib.model.dto.adminPlace.WhiteListGroupEvent;
 import kz.spt.lib.model.dto.adminPlace.enums.WhlProcessEnum;
 import kz.spt.lib.service.AdminService;
 import kz.spt.lib.service.GitInfoService;
@@ -18,8 +21,14 @@ import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -38,7 +47,6 @@ public class AdminServiceImpl implements AdminService {
     private final PropertyRepository propertyRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final GitInfoService gitInfoService;
-
     private final WhitelistRootService whitelistRootService;
     @Value("${restAdmin.login}")
     private String login;
@@ -166,6 +174,20 @@ public class AdminServiceImpl implements AdminService {
             if (!ObjectUtils.isEmpty(request)) {
                 whitelistRootService.updateWhlByGroupId((WhlResponse) request.getBody());
             }
+        }
+    }
+
+    @Bean
+    private void sendGitInfo() {
+        String host = getProperty(KEY_HOST);
+        try {
+            execute(
+                    String.format(URL, host, "/rest/send/git-info"),
+                    adminCommandDto(null),
+                    Void.class
+            );
+        } catch (Exception e) {
+            log.warning("Incorrect host address or admin soft absent.\n" + e.getMessage());
         }
     }
 
