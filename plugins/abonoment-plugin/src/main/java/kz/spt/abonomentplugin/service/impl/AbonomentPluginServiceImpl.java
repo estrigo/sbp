@@ -267,7 +267,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     public void setAbonomentPaid(Long id) {
         Abonement abonement = abonomentRepository.findById(id).get();
         abonement.setPaid(true);
-        if (abonement.getChecked()){
+        if (abonement.getChecked() && (abonement.getExtended() != null && !abonement.getExtended())){
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
             abonement.setBegin(calendar.getTime());
@@ -388,6 +388,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             newAbonement.setMonths(expiring.getMonths());
             newAbonement.setPaidType(expiring.getPaidType());
             newAbonement.setPrice(expiring.getPrice());
+            newAbonement.setExtended(true);
 
             try {
                 BigDecimal balance = rootServicesGetterService.getBalance(expiring.getCar().getPlatenumber());

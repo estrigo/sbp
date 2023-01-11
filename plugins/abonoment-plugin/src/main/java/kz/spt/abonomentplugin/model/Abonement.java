@@ -50,6 +50,9 @@ public class Abonement {
     @Column(name = "checked")
     private Boolean checked;
 
+    @Column(name = "extended")
+    private Boolean extended = false;
+
     @Column(name = "type")
     private String type;
 
