@@ -537,7 +537,7 @@ public class CarEventServiceImpl implements CarEventService {
                 gate.backCamera.properties = properties;
             }
 
-            if (eventDto.manualOpen || isAllow(eventDto, cameraStatusDto, properties, gate)) {
+            if (isAllow(eventDto, cameraStatusDto, properties, gate)) {
                 log.info("Gate type: " + gate.gateType);
 
                 Camera camera = null;
