@@ -43,6 +43,9 @@
                 <a th:if="${#locale.language != 'tr'}" href="javascript:changeLanguage('tr')" class="dropdown-item notify-item">
                     <i class="mdi mdi-web"></i> <span th:text="#{lang.tr}"></span>
                 </a>
+                <a th:if="${#locale.language != 'in'}" href="javascript:changeLanguage('in')" class="dropdown-item notify-item">
+                    <i class="mdi mdi-web"></i> <span th:text="#{lang.in}"></span>
+                </a>
             </div>
         </li>
 
