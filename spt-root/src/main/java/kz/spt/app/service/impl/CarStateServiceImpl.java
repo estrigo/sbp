@@ -148,6 +148,11 @@ public class CarStateServiceImpl implements CarStateService {
     }
 
     @Override
+    public Iterable<CarState> getAllNotLeft(Long parkingId) {
+        return carStateRepository.getAllCarStateNotLeft(parkingId);
+    }
+
+    @Override
     public void editPlateNumber(CarState carState) {
         carStateRepository.findById(carState.getId()).ifPresent(m -> {
             String username = "";
