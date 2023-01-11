@@ -12,7 +12,6 @@ import kz.spt.app.component.HttpRequestFactoryDigestAuth;
 import kz.spt.app.job.SensorStatusCheckJob;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
-import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.lib.model.dto.CameraStatusDto;
 import kz.spt.app.model.strategy.barrier.close.AbstractCloseStrategy;
