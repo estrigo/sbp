@@ -188,6 +188,8 @@ fiscalization:
   mobile: false
   frequency: 60000
   periodHour: 2
+  withTax: false
+  taxPercent: 12
 discountPayments:
   show: false
 telegram:
