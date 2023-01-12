@@ -148,16 +148,19 @@
           .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
 
   function configureEmergencyConfig(){
-      $('#config-add').modal('show');
+      $.get("/rest/parking/emergencyConfig", function (data) {
+          $('#ip').val(data.ip);
+          $('#modbusRegister').val(data.modbusRegister);
+          $('#defaultValue').val(data.defaultValue);
+
+          $('#config-add').modal('show');
+      });
   }
 
     function saveConfig(){
       let ip = $('#ip').val();
       let modbusRegister = $('#modbusRegister').val();
       let defaultValue = $('#defaultValue').val();
-      console.log($('#ip').val());
-      console.log($('#modbusRegister').val());
-      console.log($('#defaultValue').val());
 
         const settings = {
             "url": "/rest/parking/emergencyConfig/add/",
@@ -166,6 +169,7 @@
         };
         $.ajax(settings).done(function () {
             $('#config-add').modal('hide');
+            window.location.reload();
         });
     }
 

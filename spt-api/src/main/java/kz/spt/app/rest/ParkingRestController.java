@@ -46,4 +46,9 @@ public class ParkingRestController {
     public void setPermanentClose(@RequestParam("ip") String ip) {
         emergencySignalService.remove(ip);
     }
+
+    @GetMapping("/emergencyConfig")
+    public EmergencySignalConfigDto getConfigured(){
+        return emergencySignalService.getConfigured();
+    }
 }

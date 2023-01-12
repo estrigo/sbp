@@ -52,7 +52,16 @@ public class EmergencySignalServiceImpl implements EmergencySignalService {
 
     @Override
     public void save(String ip, Integer modbusRegister, Integer defaultActiveSignal) {
+        List<EmergencySignalConfig> emergencySignalConfigs = emergencySignalRepository.findAll();
         EmergencySignalConfig config = new EmergencySignalConfig();
+        if(emergencySignalConfigs.size() > 0){
+            EmergencySignalConfig oldConfig = emergencySignalConfigs.get(0);
+            if(!oldConfig.getIp().equals(ip)){
+                emergencySignalRepository.deleteById(oldConfig.getIp());
+            } else {
+                config = oldConfig;
+            }
+        }
         config.setIp(ip);
         config.setModbusRegister(modbusRegister);
         config.setModbusSosActiveValue(defaultActiveSignal);
