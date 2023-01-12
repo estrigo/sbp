@@ -20,6 +20,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Calendar;
 import java.util.List;
 
@@ -36,6 +38,12 @@ public class FiscalCheckServiceImpl implements FiscalCheckService {
 
     @Value("${fiscalization.mobile}")
     Boolean mobilePayFiscalization;
+
+    @Value("${fiscalization.withTax}")
+    Boolean fiscalizationWithTax;
+
+    @Value("${fiscalization.taxPercent}")
+    int fiscalizationTaxPercent;
 
     @Value("${fiscalization.periodHour}")
     Integer periodHour;
@@ -130,6 +138,15 @@ public class FiscalCheckServiceImpl implements FiscalCheckService {
             Position position = new Position();
             position.price = sum - change;
             position.positionName = operationName;
+            if (fiscalizationWithTax) {
+                position.taxPercent = fiscalizationTaxPercent;
+                position.taxType = 100;
+                double tax = ((double) sum * position.taxPercent) / (100 + position.taxPercent);
+                position.tax = new BigDecimal(tax).setScale(2, RoundingMode.HALF_UP);
+            } else {
+                position.taxType = 0;
+                position.tax = new BigDecimal(0);
+            }
             check.getPositions().add(position);
 
             kz.spt.billingplugin.model.dto.webkassa.Payment payment = new kz.spt.billingplugin.model.dto.webkassa.Payment();
