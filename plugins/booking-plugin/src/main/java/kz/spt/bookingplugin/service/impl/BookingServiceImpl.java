@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.bookingplugin.exceptions.BookingValidException;
 import kz.spt.bookingplugin.model.BookingLog;
+import kz.spt.bookingplugin.model.BookingToken;
 import kz.spt.bookingplugin.repository.BookingRepository;
+import kz.spt.bookingplugin.repository.BookingTokenRepository;
 import kz.spt.bookingplugin.service.BookingService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
@@ -24,14 +26,20 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static java.time.LocalDate.now;
 
 @Slf4j
 @Service
@@ -42,6 +50,7 @@ public class BookingServiceImpl implements BookingService {
     private static Long lastTokenCheck;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private BookingRepository bookingRepository;
+    private BookingTokenRepository bookingTokenRepository;
     @Value("${booking.halapark.check}")
     private Boolean bookingHalaparkCheck;
     @Value("${booking.halapark.tokenUrl}")
@@ -59,8 +68,9 @@ public class BookingServiceImpl implements BookingService {
     @Value("${booking.esentai.password}")
     private String password;
 
-    public BookingServiceImpl(BookingRepository bookingRepository) {
+    public BookingServiceImpl(BookingRepository bookingRepository, BookingTokenRepository bookingTokenRepository) {
         this.bookingRepository = bookingRepository;
+        this.bookingTokenRepository = bookingTokenRepository;
     }
 
     @Override
@@ -139,7 +149,16 @@ public class BookingServiceImpl implements BookingService {
                 bookingRepository.save(bookingLog);
             }
             else if (esentaiCheck) {
-                String token = String.valueOf(getEsentaiToken());
+                BookingToken bookingToken = bookingTokenRepository.findByClient(BookingToken.Client.Esentai);
+                String token;
+                LocalDate localDate = now().minusDays(7);
+                Date expirationDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                if (ObjectUtils.isEmpty(bookingToken) || bookingToken.getDate().before(expirationDate)) {
+                    token = String.valueOf(getEsentaiToken());
+                } else {
+                    token = bookingToken.getToken();
+                }
+
                 RestTemplate restTemplate = new RestTemplate();
                 Map<String, Object> params = new HashMap<>();
                 params.put("vehicle_gov_number", plateNumber);
@@ -195,6 +214,14 @@ public class BookingServiceImpl implements BookingService {
             if (responseEntity.getBody() != null) {
                 JSONObject jsonResp = new JSONObject(responseEntity.getBody());
                 token = jsonResp.get("auth_token");
+                BookingToken bookingToken = bookingTokenRepository.findByClient(BookingToken.Client.Esentai);
+                if (ObjectUtils.isEmpty(bookingToken)) {
+                    bookingToken = new BookingToken();
+                    bookingToken.setClient(BookingToken.Client.Esentai);
+                }
+                bookingToken.setToken(token.toString());
+                bookingToken.setDate(new Date());
+                bookingTokenRepository.save(bookingToken);
             }
             return token;
         } catch (Exception e) {
