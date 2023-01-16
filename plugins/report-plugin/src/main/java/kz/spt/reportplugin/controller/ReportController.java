@@ -102,7 +102,9 @@ public class ReportController extends BasicRestController<SumReportDto> {
                 .concat(UUID.randomUUID().toString()).concat(".").concat(format.toLowerCase());
         response.setHeader(headerKey, headerValue);
         ServletOutputStream outputStream = response.getOutputStream();
-        outputStream.write(bytes);
+        if(bytes != null) {
+            outputStream.write(bytes);
+        }
         outputStream.close();
     }
 

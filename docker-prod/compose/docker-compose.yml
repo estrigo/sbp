@@ -48,6 +48,7 @@ services:
       - parking-net
   imgproxy:
     image: darthsim/imgproxy
+    restart: always
     ports:
       - "9980:8080"
     environment:

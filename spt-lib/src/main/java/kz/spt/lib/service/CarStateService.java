@@ -30,6 +30,8 @@ public interface CarStateService {
 
     Iterable<CarState> getAllNotLeft();
 
+    Iterable<CarState> getAllNotLeft(Long parkingId);
+
     void editPlateNumber(CarState carState);
 
     Iterable<CarState> listByFilters(CarStateFilterDto filterDto);

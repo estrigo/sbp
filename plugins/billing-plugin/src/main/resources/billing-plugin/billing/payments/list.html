@@ -28,7 +28,7 @@
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="paymentProvider" th:text="#{billing.provider}"></label>
-                                        <select class="form-control form-control-sm" id="paymentProvider">
+                                        <select id="paymentProvider" name="paymentProvider" class="form-control form-control-sm">
                                             <option value="" th:text="#{crm.notSelected}"></option>
                                             <option th:each="r : ${paymentProviders}" th:value="${r.value}"
                                                     th:text="${r.label}">
@@ -36,17 +36,17 @@
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="carNumber" th:text="#{payments.carNumber}"></label>
-                                        <input type="text" class="form-control form-control-sm" id="carNumber"
+                                        <input id="carNumber" name="carNumber" type="text" class="form-control form-control-sm"
                                                th:placeholder="#{payments.carNumber}">
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="transaction" th:text="#{payments.transaction}"></label>
-                                        <input type="text" class="form-control form-control-sm" id="transaction"
+                                        <input id="transaction" name="transaction" type="text" class="form-control form-control-sm"
                                                th:placeholder="#{payments.transaction}">
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="total" th:text="#{payments.total}"></label>
-                                        <input type="number" id="total" class="form-control form-control-sm"
+                                        <input id="total" name="total" type="number" class="form-control form-control-sm"
                                                th:placeholder="#{payments.total}">
                                     </div>
                                     <div class="form-group col-md-2">
@@ -59,12 +59,6 @@
                                     </div>
                                 </div>
                             </form>
-<!--                            <div class="form-row">-->
-<!--                                <button class="btn btn-success waves-effect waves-light"-->
-<!--                                        onclick="excel(this)"-->
-<!--                                        type="button"-->
-<!--                                        th:text="#{report.excel}"></button>-->
-<!--                            </div>-->
                         </div>
                         <hr>
                         <table class="table table-striped table-bordered" style="width:100%" id="payments">
@@ -178,71 +172,15 @@
     $(document).ready(function () {
         $('.filter').on('click', function () {
             table.ajax.reload();
-        })
+        }),
+        $(window).keydown(function(event){
+            if(event.keyCode === 13) {
+                event.preventDefault();
+                return false;
+            }
+        });
     });
 
-    function excel(element) {
-        $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
-        $(element).attr('disabled', 'disabled');
-        let request = {
-            "dateFrom": $('#dateFrom').val(),
-            "dateTo": $('#dateTo').val(),
-            "paymentProvider": $('#paymentProvider').val(),
-            "carNumber": $('#carNumber').val(),
-            "total": $('#total').val()
-        };
-        $.ajax({
-            url: "/rest/payments/excel",
-            type: "POST",
-            data: JSON.stringify(request),
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (data) {
-                try {
-                    let arr = [];
-                    for (let i = 0; i < data.length; i++) {
-                        delete data[i]['updated'];
-                        delete data[i]['description'];
-                        delete data[i]['customerDetail'];
-                        delete data[i]['nullSafeOutDate'];
-                        delete data[i]['nullSafeInDate'];
-                        var stringified = JSON.stringify(data[i]);
-                        stringified = stringified.replace("id", [[#{excel.column.symbol.number}]]);
-                        stringified = stringified.replace("inDate", [[#{excel.column.date.enter}]]);
-                        stringified = stringified.replace("outDate", [[#{excel.column.date.exit}]]);
-                        stringified = stringified.replace("created", [[#{excel.column.date.payment}]]);
-                        stringified = stringified.replace("parking", [[#{excel.column.parking}]]);
-                        stringified = stringified.replace("transaction", [[#{excel.column.transaction}]]);
-                        stringified = stringified.replace("price", [[#{excel.column.sum}]]);
-                        stringified = stringified.replace("provider", [[#{excel.column.provider}]]);
-                        stringified = stringified.replace("carNumber", [[#{excel.column.platenumber}]]);
-                        stringified = stringified.replace("rateDetails", [[#{excel.column.rateDetails}]]);
-                        data[i] = JSON.parse(stringified);
-                        arr.push(data[i]);
-                    }
-                    let ws = XLSX.utils.json_to_sheet(arr, {header: [
-                            [[#{excel.column.symbol.number}]],
-                            [[#{excel.column.platenumber}]],
-                            [[#{excel.column.parking}]],
-                            [[#{excel.column.date.enter}]],
-                            [[#{excel.column.date.exit}]],
-                            [[#{excel.column.date.payment}]],
-                            [[#{excel.column.rateDetails}]],
-                            [[#{excel.column.sum}]],
-                            [[#{excel.column.provider}]],
-                            [[#{excel.column.transaction}]]]});
-
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, 'Payments');
-                    XLSX.writeFile(wb, "payments.xlsx", {type: "buffer", bookType: "xlsx"});
-                } catch (e) {
-                    console.log(e);
-                }
-                $(element).html('Excel');
-                $(element).removeAttr('disabled');
-            }
-        })
-    }
 </script>
 
 </html>

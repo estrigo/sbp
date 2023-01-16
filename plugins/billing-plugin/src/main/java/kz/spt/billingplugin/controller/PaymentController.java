@@ -9,6 +9,8 @@ import kz.spt.billingplugin.service.RootServicesGetterService;
 import kz.spt.lib.model.PaymentCheckLog;
 import kz.spt.lib.model.dto.SelectOption;
 
+import kz.spt.lib.service.LanguagePropertiesService;
+import kz.spt.lib.utils.MessageKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -19,9 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.UUID;
@@ -57,7 +57,8 @@ public class PaymentController {
     @GetMapping("/log")
     public String showLogs(Model model, @RequestParam(value = "value", required = false) Long value) {
         List<SelectOption> selectOptions = paymentProviderService.getSelectOption();
-        selectOptions.add(new SelectOption("0", "Нет значения"));
+        String zeroOption = rootServicesGetterService.getLanguageService().getMessageFromProperties(MessageKey.NO_VALUE);
+        selectOptions.add(new SelectOption("0", zeroOption));
         model.addAttribute("paymentProviders", selectOptions);
         if (!ObjectUtils.isEmpty(value)) {
             SelectOption option =
@@ -89,8 +90,8 @@ public class PaymentController {
                              @RequestParam(required = false, name = "dateTo") String dateTo,
                              @RequestParam(required = false, name = "paymentProvider") Long paymentProvider,
                              @RequestParam(required = false, name = "carNumber") String carNumber,
-                             @RequestParam(required = false, name = "total") BigDecimal total,
                              @RequestParam(required = false, name = "transaction") String transaction,
+                             @RequestParam(required = false, name = "total") BigDecimal total,
                              HttpServletResponse response) throws Exception {
         if (ObjectUtils.isEmpty(dateFrom) || ObjectUtils.isEmpty(dateTo)) {
             throw new Exception("dateFrom or dateTo is empty");

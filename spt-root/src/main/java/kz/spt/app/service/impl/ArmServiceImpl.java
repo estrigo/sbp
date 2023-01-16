@@ -12,8 +12,8 @@ import kz.spt.app.component.HttpRequestFactoryDigestAuth;
 import kz.spt.app.job.SensorStatusCheckJob;
 import kz.spt.app.job.StatusCheckJob;
 import kz.spt.app.model.dto.BarrierStatusDto;
-import kz.spt.app.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
+import kz.spt.lib.model.dto.CameraStatusDto;
 import kz.spt.app.model.strategy.barrier.close.AbstractCloseStrategy;
 import kz.spt.app.model.strategy.barrier.close.ManualCloseStrategy;
 import kz.spt.app.model.strategy.barrier.open.AbstractOpenStrategy;
@@ -151,7 +151,7 @@ public class ArmServiceImpl implements ArmService {
     }
 
     @Override
-    public Boolean openGate(Long cameraId, String snapshot, String reason) throws Exception {
+    public Boolean openGate(Long cameraId, String reason) throws Exception {
         Camera camera = cameraService.getCameraById(cameraId);
         if (camera != null && camera.getGate() != null && camera.getGate().getBarrier() != null) {
             SimpleDateFormat format = new SimpleDateFormat(dateFormat);
@@ -176,11 +176,13 @@ public class ArmServiceImpl implements ArmService {
                 SensorStatusCheckJob.add(strategy);
             } else {
                 result = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
+                String newSnapShot;
+                String carImageUrl;
                 try {
                     CameraStatusDto cameraStatusDtoById = StatusCheckJob.findCameraStatusDtoById(cameraId);
-                    byte[] bytes = manualSnapShot(cameraStatusDtoById);
-                    String newSnapShot = "data:image/jpg;base64," + encodeBase64StringWithSize(bytes);
-                    String carImageUrl = carImageService.saveImage(newSnapShot, new Date(), null);
+                    byte[] bytes = carImageService.manualSnapShot(cameraStatusDtoById);
+                    newSnapShot = "data:image/jpg;base64," + carImageService.encodeBase64StringWithSize(bytes);
+                    carImageUrl = carImageService.saveImage(newSnapShot, new Date(), null);
                     properties.put(StaticValues.carImagePropertyName, carImageUrl);
                     properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
                 } catch (Throwable e) {
@@ -214,7 +216,7 @@ public class ArmServiceImpl implements ArmService {
                             }
                         }
 
-                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLog.StatusType.Success, camera.getId(), debtPlatenumber, snapshot);
+                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.SNAPSHOT, EventLog.StatusType.Success, camera.getId(), debtPlatenumber, carImageUrl);
 
                         Map<String, Object> messageValues = new HashMap<>();
                         messageValues.put("username", username);
@@ -230,11 +232,9 @@ public class ArmServiceImpl implements ArmService {
                         eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.MANUAL_GATE_OPEN);
 
                         if (debtPlatenumber != null) {
-                            if (snapshot != null && !"".equals(snapshot) && !"null".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
-                                String carImageUrl = carImageService.saveImage(snapshot, new Date(), debtPlatenumber);
-                                properties.put(StaticValues.carImagePropertyName, carImageUrl);
-                                properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
-                            }
+                            String imageUrl = carImageService.saveImage(newSnapShot, new Date(), debtPlatenumber);
+                            properties.put(StaticValues.carImagePropertyName, imageUrl);
+                            properties.put(StaticValues.carSmallImagePropertyName, imageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
                             paymentService.createDebtAndOUTState(debtPlatenumber, camera, properties);
                         }
                     } else if (Gate.GateType.IN.equals(camera.getGate().getGateType())) {
@@ -244,7 +244,7 @@ public class ArmServiceImpl implements ArmService {
                             properties.put("carNumber", debtPlatenumber);
                         }
 
-                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.Photo, EventLog.StatusType.Success, camera.getId(), debtPlatenumber, snapshot);
+                        eventLogService.sendSocketMessage(EventLogService.ArmEventType.SNAPSHOT, EventLog.StatusType.Success, camera.getId(), debtPlatenumber, carImageUrl);
 
                         Map<String, Object> messageValues = new HashMap<>();
                         messageValues.put("username", username);
@@ -260,11 +260,9 @@ public class ArmServiceImpl implements ArmService {
                         eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.MANUAL_GATE_OPEN);
 
                         if (debtPlatenumber != null) {
-                            if (snapshot != null && !"".equals(snapshot) && !"null".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
-                                String carImageUrl = carImageService.saveImage(snapshot, new Date(), debtPlatenumber);
-                                properties.put(StaticValues.carImagePropertyName, carImageUrl);
-                                properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
-                            }
+                            String imageUrl = carImageService.saveImage(newSnapShot, new Date(), debtPlatenumber);
+                            properties.put(StaticValues.carImagePropertyName, imageUrl);
+                            properties.put(StaticValues.carSmallImagePropertyName, imageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
 
                             CarEventDto eventDto = new CarEventDto();
                             eventDto.event_date_time = new Date();
@@ -541,8 +539,8 @@ public class ArmServiceImpl implements ArmService {
     }
 
     @Override
-    public Boolean passCar(Long cameraId, String platenumber, String snapshot) throws Exception {
-        return carEventService.passCar(cameraId, platenumber, snapshot);
+    public Boolean passCar(Long cameraId, String platenumber) throws Exception {
+        return carEventService.passCar(cameraId, platenumber);
     }
 
     @Override
@@ -562,7 +560,7 @@ public class ArmServiceImpl implements ArmService {
     public Future<byte[]> getSnapshot(String ip, String login, String password, String url) {
         HttpHost host = new HttpHost(ip, 8080, "http");
         CloseableHttpClient client = HttpClientBuilder.create().
-                setDefaultCredentialsProvider(provider(login, password))
+                setDefaultCredentialsProvider(carImageService.provider(login, password))
                 .useSystemProperties()
                 .build();
         HttpComponentsClientHttpRequestFactory requestFactory =
@@ -576,7 +574,6 @@ public class ArmServiceImpl implements ArmService {
         address.append("http://");
         address.append(ip);
         address.append(url);
-        //url.append("/cgi-bin/snapshot.cgi");
 
         HttpEntity entity = new HttpEntity(headers);
         log.info("getSnapshot(): address- " + address.toString() + "and entity - " + entity);

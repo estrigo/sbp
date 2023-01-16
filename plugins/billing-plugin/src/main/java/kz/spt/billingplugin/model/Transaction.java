@@ -23,7 +23,7 @@ import java.util.Date;
 public class Transaction {
 
     public Transaction(String plateNumber, BigDecimal amount, Long carStateId, String description, String descriptionRu, String descriptionLocal,
-                       String provider, BigDecimal remainder, Cars car){
+                       String provider, BigDecimal remainder, Cars car, Boolean isAbonomentPayment){
         this.plateNumber = plateNumber;
         this.amount = amount;
         this.carStateId = carStateId;
@@ -34,6 +34,7 @@ public class Transaction {
         this.provider = provider;
         this.remainder = remainder;
         this.car = car;
+        this.isAbonomentPayment = isAbonomentPayment;
     }
 
     @Id
@@ -71,4 +72,7 @@ public class Transaction {
 
     @Column(name = "remainder")
     private BigDecimal remainder;
+
+    @Column(name = "is_abonoment")
+    private Boolean isAbonomentPayment;
 }

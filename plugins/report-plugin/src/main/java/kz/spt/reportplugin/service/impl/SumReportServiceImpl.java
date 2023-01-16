@@ -510,37 +510,39 @@ public class SumReportServiceImpl implements ReportService<SumReportDto> {
                 break;
         }
 
-        Query query = entityManager
-                .createNativeQuery(queryText)
-                .setParameter("dateFrom", filterSumReportDto.getDateFrom())
-                .setParameter("dateTo", filterSumReportDto.getDateTo());
+        if(queryText != null) {
+            Query query = entityManager
+                    .createNativeQuery(queryText)
+                    .setParameter("dateFrom", filterSumReportDto.getDateFrom())
+                    .setParameter("dateTo", filterSumReportDto.getDateTo());
 
-        if(!"autoClosedRecords".equals(filterSumReportDto.getEventType())){
-            query.setParameter("dateFromException", dateFromException).setParameter("dateToException", dateToException);
+            if (!"autoClosedRecords".equals(filterSumReportDto.getEventType())) {
+                query.setParameter("dateFromException", dateFromException).setParameter("dateToException", dateToException);
+            }
+
+            List<Object[]> queryResult = query.getResultList();
+
+            List<SumReportDto> listResult = new ArrayList<>(queryResult.size());
+            SumReportDto sumReportDto = new SumReportDto();
+
+            List<SumReportListDto> sumReportList = new ArrayList<>(queryResult.size());
+
+            for (Object[] object : queryResult) {
+                int it = 0;
+
+                SumReportListDto dto = new SumReportListDto();
+                dto.setPlateNumber((String) object[it++]);
+                dto.setFormattedInDate((String) object[it++]);
+                dto.setFormattedOutDate((String) object[it++]);
+                dto.setInPlace((String) object[it++]);
+                dto.setOutPlace((String) object[it++]);
+                sumReportList.add(dto);
+            }
+            sumReportDto.setListResult(sumReportList);
+            listResult.add(sumReportDto);
+            return listResult;
         }
-
-        List<Object[]> queryResult = query.getResultList();
-
-        List<SumReportDto> listResult = new ArrayList<>(queryResult.size());
-        SumReportDto sumReportDto = new SumReportDto();
-
-        List<SumReportListDto> sumReportList  = new ArrayList<>(queryResult.size());
-
-        for(Object[] object: queryResult){
-            int it = 0;
-
-            SumReportListDto dto = new SumReportListDto();
-            dto.setPlateNumber((String)object[it++]);
-            dto.setFormattedInDate((String)object[it++]);
-            dto.setFormattedOutDate((String)object[it++]);
-            dto.setInPlace((String)object[it++]);
-            dto.setOutPlace((String)object[it++]);
-            sumReportList.add(dto);
-        }
-        sumReportDto.setListResult(sumReportList);
-        listResult.add(sumReportDto);
-
-        return listResult;
+        return new ArrayList<>();
     }
 
     @Override

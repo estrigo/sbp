@@ -34,7 +34,7 @@ public class BalanceRestController {
                                              @RequestParam String dateFromString,
                                              @RequestParam String dateToString,
                                              @RequestParam String plateNumber,
-                                             @RequestParam Integer amount) throws ParseException {
+                                             @RequestParam Integer amount) throws Exception {
         TransactionFilterDto dto = new TransactionFilterDto();
         dto.fromDate = dateFromString;
         dto.toDate = dateToString;

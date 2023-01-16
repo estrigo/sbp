@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import kz.spt.app.job.SensorStatusCheckJob;
 import kz.spt.app.job.StatusCheckJob;
-import kz.spt.app.model.dto.CameraStatusDto;
+import kz.spt.lib.model.dto.CameraStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.Period;
 import kz.spt.app.model.strategy.barrier.open.AbstractOpenStrategy;
@@ -145,7 +145,7 @@ public class CarEventServiceImpl implements CarEventService {
     }
 
     @Override
-    public boolean passCar(Long cameraId, String platenumber, String snapshot) throws Exception {
+    public boolean passCar(Long cameraId, String platenumber) throws Exception {
         Boolean barrierResult = false;
         if (platenumber != null) {
             Camera camera = cameraService.getCameraById(cameraId);
@@ -176,8 +176,20 @@ public class CarEventServiceImpl implements CarEventService {
                 eventDto.manualOpen = true;
                 eventDto.cameraId = cameraId;
 
-                if (snapshot != null && !"".equals(snapshot) && !"undefined".equals(snapshot) && !"null".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
-                    eventDto.car_picture = snapshot;
+                String newSnapShot;
+                String carImageUrl;
+                try {
+                    CameraStatusDto cameraStatusDtoById = StatusCheckJob.findCameraStatusDtoById(cameraId);
+                    byte[] bytes = carImageService.manualSnapShot(cameraStatusDtoById);
+                    newSnapShot = "data:image/jpg;base64," + carImageService.encodeBase64StringWithSize(bytes);
+                    carImageUrl = carImageService.saveImage(newSnapShot, new Date(), null);
+                } catch (Throwable e) {
+                    log.warning("ERROR carImageUrl " + e.getMessage());
+                    throw new RuntimeException(e);
+                }
+
+                if (newSnapShot != null && !"".equals(newSnapShot) && !"undefined".equals(newSnapShot) && !"null".equals(newSnapShot) && !"data:image/jpg;base64,null".equals(newSnapShot)) {
+                    eventDto.car_picture = newSnapShot;
                 } else {
                     eventDto.car_picture = null;
                 }
@@ -193,10 +205,10 @@ public class CarEventServiceImpl implements CarEventService {
                 properties.put("gateType", camera.getGate().getGateType().toString());
                 properties.put("type", EventLog.StatusType.Allow);
 
-                if (eventDto.car_picture != null && !"null".equals(snapshot) && !"".equals(snapshot) && !"undefined".equals(snapshot) && !"data:image/jpg;base64,null".equals(snapshot)) {
-                    String carImageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_date_time, eventDto.car_number);
-                    properties.put(StaticValues.carImagePropertyName, carImageUrl);
-                    properties.put(StaticValues.carSmallImagePropertyName, carImageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
+                if (eventDto.car_picture != null && !"null".equals(newSnapShot) && !"".equals(newSnapShot) && !"undefined".equals(newSnapShot) && !"data:image/jpg;base64,null".equals(newSnapShot)) {
+                    String imageUrl = carImageService.saveImage(eventDto.car_picture, eventDto.event_date_time, eventDto.car_number);
+                    properties.put(StaticValues.carImagePropertyName, imageUrl);
+                    properties.put(StaticValues.carSmallImagePropertyName, imageUrl.replace(StaticValues.carImageExtension, "") + StaticValues.carImageSmallAddon + StaticValues.carImageExtension);
                 }
 
                 Map<String, Object> messageValues = new HashMap<>();
@@ -537,7 +549,7 @@ public class CarEventServiceImpl implements CarEventService {
                 gate.backCamera.properties = properties;
             }
 
-            if (eventDto.manualOpen || isAllow(eventDto, cameraStatusDto, properties, gate)) {
+            if (isAllow(eventDto, cameraStatusDto, properties, gate)) {
                 log.info("Gate type: " + gate.gateType);
 
                 Camera camera = null;
@@ -630,12 +642,12 @@ public class CarEventServiceImpl implements CarEventService {
 
     private boolean isAllow(CarEventDto carEvent, CameraStatusDto cameraStatusDto, Map<String, Object> properties, GateStatusDto gate) {
         if (blacklistService.findByPlate(carEvent.car_number).isPresent()) {
-            properties.put("type", EventLog.StatusType.Deny);
+            properties.put("type", EventLog.StatusType.Blacklist);
 
             Map<String, Object> messageValues = new HashMap<>();
             messageValues.put("platenumber", carEvent.car_number);
 
-            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Deny, cameraStatusDto.id, carEvent.getCarNumberWithRegion(), messageValues, MessageKey.NOT_ALLOWED_BAN);
+            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Blacklist, cameraStatusDto.id, carEvent.getCarNumberWithRegion(), messageValues, MessageKey.NOT_ALLOWED_BAN);
             eventLogService.createEventLog(Gate.class.getSimpleName(), cameraStatusDto.gateId, properties, messageValues, MessageKey.NOT_ALLOWED_BAN, EventLog.EventType.NOT_PASS);
             return false;
         }
@@ -980,9 +992,9 @@ public class CarEventServiceImpl implements CarEventService {
             } else {
                 dimension = languagePropertiesService.getMessageFromProperties(MessageKey.DIMENSION_NOT_RECOGNIZED);
             }
-            messageValues.put("eventWithDimensionRu", dimension);
-            messageValues.put("eventWithDimensionEn", dimension);
-            messageValues.put("eventWithDimensionLocal", dimension);
+            messageValues.put("eventWithDimensionRu", ", " + dimension);
+            messageValues.put("eventWithDimensionEn", ", " + dimension);
+            messageValues.put("eventWithDimensionLocal", ", " + dimension);
         }
         if (Parking.ParkingType.WHITELIST.equals(camera.getGate().getParking().getParkingType())) {
             properties.put("type", EventLog.StatusType.Allow);
@@ -1401,6 +1413,8 @@ public class CarEventServiceImpl implements CarEventService {
                             properties.put("type", EventLog.StatusType.Allow);
                             eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, MessageKey.NOT_FOUND_RECORD_ALLOWED_BY_FREE_PERMIT);
                             eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, MessageKey.NOT_FOUND_RECORD_ALLOWED_BY_FREE_PERMIT, EventLog.EventType.WHITELIST_OUT);
+                            carState = carStateService.createCarStateOutWhenNoEntryRecord(eventDto.car_number, eventDto.event_date_time, camera, true,
+                                    properties.containsKey(StaticValues.carSmallImagePropertyName) ? properties.get(StaticValues.carSmallImagePropertyName).toString() : null);
                             carOutBy = StaticValues.CarOutBy.WHITELIST;
                             hasAccess = true;
                         } else {
@@ -1628,92 +1642,93 @@ public class CarEventServiceImpl implements CarEventService {
 
             }
 
-            try {
-                if (camera.getGate().getBarrier().isStatusCheck()) {
-                    AbstractOpenStrategy strategy = CarOutEventStrategy.builder()
-                            .camera(camera)
-                            .format(format)
-                            .balance(balance)
-                            .carState(carState)
-                            .eventDto(eventDto)
-                            .carOutBy(carOutBy)
-                            .whitelist(whitelists)
-                            .abonements(abonements)
-                            .rateResult(rateResult)
-                            .properties(properties)
-                            .zeroTouchValue(zerotouchValue)
-                            .leftFromThisSecondsBefore(leftFromThisSecondsBefore)
-                            .build();
-                    strategy.gateId = gate.gateId;
-                    strategy.isWaitPhel = true;
-                    SensorStatusCheckJob.add(strategy);
+            if (camera.getGate().getBarrier().isStatusCheck()) {
+                AbstractOpenStrategy strategy = CarOutEventStrategy.builder()
+                        .camera(camera)
+                        .format(format)
+                        .balance(balance)
+                        .carState(carState)
+                        .eventDto(eventDto)
+                        .carOutBy(carOutBy)
+                        .whitelist(whitelists)
+                        .abonements(abonements)
+                        .rateResult(rateResult)
+                        .properties(properties)
+                        .zeroTouchValue(zerotouchValue)
+                        .leftFromThisSecondsBefore(leftFromThisSecondsBefore)
+                        .build();
+                strategy.gateId = gate.gateId;
+                strategy.isWaitPhel = true;
+                SensorStatusCheckJob.add(strategy);
+            }
+            else{
+                if (eventDto.manualOpenWithoutBarrier) {
+                    openResult = true;
                 }
-                else{
-                    if (eventDto.manualOpenWithoutBarrier) {
-                        openResult = true;
-                    }
-                    else {
+                else {
+                    try {
                         openResult = barrierService.openBarrier(camera.getGate().getBarrier(), properties);
-                    }
-                    if (openResult) {
-                        gate.gateStatus = GateStatusDto.GateStatus.Open;
-                        gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
-                        gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
-                        gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
-                        gate.lastTriggeredTime = System.currentTimeMillis();
-
-                        Boolean photoElementPassed;
-                        Boolean loopPassed;
-
-                        if(camera.getGate().getBarrier().isConfirmCarPass()){
-                            photoElementPassed = false;
-                            loopPassed = false;
-                            int confirmPassTimeout = camera.getGate().getBarrier().getConfirmCarPassTimeout();
-                            long currentMillis = System.currentTimeMillis();
-
-                            while (currentPlateNumber.equals(barrierOutProcessingHashtable.get(camera.getGate().getBarrier().getId())) && System.currentTimeMillis() - currentMillis <= confirmPassTimeout*1000 && (!photoElementPassed || !loopPassed)){
-                                if(!photoElementPassed){
-                                    photoElementPassed = barrierService.getSensorStatus(StatusCheckJob.findGateStatusDtoById(camera.getGate().getId()).photoElement) == 1;
-                                }
-                                if(!loopPassed){
-                                    loopPassed = barrierService.getSensorStatus(StatusCheckJob.findGateStatusDtoById(camera.getGate().getId()).loop) == 1;
-                                }
-                            }
-                        } else {
-                            photoElementPassed = true;
-                            loopPassed = true;
-                        }
-
-                        if(photoElementPassed && loopPassed){
-                            if (!gate.isSimpleWhitelist && !leftFromThisSecondsBefore && carState != null) {
-                                saveCarOutState(eventDto, camera, carState, properties, balance, rateResult, zerotouchValue, format, carOutBy, abonements, whitelists);
-                            } else if (leftFromThisSecondsBefore) {
-                                properties.put("type", EventLog.StatusType.Allow);
-
-                                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, MessageKey.PASS);
-                                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, MessageKey.PASS, EventLog.EventType.PASS);
-                            }
-                        } else {
-                            properties.put("type", EventLog.StatusType.Error);
-
-                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, MessageKey.EXIT_CANCEL);
-                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, MessageKey.EXIT_CANCEL, EventLog.EventType.PASS);
-                        }
-                    } else {
+                    } catch (Exception e) {
                         String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.ERROR_BARRIER_CANNOT_ASSIGN_VALUE_IN : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.ERROR_BARRIER_CANNOT_ASSIGN_VALUE_OUT: MessageKey.ERROR_BARRIER_CANNOT_ASSIGN_VALUE);
 
                         eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, key);
                         eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.ERROR);
+
+                        log.info("Error opening barrier: " + e.getMessage());
                     }
                 }
-            } catch (Exception e) {
-                String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.ERROR_BARRIER_CANNOT_ASSIGN_VALUE_IN : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.ERROR_BARRIER_CANNOT_ASSIGN_VALUE_OUT: MessageKey.ERROR_BARRIER_CANNOT_ASSIGN_VALUE);
+                if (openResult) {
+                    gate.gateStatus = GateStatusDto.GateStatus.Open;
+                    gate.sensor1 = GateStatusDto.SensorStatus.Triggerred;
+                    gate.sensor2 = GateStatusDto.SensorStatus.WAIT;
+                    gate.directionStatus = GateStatusDto.DirectionStatus.FORWARD;
+                    gate.lastTriggeredTime = System.currentTimeMillis();
 
-                eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, key);
-                eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.ERROR);
+                    Boolean photoElementPassed;
+                    Boolean loopPassed;
 
-                log.info("Error opening barrier: " + e.getMessage());
+                    if(camera.getGate().getBarrier().isConfirmCarPass()){
+                        photoElementPassed = false;
+                        loopPassed = false;
+                        int confirmPassTimeout = camera.getGate().getBarrier().getConfirmCarPassTimeout();
+                        long currentMillis = System.currentTimeMillis();
+
+                        while (currentPlateNumber.equals(barrierOutProcessingHashtable.get(camera.getGate().getBarrier().getId())) && System.currentTimeMillis() - currentMillis <= confirmPassTimeout*1000 && (!photoElementPassed || !loopPassed)){
+                            if(!photoElementPassed){
+                                photoElementPassed = barrierService.getSensorStatus(StatusCheckJob.findGateStatusDtoById(camera.getGate().getId()).photoElement) == 1;
+                            }
+                            if(!loopPassed){
+                                loopPassed = barrierService.getSensorStatus(StatusCheckJob.findGateStatusDtoById(camera.getGate().getId()).loop) == 1;
+                            }
+                        }
+                    } else {
+                        photoElementPassed = true;
+                        loopPassed = true;
+                    }
+
+                    if(photoElementPassed && loopPassed){
+                        if (!gate.isSimpleWhitelist && !leftFromThisSecondsBefore && carState != null) {
+                            saveCarOutState(eventDto, camera, carState, properties, balance, rateResult, zerotouchValue, format, carOutBy, abonements, whitelists);
+                        } else if (leftFromThisSecondsBefore) {
+                            properties.put("type", EventLog.StatusType.Allow);
+
+                            eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Allow, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, MessageKey.PASS);
+                            eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, MessageKey.PASS, EventLog.EventType.PASS);
+                        }
+                    } else {
+                        properties.put("type", EventLog.StatusType.Error);
+
+                        eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, MessageKey.EXIT_CANCEL);
+                        eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, MessageKey.EXIT_CANCEL, EventLog.EventType.PASS);
+                    }
+                } else {
+                    String key = camera.getGate().getGateType().equals(Gate.GateType.IN) ? MessageKey.ERROR_BARRIER_CANNOT_ASSIGN_VALUE_IN : (camera.getGate().getGateType().equals(Gate.GateType.OUT) ? MessageKey.ERROR_BARRIER_CANNOT_ASSIGN_VALUE_OUT: MessageKey.ERROR_BARRIER_CANNOT_ASSIGN_VALUE);
+
+                    eventLogService.sendSocketMessage(ArmEventType.CarEvent, EventLog.StatusType.Error, camera.getId(), eventDto.getCarNumberWithRegion(), messageValues, key);
+                    eventLogService.createEventLog(Gate.class.getSimpleName(), camera.getGate().getId(), properties, messageValues, key, EventLog.EventType.ERROR);
+                }
             }
+
 
             if(currentPlateNumber.equals(barrierOutProcessingHashtable.get(camera.getGate().getBarrier().getId()))){
                 barrierOutProcessingHashtable.remove(camera.getGate().getBarrier().getId());

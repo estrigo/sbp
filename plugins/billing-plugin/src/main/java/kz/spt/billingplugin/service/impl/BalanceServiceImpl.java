@@ -1,5 +1,6 @@
 package kz.spt.billingplugin.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import kz.spt.billingplugin.bootstrap.datatable.BalanceComparators;
 import kz.spt.billingplugin.dto.BalanceDebtLogDto;
 import kz.spt.billingplugin.dto.TransactionDto;
@@ -57,7 +58,7 @@ public class BalanceServiceImpl implements BalanceService {
 
     @Override
     public BigDecimal addBalance(String plateNumber, BigDecimal value, Long carStateId, String description, String descriptionRu, String descriptionLocal,
-                                 String provider) {
+                                 String provider, Boolean isAbonomentPayment) {
         Balance balance;
         Optional<Balance> optionalBalance = balanceRepository.findById(plateNumber);
         if (optionalBalance.isPresent()) {
@@ -71,7 +72,7 @@ public class BalanceServiceImpl implements BalanceService {
         Balance savedBalance = balanceRepository.save(balance);
 
         Transaction transaction = new Transaction(plateNumber, value, carStateId, description, descriptionRu, descriptionLocal,
-                provider, getBalance(plateNumber), rootServicesGetterService.getCarService().findByPlatenumber(plateNumber));
+                provider, getBalance(plateNumber), rootServicesGetterService.getCarService().findByPlatenumber(plateNumber), isAbonomentPayment);
         transactionRepository.save(transaction);
 
         return savedBalance.getBalance();
@@ -79,9 +80,9 @@ public class BalanceServiceImpl implements BalanceService {
 
     @Override
     public BigDecimal subtractBalance(String plateNumber, BigDecimal value, Long carStateId, String description,
-                                      String descriptionRu, String descriptionLocal, String provider) {
+                                      String descriptionRu, String descriptionLocal, String provider, Boolean isAbonomentPayment) {
         return addBalance(plateNumber, BigDecimal.ZERO.compareTo(value) > 0 ? value : value.multiply(new BigDecimal(-1)), carStateId, description, descriptionRu, descriptionLocal,
-                provider);
+                provider, isAbonomentPayment);
     }
 
     @Override
@@ -144,7 +145,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public Page<TransactionDto> getTransactionList(PagingRequest pagingRequest, TransactionFilterDto dto) throws ParseException {
+    public Page<TransactionDto> getTransactionList(PagingRequest pagingRequest, TransactionFilterDto dto) throws Exception {
         org.springframework.data.domain.Page<Transaction> transactions = listByFilters(dto, pagingRequest);
         return getTransactionPage(transactions, pagingRequest);
     }
@@ -337,7 +338,7 @@ public class BalanceServiceImpl implements BalanceService {
         return saveRemovedDebtBalance;
     }
 
-    private Page<TransactionDto> getTransactionPage(org.springframework.data.domain.Page<Transaction> transactionsList, PagingRequest pagingRequest) {
+    private Page<TransactionDto> getTransactionPage(org.springframework.data.domain.Page<Transaction> transactionsList, PagingRequest pagingRequest) throws Exception {
 
         CarStateService carStateService = rootServicesGetterService.getCarStateService();
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
@@ -345,13 +346,23 @@ public class BalanceServiceImpl implements BalanceService {
         List<TransactionDto> filteredDto = new ArrayList<>(transactionsList.getSize());
         for (Transaction transaction : transactionsList.toList()) {
             TransactionDto transactionDto = TransactionDto.fromTransaction(transaction);
+
             if (transaction.getCarStateId() != null) {
                 CarState carState = carStateService.findById(transaction.getCarStateId());
                 if (carState != null)
                     transactionDto.period = (carState.getParking() != null ? carState.getParking().getName() + " " : "") + sdf.format(carState.getInTimestamp()) + (carState.getOutTimestamp() != null ? " - " + sdf.format(carState.getOutTimestamp()) : "");
             }
+
+            if(transaction.getIsAbonomentPayment() != null && transaction.getIsAbonomentPayment()){
+                JsonNode abonoment = rootServicesGetterService.getRootPaymentService().getPaidNotExpiredAbonoment(transaction.getPlateNumber());
+                String parkingName = abonoment.get("parkingName").textValue();
+                String period = abonoment.get("period").textValue();
+                transactionDto.period = parkingName + " " + period;
+
+            }
             transactionDto.date = sdf.format(transaction.getDate());
             filteredDto.add(transactionDto);
+
         }
 
         Page<TransactionDto> page = new Page<>(filteredDto);

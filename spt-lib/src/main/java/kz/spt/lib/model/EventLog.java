@@ -43,7 +43,8 @@ public class EventLog {
         NotFound,
         Warning,
         Ignoring,
-        Skip
+        Skip,
+        Blacklist
     }
 
     @Id

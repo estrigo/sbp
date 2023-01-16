@@ -12,33 +12,46 @@
                 <div class="card table-responsive">
                     <div class="card-header" th:text="#{customer.customers}"></div>
                     <div class="card-body">
-                        <table id="customerTable" class="table table-bordered table-bordered">
-                            <thead>
-                            <tr>
-                                <th><a th:text="#{customer.first.name}"></a></th>
-                                <th><a th:text="#{customer.last.name}"></a></th>
-                                <th><a th:text="#{customer.phone}"></a></th>
-                                <th><a th:text="#{customer.cars}"></a></th>
-                                <th><a th:text="#{user.email}"></a></th>
-                                <th></th>
-                                <th></th>
-                            </tr>
-                            </thead>
-                        </table>
-
-                        <p sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')">
-                        <div class="form-group row">
-                            <div class="col-12">
-                                <a th:href="@{|/customers/add|}" class="btn btn-success waves-effect waves-light"
-                                   th:text="#{customer.addNew}"></a>
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="text" class="form-control" id="searchText" autocomplete="off">
+                            </div>
+                            <div class="col-3">
+                                <button type="button" class="btn btn-success" th:text="#{crm.search}" onclick="search()"></button>
+                            </div>
+                            <div class="col-3">
+                                <button type="button" class="btn btn-success waves-effect waves-light" onclick="exportExcel(this)" th:text="#{journal.downloadExcel}"></button>
                             </div>
                         </div>
-                        </p>
-                        <div sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_MANAGER')" id = "delete">
+                        <div class="row">
+                            <table id="customerTable" class="table table-bordered table-bordered">
+                                <thead>
+                                <tr>
+                                    <th><a th:text="#{customer.first.name}"></a></th>
+                                    <th><a th:text="#{customer.last.name}"></a></th>
+                                    <th><a th:text="#{customer.phone}"></a></th>
+                                    <th><a th:text="#{customer.cars}"></a></th>
+                                    <th><a th:text="#{user.email}"></a></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                            </table>
 
-                        </div>
-                        <div sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_MANAGER')" id = "edit">
+                            <p sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')">
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <a th:href="@{|/customers/add|}" class="btn btn-success waves-effect waves-light"
+                                       th:text="#{customer.addNew}"></a>
+                                </div>
+                            </div>
+                            </p>
+                            <div sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_MANAGER')" id = "delete">
 
+                            </div>
+                            <div sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_MANAGER')" id = "edit">
+
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -62,6 +75,7 @@
 <!-- Responsive examples -->
 <script th:src="@{/plugins/datatables/dataTables.responsive.min.js}"></script>
 <script th:src="@{/plugins/datatables/responsive.bootstrap4.min.js}"></script>
+<script th:src="@{/assets/js/xlsx.js}"></script>
 
 <script  th:inline="javascript">
     var edit = [[#{buttons.edit}]];
@@ -78,6 +92,9 @@
             "dataType": "json",
             "contentType": "application/json",
             "data": function (d) {
+                d.customFilters = {
+                    "searchText": $('#searchText').val(),
+                };
                 return JSON.stringify(d);
             }
         },
@@ -111,7 +128,8 @@
         ],
         language: {
             url: address
-        }
+        },
+        searching: false
     });
 
     function deleteAlert(id){
@@ -132,16 +150,30 @@
         }
     }
 
-    var interval = null;
-    $(document).on('ready',function(){
-        interval = setInterval(showButtons,1000);
-    });
+    function search(){
+        table.ajax.reload();
+    }
 
-    function showButtons(){
-        if(table.buttons().container().length > 0){
-            clearInterval(interval);
-            table.buttons().container().appendTo('#customerTable_wrapper .col-md-6:eq(0)');
-        }
+    function exportExcel(element){
+        $(element).html('Excel <img src="/assets/images/Ajax-loader.gif"></img>');
+        $(element).attr('disabled','disabled');
+        let searchText = $('#searchText').val();
+
+        let firstnameH = [[#{customer.first.name}]];
+        let lastnameH = [[#{customer.last.name}]];
+        let phoneH = [[#{customer.phone}]];
+        let carsH = [[#{customer.cars}]];
+        let emailH = [[#{user.email}]];
+
+        $.get("/rest/customers/excel?searchText=" + searchText, function (data) {
+            data.unshift({firstname: firstnameH, lastname: lastnameH, phone: phoneH, cars: carsH, email: emailH});
+            let ws = XLSX.utils.json_to_sheet(data, {skipHeader:true});
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'customers');
+            XLSX.writeFile(wb, "customers.xlsx", { type: "buffer", bookType:"xlsx" });
+            $(element).html('Excel');
+            $(element).removeAttr('disabled');
+        });
     }
 
 </script>

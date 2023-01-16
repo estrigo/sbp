@@ -21,6 +21,9 @@ public interface AbonomentRepository extends JpaRepository<Abonement, Long>, Jpa
     @Query("select a from Abonement a join fetch a.parking where a.car.platenumber = :plateNumber and a.paid = false and a.end > :date")
     List<Abonement> findNotPaidAbonoment(@Param("plateNumber") String plateNumber, @Param("date") Date date, Pageable page);
 
+    @Query("select a from Abonement a join fetch a.parking where a.car.platenumber = :plateNumber and a.paid = true and a.end > :date")
+    List<Abonement> findPaidAbonoment(@Param("plateNumber") String plateNumber, @Param("date") Date date, Pageable page);
+
     @Query("select a from Abonement a join fetch a.parking where a.car.platenumber = :plateNumber and a.parking.id = :parkingId and a.paid = true and ((:carInDate >= a.begin and :carOutDate <= a.end) or (:carInDate <= a.begin and :carOutDate >= a.end) or (:carInDate >= a.begin and :carInDate <= a.end) or (:carOutDate >= a.begin and :carOutDate <= a.end)) order by a.begin asc")
     List<Abonement> findPaidNotExpiredAbonoment(@Param("plateNumber") String plateNumber, @Param("parkingId") Long parkingId, @Param("carInDate") Date carInDate, @Param("carOutDate") Date carOutDate);
 

@@ -41,4 +41,7 @@ public class AbonomentTypes {
 
     @Transient
     private String description;
+
+    @Column(name = "created_user")
+    private String createdUser;
 }

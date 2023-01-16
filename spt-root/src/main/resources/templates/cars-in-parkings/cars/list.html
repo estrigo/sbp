@@ -22,9 +22,9 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="car, iterStat : ${parkingCars.carsList}">
+                        <tr th:each="carNumber, iterStat : ${parkingCars.carsList}">
                             <td th:text="${iterStat.count}"></td>
-                            <td th:text="${car.getPlatenumber()}"></td>
+                            <td th:text="${carNumber}"></td>
                         </tr>
                         </tbody>
                     </table>

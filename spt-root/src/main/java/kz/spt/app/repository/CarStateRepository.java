@@ -26,6 +26,9 @@ public interface CarStateRepository extends JpaRepository<CarState, Long>, JpaSp
     @Query("from CarState cs where cs.outTimestamp is null order by cs.inTimestamp desc")
     Iterable<CarState> getAllCarStateNotLeft();
 
+    @Query("from CarState cs where cs.outTimestamp is null and cs.parking.id = :parkingId order by cs.inTimestamp desc")
+    Iterable<CarState> getAllCarStateNotLeft(@Param("parkingId") Long parkingId);
+
     @Query("from CarState cs where cs.carNumber = :carNumber")
     List<CarState> getAllByPlateNumber(@Param("carNumber") String carNumber);
 

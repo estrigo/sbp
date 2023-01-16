@@ -4,6 +4,7 @@ package kz.spt.lib.service;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
 import kz.spt.lib.model.Customer;
+import kz.spt.lib.model.dto.CustomerExcelDto;
 
 import java.util.List;
 
@@ -20,4 +21,6 @@ public interface CustomerService {
     void deleteCustomer(Customer customer);
 
     List<Customer> getCustomerIfAnyExist(String phoneNumber);
+
+    List<CustomerExcelDto> getCustomerExcel(String searchText);
 }

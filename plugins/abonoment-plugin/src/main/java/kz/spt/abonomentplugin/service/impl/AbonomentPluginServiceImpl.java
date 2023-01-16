@@ -68,7 +68,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     }
 
     @Override
-    public AbonomentTypes createType(int period,String customJson,String type, int price) throws JsonProcessingException {
+    public AbonomentTypes createType(int period, String customJson, String type, int price, String createdUser) throws JsonProcessingException {
         AbonomentTypes abonomentTypes = new AbonomentTypes();
 
         String custom = customJson;
@@ -123,6 +123,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         abonomentTypes.setType(type);
         abonomentTypes.setPrice(price);
         abonomentTypes.setCustomNumbers(customJson);
+        abonomentTypes.setCreatedUser(createdUser);
         AbonomentTypes savedAbonomentTypes = abonomentTypesRepository.save(abonomentTypes);
 
         return savedAbonomentTypes;
@@ -173,7 +174,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     }
 
     @Override
-    public Abonement createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked) throws ParseException {
+    public Abonement createAbonoment(String platenumber, Long parkingId, Long typeId, String dateStart, Boolean checked, String createdUser) throws ParseException {
 
         final String dateTimeFormat = "yyyy-MM-dd'T'HH:mm";
 
@@ -191,6 +192,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
         abonement.setPaid(false);
         abonement.setMonths(type.getPeriod());
         abonement.setChecked(checked);
+        abonement.setCreatedUser(createdUser);
         Locale locale = LocaleContextHolder.getLocale();
         ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.forLanguageTag(locale.toString()));
         if (type.getType().equals("UNLIMITED")){
@@ -231,6 +233,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     @Override
     public JsonNode getUnpaidNotExpiredAbonoment(String plateNumber) {
         Pageable first = PageRequest.of(0, 1);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         List<Abonement> abonements = abonomentRepository.findNotPaidAbonoment(plateNumber, new Date(), first);
         if(abonements.size() > 0){
             Abonement abonement = abonements.get(0);
@@ -239,6 +242,24 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             node.put("parkingId", abonement.getParking().getId());
             node.put("parkingName", abonement.getParking().getName());
             node.put("id", abonement.getId());
+            node.put("period", sdf.format(abonement.getBegin()) + " - " + sdf.format(abonement.getEnd()));
+            return node;
+        }
+        return null;
+    }
+    @Override
+    public JsonNode getPaidNotExpiredAbonoment(String plateNumber) {
+        Pageable first = PageRequest.of(0, 1);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+        List<Abonement> abonements = abonomentRepository.findPaidAbonoment(plateNumber, new Date(), first);
+        if(abonements.size() > 0){
+            Abonement abonement = abonements.get(0);
+            ObjectNode node = objectMapper.createObjectNode();
+            node.put("price", abonement.getPrice());
+            node.put("parkingId", abonement.getParking().getId());
+            node.put("parkingName", abonement.getParking().getName());
+            node.put("id", abonement.getId());
+            node.put("period", sdf.format(abonement.getBegin()) + " - " + sdf.format(abonement.getEnd()));
             return node;
         }
         return null;
@@ -248,7 +269,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
     public void setAbonomentPaid(Long id) {
         Abonement abonement = abonomentRepository.findById(id).get();
         abonement.setPaid(true);
-        if (abonement.getChecked()){
+        if (abonement.getChecked() && (abonement.getExtended() != null && !abonement.getExtended())){
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
             abonement.setBegin(calendar.getTime());
@@ -369,6 +390,7 @@ public class AbonomentPluginServiceImpl implements AbonomentPluginService {
             newAbonement.setMonths(expiring.getMonths());
             newAbonement.setPaidType(expiring.getPaidType());
             newAbonement.setPrice(expiring.getPrice());
+            newAbonement.setExtended(true);
 
             try {
                 BigDecimal balance = rootServicesGetterService.getBalance(expiring.getCar().getPlatenumber());

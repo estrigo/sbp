@@ -2,11 +2,16 @@ package kz.spt.app.service.impl;
 
 import kz.spt.app.repository.CustomerRepository;
 import kz.spt.lib.bootstrap.datatable.*;
-import kz.spt.lib.model.Cars;
-import kz.spt.lib.model.Customer;
+import kz.spt.lib.model.*;
+import kz.spt.lib.model.dto.BlacklistDto;
+import kz.spt.lib.model.dto.CustomerExcelDto;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -80,8 +85,60 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Page<Customer> getCustomer(PagingRequest pagingRequest) {
-        List<Customer> customers = customerRepository.findAll();
-        return getPage(customers, pagingRequest);
+
+        String searchValue = pagingRequest.getCustomFilters().get("searchText");
+        Specification<Customer> specification = getCustomerSpecification(searchValue);
+        org.springframework.data.domain.Page<Customer> filteredCustomers = listByFilters(specification, pagingRequest);
+        return getPage(filteredCustomers, pagingRequest);
+    }
+
+    private org.springframework.data.domain.Page<Customer> listByFilters(Specification<Customer> CustomerSpecification, PagingRequest pagingRequest) {
+        Order order = pagingRequest.getOrder().get(0);
+
+        int columnIndex = order.getColumn();
+        Column column = pagingRequest.getColumns().get(columnIndex);
+        String columnName = column.getData();
+        Direction dir = order.getDir();
+
+        Sort sort = null;
+        if ("firstName".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
+                sort = Sort.by("firstName").descending();
+            } else {
+                sort = Sort.by("firstName").ascending();
+            }
+        } else if ("lastName".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
+                sort = Sort.by("lastName").descending();
+            } else {
+                sort = Sort.by("lastName").ascending();
+            }
+        } else if ("phoneNumber".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
+                sort = Sort.by("phoneNumber").descending();
+            } else {
+                sort = Sort.by("phoneNumber").ascending();
+            }
+        } else if ("email".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
+                sort = Sort.by("email").descending();
+            } else {
+                sort = Sort.by("email").ascending();
+            }
+        }  else {
+            if (Direction.asc.equals(dir)) {
+                sort = Sort.by("id").ascending();
+            } else {
+                sort = Sort.by("id").descending();
+            }
+        }
+
+        Pageable rows = PageRequest.of(pagingRequest.getStart() / pagingRequest.getLength(), pagingRequest.getLength(), sort);
+        if (CustomerSpecification != null) {
+            return customerRepository.findAll(CustomerSpecification, rows);
+        } else {
+            return customerRepository.findAll(rows);
+        }
     }
 
     @Override
@@ -101,19 +158,10 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.delete(customer);
     }
 
-    private Page<Customer> getPage(List<Customer> customers, PagingRequest pagingRequest) {
-        List<Customer> filtered = customers.stream()
-                .sorted(sortCustomers(pagingRequest))
-                .filter(filterCustomers(pagingRequest))
-                .skip(pagingRequest.getStart())
-                .limit(pagingRequest.getLength())
-                .collect(Collectors.toList());
+    private Page<Customer> getPage(org.springframework.data.domain.Page<Customer> customers, PagingRequest pagingRequest) {
+        long count = customers.getTotalElements();
 
-        long count = customers.stream()
-                .filter(filterCustomers(pagingRequest))
-                .count();
-
-        Page<Customer> page = new Page<>(filtered);
+        Page<Customer> page = new Page<>(customers.toList());
         page.setRecordsFiltered((int) count);
         page.setRecordsTotal((int) count);
         page.setDraw(pagingRequest.getDraw());
@@ -163,6 +211,37 @@ public class CustomerServiceImpl implements CustomerService {
             return customers;
         }catch (Exception e){
             return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public List<CustomerExcelDto> getCustomerExcel(String searchText) {
+        Specification<Customer> specification = getCustomerSpecification(searchText);
+        List<Customer> filteredCustomers = listByFiltersExcel(specification);
+        return CustomerExcelDto.fromCustomers(filteredCustomers);
+    }
+
+    private Specification<Customer> getCustomerSpecification(String searchValue) {
+        Specification<Customer> specification = null;
+
+        if (!StringUtils.isEmpty(searchValue)) {
+            specification = CustomerSpecification.likePhoneNumber(searchValue)
+                    .or(CustomerSpecification.likePlateNumber(searchValue))
+                    .or(CustomerSpecification.likeEmail(searchValue))
+                    .or(CustomerSpecification.likeFirstName(searchValue))
+                    .or(CustomerSpecification.likeLastName(searchValue));
+        }
+        return specification;
+    }
+
+    private List<Customer> listByFiltersExcel(Specification<Customer> CustomerSpecification) {
+
+        Sort sort = Sort.by("id").descending();
+
+        if (CustomerSpecification != null) {
+            return customerRepository.findAll(CustomerSpecification, sort);
+        } else {
+            return customerRepository.findAll(sort);
         }
     }
 }
