@@ -1,0 +1,83 @@
+stages:
+  - package
+  - build
+  - deploy
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  SOFT_DEPLOY_SERVER_PRIVATE_KEY: '' # Возможно, эти пустые значения можно вовсе не указывать. нужно протестить
+  SOFT_DEPLOY_SERVER_IP: ''
+  SOFT_SSH_USERNAME: ''
+
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "dev"'
+      variables:
+        SOFT_DEPLOY_SERVER_PRIVATE_KEY: ${DEPLOY_NEW_SERVER_PRIVATE_KEY}
+        SOFT_DEPLOY_SERVER_IP: ${DEPLOY_NEW_SERVER_IP}
+        SOFT_SSH_USERNAME: ${SSH_USERNAME_NEW}
+    - if: '$CI_COMMIT_REF_NAME == "stage"'
+      variables:
+        SOFT_DEPLOY_SERVER_PRIVATE_KEY: ${DEPLOY_STAGE_SERVER_PRIVATE_KEY}
+        SOFT_DEPLOY_SERVER_IP: ${DEPLOY_STAGE_SERVER_IP}
+        SOFT_SSH_USERNAME: ${SSH_USERNAME_STAGE}
+    - when: never  # Do not run pipeline in other cases
+
+
+maven-build:
+  tags:
+    - parqourintro
+  image: maven:3.8.5-openjdk-11-slim
+  stage: package
+  cache:
+    paths:
+      - ./m2/repository
+  script:
+    - mvn clean package -Dmaven.test.skip=true
+  artifacts:
+    paths:
+      - ./target/sandbox/*
+
+docker-build-api:
+  image: docker:stable
+  stage: build
+  tags:
+    - parqourintro
+  variables:
+    DOCKER_TLS_CERTDIR: ''
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+  services:
+    - docker:19.03.0-dind
+  before_script:
+    - docker login --username $ACCESS_USERNAME --password $ACCESS_TOKEN registry.gitlab.com
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA
+  retry: 2
+
+deploy to prod:
+  image: docker:stable
+  tags:
+    - parqourintro
+  stage: deploy
+  before_script:
+    - apk update
+    - apk add openssh curl
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SOFT_DEPLOY_SERVER_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H $SOFT_DEPLOY_SERVER_IP >> ~/.ssh/known_hosts
+    - chmod 600 ~/.ssh/known_hosts
+    - sed -i "s,{api-image},$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA,g"  ./docker-prod/compose/docker-compose.yml
+    - scp -i ~/.ssh/id_rsa -r  ./docker-prod $SOFT_SSH_USERNAME@$SOFT_DEPLOY_SERVER_IP:/home/spt/
+  script:
+    # run docker-compose...
+    - ssh -i ~/.ssh/id_rsa $SOFT_SSH_USERNAME@$SOFT_DEPLOY_SERVER_IP
+      "cd ~/docker-prod/compose/;
+      docker login --username $ACCESS_USERNAME --password $ACCESS_TOKEN registry.gitlab.com;
+      docker-compose -f ./docker-compose.yml pull;
+      docker-compose -f ./docker-compose.yml up -d;"
+  retry: 2
