@@ -26,5 +26,3 @@ derby.log
 .DS_Store
 
 ~
-### CICD ###
-.gitlab-ci.yml
