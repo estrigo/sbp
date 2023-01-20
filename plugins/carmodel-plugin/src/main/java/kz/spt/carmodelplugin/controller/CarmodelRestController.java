@@ -1,13 +1,16 @@
 package kz.spt.carmodelplugin.controller;
 
+import kz.spt.carmodelplugin.service.CarDimensionsService;
 import kz.spt.carmodelplugin.service.CarModelServicePl;
 import kz.spt.carmodelplugin.viewmodel.CarmodelDto;
 import kz.spt.lib.bootstrap.datatable.Page;
 import kz.spt.lib.bootstrap.datatable.PagingRequest;
+import kz.spt.lib.model.Dimensions;
 import lombok.extern.java.Log;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.util.List;
 
 @Log
 @RestController
@@ -15,9 +18,11 @@ import java.text.ParseException;
 public class CarmodelRestController {
 
     private CarModelServicePl carModelServicePl;
+    private CarDimensionsService carDimensionsService;
 
-    public CarmodelRestController(CarModelServicePl carModelServicePl) {
+    public CarmodelRestController(CarModelServicePl carModelServicePl, CarDimensionsService carDimensionsService) {
         this.carModelServicePl = carModelServicePl;
+        this.carDimensionsService = carDimensionsService;
     }
 
     @PostMapping
@@ -27,6 +32,10 @@ public class CarmodelRestController {
         return null;
     }
 
+    @GetMapping("/carmodel/getDimensions")
+    public List<Dimensions> getCarmodelDtoList () {
+        return carDimensionsService.listDimensions();
+    }
 
     @PostMapping("/carmodel/list")
     public Page<CarmodelDto> getCarmodelDtoList (@RequestBody PagingRequest pagingRequest, @RequestParam String dateFromString,
