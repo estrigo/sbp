@@ -78,16 +78,7 @@
         </div>
     </div>
 
-
-
-
-
-
-
 </div>
-
-
-
 
 <!-- Required datatable js -->
 <script th:src="@{/plugins/datatables/jquery.dataTables.min.js}"></script>
@@ -112,8 +103,10 @@
     var del = [[#{crm.delete}]];
     var locale = [[${#locale}]];
     var address = locale==="en" ? '': '/plugins/datatables/json/'+locale+'.json';
+    let array_dimensions = [];
 
     function buildAjaxUrl(){
+        getDimensions();
         return "/rest/carmodel/list?dateFromString=" + $('#dateFromString').val() +
             "&plateNumber=" + $('#plateNumber').val();
     }
@@ -143,13 +136,8 @@
                         '<button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown"><i class="fa fa-truck"></i></button>' +
                         '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
 
-                    // menu += '<button class="dropdown-item" onclick="showModalClick(this)" data-modal="editModel" data-id="' + carmodel.id + '">' + [[#{carState.editModel}]] + '</button>';
-
-                    for(let dimension of [[${dimensions}]]){
-                        // const keys = Object.keys(dimension);
-                        // console.log(keys);
-                        menu += '<option class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + dimension.carClassification + '">' + dimension.carClassification + '</option>';
-                        console.log("dimension.id", dimension.id)
+                    for(let dimension of array_dimensions){
+                        menu += '<option class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + dimension + '">' + dimension + '</option>';
                     }
                     // menu += '<option class="dropdown-item" th:each="dimension : ${dimensions}" th:value="${dimension.id}" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.passengerCar}]] + '">' + [[#{carmodel.passengerCar}]] + '</option>';
                     // menu += '<button class="dropdown-item" onclick="editDimension(this)" data-number="' + carmodel.plateNumber + '" data-type="' + [[#{carmodel.gazelle}]] + '">' + [[#{carmodel.gazelle}]] + '</button>';
@@ -207,6 +195,17 @@
         console.log("reload Table function")
         table.ajax.reload();
     }
+
+    function getDimensions() {
+        $.get("/rest/carmodel/getDimensions", function (data) {
+            if (data) {
+                for(let dimension of data) {
+                    array_dimensions.push(dimension.carClassification);
+                }
+            }
+        });
+    }
+
     function editDimension(e) {
         console.log("showModalClick(e): " + e);
         const $input = $(e);
