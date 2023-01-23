@@ -285,7 +285,8 @@ public class BarrierServiceImpl implements BarrierService {
 
     @Override
     public Boolean getBarrierStatus(Barrier barrier, Map<String, Object> properties) throws IOException, ParseException, InterruptedException, ModbusProtocolException, ModbusNumberException, ModbusIOException {
-        if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier())) { //  ignore in development
+        if (!disableOpen && (barrier.getGate().getNotControlBarrier() == null || !barrier.getGate().getNotControlBarrier()) && barrier.getOpenStatusOid() !=null && barrier.getOpenStatusDefault() !=null) { //  ignore in development
+
             GateStatusDto gate = new GateStatusDto();
             gate.gateType = barrier.getGate().getGateType();
             gate.gateName = barrier.getGate().getName();
@@ -305,11 +306,25 @@ public class BarrierServiceImpl implements BarrierService {
                 eventLogService.createEventLog(Barrier.class.getSimpleName(), barrier.getId(), null, messageValues, key);
                 return false;
             } else if (Barrier.BarrierType.SNMP.equals(barrier.getBarrierType())) {
-                return snmpGetValue(gate, (String) properties.get("carNumber"), BarrierStatusDto.fromBarrier(barrier), Command.Open);
+                return snmpGetValue(BarrierStatusDto.fromBarrier(barrier));
             } else if (Barrier.BarrierType.MODBUS.equals(barrier.getBarrierType())) {
                 return modbusGetValue(BarrierStatusDto.fromBarrier(barrier));
             } else if (Barrier.BarrierType.JETSON.equals(barrier.getBarrierType())) {
                 return jetsonGetValue(BarrierStatusDto.fromBarrier(barrier));
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public Boolean getBarrierStatus(BarrierStatusDto barrierStatusDto) throws IOException {
+        if (barrierStatusDto.getOpenStatusOid() !=null && barrierStatusDto.getOpenStatusDefault() !=null) { //  ignore in development
+            if (Barrier.BarrierType.SNMP.equals(barrierStatusDto.type)) {
+                return snmpGetValue(barrierStatusDto);
+            } else if (Barrier.BarrierType.MODBUS.equals(barrierStatusDto.type)) {
+                return modbusGetValue(barrierStatusDto);
+            } else if (Barrier.BarrierType.JETSON.equals(barrierStatusDto.type)) {
+                return jetsonGetValue(barrierStatusDto);
             }
         }
         return false;
@@ -987,22 +1002,22 @@ public class BarrierServiceImpl implements BarrierService {
         return response.getSuccess();
     }
 
-    private Boolean snmpGetValue(GateStatusDto gate, String carNumber, BarrierStatusDto barrier, Command command) throws IOException {
+    private Boolean snmpGetValue(BarrierStatusDto barrier) throws IOException {
 
         SNMPManager barrierClient = getConnectedSNMPManagerInstance(barrier.ip, barrier.password, barrier.snmpVersion);
 
-        String openValue = barrierClient.getCurrentValue(barrier.openOid);
+        String openValue = barrierClient.getCurrentValue(barrier.getOpenStatusOid());
 
-        return BARRIER_ON.equals(openValue);
+        return String.valueOf(barrier.getOpenStatusDefault()).equals(openValue);
     }
 
     private Boolean modbusGetValue(BarrierStatusDto barrier) throws RuntimeException {
-        int register = barrier.modbusOpenRegister - 1;
+        int register = Integer.valueOf(barrier.getOpenStatusOid()) - 1;
         return GateStatusDto.getModbusMasterOutputValue(barrier.ip, register);
     }
 
     private Boolean jetsonGetValue(BarrierStatusDto barrier) throws RuntimeException {
-        var response = new RestTemplateBuilder().build().getForObject("http://" + barrier.ip + ":9001" + "/sensor_status?pin=" + barrier.openOid, JetsonResponse.class);
+        var response = new RestTemplateBuilder().build().getForObject("http://" + barrier.ip + ":9001" + "/sensor_status?pin=" + barrier.getOpenStatusOid(), JetsonResponse.class);
         log.info(response.toString());
         return response.getState() == 0 ? true : false;
     }

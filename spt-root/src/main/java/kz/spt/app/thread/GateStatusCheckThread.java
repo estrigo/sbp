@@ -5,6 +5,7 @@ import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
 import kz.spt.app.job.SensorStatusCheckJob;
 import kz.spt.app.job.StatusCheckJob;
+import kz.spt.app.model.dto.BarrierStatusDto;
 import kz.spt.app.model.dto.GateStatusDto;
 import kz.spt.app.model.dto.SensorStatusDto;
 import kz.spt.app.model.strategy.barrier.close.AbstractCloseStrategy;
@@ -19,6 +20,8 @@ import lombok.extern.java.Log;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Log
 public class GateStatusCheckThread extends Thread {
@@ -39,7 +42,7 @@ public class GateStatusCheckThread extends Thread {
             SensorStatusDto photoElement = gateStatusDto.photoElement;
             SensorStatusDto loop = gateStatusDto.loop;
             if (photoElement != null && loop != null) { // Данные фотоэлемента и петли заполнены
-                if (triggerPassed() && getSensorStatus(photoElement) == SENSOR_OFF && getSensorStatus(loop) == SENSOR_OFF && GateStatusDto.GateStatus.Open.equals(gateStatusDto.gateStatus)) { // Закрыть шлагбаум если сенсоры пусты и шлагбаум открыть
+                if (triggerPassed() && getSensorStatus(photoElement) == SENSOR_OFF && getSensorStatus(loop) == SENSOR_OFF && (GateStatusDto.GateStatus.Open.equals(gateStatusDto.gateStatus) || getBarrierStatus(gateStatusDto.barrier))) { // Закрыть шлагбаум если сенсоры пусты и шлагбаум открыть
                     try {
                         if (!gateStatusDto.barrier.statusCheck) {
                             boolean result = barrierService.closeBarrier(gateStatusDto, null, gateStatusDto.barrier);
@@ -200,6 +203,17 @@ public class GateStatusCheckThread extends Thread {
             e.printStackTrace();
         }
         return status;
+    }
+
+    private boolean getBarrierStatus(BarrierStatusDto barrierStatusDto) throws IOException {
+        boolean result = false;
+        try {
+            result = barrierService.getBarrierStatus(barrierStatusDto);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
     private boolean openGateForCarOut(GateStatusDto gate, Boolean isSimple) throws ModbusProtocolException, ModbusNumberException, ModbusIOException {
