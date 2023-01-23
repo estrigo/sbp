@@ -2,6 +2,7 @@ package kz.spt.carmodelplugin;
 
 import kz.spt.lib.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
+import org.laxture.sbp.spring.boot.SharedDataSourceSpringBootstrap;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -19,7 +20,7 @@ public class CarmodelPlugin extends SpringBootPlugin implements CustomPlugin {
 
     @Override
     protected SpringBootstrap createSpringBootstrap() {
-        return new SpringBootstrap(this, CarmodelPluginApplication.class);
+        return new SharedDataSourceSpringBootstrap(this, CarmodelPluginApplication.class);
     }
 
 

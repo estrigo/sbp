@@ -2,6 +2,7 @@ package kz.spt.qrpanel;
 
 import kz.spt.lib.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
+import org.laxture.sbp.spring.boot.SharedDataSourceSpringBootstrap;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 
@@ -18,7 +19,7 @@ public class QrpanelPlugin extends SpringBootPlugin implements CustomPlugin {
 
     @Override
     protected SpringBootstrap createSpringBootstrap() {
-        return new SpringBootstrap(this, QrpanelPluginStarter.class);
+        return new SharedDataSourceSpringBootstrap(this, QrpanelPluginStarter.class);
     }
 
 

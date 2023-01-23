@@ -3,6 +3,7 @@ package kz.spt.billingplugin;
 import kz.spt.billingplugin.service.BalanceService;
 import kz.spt.lib.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
+import org.laxture.sbp.spring.boot.SharedDataSourceSpringBootstrap;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.modelmapper.ModelMapper;
 import org.pf4j.PluginWrapper;
@@ -22,7 +23,7 @@ public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
 
     @Override
     protected SpringBootstrap createSpringBootstrap() {
-        return new SpringBootstrap(this, BillingPluginStarter.class);
+        return new SharedDataSourceSpringBootstrap(this, BillingPluginStarter.class);
     }
 
     @Override
