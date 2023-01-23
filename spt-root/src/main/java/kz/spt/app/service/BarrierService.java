@@ -45,4 +45,5 @@ public interface BarrierService {
     List<Long> getBarrierOpenCameraIdsList();
 
     Boolean getPermanentOpenEnabled();
+    Boolean getBarrierStatus(BarrierStatusDto barrierStatusDto) throws IOException;
 }

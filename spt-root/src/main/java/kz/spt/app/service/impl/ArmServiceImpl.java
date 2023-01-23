@@ -576,7 +576,7 @@ public class ArmServiceImpl implements ArmService {
         address.append(url);
 
         HttpEntity entity = new HttpEntity(headers);
-        log.info("getSnapshot(): address- " + address.toString() + "and entity - " + entity);
+        log.info("getSnapshot(): address- " + address.toString() + " and entity - " + entity);
         return new AsyncResult<>(restTemplate.getForObject(address.toString(), byte[].class, entity));
     }
 

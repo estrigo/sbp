@@ -1,7 +1,11 @@
 package kz.spt.app.model.dto;
 
 import kz.spt.lib.model.Barrier;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class BarrierStatusDto {
 
     public Long id;
@@ -23,6 +27,11 @@ public class BarrierStatusDto {
     public boolean impulseSignal;
     public Integer impulseDelay;
 
+    private String openStatusOid;
+    private Integer openStatusDefault;
+    private String closeStatusOid;
+    private Integer closeStatusDefault;
+
     public static BarrierStatusDto fromBarrier(Barrier barrier) {
         BarrierStatusDto barrierStatusDto = new BarrierStatusDto();
         barrierStatusDto.id = barrier.getId();
@@ -43,6 +52,11 @@ public class BarrierStatusDto {
         barrierStatusDto.statusCheck = barrier.isStatusCheck();
         barrierStatusDto.impulseSignal = barrier.isImpulseSignal();
         barrierStatusDto.impulseDelay = barrier.getImpulseDelay();
+        barrierStatusDto.openStatusOid = barrier.getOpenStatusOid();
+        barrierStatusDto.openStatusDefault = barrier.getOpenStatusDefault();
+        barrierStatusDto.closeStatusOid = barrier.getCloseStatusOid();
+        barrierStatusDto.closeStatusDefault = barrier.getCloseStatusDefault();
+
         return barrierStatusDto;
     }
 }
