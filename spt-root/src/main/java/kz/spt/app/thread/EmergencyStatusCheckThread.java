@@ -56,20 +56,18 @@ public class EmergencyStatusCheckThread extends Thread {
             status = barrierService.getEmergencySensorStatus(sensorStatusDto);
             if(status == StatusCheckJob.emergencySignalConfigDto.defaultValue && !StatusCheckJob.emergencyModeOn){
                 for (GateStatusDto gateStatusDto : StatusCheckJob.globalGateDtos) {
-                    if(Gate.GateType.OUT.equals(gateStatusDto.gateType)){
-                        CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
-                        armService.openPermanentGate(cameraStatusDto.id);
-                    }
+                    log.info("[Emergency] barrier ip to open: " + gateStatusDto.barrier.ip);
+                    CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
+                    armService.openPermanentGate(cameraStatusDto.id);
                 }
                 StatusCheckJob.emergencyModeOn = true;
             } else if(status != StatusCheckJob.emergencySignalConfigDto.defaultValue && StatusCheckJob.emergencyModeOn){
-                for (GateStatusDto gateStatusDto : StatusCheckJob.globalGateDtos) {
-                    if(Gate.GateType.OUT.equals(gateStatusDto.gateType)){
-                        CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
-                        armService.closePermanentGate(cameraStatusDto.id);
-                    }
-                }
                 StatusCheckJob.emergencyModeOn = false;
+                for (GateStatusDto gateStatusDto : StatusCheckJob.globalGateDtos) {
+                    log.info("[Emergency] barrier ip to close: " + gateStatusDto.barrier.ip);
+                    CameraStatusDto cameraStatusDto = gateStatusDto.frontCamera;
+                    armService.closePermanentGate(cameraStatusDto.id);
+                }
             }
         } catch (IOException | ParseException e) {
             e.printStackTrace();
