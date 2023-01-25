@@ -397,11 +397,13 @@ public class ArmServiceImpl implements ArmService {
         if (!StatusCheckJob.emergencyModeOn && camera != null && camera.getGate() != null && camera.getGate().getBarrier() != null) {
 
             String username = "";
-            if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
+            if (SecurityContextHolder.getContext().getAuthentication() != null && SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof CurrentUser) {
                 CurrentUser currentUser = (CurrentUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 if (currentUser != null) {
                     username = currentUser.getUsername();
                 }
+            } else {
+                username = "system";
             }
 
             Map<String, Object> properties = new HashMap<>();
