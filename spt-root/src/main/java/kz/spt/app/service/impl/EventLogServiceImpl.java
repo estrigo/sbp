@@ -25,7 +25,7 @@ import kz.spt.lib.service.CarsService;
 import kz.spt.lib.service.EventLogService;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.utils.Utils;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginManager;
 import org.pf4j.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +53,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Log
+@Slf4j
 @Service
 @Transactional(noRollbackFor = Exception.class)
 public class EventLogServiceImpl implements EventLogService {
@@ -80,10 +80,10 @@ public class EventLogServiceImpl implements EventLogService {
     private PluginManager pluginManager;
 
     @Value("${telegram.bot.external.url}")
-    String telegramBotUrl;
+    private String telegramBotUrl;
 
     @Value("${telegram.bot.external.enabled}")
-    Boolean telegramBotExternalEnabled;
+    private Boolean telegramBotExternalEnabled;
 
     public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager, CarsService carsService, LanguagePropertiesService languagePropertiesService) {
         this.eventLogRepository = eventLogRepository;
@@ -218,7 +218,8 @@ public class EventLogServiceImpl implements EventLogService {
             ResponseEntity<String> response = restTemplate.postForEntity(telegramBotUrl, requestEntity, String.class);
         }
         catch (Exception e){
-            //e.printStackTrace();
+            log.error("Event not delivered to telegram, url {}", telegramBotUrl);
+//            e.printStackTrace();
         }
     }
 
