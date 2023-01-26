@@ -167,6 +167,7 @@ telegram:
   bot:
     external:
       enabled: false
+      url: http://localhost:8081/events
 kaspi:
   qr-link: https://kaspi.kz/pay/%s?service_id=%s&%s=
 tablo:

@@ -79,6 +79,9 @@ public class EventLogServiceImpl implements EventLogService {
 
     private PluginManager pluginManager;
 
+    @Value("${telegram.bot.external.url}")
+    String telegramBotUrl;
+
     @Value("${telegram.bot.external.enabled}")
     Boolean telegramBotExternalEnabled;
 
@@ -202,21 +205,17 @@ public class EventLogServiceImpl implements EventLogService {
     public void sendEventBot(ObjectNode node) {
 
         try{
-            String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-
-            URI uri = URI.create(baseUrl);
-            uri = new URI(uri.getScheme(), uri.getHost(), uri.getPath(), uri.getFragment());
-            String url = uri.toString() + ":8081/event";
+//            String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+//            URI uri = URI.create(baseUrl);
+//            uri = new URI(uri.getScheme(), uri.getHost(), uri.getPath(), uri.getFragment());
+//            String url = uri.toString() + ":8081/event";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<ObjectNode> requestEntity = new HttpEntity<>(node, headers);
 
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
-        }
-        catch (URISyntaxException e){
-            e.printStackTrace();
+            ResponseEntity<String> response = restTemplate.postForEntity(telegramBotUrl, requestEntity, String.class);
         }
         catch (Exception e){
             //e.printStackTrace();
