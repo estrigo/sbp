@@ -12,7 +12,7 @@
                 <div class="card table-responsive">
                     <div class="card-header" th:text="#{events.events}"></div>
                     <div class="card-body">
-                        <form th:action="@{|/events/list|}" th:object="${eventFilterDto}" method="post" id="search">
+                        <form th:action="@{|/events/excel|}" th:object="${eventFilterDto}" method="post" id="search">
                             <div class="row">
                                 <div class="col-4">
                                     <label th:text="#{events.dateFrom}"></label>
@@ -191,6 +191,12 @@
     $(document).on('ready', function () {
         interval = setInterval(showButtons, 500);
         interval2 = setInterval(hideFilter, 1000);
+        $(window).keydown(function(event){
+            if(event.keyCode === 13) {
+                event.preventDefault();
+                return false;
+            }
+        });
     });
 
     function showButtons() {
