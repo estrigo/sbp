@@ -3,7 +3,6 @@ package kz.spt.app.service.impl;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.model.Cars;
 import kz.spt.lib.model.EventLog;
-import kz.spt.lib.service.EventLogService;
 import kz.spt.app.repository.CarsRepository;
 import kz.spt.lib.service.CarsService;
 import kz.spt.lib.utils.Utils;
@@ -26,15 +25,15 @@ public class CarsServiceImpl implements CarsService {
 
     private CarsRepository carsRepository;
 
-    public CarsServiceImpl(CarsRepository carsRepository){
+    public CarsServiceImpl(CarsRepository carsRepository) {
         this.carsRepository = carsRepository;
     }
 
     private static final Comparator<Cars> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     @Override
-    public Cars findByPlatenumber(String platenumber){
-        return carsRepository.findCarsByPlatenumberIgnoreCase(platenumber);
+    public Cars findByPlatenumber(String platenumber) {
+        return carsRepository.findCarsByPlatenumber(platenumber.toUpperCase());
     }
 
     @Override
@@ -47,26 +46,26 @@ public class CarsServiceImpl implements CarsService {
         return carsRepository.findCarsByPlatenumberWithCustomers(platenumber);
     }
 
-    public Cars findById(Long id){
+    public Cars findById(Long id) {
         return carsRepository.getOne(id);
     }
 
-    public Iterable<Cars> listAllCars(){
+    public Iterable<Cars> listAllCars() {
         return carsRepository.findAll();
     }
 
-    public Cars saveCars(Cars cars){
+    public Cars saveCars(Cars cars) {
         cars.setPlatenumber(cars.getPlatenumber().toUpperCase());
         return carsRepository.saveAndFlush(cars);
     }
 
     @Override
-    public Cars createCar(String platenumber){
+    public Cars createCar(String platenumber) {
         return createCar(platenumber, null, null, null);
     }
 
     @Override
-    public Cars createCar(String platenumber, String region, String type, String car_model){
+    public Cars createCar(String platenumber, String region, String type, String car_model) {
         Cars car = createCarObject(platenumber, region, type, car_model);
         car = saveCars(car);
         return car;
@@ -77,12 +76,12 @@ public class CarsServiceImpl implements CarsService {
         platenumber = platenumber.toUpperCase();
 
         Boolean contains = Pattern.matches(".*\\p{InCyrillic}.*", platenumber);
-        if(contains){
+        if (contains) {
             platenumber = Utils.changeCyrillicToLatin(platenumber);
         }
 
         Cars car = findByPlatenumber(platenumber);
-        if(car == null){
+        if (car == null) {
             car = new Cars();
             platenumber = platenumber.trim();
             platenumber = platenumber.replaceAll("\\W", "");
@@ -93,11 +92,11 @@ public class CarsServiceImpl implements CarsService {
 
             properties.put("type", EventLog.StatusType.Success);
         }
-        if(region != null){
+        if (region != null) {
             car.setRegion(region);
             car.setType(type);
         }
-        if(car_model != null){
+        if (car_model != null) {
             car.setModel(car_model);
         }
         return car;
@@ -142,9 +141,9 @@ public class CarsServiceImpl implements CarsService {
         }
         String value = pagingRequest.getSearch().getValue();
 
-        return cars -> (cars.getPlatenumber()!=null && cars.getPlatenumber().toLowerCase().contains(value))
-                || (cars.getBrand()!=null && cars.getBrand().toLowerCase().contains(value))
-                || (cars.getColor()!=null && cars.getColor().toLowerCase().contains(value));
+        return cars -> (cars.getPlatenumber() != null && cars.getPlatenumber().toLowerCase().contains(value))
+                || (cars.getBrand() != null && cars.getBrand().toLowerCase().contains(value))
+                || (cars.getColor() != null && cars.getColor().toLowerCase().contains(value));
     }
 
     private Comparator<Cars> sortCars(PagingRequest pagingRequest) {
