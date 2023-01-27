@@ -26,4 +26,6 @@ derby.log
 .DS_Store
 
 ~
+
+#### Logs ###
 logs/
