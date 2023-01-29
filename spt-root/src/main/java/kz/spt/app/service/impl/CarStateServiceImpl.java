@@ -3,14 +3,14 @@ package kz.spt.app.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import kz.spt.app.converter.model.dto.CarStateExcelDtoConverter;
+import kz.spt.app.repository.CarStateNativeQueryRepository;
 import kz.spt.app.repository.CarStateRepository;
 import kz.spt.app.service.BarrierService;
 import kz.spt.app.service.GateService;
 import kz.spt.lib.service.*;
-import kz.spt.lib.service.*;
 import kz.spt.lib.utils.Language;
 import kz.spt.lib.utils.MessageKey;
-import kz.spt.app.service.GateService;
 import kz.spt.lib.bootstrap.datatable.*;
 import kz.spt.lib.extension.PluginRegister;
 import kz.spt.lib.model.*;
@@ -19,10 +19,9 @@ import kz.spt.lib.model.dto.CarStateExcelDto;
 import kz.spt.lib.model.dto.CarStateFilterDto;
 import kz.spt.lib.model.dto.GateDto;
 import kz.spt.lib.model.dto.temp.CarStateCurrencyDto;
-import kz.spt.lib.model.dto.GateDto;
-import kz.spt.lib.model.dto.temp.CarStateCurrencyDto;
 import kz.spt.lib.utils.StaticValues;
 import kz.spt.lib.utils.Utils;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.time.DateUtils;
@@ -41,10 +40,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.StringUtils.*;
 
 @Log
 @Service
 @Transactional(noRollbackFor = Exception.class)
+@RequiredArgsConstructor
 public class CarStateServiceImpl implements CarStateService {
 
     private final CarStateRepository carStateRepository;
@@ -53,24 +56,13 @@ public class CarStateServiceImpl implements CarStateService {
     private final PluginService pluginService;
     private final LanguagePropertiesService languagePropertiesService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private BarrierService barrierService;
-
+    private final BarrierService barrierService;
     private final GateService gateService;
+    private final CarStateNativeQueryRepository carStateNativeQueryRepository;
+    private final CarStateExcelDtoConverter converter;
 
     private static final Comparator<CarStateDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm";
-
-    public CarStateServiceImpl(CarStateRepository carStateRepository, EventLogService eventLogService,
-                               CarsService carsService, PluginService pluginService, LanguagePropertiesService languagePropertiesService,
-                               BarrierService barrierService, GateService gateService) {
-        this.carStateRepository = carStateRepository;
-        this.eventLogService = eventLogService;
-        this.carsService = carsService;
-        this.pluginService = pluginService;
-        this.languagePropertiesService = languagePropertiesService;
-        this.barrierService = barrierService;
-        this.gateService = gateService;
-    }
 
     @Override
     public CarState findById(Long carStateId) {
@@ -449,19 +441,30 @@ public class CarStateServiceImpl implements CarStateService {
         return page;
     }
 
-
     @Override
-    public List<CarStateExcelDto> getExcelData(CarStateFilterDto carStateFilterDto) throws ParseException {
-        Specification<CarState> specification = getCarStateSpecification(carStateFilterDto);
-        List<CarState> filteredCarStates = listByFiltersForExcel(specification);
-
-        List<CarStateExcelDto> carStateDtoList = new ArrayList<>(filteredCarStates.size());
-        for (CarState carState : filteredCarStates) {
-            carStateDtoList.add(CarStateExcelDto.fromCarState(carState));
+    public List<CarStateExcelDto> getExcelData(CarStateFilterDto filter) {
+        if (Objects.isNull(filter)) {
+            return Collections.emptyList();
         }
+        String plateNumber = trimToEmpty(filter.getPlateNumber());
+        String inTimestamp = filter.getDateFromString();
+        String outTimestamp = filter.getDateToString();
+        String inGateId = filter.getInGateId() != null ? filter.getInGateId().toString() : EMPTY;
+        String outGateId = filter.getOutGateId() != null ? filter.getOutGateId().toString() : EMPTY;
+        String amount = filter.getAmount() != null ? String.format("%.0f", filter.getAmount()) : EMPTY;
 
-        return carStateDtoList;
+        return carStateNativeQueryRepository.findAllWithFiltersForExcelReport(
+                        plateNumber,
+                        inTimestamp,
+                        outTimestamp,
+                        inGateId,
+                        outGateId,
+                        amount)
+                .stream()
+                .map(converter)
+                .collect(Collectors.toList());
     }
+
 
     private List<CarState> listByFiltersForExcel(Specification<CarState> carStateSpecification) {
         Sort sort = Sort.by("id").descending();
