@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusIOException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusNumberException;
 import com.intelligt.modbus.jlibmodbus.exception.ModbusProtocolException;
+import kz.spt.app.converter.model.dto.EventLogExcelDtoConverter;
+import kz.spt.app.repository.EventLogNativeQueryRepository;
 import kz.spt.app.repository.EventLogRepository;
 import kz.spt.app.service.GateService;
 import kz.spt.app.utils.StringExtensions;
@@ -53,6 +55,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+
 @Slf4j
 @Service
 @Transactional(noRollbackFor = Exception.class)
@@ -72,12 +77,11 @@ public class EventLogServiceImpl implements EventLogService {
     private static final Comparator<EventsDto> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     private ObjectMapper objectMapper = new ObjectMapper();
-
     private EventLogRepository eventLogRepository;
-
     private CarsService carsService;
-
     private PluginManager pluginManager;
+    private EventLogNativeQueryRepository eventLogNativeQueryRepository;
+    private EventLogExcelDtoConverter converter;
 
     @Value("${telegram.bot.external.url}")
     private String telegramBotUrl;
@@ -85,24 +89,31 @@ public class EventLogServiceImpl implements EventLogService {
     @Value("${telegram.bot.external.enabled}")
     private Boolean telegramBotExternalEnabled;
 
-    public EventLogServiceImpl(EventLogRepository eventLogRepository, PluginManager pluginManager, CarsService carsService, LanguagePropertiesService languagePropertiesService) {
+    public EventLogServiceImpl(EventLogRepository eventLogRepository,
+                               PluginManager pluginManager,
+                               CarsService carsService,
+                               LanguagePropertiesService languagePropertiesService,
+                               EventLogNativeQueryRepository eventLogNativeQueryRepository,
+                               EventLogExcelDtoConverter converter) {
         this.eventLogRepository = eventLogRepository;
         this.pluginManager = pluginManager;
         this.carsService = carsService;
         this.languagePropertiesService = languagePropertiesService;
+        this.eventLogNativeQueryRepository = eventLogNativeQueryRepository;
+        this.converter = converter;
     }
 
     @Override
     public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, Map<String, Object> messageValues, String key) {
         EventLog eventLog = new EventLog();
 
-        if(objectClass != null && objectClass.equals("Camera"))
+        if (objectClass != null && objectClass.equals("Camera"))
             checkDuplicateAndSetGateName(objectId, properties);
 
         eventLog.setObjectClass(objectClass);
 
         eventLog.setPlateNumber((properties != null && properties.containsKey("carNumber")) ? (String) properties.get("carNumber") : "");
-        if(StringUtils.isNotNullOrEmpty(eventLog.getPlateNumber())){
+        if (StringUtils.isNotNullOrEmpty(eventLog.getPlateNumber())) {
             eventLog.setCar(carsService.createCar(eventLog.getPlateNumber()));
         }
 
@@ -124,11 +135,11 @@ public class EventLogServiceImpl implements EventLogService {
     public void createEventLog(String objectClass, Long objectId, Map<String, Object> properties, Map<String, Object> messageValues, String key, EventLog.EventType eventType) {
         EventLog eventLog = new EventLog();
 
-        if(objectClass != null && objectClass.equals("Camera"))
+        if (objectClass != null && objectClass.equals("Camera"))
             checkDuplicateAndSetGateName(objectId, properties);
 
         eventLog.setPlateNumber((properties != null && properties.containsKey("carNumber")) ? (String) properties.get("carNumber") : "");
-        if(StringUtils.isNotNullOrEmpty(eventLog.getPlateNumber())){
+        if (StringUtils.isNotNullOrEmpty(eventLog.getPlateNumber())) {
             eventLog.setCar(carsService.createCar(eventLog.getPlateNumber()));
         }
 
@@ -169,13 +180,14 @@ public class EventLogServiceImpl implements EventLogService {
         node.put("eventStatus", eventStatus.toString());
 
         //////////////////////send notification to bot
-        if(telegramBotExternalEnabled){
+        if (telegramBotExternalEnabled) {
             sendEventBot(node);
         }
         /////////////////////
 
         messagingTemplate.convertAndSend("/topic", node.toString());
     }
+
     public void sendSocketMessage(ArmEventType eventType, EventLog.StatusType eventStatus, Long id, String plateNumber, String snapshot) {
 
         CameraStatusDto cameraStatusDto = StatusCheckJob.findCameraStatusDtoById(id);
@@ -194,7 +206,7 @@ public class EventLogServiceImpl implements EventLogService {
         node.put("eventStatus", eventStatus.toString());
 
         //////////////////////send notification to bot
-        if(telegramBotExternalEnabled){
+        if (telegramBotExternalEnabled) {
             sendEventBot(node);
         }
         /////////////////////
@@ -204,7 +216,7 @@ public class EventLogServiceImpl implements EventLogService {
 
     public void sendEventBot(ObjectNode node) {
 
-        try{
+        try {
 //            String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
 //            URI uri = URI.create(baseUrl);
 //            uri = new URI(uri.getScheme(), uri.getHost(), uri.getPath(), uri.getFragment());
@@ -216,8 +228,7 @@ public class EventLogServiceImpl implements EventLogService {
 
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<String> response = restTemplate.postForEntity(telegramBotUrl, requestEntity, String.class);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             log.error("Event not delivered to telegram, url {}", telegramBotUrl);
 //            e.printStackTrace();
         }
@@ -246,7 +257,7 @@ public class EventLogServiceImpl implements EventLogService {
 
     @Override
     public Long countByTypeAndDate(List<EventLog.EventType> types, Date dateFrom, Date dateTo) {
-        return eventLogRepository.countByCreatedBetweenAndEventTypeIn(dateFrom, dateTo,types);
+        return eventLogRepository.countByCreatedBetweenAndEventTypeIn(dateFrom, dateTo, types);
     }
 
     @Override
@@ -271,20 +282,20 @@ public class EventLogServiceImpl implements EventLogService {
         Direction dir = order.getDir();
 
         Sort sort = null;
-        if("id".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        if ("id".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("id").descending();
             } else {
                 sort = Sort.by("id").ascending();
             }
-        } else if("created".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        } else if ("created".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("created").descending();
             } else {
                 sort = Sort.by("created").ascending();
             }
-        } else if("plateNumber".equals(columnName)){
-            if(Direction.desc.equals(dir)){
+        } else if ("plateNumber".equals(columnName)) {
+            if (Direction.desc.equals(dir)) {
                 sort = Sort.by("plateNumber").descending();
             } else {
                 sort = Sort.by("plateNumber").ascending();
@@ -316,11 +327,11 @@ public class EventLogServiceImpl implements EventLogService {
             specification = specification == null ? EventLogSpecification.equalGateId(eventFilterDto.gateId) : specification.and(EventLogSpecification.equalGateId(eventFilterDto.gateId));
         }
         if (eventFilterDto.eventType != null && !"".equals(eventFilterDto.eventType.toString())) {
-            if(EventLog.EventType.PASS.equals(eventFilterDto.eventType)){
+            if (EventLog.EventType.PASS.equals(eventFilterDto.eventType)) {
                 specification = specification == null ?
                         EventLogSpecification.inEventType(eventFilterDto.eventType, EventLog.EventType.PAID_PASS, EventLog.EventType.ABONEMENT_PASS, EventLog.EventType.BOOKING_PASS, EventLog.EventType.FREE_PASS, EventLog.EventType.REGISTER_PASS)
                         : specification.and(EventLogSpecification.inEventType(eventFilterDto.eventType, EventLog.EventType.PAID_PASS, EventLog.EventType.ABONEMENT_PASS, EventLog.EventType.BOOKING_PASS, EventLog.EventType.FREE_PASS, EventLog.EventType.REGISTER_PASS));
-            } else if(EventLog.EventType.DEBT.equals(eventFilterDto.eventType)){
+            } else if (EventLog.EventType.DEBT.equals(eventFilterDto.eventType)) {
                 specification = specification == null ?
                         EventLogSpecification.inEventType(eventFilterDto.eventType, EventLog.EventType.DEBT_OUT)
                         : specification.and(EventLogSpecification.inEventType(eventFilterDto.eventType, EventLog.EventType.DEBT_OUT));
@@ -340,7 +351,7 @@ public class EventLogServiceImpl implements EventLogService {
     public Page<EventsDto> getEventLogs(PagingRequest pagingRequest, EventFilterDto eventFilterDto) throws ParseException {
         Specification<EventLog> specification = getEventLogFilterSpecification(eventFilterDto);
         Long eventLogFilterCount = countByFilters(specification);
-        org.springframework.data.domain.Page<EventLog> filteredEvents =  listByFilters(specification, pagingRequest);
+        org.springframework.data.domain.Page<EventLog> filteredEvents = listByFilters(specification, pagingRequest);
 
         var eventDtos = filteredEvents.stream()
                 .map(m -> {
@@ -366,33 +377,24 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
-    public List<EventLogExcelDto> getEventExcel(EventFilterDto eventFilterDto) throws Exception {
-        Specification<EventLog> specification = getEventLogFilterSpecification(eventFilterDto);
-        List<EventLog> events = this.listByFiltersForExcel(specification);
-
-        SimpleDateFormat format = new SimpleDateFormat(StaticValues.simpleDateTimeFormat);
-        List<EventLogExcelDto> eventLogExcelDtos = new ArrayList<>(events.size());
-        for (EventLog eventLog : events) {
-            EventLogExcelDto eventLogExcelDto = new EventLogExcelDto();
-            eventLogExcelDto.plateNumber = eventLog.getPlateNumber();
-            eventLogExcelDto.created = format.format(eventLog.getCreated());
-            eventLogExcelDto.description = eventLog.getDescriptionDe()!=null ? eventLog.getDescriptionDe(): eventLog.getDescriptionEn();
-            eventLogExcelDto.status = eventLog.getProperties().containsKey("type") && eventLog.getProperties().get("type") != null ? StringExtensions.locale("events.".concat(eventLog.getProperties().get("type").toString().toLowerCase())) : "";
-            eventLogExcelDto.gate = eventLog.getProperties().containsKey("gateName") ? eventLog.getProperties().get("gateName").toString() : "";
-            eventLogExcelDtos.add(eventLogExcelDto);
+    public List<EventLogExcelDto> getEventExcel(EventFilterDto filter) throws Exception {
+        if (Objects.isNull(filter)) {
+            return Collections.emptyList();
         }
 
-        return eventLogExcelDtos;
-    }
+        String plateNumber = trimToEmpty(filter.getPlateNumber());
+        String fromTimestamp = filter.getDateFromString();
+        String toTimestamp = filter.getDateToString();
+        String eventType = filter.getEventType() != null ? filter.getEventType().toString().toUpperCase() : EMPTY;
 
-    public List<EventLog> listByFiltersForExcel(Specification<EventLog> eventLogSpecification) {
-        Sort sort = Sort.by("id").descending();
-        Pageable rows = PageRequest.of(0, 1000000, sort);
-        if (eventLogSpecification != null) {
-            return eventLogRepository.findAll(eventLogSpecification, rows).toList();
-        } else {
-            return eventLogRepository.findAll(rows).toList();
-        }
+        return eventLogNativeQueryRepository.findAllWithFiltersForExcelReport(
+                        plateNumber,
+                        fromTimestamp,
+                        toTimestamp,
+                        eventType)
+                .stream()
+                .map(converter)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -413,12 +415,12 @@ public class EventLogServiceImpl implements EventLogService {
         calendar.add(Calendar.MINUTE, -2);
 
         List<EventLog> eventLogs = eventLogRepository.getEventsFromDate(calendar.getTime(), Gate.class.getSimpleName(), gateId);
-        if(eventLogs != null && eventLogs.size()>0){
+        if (eventLogs != null && eventLogs.size() > 0) {
             EventLog eventLog = eventLogs.get(0);
-            if(eventLog.getDescription().startsWith("В проезде отказано: Не достаточно средств")){
+            if (eventLog.getDescription().startsWith("В проезде отказано: Не достаточно средств")) {
                 return eventLog.getPlateNumber();
-            } else if(eventLog.getDescription().startsWith("Зафиксирован новый номер авто")){
-                if(eventLogs.size()>1 && eventLogs.get(1).getDescription().startsWith("В проезде отказано: Не достаточно средств") && eventLog.getPlateNumber().equals(eventLogs.get(1).getPlateNumber())){
+            } else if (eventLog.getDescription().startsWith("Зафиксирован новый номер авто")) {
+                if (eventLogs.size() > 1 && eventLogs.get(1).getDescription().startsWith("В проезде отказано: Не достаточно средств") && eventLog.getPlateNumber().equals(eventLogs.get(1).getPlateNumber())) {
                     return eventLog.getPlateNumber();
                 }
             }
@@ -433,12 +435,12 @@ public class EventLogServiceImpl implements EventLogService {
         calendar.add(Calendar.MINUTE, -2);
 
         List<EventLog> eventLogs = eventLogRepository.getEventsFromDate(calendar.getTime(), Gate.class.getSimpleName(), gateId);
-        if(eventLogs != null && eventLogs.size()>0){
+        if (eventLogs != null && eventLogs.size() > 0) {
             EventLog eventLog = eventLogs.get(0);
-            if(eventLog.getDescription().startsWith("В проезде отказано: Авто") && eventLog.getDescription().contains("имеет задолженность")){
+            if (eventLog.getDescription().startsWith("В проезде отказано: Авто") && eventLog.getDescription().contains("имеет задолженность")) {
                 return eventLog.getPlateNumber();
-            } else if(eventLog.getDescription().startsWith("Зафиксирован новый номер авто")){
-                if(eventLogs.size()>1 && eventLogs.get(1).getDescription().startsWith("В проезде отказано: Авто") && eventLogs.get(1).getDescription().contains("имеет задолженность") && eventLog.getPlateNumber().equals(eventLogs.get(1).getPlateNumber())){
+            } else if (eventLog.getDescription().startsWith("Зафиксирован новый номер авто")) {
+                if (eventLogs.size() > 1 && eventLogs.get(1).getDescription().startsWith("В проезде отказано: Авто") && eventLogs.get(1).getDescription().contains("имеет задолженность") && eventLog.getPlateNumber().equals(eventLogs.get(1).getPlateNumber())) {
                     return eventLog.getPlateNumber();
                 }
             }
@@ -448,7 +450,7 @@ public class EventLogServiceImpl implements EventLogService {
 
     @Override
     public void sendSocketMessage(String topic, String message) {
-        messagingTemplate.convertAndSend("/"+topic, message);
+        messagingTemplate.convertAndSend("/" + topic, message);
     }
 
     @Override
@@ -457,7 +459,7 @@ public class EventLogServiceImpl implements EventLogService {
         calendar.add(Calendar.MINUTE, -3);
 
         List<EventLog> eventLogs = eventLogRepository.getEventsFromDate(calendar.getTime(), Gate.class.getSimpleName(), gateId);
-        if(eventLogs != null && eventLogs.size()>0){
+        if (eventLogs != null && eventLogs.size() > 0) {
             EventLog eventLog = eventLogs.get(0);
             return eventLog.getPlateNumber();
         }
@@ -474,9 +476,9 @@ public class EventLogServiceImpl implements EventLogService {
         return page;
     }
 
-    private void checkDuplicateAndSetGateName(Long cameraId, Map<String, Object> properties){
+    private void checkDuplicateAndSetGateName(Long cameraId, Map<String, Object> properties) {
         CameraStatusDto cameraStatusDto = StatusCheckJob.findCameraStatusDtoById(cameraId);
-        if(cameraStatusDto != null){
+        if (cameraStatusDto != null) {
             GateStatusDto gateStatusDto = StatusCheckJob.findGateStatusDtoById(cameraStatusDto.gateId);
 
             properties.put("gateName", gateStatusDto.gateName);
