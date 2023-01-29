@@ -21,7 +21,7 @@ mvn clean package
 java -jar spt-root-0.0.1-SNAPSHOT-standalone.jar
 ----
 
-==== ApplicationStartTest start in production mode inside docker container
+==== Application start in production mode inside docker container
 
 For production master branch of https://github.com/Parqour-Inc/parking_management_software is used
 

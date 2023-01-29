@@ -7,9 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.web.WebAppConfiguration
 import spock.lang.Specification
 
-
 @SpringBootTest(classes = [SptApplication.class])
-//        properties = [ "spring.database.url=jdbc:mysql://10.66.5.25:3306/new_parking" ])
 @WebAppConfiguration
 class CarStateNativeQueryRepositoryTest extends Specification {
 
@@ -19,7 +17,7 @@ class CarStateNativeQueryRepositoryTest extends Specification {
     def "test repo.findAllWithFiltersForExcelReport does not fails"() {
         when:
         def all = repository.findAllWithFiltersForExcelReport(
-                "",
+                "dummy",
                 "2021-01-01 00:00:00",
                 "2025-01-01 00:00:00",
                 "",

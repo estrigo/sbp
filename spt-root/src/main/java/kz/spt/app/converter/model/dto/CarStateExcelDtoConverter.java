@@ -3,6 +3,7 @@ package kz.spt.app.converter.model.dto;
 import kz.spt.app.model.dto.CarStateNativeQueryExcelDto;
 import kz.spt.app.utils.DateTimeUtil;
 import kz.spt.lib.model.dto.CarStateExcelDto;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -12,7 +13,7 @@ import java.util.function.Function;
 public class CarStateExcelDtoConverter implements Function<CarStateNativeQueryExcelDto, CarStateExcelDto> {
 
     @Override
-    public CarStateExcelDto apply(CarStateNativeQueryExcelDto fromDatabase) {
+    public CarStateExcelDto apply(@NonNull CarStateNativeQueryExcelDto fromDatabase) {
         Date inTimestamp = fromDatabase.getInTimestamp();
         Date outTimestamp = fromDatabase.getOutTimestamp();
         String inTimestampString = inTimestamp == null ? new Date(0L).toString() : inTimestamp.toString();
