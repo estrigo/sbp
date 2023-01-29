@@ -7,7 +7,7 @@ import spock.lang.Specification
 
 @SpringBootTest(classes = [ SptApplication.class ])
 @WebAppConfiguration
-class CarsRepositoryTest extends Specification {
+class ApplicationStartTest extends Specification {
 
     @Autowired
     private ApplicationContext context;

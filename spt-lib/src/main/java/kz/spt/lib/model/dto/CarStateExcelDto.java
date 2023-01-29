@@ -3,6 +3,7 @@ package kz.spt.lib.model.dto;
 
 import kz.spt.lib.model.CarState;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.text.SimpleDateFormat;
@@ -10,6 +11,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Data
+@Accessors(chain = true)
 public class CarStateExcelDto {
 
     private static String dateFormat = "dd.MM.yyyy HH:mm:ss";
