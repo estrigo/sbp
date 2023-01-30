@@ -26,7 +26,7 @@ spring:
       - "mega-plugin"
       - "parkomat-status-plugin"
 #      - disabled:
-      - "abonoment-plugin"
+#      - "abonoment-plugin"
 #      - "billing-plugin"
       - "carmodel-plugin"
       - "qrpanel-plugin"
