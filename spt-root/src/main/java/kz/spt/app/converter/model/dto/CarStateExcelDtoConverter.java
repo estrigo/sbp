@@ -4,12 +4,13 @@ import kz.spt.app.model.dto.CarStateNativeQueryExcelDto;
 import kz.spt.app.utils.DateTimeUtil;
 import kz.spt.lib.model.dto.CarStateExcelDto;
 import lombok.NonNull;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.function.Function;
 
-@Service
+@Component
 public class CarStateExcelDtoConverter implements Function<CarStateNativeQueryExcelDto, CarStateExcelDto> {
 
     @Override

@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.StringUtils.*;
 public class CarStateNativeQueryRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private final static int ROWS_LIMIT = 1_000_000;
 
     public List<CarStateNativeQueryExcelDto> findAllWithFiltersForExcelReport(String carNumber,
                                                                               String inTimestamp,
@@ -30,38 +31,38 @@ public class CarStateNativeQueryRepository {
         StringBuilder mainQuery = new StringBuilder("SELECT ")
                 .append(" cs.car_number, cs.in_timestamp, cs.out_timestamp, g_in.name as in_gate_name, g_out.name as out_gate_name ")
                 .append(" FROM car_state as cs ")
-                .append(" left join gate as g_in on (cs.in_gate = g_in.id) ")
-                .append(" left join gate as g_out on (cs.out_gate = g_out.id) ")
-                .append(" left join payments as p on (cs.payment_id = p.id)") // на данный момент в запросе на выгрузку нигде нет значения платежа
-                .append(" where true");
+                .append(" LEFT JOIN gate as g_in on (cs.in_gate = g_in.id) ")
+                .append(" LEFT JOIN gate as g_out on (cs.out_gate = g_out.id) ")
+                .append(" LEFT JOIN payments as p on (cs.payment_id = p.id)") // на данный момент в запросе на выгрузку нигде нет значения платежа
+                .append(" WHERE true");
 
-        String dateCondition = " and (cs.in_timestamp between '" + inTimestamp + "' and '" + outTimestamp + "')";
+        String dateCondition = " AND (cs.in_timestamp between '" + inTimestamp + "' and '" + outTimestamp + "')";
         mainQuery.append(dateCondition);
 
         if (!Objects.equals(carNumber, EMPTY)) {
-            String carNumberCondition = " and cs.car_number like '%" + carNumber + "%'";
+            String carNumberCondition = " AND cs.car_number like '%" + carNumber + "%'";
             mainQuery.append(carNumberCondition);
         }
 
         if (!Objects.equals(inGateId, EMPTY)) {
-            String inGateCondition = " and g_in.id = " + inGateId;
+            String inGateCondition = " AND g_in.id = " + inGateId;
             mainQuery.append(inGateCondition);
         }
 
         if (!Objects.equals(outGateId, EMPTY)) {
-            String outGateCondition = " and g_out.id = " + outGateId;
+            String outGateCondition = " AND g_out.id = " + outGateId;
             mainQuery.append(outGateCondition);
         }
 
         if (!Objects.equals(paymentAmount, EMPTY)) {
-            String paymentCondition = " and p.amount = " + paymentAmount;
+            String paymentCondition = " AND p.amount = " + paymentAmount;
             mainQuery.append(paymentCondition);
         }
 
-        String sortingMode = " order by cs.in_timestamp desc, cs.out_timestamp desc ";
-        String limit = " limit 1000000 ";
-        mainQuery.append(sortingMode).append(limit);
+        String sortingMode = " ORDER BY cs.in_timestamp desc, cs.out_timestamp desc ";
+        mainQuery.append(sortingMode);
 
+        jdbcTemplate.setMaxRows(ROWS_LIMIT);
         return jdbcTemplate.query(mainQuery.toString(), new CarStateExcelDtoMapper());
     }
 }
