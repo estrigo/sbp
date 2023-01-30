@@ -40,8 +40,8 @@ public class TransactionalTestController {
 
         pluginService.changeBalance("255AEU02", BigDecimal.valueOf(333L));
         carsService.saveCars(cars);
-        abonomentService.deleteAbonoment(12L);
-        if (false) {
+        abonomentService.deleteAbonoment(13L);
+        if (true) {
             throw new RuntimeException();
         }
         customerService.saveCustomer(customer);

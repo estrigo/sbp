@@ -80,6 +80,12 @@
             <artifactId>spock-spring</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Transaction management -->
+        <dependency>
+            <groupId>com.atomikos</groupId>
+            <artifactId>transactions-jdbc</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

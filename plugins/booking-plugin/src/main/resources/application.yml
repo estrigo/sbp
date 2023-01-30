@@ -6,26 +6,11 @@ spring:
     cache:
       period: 3600
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://localhost:3306/crm?allowPublicKeyRetrieval=true&useSSL=false
-    username: root
-    password: root
-    hikari:
-      idle-timeout: 10000
-      pool-name: BookingPluginHikariPool
-      connection-timeout: 20000 #Максимальное количество миллисекунд для ожидания подключения из пула
-      #Значение конструктора по умолчанию: SECONDS.toMillis(30) = 30000 Значение конфигурации по умолчанию после проверки: 	30000
-      minimum-idle: 10 #Минимальное количество неактивных соединений, поддерживаемых в пуле
-      #Значение конструктора по умолчанию: -1	Значение конфигурации по умолчанию после проверки: 10
-
-      maximum-pool-size: 10 #Максимальное количество соединений в пуле, включая неактивные и используемые соединения.
-      #Значение конструктора по умолчанию: -1	Значение конфигурации по умолчанию после проверки: 	10
-
-      max-lifetime: 30001 # Самый долгий срок жизни соединения в пуле 	MINUTES.toMillis(30) = 1800000 	1800000
-      # Если он не равен 0 и меньше 30 секунд, он будет сброшен до 30 минут.
-
-      auto-commit: false #Автоматически отправлять соединение, возвращаемое из пула
-      #Значение конструктора по умолчанию: TRUE	Значение конфигурации по умолчанию после проверки: TRUE
+    xa:
+      data-source-class-name: @datasource.xa.datasource.classname@
+    url: @datasource.url@
+    username: @datasource.username@
+    password: @datasource.password@
   jpa:
     open-in-view: false
     hibernate:
@@ -37,6 +22,13 @@ spring:
         dialect: org.hibernate.dialect.MySQL55Dialect
         jdbc:
           time_zone: UTC
+  jta:
+    atomikos:
+      datasource:
+        beanName: dataSource-booking # this line is necessary, could be any name except "dataSource"
+        max-pool-size: @jta.atomikos.datasource.max.pool.size@
+        min-pool-size: @jta.atomikos.datasource.min.pool.size@
+        borrow-connection-timeout: @jta.atomikos.datasource.borrow.connection.timeout@
   flyway:
     enabled: false
 booking:
