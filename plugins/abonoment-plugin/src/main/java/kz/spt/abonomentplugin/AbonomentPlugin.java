@@ -2,9 +2,11 @@ package kz.spt.abonomentplugin;
 
 import kz.spt.lib.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
+import org.laxture.sbp.spring.boot.SharedJtaSpringBootstrap;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 import org.springframework.context.i18n.LocaleContextHolder;
+import com.atomikos.jdbc.AtomikosDataSourceBean;
 
 import java.util.*;
 
@@ -20,7 +22,7 @@ public class AbonomentPlugin extends SpringBootPlugin implements CustomPlugin {
 
     @Override
     protected SpringBootstrap createSpringBootstrap() {
-        return new SpringBootstrap(this, AbonomentPluginStarter.class);
+        return new SharedJtaSpringBootstrap(this, AbonomentPluginStarter.class);
     }
 
 
@@ -42,5 +44,18 @@ public class AbonomentPlugin extends SpringBootPlugin implements CustomPlugin {
         mainMenu.put("role", "MANAGER");
         list.add(mainMenu);
         return list;
+    }
+
+    @Override
+    public void stop() {
+        releaseAdditionalResources();
+        super.stop();
+    }
+
+    @Override
+    public void releaseAdditionalResources() {
+        AtomikosDataSourceBean dataSource = (AtomikosDataSourceBean)
+                getApplicationContext().getBean("dataSource");
+        dataSource.close();
     }
 }

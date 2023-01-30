@@ -29,3 +29,4 @@ derby.log
 
 ### Logs ###
 logs/
+transaction-logs/
