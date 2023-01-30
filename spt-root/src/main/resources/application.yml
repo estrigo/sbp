@@ -25,6 +25,13 @@ spring:
       - "tgbot-plugin"
       - "mega-plugin"
       - "parkomat-status-plugin"
+#      - disabled:
+      - "abonoment-plugin"
+      - "billing-plugin"
+      - "carmodel-plugin"
+      - "qrpanel-plugin"
+      - "rate-plugin"
+      - "whitelist-plugin"
     main:
       banner-mode: off
   datasource:
