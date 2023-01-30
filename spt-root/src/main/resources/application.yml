@@ -26,12 +26,12 @@ spring:
       - "mega-plugin"
       - "parkomat-status-plugin"
 #      - disabled:
-#      - "abonoment-plugin"
+      - "abonoment-plugin"
 #      - "billing-plugin"
-#      - "carmodel-plugin"
-#      - "qrpanel-plugin"
-#      - "rate-plugin"
-#      - "whitelist-plugin"
+      - "carmodel-plugin"
+      - "qrpanel-plugin"
+      - "rate-plugin"
+      - "whitelist-plugin"
     main:
       banner-mode: off
   datasource:
@@ -57,7 +57,6 @@ spring:
         max-pool-size: 20
         min-pool-size: 5
         borrow-connection-timeout: 60
-        default-isolation-level:
   thymeleaf:
     mode: HTML
     cache: false
