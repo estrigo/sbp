@@ -1,7 +1,9 @@
 package kz.spt.reportplugin;
 
+import com.atomikos.jdbc.AtomikosDataSourceBean;
 import kz.spt.lib.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
+import org.laxture.sbp.spring.boot.SharedJtaSpringBootstrap;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -18,8 +20,7 @@ public class ReportPlugin extends SpringBootPlugin implements CustomPlugin {
 
     @Override
     protected SpringBootstrap createSpringBootstrap() {
-        SpringBootstrap bootstrap = new SpringBootstrap(this,ReportPluginApplication.class);
-        return bootstrap;
+        return new SharedJtaSpringBootstrap(this,ReportPluginApplication.class);
     }
 
     @Override
@@ -65,5 +66,18 @@ public class ReportPlugin extends SpringBootPlugin implements CustomPlugin {
         mainMenu.put("subMenus", subMenus);
         list.add(mainMenu);
         return list;
+    }
+
+    @Override
+    public void stop() {
+        releaseAdditionalResources();
+        super.stop();
+    }
+
+    @Override
+    public void releaseAdditionalResources() {
+        AtomikosDataSourceBean dataSource = (AtomikosDataSourceBean)
+                getApplicationContext().getBean("dataSource");
+        dataSource.close();
     }
 }

@@ -1,7 +1,9 @@
 package kz.spt.megaplugin;
 
+import com.atomikos.jdbc.AtomikosDataSourceBean;
 import kz.spt.lib.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
+import org.laxture.sbp.spring.boot.SharedJtaSpringBootstrap;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 
@@ -18,7 +20,7 @@ public class MegaPlugin extends SpringBootPlugin implements CustomPlugin {
 
     @Override
     protected SpringBootstrap createSpringBootstrap() {
-        return new SpringBootstrap(this, MegaPluginApplication.class);
+        return new SharedJtaSpringBootstrap(this, MegaPluginApplication.class);
     }
 
 
@@ -45,7 +47,18 @@ public class MegaPlugin extends SpringBootPlugin implements CustomPlugin {
 //
 //        return list;
         return null;
+    }
 
+    @Override
+    public void stop() {
+        releaseAdditionalResources();
+        super.stop();
+    }
 
+    @Override
+    public void releaseAdditionalResources() {
+        AtomikosDataSourceBean dataSource = (AtomikosDataSourceBean)
+                getApplicationContext().getBean("dataSource");
+        dataSource.close();
     }
 }

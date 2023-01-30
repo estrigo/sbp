@@ -1,7 +1,9 @@
 package kz.spt.tgbotplugin;
 
 
+import com.atomikos.jdbc.AtomikosDataSourceBean;
 import org.laxture.sbp.SpringBootPlugin;
+import org.laxture.sbp.spring.boot.SharedJtaSpringBootstrap;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.pf4j.PluginWrapper;
 
@@ -15,9 +17,21 @@ public class TgBotPlugin extends SpringBootPlugin {
 
     @Override
     protected SpringBootstrap createSpringBootstrap() {
-        SpringBootstrap bootstrap = new SpringBootstrap(this,TgbotPluginApplication.class);
-        bootstrap.importBean("whitelistRepository");
-        bootstrap.importBean("whitelistGroupsRepository");
-        return bootstrap;
+        return new SharedJtaSpringBootstrap(this, TgbotPluginApplication.class)
+                .importBean("whitelistRepository")
+                .importBean("whitelistGroupsRepository");
+    }
+
+    @Override
+    public void stop() {
+        releaseAdditionalResources();
+        super.stop();
+    }
+
+    @Override
+    public void releaseAdditionalResources() {
+        AtomikosDataSourceBean dataSource = (AtomikosDataSourceBean)
+                getApplicationContext().getBean("dataSource");
+        dataSource.close();
     }
 }

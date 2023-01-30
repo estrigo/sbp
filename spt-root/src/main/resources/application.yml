@@ -28,10 +28,10 @@ spring:
 #      - disabled:
 #      - "abonoment-plugin"
 #      - "billing-plugin"
-      - "carmodel-plugin"
-      - "qrpanel-plugin"
-      - "rate-plugin"
-      - "whitelist-plugin"
+#      - "carmodel-plugin"
+#      - "qrpanel-plugin"
+#      - "rate-plugin"
+#      - "whitelist-plugin"
     main:
       banner-mode: off
   datasource:
