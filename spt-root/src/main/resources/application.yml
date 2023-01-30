@@ -220,3 +220,8 @@ adminPlace:
 restAdmin:
   login: rest
   password: d8G3v1@0Ig#lNyrVG3I7Sw1oxx!
+
+logging:
+  level:
+    org.springframework.orm.jpa: DEBUG
+    org.springframework.transaction: DEBUG
