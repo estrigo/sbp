@@ -35,6 +35,15 @@
 
         <!-- Plugin properties -->
         <gmavenplus.plugin.version>2.1.0</gmavenplus.plugin.version>
+
+        <!-- Datasource properties -->
+        <datasource.xa.datasource.classname>com.mysql.cj.jdbc.MysqlXADataSource</datasource.xa.datasource.classname>
+        <datasource.url>jdbc:mysql://10.66.5.25 :3306/new_parking?allowPublicKeyRetrieval=true&amp;useSSL=false&amp;pinGlobalTxToPhysicalConnection=true</datasource.url>
+        <datasource.username>root</datasource.username>
+        <datasource.password>root</datasource.password>
+        <jta.atomikos.datasource.max.pool.size>20</jta.atomikos.datasource.max.pool.size>
+        <jta.atomikos.datasource.min.pool.size>5</jta.atomikos.datasource.min.pool.size>
+        <jta.atomikos.datasource.borrow.connection.timeout>60</jta.atomikos.datasource.borrow.connection.timeout>
     </properties>
 
     <dependencyManagement>

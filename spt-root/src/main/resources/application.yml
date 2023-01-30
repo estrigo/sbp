@@ -27,7 +27,7 @@ spring:
       - "parkomat-status-plugin"
 #      - disabled:
 #      - "abonoment-plugin"
-      - "billing-plugin"
+#      - "billing-plugin"
       - "carmodel-plugin"
       - "qrpanel-plugin"
       - "rate-plugin"

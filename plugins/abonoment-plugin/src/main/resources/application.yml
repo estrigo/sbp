@@ -7,12 +7,12 @@ spring:
       period: 3600
   datasource:
     xa:
-      data-source-class-name: com.mysql.cj.jdbc.MysqlXADataSource
+      data-source-class-name: @datasource.xa.datasource.classname@
 #    type: com.zaxxer.hikari.HikariDataSource
 #    url: jdbc:mysql://localhost:3306/crm?allowPublicKeyRetrieval=true&useSSL=false&pinGlobalTxToPhysicalConnection=true
-    url: jdbc:mysql://10.66.5.25 :3306/new_parking?allowPublicKeyRetrieval=true&useSSL=false&pinGlobalTxToPhysicalConnection=true
-    username: root
-    password: root
+    url: @datasource.url@
+    username: @datasource.username@
+    password: @datasource.password@
 #    hikari:
 #      idle-timeout: 10000
 #      pool-name: AbonPluginHikariPool
@@ -44,8 +44,8 @@ spring:
     atomikos:
       datasource:
         beanName: dataSource-abonoment # this line is necessary, could be any name except "dataSource"
-        max-pool-size: 20
-        min-pool-size: 5
-        borrow-connection-timeout: 60
+        max-pool-size: @jta.atomikos.datasource.max.pool.size@
+        min-pool-size: @jta.atomikos.datasource.min.pool.size@
+        borrow-connection-timeout: @jta.atomikos.datasource.borrow.connection.timeout@
   flyway:
     enabled: false

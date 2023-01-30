@@ -1,8 +1,10 @@
 package kz.spt.billingplugin;
 
+import com.atomikos.jdbc.AtomikosDataSourceBean;
 import kz.spt.billingplugin.service.BalanceService;
 import kz.spt.lib.plugin.CustomPlugin;
 import org.laxture.sbp.SpringBootPlugin;
+import org.laxture.sbp.spring.boot.SharedJtaSpringBootstrap;
 import org.laxture.sbp.spring.boot.SpringBootstrap;
 import org.modelmapper.ModelMapper;
 import org.pf4j.PluginWrapper;
@@ -22,7 +24,7 @@ public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
 
     @Override
     protected SpringBootstrap createSpringBootstrap() {
-        return new SpringBootstrap(this, BillingPluginStarter.class);
+        return new SharedJtaSpringBootstrap(this, BillingPluginStarter.class);
     }
 
     @Override
@@ -88,5 +90,18 @@ public class BillingPlugin extends SpringBootPlugin implements CustomPlugin {
     @Bean
     public static ModelMapper modelMapper() {
         return new ModelMapper();
+    }
+
+    @Override
+    public void stop() {
+        releaseAdditionalResources();
+        super.stop();
+    }
+
+    @Override
+    public void releaseAdditionalResources() {
+        AtomikosDataSourceBean dataSource = (AtomikosDataSourceBean)
+                getApplicationContext().getBean("dataSource");
+        dataSource.close();
     }
 }
